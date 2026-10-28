@@ -23,4 +23,4 @@ const SlaConfigSchema = new Schema<ISlaConfig>(
 
 SlaConfigSchema.index({ bureauId: 1, category: 1, regionId: 1, active: 1 })
 
-export const SlaConfig = mongoose.model<ISlaConfig>('SlaConfig', SlaConfigSchema)
+export const SlaConfig = mongoose.model<ISlaConfig>('SlaConfig', SlaConfigSchema, 'sla_config')

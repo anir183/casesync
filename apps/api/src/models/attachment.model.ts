@@ -2,7 +2,7 @@ import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface IAttachment extends Document {
   caseId: mongoose.Types.ObjectId
-  uploadedBy: mongoose.Types.ObjectId
+  uploadedBy: string
   filename: string
   storagePath: string
   mimeType?: string
@@ -13,7 +13,7 @@ export interface IAttachment extends Document {
 const AttachmentSchema = new Schema<IAttachment>(
   {
     caseId: { type: Schema.Types.ObjectId, ref: 'Case', required: true },
-    uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    uploadedBy: { type: String, required: true },
     filename: { type: String, required: true },
     storagePath: { type: String, required: true },
     mimeType: { type: String },
