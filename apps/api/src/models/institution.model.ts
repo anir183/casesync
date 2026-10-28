@@ -16,7 +16,7 @@ const InstitutionSchema = new Schema<IInstitution>(
   {
     aictePermanentId: { type: String, sparse: true, unique: true },
     name: { type: String, required: true },
-    nameNormalized: { type: String, required: true, index: true },
+    nameNormalized: { type: String, required: true },
     address: { type: String },
     regionId: { type: Schema.Types.ObjectId, ref: 'Region' },
     otherDetails: { type: Schema.Types.Mixed },

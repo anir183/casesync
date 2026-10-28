@@ -18,8 +18,10 @@ export const requireRole = (roles: string[]) =>
       throw new Error('Unauthorized')
     }
     const role = (user as any).role
-    if (!roles.includes(role)) {
+    if (!role || !roles.includes(role)) {
       set.status = 403
       throw new Error('Forbidden')
     }
   })
+
+export const requireAnyRole = (roles: string[]) => requireRole(roles)
