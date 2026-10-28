@@ -1,4 +1,7 @@
 export * from './institution.model'
+export * from './region.model'
+export * from './category.model'
+export * from './user.model'
 export * from './bureau.model'
 export * from './case.model'
 export * from './case-action.model'

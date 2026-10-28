@@ -1,10 +1,14 @@
+import { ROLES } from '@casesync/config'
 import { betterAuth } from 'better-auth'
 import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import mongoose from 'mongoose'
 import { env } from '#/config/env'
-import { ROLES } from '@casesync/config'
+import { User } from '#/models/user.model'
 
-const db = mongoose.connection
+const db = mongoose.connection.db
+if (!db) {
+  throw new Error('MongoDB connection is not ready when initializing Better Auth')
+}
 
 export const auth = betterAuth({
   database: mongodbAdapter(db),
@@ -40,9 +44,24 @@ export const auth = betterAuth({
     },
   },
   session: {
+    // Authorization fields (role/scope/active) must reflect the database on every
+    // request; a cached session would keep a downgraded or deactivated user valid.
     cookieCache: {
-      enabled: true,
+      enabled: false,
       maxAge: 5 * 60,
+    },
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        // Refuse to issue a session to a deactivated account instead of creating
+        // one that every subsequent API call would then have to reject.
+        before: async (session) => {
+          const user = await User.findById(session.userId).lean()
+          if (!user || user.active === false) return false
+          return { data: session }
+        },
+      },
     },
   },
   trustedOrigins: [env.CORS_ORIGIN],

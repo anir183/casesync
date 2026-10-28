@@ -1,27 +1,34 @@
 import { Elysia } from 'elysia'
 import { auth } from '#/lib/auth'
+import { AppError, HTTP_STATUS } from '#/lib/errors'
 
-export const requireAuth = new Elysia({ name: 'require-auth' }).derive(async ({ request, set }) => {
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) {
-    set.status = 401
-    throw new Error('Unauthorized')
+export interface SessionUser {
+  id: string
+  email: string
+  name?: string
+  role?: string
+  bureauId?: string
+  regionId?: string
+  active?: boolean
+}
+
+export const requireAuth = new Elysia({ name: 'require-auth' }).derive(
+  { as: 'global' },
+  async ({ request }): Promise<{ user: SessionUser; session: unknown }> => {
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (!session?.user) {
+      throw new AppError(HTTP_STATUS.UNAUTHORIZED, 'Authentication required', 'UNAUTHORIZED')
+    }
+    const user = session.user as SessionUser
+    if (user.active === false) {
+      throw new AppError(HTTP_STATUS.FORBIDDEN, 'Account is inactive', 'ACCOUNT_INACTIVE')
+    }
+    return { user, session }
+  },
+)
+
+export function requireRole(user: SessionUser, roles: string[]) {
+  if (!user.role || !roles.includes(user.role)) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, 'Insufficient permissions', 'FORBIDDEN')
   }
-  return { session, user: session.user }
-})
-
-export const requireRole = (roles: string[]) =>
-  new Elysia({ name: 'require-role' }).onBeforeHandle(({ store }: any, set) => {
-    const user = store?.user
-    if (!user) {
-      set.status = 401
-      throw new Error('Unauthorized')
-    }
-    const role = (user as any).role
-    if (!role || !roles.includes(role)) {
-      set.status = 403
-      throw new Error('Forbidden')
-    }
-  })
-
-export const requireAnyRole = (roles: string[]) => requireRole(roles)
+}
