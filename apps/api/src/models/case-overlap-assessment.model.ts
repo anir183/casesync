@@ -1,3 +1,4 @@
+import { JEV_ASSESSMENT_STATUS } from '@casesync/config'
 import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface ICaseOverlapAssessment extends Document {
@@ -8,10 +9,11 @@ export interface ICaseOverlapAssessment extends Document {
   coordinationReviewNoul?: number
   probabilities?: Record<string, number>
   confidence?: number
-  status: 'PENDING' | 'ASSESSED' | 'FAILED' | 'TIMEOUT'
+  status: string
   tokensIn?: number
   tokensOut?: number
   latencyMs?: number
+  errorMessage?: string
   rawResponse?: Record<string, unknown>
   assessedAt?: Date
   createdAt: Date
@@ -27,10 +29,15 @@ const CaseOverlapAssessmentSchema = new Schema<ICaseOverlapAssessment>(
     coordinationReviewNoul: { type: Number },
     probabilities: { type: Schema.Types.Mixed },
     confidence: { type: Number },
-    status: { type: String, enum: ['PENDING', 'ASSESSED', 'FAILED', 'TIMEOUT'], default: 'PENDING' },
+    status: {
+      type: String,
+      enum: Object.values(JEV_ASSESSMENT_STATUS),
+      default: JEV_ASSESSMENT_STATUS.PENDING,
+    },
     tokensIn: { type: Number },
     tokensOut: { type: Number },
     latencyMs: { type: Number },
+    errorMessage: { type: String },
     rawResponse: { type: Schema.Types.Mixed },
     assessedAt: { type: Date },
   },
@@ -43,4 +50,5 @@ CaseOverlapAssessmentSchema.index({ status: 1 })
 export const CaseOverlapAssessment = mongoose.model<ICaseOverlapAssessment>(
   'CaseOverlapAssessment',
   CaseOverlapAssessmentSchema,
+  'case_overlap_assessments',
 )

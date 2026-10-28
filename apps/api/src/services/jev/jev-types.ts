@@ -24,10 +24,12 @@ export interface JevNoulQuestion {
   instructions: string
 }
 
+export type JevQuestion = JevChoiceQuestion | JevNoulQuestion
+
 export interface JevRequest {
   model: string
   state: JevState
-  questions: Record<string, JevChoiceQuestion | JevNoulQuestion>
+  questions: Record<string, JevQuestion>
 }
 
 export interface JevChoiceAnswer {
@@ -42,9 +44,17 @@ export interface JevNoulAnswer {
   noul: number
 }
 
+export interface JevScoreAnswer {
+  type: 'score'
+  score: number
+  confidence?: number
+}
+
+export type JevAnswer = JevChoiceAnswer | JevNoulAnswer | JevScoreAnswer
+
 export interface JevResponse {
   model?: string
-  answers: Record<string, JevChoiceAnswer | JevNoulAnswer>
+  answers: Record<string, JevAnswer>
   usage?: {
     input_tokens?: number
     output_tokens?: number

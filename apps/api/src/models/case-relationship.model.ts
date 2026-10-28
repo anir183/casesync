@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose'
 import { RELATIONSHIP_MATCH_TYPE, RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
+import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface ICaseRelationship extends Document {
   caseAId: mongoose.Types.ObjectId
@@ -9,7 +9,7 @@ export interface ICaseRelationship extends Document {
   confidence?: number
   reason?: string
   reviewStatus: string
-  reviewedBy?: mongoose.Types.ObjectId
+  reviewedBy?: string
   reviewedAt?: Date
   reviewNotes?: string
   createdAt: Date
@@ -24,8 +24,12 @@ const CaseRelationshipSchema = new Schema<ICaseRelationship>(
     matchType: { type: String, enum: Object.values(RELATIONSHIP_MATCH_TYPE), required: true },
     confidence: { type: Number },
     reason: { type: String },
-    reviewStatus: { type: String, enum: Object.values(RELATIONSHIP_REVIEW_STATUS), default: RELATIONSHIP_REVIEW_STATUS.PENDING },
-    reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    reviewStatus: {
+      type: String,
+      enum: Object.values(RELATIONSHIP_REVIEW_STATUS),
+      default: RELATIONSHIP_REVIEW_STATUS.PENDING,
+    },
+    reviewedBy: { type: String },
     reviewedAt: { type: Date },
     reviewNotes: { type: String },
   },
@@ -35,4 +39,8 @@ const CaseRelationshipSchema = new Schema<ICaseRelationship>(
 CaseRelationshipSchema.index({ caseAId: 1, caseBId: 1 }, { unique: true })
 CaseRelationshipSchema.index({ reviewStatus: 1 })
 
-export const CaseRelationship = mongoose.model<ICaseRelationship>('CaseRelationship', CaseRelationshipSchema)
+export const CaseRelationship = mongoose.model<ICaseRelationship>(
+  'CaseRelationship',
+  CaseRelationshipSchema,
+  'case_relationships',
+)
