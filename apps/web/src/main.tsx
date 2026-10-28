@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <div className="min-h-screen bg-background text-foreground p-6">
           <h1 className="text-2xl font-semibold">CaseSync</h1>
-          <p className="text-muted-foreground">Bootstrapped. Ready to build.</p>
+          <p className="text-muted-foreground">Bootstrapped - Phase 1 models &amp; auth ready to extend</p>
         </div>
       </BrowserRouter>
     </QueryClientProvider>
