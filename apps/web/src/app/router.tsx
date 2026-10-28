@@ -1,15 +1,15 @@
-import { createBrowserRouter } from 'react-router-dom'
-import { LoginPage } from '#/features/auth/pages/login-page'
+import { Navigate, createBrowserRouter } from 'react-router-dom'
+import { AppShell } from '#/components/layout/app-shell'
 import { AuthGuard } from '#/components/layout/auth-guard'
-
-function Dashboard() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="text-muted-foreground">Protected route</p>
-    </div>
-  )
-}
+import { LoginPage } from '#/features/auth/pages/login-page'
+import { CaseDetailPage } from '#/features/cases/pages/case-detail-page'
+import { CasesPage } from '#/features/cases/pages/cases-page'
+import { DashboardPage } from '#/features/dashboard/pages/dashboard-page'
+import { InstitutionDetailPage } from '#/features/institutions/pages/institution-detail-page'
+import { NotificationsPage } from '#/features/notifications/pages/notifications-page'
+import { OverlapDetailPage } from '#/features/overlaps/pages/overlap-detail-page'
+import { OverlapsPage } from '#/features/overlaps/pages/overlaps-page'
+import { ReportsPage } from '#/features/reports/pages/reports-page'
 
 export const router = createBrowserRouter([
   {
@@ -20,8 +20,19 @@ export const router = createBrowserRouter([
     path: '/',
     element: (
       <AuthGuard>
-        <Dashboard />
+        <AppShell />
       </AuthGuard>
     ),
+    children: [
+      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'cases', element: <CasesPage /> },
+      { path: 'cases/:id', element: <CaseDetailPage /> },
+      { path: 'institutions/:id', element: <InstitutionDetailPage /> },
+      { path: 'overlaps', element: <OverlapsPage /> },
+      { path: 'overlaps/:id', element: <OverlapDetailPage /> },
+      { path: 'reports', element: <ReportsPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
+    ],
   },
 ])

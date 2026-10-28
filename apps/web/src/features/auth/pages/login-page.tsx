@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { signIn } from '#/lib/auth-client'
 import { useNavigate } from 'react-router-dom'
+import { signIn } from '#/lib/auth-client'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -29,14 +29,20 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 border border-border rounded-lg p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm space-y-4 border border-border rounded-lg p-6"
+      >
         <div>
           <h1 className="text-xl font-semibold">CaseSync</h1>
           <p className="text-sm text-muted-foreground">Sign in</p>
         </div>
         <div className="space-y-2">
-          <label className="text-sm">Email</label>
+          <label htmlFor="email" className="text-sm">
+            Email
+          </label>
           <input
+            id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -45,8 +51,11 @@ export function LoginPage() {
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm">Password</label>
+          <label htmlFor="password" className="text-sm">
+            Password
+          </label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
