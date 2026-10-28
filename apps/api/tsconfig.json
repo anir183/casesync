@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "types": ["bun-types"],
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["src/*"],
+      "@casesync/types": ["../../packages/types/src/index.ts"],
+      "@casesync/utils": ["../../packages/utils/src/index.ts"],
+      "@casesync/config": ["../../packages/config/src/index.ts"]
+    }
+  },
+  "include": ["src", "tests"]
+}

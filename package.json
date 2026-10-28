@@ -1,0 +1,24 @@
+{
+  "name": "casesync",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter @casesync/api dev & bun run --filter @casesync/web dev",
+    "dev:api": "bun run --filter @casesync/api dev",
+    "dev:web": "bun run --filter @casesync/web dev",
+    "build": "bun run --filter @casesync/api build && bun run --filter @casesync/web build",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:api": "bun test apps/api/tests",
+    "test:web": "bun test apps/web/tests"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
+  }
+}

@@ -1,0 +1,6 @@
+[tools]
+bun = "latest"
+node = "lts"
+
+[env]
+_.path = ["./node_modules/.bin"]
