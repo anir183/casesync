@@ -1,96 +1,198 @@
-import { Elysia } from 'elysia'
-import { Case } from '#/models/case.model'
-import { CaseAction } from '#/models/case-action.model'
-import { CaseAssignment } from '#/models/case-assignment.model'
-import { requireAuth } from '#/middleware/rbac'
-import { CASE_STATUS, ACTION_TYPE } from '@casesync/config'
+import { ROLES } from '@casesync/config'
+import { Elysia, t } from 'elysia'
+import { env } from '#/config/env'
+import { logger } from '#/lib/logger'
+import { requireAuth, requireRole } from '#/middleware/rbac'
+import { assessCaseOverlaps } from '#/modules/overlaps/overlap.service'
+import {
+  addRemark,
+  assignCase,
+  changeCaseStatus,
+  createCase,
+  disposeCase,
+  escalateCase,
+  getCaseDetail,
+  listCaseActions,
+  listCaseAssignments,
+  listCases,
+  listRelatedCases,
+  setNextAction,
+  transferCase,
+} from './case.service'
+
+const CASE_WRITE_ROLES = [
+  ROLES.ADMIN,
+  ROLES.SENIOR_MANAGEMENT,
+  ROLES.COMPETENT_AUTHORITY,
+  ROLES.BUREAU_OFFICER,
+  ROLES.REGIONAL_OFFICER,
+]
+
+const CASE_SENSITIVE_ROLES = [
+  ROLES.ADMIN,
+  ROLES.SENIOR_MANAGEMENT,
+  ROLES.COMPETENT_AUTHORITY,
+  ROLES.BUREAU_OFFICER,
+]
+
+const CASE_DISPOSAL_ROLES = [ROLES.ADMIN, ROLES.SENIOR_MANAGEMENT, ROLES.COMPETENT_AUTHORITY]
+
+const dateString = t.Optional(t.String({ minLength: 1 }))
+
+const assignmentBody = t.Object({
+  bureauId: t.String({ minLength: 1 }),
+  officerId: t.Optional(t.String()),
+  remarks: t.Optional(t.String({ maxLength: 2000 })),
+})
+
+function triggerOverlapAssessment(caseId: string, actorId: string) {
+  if (!env.OVERLAP_AUTO_ASSESS) return
+  void assessCaseOverlaps(caseId, actorId).catch((error) => {
+    logger.error('automatic overlap assessment failed', {
+      caseId,
+      message: error instanceof Error ? error.message : String(error),
+    })
+  })
+}
 
 export const casesRoutes = new Elysia({ prefix: '/cases' })
   .use(requireAuth)
-  .get('/', async ({ query }) => {
-    const filter: any = {}
-    if (query.institutionId) filter.institutionId = query.institutionId
-    if (query.bureauId) filter.bureauId = query.bureauId
-    if (query.status) filter.status = query.status
-    const items = await Case.find(filter).sort({ createdAt: -1 }).limit(100).lean()
-    return { items }
-  })
-  .post('/', async ({ body, store }: any) => {
-    const b: any = body
-    const user = store.user
-    const item = await Case.create({ ...b, status: CASE_STATUS.RECEIVED, receivedAt: b.receivedAt || new Date() })
-    await CaseAction.create({
-      caseId: item._id,
-      actorId: user.id || user._id,
-      actionType: ACTION_TYPE.REGISTERED,
-      toStatus: CASE_STATUS.RECEIVED,
-      remarks: 'Case registered',
-    })
-    await Case.updateOne({ _id: item._id }, { lastActionAt: new Date() })
-    return item
-  })
-  .get('/:id', async ({ params }) => {
-    const item = await Case.findById(params.id).lean()
-    return item
-  })
-  .get('/:id/actions', async ({ params }) => {
-    const actions = await CaseAction.find({ caseId: params.id }).sort({ createdAt: 1 }).lean()
+  .get(
+    '/',
+    async ({ query, user }) => {
+      const items = await listCases(query, user)
+      return { items }
+    },
+    {
+      query: t.Object({
+        institutionId: t.Optional(t.String()),
+        bureauId: t.Optional(t.String()),
+        regionId: t.Optional(t.String()),
+        status: t.Optional(t.String()),
+        category: t.Optional(t.String()),
+        q: t.Optional(t.String()),
+        dateFrom: dateString,
+        dateTo: dateString,
+      }),
+    },
+  )
+  .post(
+    '/',
+    async ({ body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      const item = await createCase(body, user.id, user)
+      triggerOverlapAssessment(item.id, user.id)
+      return item
+    },
+    {
+      body: t.Object({
+        institutionId: t.String({ minLength: 1 }),
+        bureauId: t.Optional(t.String()),
+        caseNumber: t.String({ minLength: 1 }),
+        category: t.Optional(t.String()),
+        description: t.Optional(t.String()),
+        receivedAt: dateString,
+        expectedDisposalAt: dateString,
+        nextAction: t.Optional(t.String()),
+        nextActionDueAt: dateString,
+      }),
+    },
+  )
+  .get('/:id', async ({ params, user }) => getCaseDetail(params.id, user))
+  .get('/:id/actions', async ({ params, user }) => {
+    const actions = await listCaseActions(params.id, user)
     return { actions }
   })
-  .get('/:id/assignments', async ({ params }) => {
-    const assignments = await CaseAssignment.find({ caseId: params.id }).sort({ assignedAt: 1 }).lean()
+  .get('/:id/assignments', async ({ params, user }) => {
+    const assignments = await listCaseAssignments(params.id, user)
     return { assignments }
   })
-  .post('/:id/assign', async ({ params, body, store }: any) => {
-    const b: any = body
-    const user = store.user
-    const assignment = await CaseAssignment.create({
-      caseId: params.id,
-      bureauId: b.bureauId,
-      officerId: b.officerId,
-      assignedAt: new Date(),
-      assignedBy: user.id || user._id,
-      remarks: b.remarks,
-    })
-    await Case.updateOne({ _id: params.id }, { bureauId: b.bureauId, status: CASE_STATUS.ASSIGNED })
-    await CaseAction.create({
-      caseId: params.id,
-      actorId: user.id || user._id,
-      actionType: ACTION_TYPE.ASSIGNED,
-      toStatus: CASE_STATUS.ASSIGNED,
-      bureauToId: b.bureauId,
-      officerToId: b.officerId,
-      remarks: b.remarks,
-    })
-    await Case.updateOne({ _id: params.id }, { lastActionAt: new Date() })
-    return assignment
+  .get('/:id/related', async ({ params, user }) => {
+    const items = await listRelatedCases(params.id, user)
+    return { items }
   })
-  .post('/:id/transfer', async ({ params, body, store }: any) => {
-    const b: any = body
-    const user = store.user
-    const existing = await CaseAssignment.findOne({ caseId: params.id, endedAt: { $exists: false } })
-    if (existing) {
-      await CaseAssignment.updateOne({ _id: existing._id }, { endedAt: new Date() })
-    }
-    const assignment = await CaseAssignment.create({
-      caseId: params.id,
-      bureauId: b.bureauId,
-      officerId: b.officerId,
-      assignedAt: new Date(),
-      assignedBy: user.id || user._id,
-      remarks: b.remarks,
-    })
-    await Case.updateOne({ _id: params.id }, { bureauId: b.bureauId, status: CASE_STATUS.TRANSFERRED })
-    await CaseAction.create({
-      caseId: params.id,
-      actorId: user.id || user._id,
-      actionType: ACTION_TYPE.TRANSFERRED,
-      fromStatus: (await Case.findById(params.id).lean())?.status,
-      toStatus: CASE_STATUS.TRANSFERRED,
-      bureauToId: b.bureauId,
-      officerToId: b.officerId,
-      remarks: b.remarks,
-    })
-    await Case.updateOne({ _id: params.id }, { lastActionAt: new Date() })
-    return assignment
-  })
+  .post(
+    '/:id/actions',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      return addRemark(params.id, user.id, body.remarks, user)
+    },
+    {
+      body: t.Object({
+        remarks: t.String({ minLength: 1, maxLength: 2000 }),
+      }),
+    },
+  )
+  .patch(
+    '/:id/status',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      if (body.status === 'DISPOSED') {
+        requireRole(user, CASE_DISPOSAL_ROLES)
+      }
+      return changeCaseStatus(params.id, user.id, body, user)
+    },
+    {
+      body: t.Object({
+        status: t.String({ minLength: 1 }),
+        remarks: t.Optional(t.String({ maxLength: 2000 })),
+      }),
+    },
+  )
+  .patch(
+    '/:id/next-action',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      return setNextAction(params.id, user.id, body, user)
+    },
+    {
+      body: t.Object({
+        nextAction: t.String({ minLength: 1, maxLength: 500 }),
+        nextActionDueAt: dateString,
+      }),
+    },
+  )
+  .post(
+    '/:id/assign',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      return assignCase(params.id, user.id, body, user)
+    },
+    { body: assignmentBody },
+  )
+  .post(
+    '/:id/transfer',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_SENSITIVE_ROLES)
+      return transferCase(params.id, user.id, body, user)
+    },
+    { body: assignmentBody },
+  )
+  .post(
+    '/:id/escalate',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_WRITE_ROLES)
+      return escalateCase(params.id, user.id, body?.remarks, user)
+    },
+    {
+      body: t.Optional(
+        t.Object({
+          remarks: t.Optional(t.String({ maxLength: 2000 })),
+        }),
+      ),
+    },
+  )
+  .post(
+    '/:id/dispose',
+    async ({ params, body, user }) => {
+      requireRole(user, CASE_DISPOSAL_ROLES)
+      return disposeCase(params.id, user.id, body?.remarks, user)
+    },
+    {
+      body: t.Optional(
+        t.Object({
+          remarks: t.Optional(t.String({ maxLength: 2000 })),
+        }),
+      ),
+    },
+  )
