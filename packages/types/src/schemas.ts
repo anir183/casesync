@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { CASE_STATUS } from '@casesync/config'
+import { z } from 'zod'
 
 export const caseStatusSchema = z.nativeEnum(CASE_STATUS)
 
