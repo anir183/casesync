@@ -9,9 +9,12 @@ import {
 } from '@casesync/config'
 import mongoose from 'mongoose'
 import { env } from '#/config/env'
+import { runSlaJob } from '#/jobs/sla'
 import { notifyRecipients } from '#/lib/notifications'
+import { addCalendarDaysEndOfDay } from '#/lib/sla'
 import type { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { assessCaseOverlaps } from '#/modules/overlaps/overlap.service'
+import { resolveCaseSla } from '#/modules/sla/sla.service'
 import { jevConfig } from '#/services/jev'
 
 const originalFetch = globalThis.fetch
@@ -65,6 +68,8 @@ interface Runtime {
   CaseRelationship: typeof import('#/models/case-relationship.model').CaseRelationship
   OverlapAssessment: typeof CaseOverlapAssessment
   Notification: typeof import('#/models/notification.model').Notification
+  SlaConfig: typeof import('#/models/sla-config.model').SlaConfig
+  JobRun: typeof import('#/models/job-run.model').JobRun
   auth: typeof import('#/lib/auth').auth
 }
 
@@ -73,6 +78,7 @@ const cookies = new Map<string, string>()
 const userIds = new Map<string, string>()
 const createdCaseIds: string[] = []
 const createdInstitutionIds: mongoose.Types.ObjectId[] = []
+const createdJobRunIds: string[] = []
 
 function email(name: string) {
   return `${name}.${RUN_ID}@test.local`
@@ -306,6 +312,19 @@ async function cleanup() {
   ])
   await runtime.Case.deleteMany({ _id: { $in: caseIds } })
 
+  await runtime.SlaConfig.deleteMany({
+    $or: [
+      { bureauId: { $in: [PGRC_BUREAU, RB_BUREAU, THIRD_BUREAU] } },
+      { regionId: { $in: [NORTH_REGION, SOUTH_REGION] } },
+      { category: { $regex: RUN_ID } },
+    ],
+  })
+  if (createdJobRunIds.length > 0) {
+    await runtime.JobRun.deleteMany({
+      _id: { $in: createdJobRunIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    })
+  }
+
   await runtime.Institution.deleteMany({
     _id: { $in: [NORTH_INSTITUTION, SOUTH_INSTITUTION, ...createdInstitutionIds] },
   })
@@ -330,6 +349,8 @@ beforeAll(async () => {
     caseRelationshipModule,
     caseOverlapAssessmentModule,
     notificationModule,
+    slaConfigModule,
+    jobRunModule,
   ] = await Promise.all([
     import('#/app'),
     import('#/lib/auth'),
@@ -343,6 +364,8 @@ beforeAll(async () => {
     import('#/models/case-relationship.model'),
     import('#/models/case-overlap-assessment.model'),
     import('#/models/notification.model'),
+    import('#/models/sla-config.model'),
+    import('#/models/job-run.model'),
   ])
 
   runtime = {
@@ -358,6 +381,8 @@ beforeAll(async () => {
     CaseRelationship: caseRelationshipModule.CaseRelationship,
     OverlapAssessment: caseOverlapAssessmentModule.CaseOverlapAssessment,
     Notification: notificationModule.Notification,
+    SlaConfig: slaConfigModule.SlaConfig,
+    JobRun: jobRunModule.JobRun,
   }
 
   await runtime.Region.create([
@@ -1428,5 +1453,354 @@ suite('Stage 4 monitoring, reporting and exports', () => {
     expect(filtered.status).toBe(200)
     const filteredBody = await json<{ items: Array<{ type: string }> }>(filtered)
     expect(filteredBody.items.every((item) => item.type === 'OVERLAP_ALERT')).toBe(true)
+  })
+})
+
+suite('Stage 5 SLA configuration and scan integration', () => {
+  test('SLA rule CRUD is admin-only and resolves by specificity', async () => {
+    expect((await api(email('pgrc'), '/sla-configs')).status).toBe(403)
+
+    const category = `SLA_${RUN_ID}_CRUD`.toUpperCase()
+    const create = await api(email('admin'), '/sla-configs', {
+      method: 'POST',
+      body: {
+        bureauId: String(PGRC_BUREAU),
+        category,
+        regionId: String(NORTH_REGION),
+        slaDays: 5,
+        pendingReminderDays: 4,
+        reminderDays: '5,2',
+      },
+    })
+    expect(create.status).toBe(201)
+    const created = await json<{ id: string; bureauName: string; reminderDays: number[] }>(create)
+    expect(created.bureauName).toContain(RUN_ID)
+    expect(created.reminderDays).toEqual([5, 2])
+
+    const duplicate = await api(email('admin'), '/sla-configs', {
+      method: 'POST',
+      body: {
+        bureauId: String(PGRC_BUREAU),
+        category,
+        regionId: String(NORTH_REGION),
+        slaDays: 9,
+      },
+    })
+    expect(duplicate.status).toBe(409)
+
+    const list = await api(email('admin'), '/sla-configs')
+    expect(list.status).toBe(200)
+    const listBody = await json<{
+      items: Array<{ id: string; category?: string }>
+      settings: { defaultSlaDays: number; timezone: string }
+    }>(list)
+    expect(listBody.items.some((item) => item.id === created.id)).toBe(true)
+    expect(listBody.settings.timezone).toBe(env.SLA_TIMEZONE)
+
+    const resolved = await resolveCaseSla({
+      bureauId: String(PGRC_BUREAU),
+      category,
+      regionId: String(NORTH_REGION),
+    })
+    expect(resolved.slaDays).toBe(5)
+    expect(resolved.pendingReminderDays).toBe(4)
+
+    const patch = await api(email('admin'), `/sla-configs/${created.id}`, {
+      method: 'PATCH',
+      body: { slaDays: 6, active: false },
+    })
+    expect(patch.status).toBe(200)
+    expect((await json<{ slaDays: number; active: boolean }>(patch)).slaDays).toBe(6)
+
+    expect(
+      (await api(email('admin'), `/sla-configs/${created.id}`, { method: 'DELETE' })).status,
+    ).toBe(200)
+    const afterDelete = await resolveCaseSla({
+      bureauId: String(PGRC_BUREAU),
+      category,
+      regionId: String(NORTH_REGION),
+    })
+    expect(afterDelete.slaDays).not.toBe(6)
+  })
+
+  test('case creation derives the deadline from SLA rules and honours manual overrides', async () => {
+    const category = `SLA_${RUN_ID}_DEADLINE`.toUpperCase()
+    const rule = await api(email('admin'), '/sla-configs', {
+      method: 'POST',
+      body: {
+        bureauId: String(RB_BUREAU),
+        category,
+        regionId: String(SOUTH_REGION),
+        slaDays: 6,
+        pendingReminderDays: 7,
+        reminderDays: [7, 3, 1],
+      },
+    })
+    expect(rule.status).toBe(201)
+
+    const receivedAt = new Date()
+    const automatic = await api(email('admin'), '/cases', {
+      method: 'POST',
+      body: {
+        institutionId: String(SOUTH_INSTITUTION),
+        bureauId: String(RB_BUREAU),
+        category,
+        caseNumber: `SLA-${RUN_ID}-AUTO`,
+        receivedAt: receivedAt.toISOString(),
+      },
+    })
+    expect(automatic.status).toBe(200)
+    const automaticCase = await json<{
+      id: string
+      expectedDisposalAt: string
+      expectedDisposalAtManual: boolean
+      slaDays: number
+    }>(automatic)
+    createdCaseIds.push(automaticCase.id)
+    expect(automaticCase.expectedDisposalAtManual).toBe(false)
+    expect(automaticCase.slaDays).toBe(6)
+    expect(automaticCase.expectedDisposalAt).toBe(
+      addCalendarDaysEndOfDay(receivedAt, 6, env.SLA_TIMEZONE).toISOString(),
+    )
+
+    const explicit = await api(email('admin'), '/cases', {
+      method: 'POST',
+      body: {
+        institutionId: String(SOUTH_INSTITUTION),
+        bureauId: String(RB_BUREAU),
+        category,
+        caseNumber: `SLA-${RUN_ID}-MANUAL`,
+        receivedAt: receivedAt.toISOString(),
+        expectedDisposalAt: '2099-02-01',
+      },
+    })
+    expect(explicit.status).toBe(200)
+    const explicitCase = await json<{
+      id: string
+      expectedDisposalAt: string
+      expectedDisposalAtManual: boolean
+    }>(explicit)
+    createdCaseIds.push(explicitCase.id)
+    expect(explicitCase.expectedDisposalAtManual).toBe(true)
+    expect(explicitCase.expectedDisposalAt).toBe(
+      addCalendarDaysEndOfDay(
+        new Date('2099-02-01T12:00:00.000Z'),
+        0,
+        env.SLA_TIMEZONE,
+      ).toISOString(),
+    )
+  })
+
+  test('SLA scan creates scoped deduped alerts and matches dashboard/report metrics', async () => {
+    expect((await api(email('pgrc'), '/admin/jobs/sla/run', { method: 'POST' })).status).toBe(403)
+
+    const now = new Date()
+    const day = 24 * 60 * 60 * 1000
+    const receivedAt = new Date(now.getTime() - 10 * day)
+    const lastActive = new Date(now.getTime() - day)
+    const staleAt = new Date(now.getTime() - 9 * day)
+    const category = `SLA_${RUN_ID}_JOB`.toUpperCase()
+    const caseNumbers = {
+      approaching: `SLA-${RUN_ID}-APPROACH`,
+      overdue: `SLA-${RUN_ID}-OVERDUE`,
+      pending: `SLA-${RUN_ID}-PENDING`,
+      disposed: `SLA-${RUN_ID}-DISPOSED`,
+    }
+
+    const cases = await runtime.Case.create([
+      {
+        caseNumber: caseNumbers.approaching,
+        institutionId: NORTH_INSTITUTION,
+        regionId: NORTH_REGION,
+        bureauId: PGRC_BUREAU,
+        category,
+        status: 'UNDER_PROCESS',
+        receivedAt,
+        lastActionAt: lastActive,
+        expectedDisposalAt: addCalendarDaysEndOfDay(now, 2, env.SLA_TIMEZONE),
+        expectedDisposalAtManual: true,
+      },
+      {
+        caseNumber: caseNumbers.overdue,
+        institutionId: NORTH_INSTITUTION,
+        regionId: NORTH_REGION,
+        bureauId: PGRC_BUREAU,
+        category,
+        status: 'ASSIGNED',
+        receivedAt,
+        lastActionAt: lastActive,
+        expectedDisposalAt: addCalendarDaysEndOfDay(now, -1, env.SLA_TIMEZONE),
+        expectedDisposalAtManual: true,
+      },
+      {
+        caseNumber: caseNumbers.pending,
+        institutionId: NORTH_INSTITUTION,
+        regionId: NORTH_REGION,
+        bureauId: PGRC_BUREAU,
+        category,
+        status: 'RECEIVED',
+        receivedAt,
+        lastActionAt: staleAt,
+        expectedDisposalAt: addCalendarDaysEndOfDay(now, 20, env.SLA_TIMEZONE),
+        expectedDisposalAtManual: true,
+      },
+      {
+        caseNumber: caseNumbers.disposed,
+        institutionId: NORTH_INSTITUTION,
+        regionId: NORTH_REGION,
+        bureauId: PGRC_BUREAU,
+        category,
+        status: 'DISPOSED',
+        receivedAt,
+        lastActionAt: staleAt,
+        expectedDisposalAt: addCalendarDaysEndOfDay(now, -5, env.SLA_TIMEZONE),
+        expectedDisposalAtManual: true,
+      },
+    ])
+    const ids = cases.map((item) => String(item._id))
+    createdCaseIds.push(...ids)
+    const [approachingId, overdueId, pendingId, disposedId] = ids
+    const watchedIds = [approachingId, overdueId, pendingId]
+
+    const first = await runSlaJob({ now, caseIds: ids })
+    createdJobRunIds.push(first.id)
+    expect(first.counts.scannedCases).toBe(3)
+    expect(first.counts.approachingCases).toBe(1)
+    expect(first.counts.overdueCases).toBe(1)
+    expect(first.counts.pendingCases).toBe(1)
+    expect(first.counts.notificationsCreated).toBeGreaterThan(0)
+    expect(first.counts.errors).toBe(0)
+
+    const alerts = await runtime.Notification.find({
+      caseId: { $in: watchedIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    }).lean()
+    expect(alerts.some((item) => item.type === NOTIFICATION_TYPE.APPROACHING_DEADLINE)).toBe(true)
+    expect(alerts.some((item) => item.type === NOTIFICATION_TYPE.OVERDUE)).toBe(true)
+    expect(alerts.some((item) => item.type === NOTIFICATION_TYPE.PENDING_REMINDER)).toBe(true)
+    expect(await runtime.Notification.countDocuments({ caseId: disposedId })).toBe(0)
+
+    const recipients = new Set(alerts.map((item) => String(item.recipientId)))
+    expect(recipients.has(userIds.get(email('admin')) as string)).toBe(true)
+    expect(recipients.has(userIds.get(email('pgrc')) as string)).toBe(true)
+    expect(recipients.has(userIds.get(email('north')) as string)).toBe(true)
+    expect(recipients.has(userIds.get(email('rb')) as string)).toBe(false)
+
+    const countBefore = await runtime.Notification.countDocuments({
+      caseId: { $in: watchedIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    })
+    const second = await runSlaJob({ now, caseIds: ids })
+    createdJobRunIds.push(second.id)
+    expect(second.counts.notificationsCreated).toBe(0)
+    expect(
+      await runtime.Notification.countDocuments({
+        caseId: { $in: watchedIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      }),
+    ).toBe(countBefore)
+
+    const nextDay = new Date(now.getTime() + day)
+    const third = await runSlaJob({ now: nextDay, caseIds: [overdueId] })
+    createdJobRunIds.push(third.id)
+    expect(third.counts.notificationsCreated).toBeGreaterThan(0)
+
+    const dateFrom = new Date(now.getTime() - 15 * day).toISOString().slice(0, 10)
+    const dateTo = new Date(now.getTime() + day).toISOString().slice(0, 10)
+    const dashboard = await api(
+      email('north'),
+      `/dashboard/summary?dateFrom=${dateFrom}&dateTo=${dateTo}`,
+    )
+    expect(dashboard.status).toBe(200)
+    const dashboardBody = await json<{ beyondTimelines: number }>(dashboard)
+    expect(dashboardBody.beyondTimelines).toBe(1)
+
+    const report = await api(
+      email('north'),
+      `/reports/summary?dateFrom=${dateFrom}&dateTo=${dateTo}&regionId=${NORTH_REGION}`,
+    )
+    expect(report.status).toBe(200)
+    const reportBody = await json<{ totals: { beyondTimelines: number } }>(report)
+    expect(reportBody.totals.beyondTimelines).toBe(dashboardBody.beyondTimelines)
+
+    const runs = await api(email('admin'), '/admin/jobs/runs?jobName=SLA_SCAN&limit=5')
+    expect(runs.status).toBe(200)
+    expect((await json<{ items: Array<{ id: string }> }>(runs)).items.length).toBeGreaterThan(0)
+  })
+
+  test('assignment and transfer recalculate automatic deadlines but not manual ones', async () => {
+    const category = `SLA_${RUN_ID}_TRANSFER`.toUpperCase()
+    for (const [bureauId, slaDays] of [
+      [PGRC_BUREAU, 5],
+      [RB_BUREAU, 20],
+    ] as const) {
+      const rule = await api(email('admin'), '/sla-configs', {
+        method: 'POST',
+        body: {
+          bureauId: String(bureauId),
+          category,
+          regionId: String(NORTH_REGION),
+          slaDays,
+        },
+      })
+      expect(rule.status).toBe(201)
+    }
+
+    const receivedAt = new Date()
+    const created = await api(email('admin'), '/cases', {
+      method: 'POST',
+      body: {
+        institutionId: String(NORTH_INSTITUTION),
+        bureauId: String(PGRC_BUREAU),
+        category,
+        caseNumber: `SLA-${RUN_ID}-TRANSFER-A`,
+        receivedAt: receivedAt.toISOString(),
+      },
+    })
+    const createdCase = await json<{ id: string; expectedDisposalAt: string }>(created)
+    createdCaseIds.push(createdCase.id)
+    expect(createdCase.expectedDisposalAt).toBe(
+      addCalendarDaysEndOfDay(receivedAt, 5, env.SLA_TIMEZONE).toISOString(),
+    )
+
+    const assigned = await api(email('admin'), `/cases/${createdCase.id}/assign`, {
+      method: 'POST',
+      body: { bureauId: String(PGRC_BUREAU) },
+    })
+    expect(assigned.status).toBe(200)
+    const transferred = await api(email('admin'), `/cases/${createdCase.id}/transfer`, {
+      method: 'POST',
+      body: { bureauId: String(RB_BUREAU) },
+    })
+    expect(transferred.status).toBe(200)
+
+    const detail = await api(email('admin'), `/cases/${createdCase.id}`)
+    expect(detail.status).toBe(200)
+    const detailBody = await json<{ expectedDisposalAt: string; slaDays: number }>(detail)
+    expect(detailBody.slaDays).toBe(20)
+    expect(detailBody.expectedDisposalAt).toBe(
+      addCalendarDaysEndOfDay(receivedAt, 20, env.SLA_TIMEZONE).toISOString(),
+    )
+
+    const manual = await api(email('admin'), '/cases', {
+      method: 'POST',
+      body: {
+        institutionId: String(NORTH_INSTITUTION),
+        bureauId: String(PGRC_BUREAU),
+        category,
+        caseNumber: `SLA-${RUN_ID}-TRANSFER-M`,
+        receivedAt: receivedAt.toISOString(),
+        expectedDisposalAt: '2099-03-01',
+      },
+    })
+    const manualCase = await json<{ id: string; expectedDisposalAt: string }>(manual)
+    createdCaseIds.push(manualCase.id)
+    const manualDeadline = manualCase.expectedDisposalAt
+
+    await api(email('admin'), `/cases/${manualCase.id}/assign`, {
+      method: 'POST',
+      body: { bureauId: String(RB_BUREAU) },
+    })
+    const manualDetail = await json<{ expectedDisposalAt: string }>(
+      await api(email('admin'), `/cases/${manualCase.id}`),
+    )
+    expect(manualDetail.expectedDisposalAt).toBe(manualDeadline)
   })
 })

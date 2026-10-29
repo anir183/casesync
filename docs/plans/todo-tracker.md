@@ -1,14 +1,14 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–4 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset). Automated browser E2E, SLA jobs, admin web screens, and release hardening remain, so the MVP is not complete.
+**Status:** Stages 0–5 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset; Stage 5 SLA rules, deadline calculation, and scheduled alerts). Automated browser E2E, remaining admin web screens, and release hardening remain, so the MVP is not complete.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
-> **Verification note.** API and web typechecks pass, Biome is clean (143 files), the API
-> unit suite passes 57 tests with 35 DB-backed integration tests skipped by default, and
-> the web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 35 DB-backed
+> **Verification note.** API and web typechecks pass, Biome is clean (153 files), the API
+> unit suite passes 67 tests with 39 DB-backed integration tests skipped by default, and
+> the web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 39 DB-backed
 > integration tests pass. Both production builds succeed. Demo seed was run twice
 > idempotently and reset + reseed succeeded. Integration tests install a fetch guard that
 > fails on any real `jevmodel.org` call, so Jev is only ever exercised through mocks.
@@ -57,7 +57,7 @@
 - [x] Scope cases, actions, assignments, related, overlaps, institutions
 - [x] Scope dashboard, reports, notifications
 - [x] Institution write role checks + region validation/backfill
-- [x] Role/scope/IDOR tests (included in the 35 DB-backed integration tests after Stage 4, opt-in `RUN_INTEGRATION=1`)
+- [x] Role/scope/IDOR tests (included in the DB-backed integration suite, opt-in `RUN_INTEGRATION=1`)
 - [x] Seed users for every role (`src/seed.ts`, idempotent)
 - [x] Update docs/role matrix
 
@@ -161,25 +161,26 @@ web screens → Stage 6.
 
 ## Stage 5 — SLA, alerts & scheduled jobs
 
-- [ ] `sla_config` CRUD (default + bureau/category/region overrides)
-- [ ] Locked default: 30-day resolution; reminders at 7/3/1 days; overdue daily
-- [ ] Compute `expectedDisposalAt` from SLA
-- [ ] node-cron bootstrap + run log
-- [ ] Pending-case reminder scan
-- [ ] Approaching-deadline scan
-- [ ] Overdue scan
-- [ ] Escalation policy (manual/auto decision)
-- [ ] Notification dedupe (`periodKey`) + scoping
-- [ ] Dashboard/report “beyond timeline” uses same calculation
-- [ ] UTC storage / IST display policy
-- [ ] Tests with injected clock + re-run idempotency
+- [x] `sla_config` CRUD (default + bureau/category/region overrides)
+- [x] Locked default: 30-day resolution; reminders at 7/3/1 days; overdue daily
+- [x] Compute `expectedDisposalAt` from SLA; manual overrides preserved
+- [x] node-cron bootstrap + `job_runs` run log
+- [x] Pending-case reminder scan
+- [x] Approaching-deadline scan
+- [x] Overdue scan
+- [x] Escalation policy decided: manual only; no auto-escalation
+- [x] Notification dedupe (`periodKey`) + scoping
+- [x] Dashboard/report “beyond timeline” uses the same calculation
+- [x] UTC storage / IST display policy
+- [x] Tests with injected clock + re-run idempotency
+- [x] Minimal admin SLA UI at `/admin/sla`
 
-**Exit:** one notification per case/period; dashboard/report/job agree; failure does not crash API.
+**Exit:** met; one notification per case/period; dashboard/report/job agree; job failures are logged and do not crash the API.
 
 ## Stage 6 — Administration, attachments & data quality
 
 - [ ] Bureau/region/category CRUD
-- [ ] SLA admin UI
+- [x] SLA admin UI (delivered in Stage 5)
 - [ ] Institution verify/merge/alias + duplicate warnings
 - [ ] Attachment upload/download + MIME/size/path validation + access checks
 - [ ] Attachment UI on case detail
@@ -234,7 +235,7 @@ web screens → Stage 6.
 - [x] Auth/RBAC/scoping/IDOR tested
 - [x] Dashboard/report reconciliation tested
 - [x] Notification dedupe tested (overlap `INITIAL` period + reference ID)
-- [ ] SLA clock/boundaries tested
+- [x] SLA clock/boundaries and idempotent re-run tested
 - [ ] Frontend critical flows tested
 - [ ] E2E critical journeys pass
 - [x] Jev never hit in tests (integration fetch guard + mocked provider)

@@ -28,6 +28,7 @@ const envSchema = z.object({
   STAFF_SIGNUP_ENABLED: booleanFromEnv.default(false),
   DEFAULT_SLA_DAYS: z.coerce.number().int().positive().default(30),
   SLA_REMINDER_DAYS: z.string().default('7,3,1'),
+  PENDING_REMINDER_DAYS: z.coerce.number().int().positive().default(7),
   CRON_ENABLED: booleanFromEnv,
   SLA_TIMEZONE: z.string().default('Asia/Kolkata'),
 })

@@ -5,13 +5,14 @@ import { useNotifications } from '#/features/notifications/api'
 import { signOut, useSession } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
 
-const NAV_ITEMS = [
+const NAV_ITEMS: Array<{ to: string; label: string; showUnread?: boolean; adminOnly?: boolean }> = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/cases', label: 'Cases' },
   { to: '/institutions', label: 'Institutions' },
   { to: '/overlaps', label: 'Overlap queue' },
   { to: '/reports', label: 'Reports' },
   { to: '/notifications', label: 'Notifications', showUnread: true },
+  { to: '/admin/sla', label: 'SLA rules', adminOnly: true },
 ]
 
 export function AppShell() {
@@ -19,6 +20,8 @@ export function AppShell() {
   const { data: notifications } = useNotifications()
   const navigate = useNavigate()
   const unreadCount = notifications?.unreadCount ?? 0
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || role === 'ADMIN')
 
   async function handleSignOut() {
     await signOut()
@@ -32,7 +35,7 @@ export function AppShell() {
           <div className="flex items-center gap-6">
             <span className="text-lg font-semibold">CaseSync</span>
             <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}

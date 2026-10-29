@@ -378,10 +378,12 @@ export interface DemoSlaConfig {
   category?: string
   regionCode?: string
   slaDays: number
+  pendingReminderDays?: number
+  reminderDays?: number[]
 }
 
 export const DEMO_SLA_CONFIGS: DemoSlaConfig[] = [
-  { key: 'default', slaDays: 30 },
+  { key: 'default', slaDays: 30, pendingReminderDays: 7, reminderDays: [7, 3, 1] },
   { key: 'pgrc', bureauCode: 'PGRC', slaDays: 21 },
   { key: 'rb', bureauCode: 'RB', slaDays: 45 },
   { key: 'harassment', category: 'HARASSMENT', slaDays: 15 },

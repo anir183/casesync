@@ -25,10 +25,11 @@ exit criteria.
 
 ## 2. Current test baseline (verified 2026-10-29)
 
-- 57 API unit tests across 15 files plus 3 web URL-filter tests: pair, normalize,
+- 67 API unit tests across 17 files plus 3 web URL-filter tests: pair, normalize,
   similarity, interpret, Jev provider, overlap-Jev, reports, state machine,
-  scope/permission, dates, CSV, metrics, demo fixtures, report export, and case filters.
-- 35 database-backed integration tests in `apps/api/tests/integration/` covering
+  scope/permission, dates, CSV, metrics, demo fixtures, report export, case filters,
+  and SLA timezone/rule/alert boundaries.
+- 39 database-backed integration tests in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
   guards, deactivation/session revocation, institution writes, case-registration
   scope, pagination contracts, duplicate checks, officer directory scoping, auto
@@ -39,7 +40,9 @@ exit criteria.
   result, no case/institution content mutation on failure, scoped/deduped notifications
   with the exact heading, manual link/unlink, queue filters/pagination,
   transfer-triggered re-assessment, and Stage 4 dashboard/report filters, exports,
-  region names, quarterly boundaries, and reconciliation. They are opt-in via
+  region names, quarterly boundaries, reconciliation, and Stage 5 SLA rule CRUD,
+  automatic/manual deadlines, scoped deduped scan notifications, transfer recompute,
+  and dashboard/report overdue agreement. They are opt-in via
   `RUN_INTEGRATION=1` and use run-scoped records in the dev database (Atlas credentials
   cannot create/drop databases).
 - A module-level fetch guard fails the integration suite if anything calls

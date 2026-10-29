@@ -30,8 +30,13 @@ beforeAll(async () => {
   process.env.JEV_TIMEOUT_MS = '1000'
 
   const module = await import('#/services/jev/jev-provider')
+  const configModule = await import('#/services/jev/jev-config')
   provider = module.jevProvider
   JevErrorClass = module.JevError
+  configModule.jevConfig.enabled = true
+  configModule.jevConfig.apiKey = 'test-key'
+  configModule.jevConfig.maxRetries = 1
+  configModule.jevConfig.timeoutMs = 1000
 })
 
 afterEach(() => {

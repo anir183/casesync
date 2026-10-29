@@ -29,13 +29,16 @@ Current position: **late in the build, early in operability**.
 - Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
   reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
   notification pagination, deterministic demo seed/reset, and reconciliation tests.
-  57 API unit tests, 3 web tests, and 35 DB-backed integration tests pass; tests cannot
+  67 API unit tests, 3 web tests, and 39 DB-backed integration tests pass; tests cannot
   call real Jev.
-- Missing for MVP: admin web screens, SLA jobs and reminders, attachments, browser E2E,
-  CI, and runbook.
+- Stage 5 is implemented and verified: admin SLA rules, automatic/manual deadlines,
+  daily pending/approaching/overdue scans, scoped dedupe, job run history, minimal SLA
+  admin UI, and shared dashboard/report overdue metrics.
+- Missing for MVP: remaining admin web screens, attachments, browser E2E, CI, and
+  runbook.
 
-The biggest sequencing issue is no longer the staff workflow or reporting; it is
-operational depth (SLA jobs, admin screens, E2E/CI).
+The biggest sequencing issue is no longer the staff workflow, reporting, or SLA engine;
+it is remaining admin operability, E2E/CI, and release hardening.
 
 ## 1. Status legend
 
@@ -55,11 +58,11 @@ Evidence paths are relative to the repo root.
 | Centralized institution profile | **Partial** | Profile API + detail page, registry list/create/edit/verify UI, duplicate warnings, and a seeded `regions` master exist; merge/alias workflow remains. |
 | Case tracking | **Partial → strong** | Full lifecycle API and operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
 | Cross-bureau overlap | **Done** (implementation) | Exact + fuzzy + Jev + human review work. The base alert always survives Jev, re-assessment triggers and manual link/unlink are wired, and notifications are scoped/deduped. Periodic sweep and browser E2E remain. |
-| Real-time dashboard | **Partial** | Required tiles and two workload tables exist; scoping is done. On-demand only, no region view, no date range, no SLA-driven definition of overdue. |
+| Real-time dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, scoping, and SLA-driven overdue are wired with polling. |
 | Workflow/action history | **Partial** | Append-only actions, assignments, transfer/escalation history work in API and UI; actor names resolved. Attachments remain model-only. |
-| Search/filters | **Partial** | Case ID, institution name, AICTE ID, bureau, category, status, date range work; region filter still missing; case/institution lists and the overlap queue paginate. |
-| Alerts/notifications | **Partial** | Overlap notifications are scoped and deduped, and escalation notifications work; pending reminders and SLA alerts missing. |
-| Reports/analytics | **Partial** | Bureau/institution/status/category/ageing/overlap/monthly exist; scoping is done. Region labels are raw IDs; no quarterly view, export, or bureau/region/status filters; disposal metric needs definition. |
+| Search/filters | **Done** | Institution, AICTE ID, case ID, bureau, region, category, status, and date filters work with pagination and CSV export. |
+| Alerts/notifications | **Partial** | Overlap, pending, approaching, and overdue notifications are scoped/deduped; escalation delivery remains role-broadcast. |
+| Reports/analytics | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly reports, filters, names, CSV export, and shared beyond-timeline totals are wired. |
 | Innovation | **Done (core)** | Rules-first matching and Jev pairwise assessment are real, explainable, and human-reviewed. |
 | Target users | **Done** | Roles, bureau/region scoping, and admin user management (API) are implemented and tested (Stage 1). |
 | Non-functional (security, QA, ops) | **Partial** | Active enforcement, scoping, and DB-backed tests done; rate limits, E2E, CI, and runbook missing. |
@@ -374,7 +377,7 @@ Still open from Stage 3:
    created; Jev enriches/ranks; re-assess on create/assign/transfer/institution change;
    manual link/unlink; notification scoping/dedupe; exact heading test. Periodic sweep
    remains.
-5. **SLA + alerts**: `slaConfig` CRUD; compute expected disposal; node-cron scan; pending/approaching/overdue notifications; dedupe; dashboard/report use same calculation.
+5. **SLA + alerts** — **Done (Stage 5)**: `slaConfig` CRUD; computed automatic deadlines with manual override; daily node-cron scan; pending/approaching/overdue notifications; dedupe; dashboard/report use the same calculation.
 6. **Pagination + query safety**: cases, institutions, and the overlap queue paginate
    with totals; add notification pagination and finish query-safety tests.
 7. **Demo data completeness**: the idempotent seed covers org and users; add
@@ -438,7 +441,8 @@ The MVP is accepted only when all of these are true:
 7. Dashboard and reports show correct totals by status, bureau, region,
    institution, ageing, disposal rate, and overlaps, scoped to the user.
 8. SLA cron creates pending/approaching/overdue notifications once per period;
-   dashboard "beyond timeline" uses the same calculation.
+   dashboard "beyond timeline" uses the same calculation. *(Done — Stage 5,
+   integration-tested.)*
 9. Search/filter supports institution name, AICTE ID, case ID, bureau, region,
    category, status, date range, with pagination.
 10. Attachments upload/download are access-controlled and type/size validated.

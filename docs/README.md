@@ -11,10 +11,10 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–4 implemented. Stage 3 overlap correctness/coordination and Stage 4
-monitoring/search/reporting are covered by DB-backed integration tests; automated browser
-E2E and page-performance gates are still missing. Stage 5 SLA jobs are the next target.
-The MVP is not complete.**
+**Stages 0–5 implemented. Stage 3 overlap correctness/coordination, Stage 4
+monitoring/search/reporting, and Stage 5 SLA rules/deadline scans are covered by
+DB-backed integration tests; automated browser E2E and page-performance gates are still
+missing. Remaining admin screens and release hardening are next. The MVP is not complete.**
 
 Last verified: 2026-10-29.
 
@@ -25,7 +25,8 @@ Last verified: 2026-10-29.
 | Stage 2 — registry and case operations | Complete (implementation); browser E2E pending |
 | Stage 3 — overlap intelligence and coordination | Complete (implementation); browser E2E pending |
 | Stage 4 — monitoring, search, reports | Complete (implementation); browser E2E pending |
-| Stages 5–7 — SLA, admin, release | Not started / partial |
+| Stage 5 — SLA, deadlines, alerts | Complete (implementation); browser E2E pending |
+| Stages 6–7 — admin, release | Partial / not started |
 | Stage 8 — public portal | Optional; not started |
 
 ### Working
@@ -58,7 +59,9 @@ Last verified: 2026-10-29.
   region names resolved server-side.
 - Region/category masters, admin user management (API), and a deterministic demo seed
   (`seed:demo`) plus guarded demo-only reset (`seed:reset`).
-- 57 API unit tests, 3 web URL-filter tests, and 35 opt-in database integration tests;
+- SLA rules with admin UI, automatic deadlines, daily pending/approaching/overdue scans,
+  deduped scoped notifications, and shared dashboard/report overdue metrics.
+- 67 API unit tests, 3 web URL-filter tests, and 39 opt-in database integration tests;
   Jev is always mocked and a fetch guard blocks real Jev calls.
 
 ### Stage 2 completion and remaining gaps
@@ -78,7 +81,6 @@ Remaining, non-blocking gaps:
 
 - Stage 3 follow-ups: periodic overlap sweep/background batch and browser E2E for
   confirm/dismiss/link/unlink.
-- Stage 5 SLA config, cron jobs, reminders, and dedupe.
 - Stage 6 attachments, admin web screens, institution merge/alias, `audit_log`.
 - Browser/component E2E tests, CI, Docker, runbook, and the stress seed helper.
 
@@ -263,7 +265,7 @@ paths:
 cd apps/web && ./node_modules/.bin/tsc -b --noEmit
 ```
 
-API and web typechecks, Biome (143 files), 57 API unit tests, 3 web tests, 35 DB-backed
+API and web typechecks, Biome (153 files), 67 API unit tests, 3 web tests, 39 DB-backed
 integration tests, both production builds, and demo seed/reset pass against the current
 tree at the verification date above. See
 [`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and review

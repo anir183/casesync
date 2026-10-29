@@ -5,7 +5,8 @@ Companion: [`mock-data.md`](mock-data.md).
 
 Stages 2–4 (institution registry, case registration, staff action UI, assignment
 history, overlap coordination, scoped dashboard/search/reports) are implemented.
-Stage 5 (SLA jobs) and Stage 6 (admin screens, attachments) are not built. Use the
+Stage 5 SLA jobs and the minimal SLA admin screen are built; broader Stage 6 admin
+screens, attachments, and audit are not. Use the
 availability table in [Current demoable slice](#current-demoable-slice) before presenting.
 
 ## Current demoable slice
@@ -18,11 +19,11 @@ availability table in [Current demoable slice](#current-demoable-slice) before p
 | Institution list/search/create/edit/verify, institution profile | Yes |
 | Assignment/action history UI with officer names | Yes |
 | Reports with filters/quarterly/CSV, paginated notification centre | Yes |
-| SLA-driven approaching/overdue notifications | No |
-| Admin users/organization/SLA screens | No |
+| SLA-driven approaching/overdue notifications | Yes (daily scan; manual trigger at `/admin/sla`) |
+| Admin users/organization/SLA screens | SLA only; broader admin screens are Stage 6 |
 | Attachments | No |
 
-If the demo needs Stage 5–6 steps, finish those stages first. Do not fake them in the UI.
+SLA steps are available. Do not fake remaining Stage 6 admin or attachment steps in the UI.
 
 ## 1. Pre-demo checks
 

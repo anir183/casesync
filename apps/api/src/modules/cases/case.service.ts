@@ -6,6 +6,7 @@ import {
   ROLES,
 } from '@casesync/config'
 import mongoose from 'mongoose'
+import { env } from '#/config/env'
 import { toCsv } from '#/lib/csv'
 import { parseDateBound } from '#/lib/date-range'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
@@ -26,6 +27,7 @@ import {
   mergeFilters,
   resolveScope,
 } from '#/lib/scope'
+import { parseSlaDeadline } from '#/lib/sla'
 import { type DirectoryUser, loadUserMap } from '#/lib/user-directory'
 import { Bureau } from '#/models/bureau.model'
 import { CaseAction } from '#/models/case-action.model'
@@ -35,6 +37,7 @@ import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
 import { Region } from '#/models/region.model'
 import { User } from '#/models/user.model'
+import { applySlaToCase } from '#/modules/sla/sla.service'
 import { assertTransition } from './state-machine'
 
 const INTERNAL_LIST_LIMIT = 200
@@ -114,6 +117,7 @@ export interface CaseDto {
   status: string
   receivedAt: Date
   expectedDisposalAt?: Date
+  expectedDisposalAtManual: boolean
   nextAction?: string
   nextActionDueAt?: Date
   lastActionAt?: Date
@@ -135,6 +139,7 @@ interface CaseLike {
   status: string
   receivedAt: Date
   expectedDisposalAt?: Date
+  expectedDisposalAtManual?: boolean
   nextAction?: string
   nextActionDueAt?: Date
   lastActionAt?: Date
@@ -155,6 +160,7 @@ function toCaseDto(item: CaseLike): CaseDto {
     status: item.status,
     receivedAt: item.receivedAt,
     expectedDisposalAt: item.expectedDisposalAt,
+    expectedDisposalAtManual: item.expectedDisposalAtManual ?? false,
     nextAction: item.nextAction,
     nextActionDueAt: item.nextActionDueAt,
     lastActionAt: item.lastActionAt,
@@ -392,18 +398,26 @@ export async function createCase(
   if (input.officerId) await requireAssignableOfficer(input.officerId, input.bureauId)
 
   const receivedAt = parseDate(input.receivedAt) ?? new Date()
-  const expectedDisposalAt = parseDate(input.expectedDisposalAt)
+  const requestedDeadline = parseSlaDeadline(input.expectedDisposalAt, env.SLA_TIMEZONE)
   const nextActionDueAt = parseDate(input.nextActionDueAt)
   const { officerId, caseNumber, ...rest } = input
   const resolvedCaseNumber =
     caseNumber?.trim() || (await generateCaseNumber(input.bureauId, receivedAt))
+  const sla = await applySlaToCase({
+    bureauId: input.bureauId,
+    category: input.category,
+    regionId: institution.regionId ? String(institution.regionId) : undefined,
+    receivedAt,
+  })
 
   const item = await Case.create({
     ...rest,
     caseNumber: resolvedCaseNumber,
     regionId: institution.regionId,
     receivedAt,
-    expectedDisposalAt,
+    expectedDisposalAt: requestedDeadline ?? sla.expectedDisposalAt,
+    expectedDisposalAtManual: Boolean(requestedDeadline),
+    slaDays: sla.slaDays,
     nextActionDueAt,
     status: CASE_STATUS.RECEIVED,
     lastActionAt: receivedAt,
@@ -667,6 +681,26 @@ async function endOpenAssignments(caseId: unknown) {
   )
 }
 
+async function refreshAutomaticDeadline(item: {
+  expectedDisposalAtManual?: boolean
+  bureauId?: unknown
+  category?: string
+  regionId?: unknown
+  receivedAt: Date
+  expectedDisposalAt?: Date
+  slaDays?: number
+}) {
+  if (item.expectedDisposalAtManual) return
+  const sla = await applySlaToCase({
+    bureauId: item.bureauId ? String(item.bureauId) : undefined,
+    category: item.category,
+    regionId: item.regionId ? String(item.regionId) : undefined,
+    receivedAt: item.receivedAt,
+  })
+  item.expectedDisposalAt = sla.expectedDisposalAt
+  item.slaDays = sla.slaDays
+}
+
 async function createAssignment(caseId: unknown, actorId: string, input: AssignmentInput) {
   return CaseAssignment.create({
     caseId,
@@ -703,6 +737,7 @@ export async function assignCase(
 
   item.bureauId = new mongoose.Types.ObjectId(input.bureauId)
   item.status = CASE_STATUS.ASSIGNED
+  await refreshAutomaticDeadline(item)
   await item.save()
 
   await appendCaseAction({
@@ -744,6 +779,7 @@ export async function transferCase(
 
   item.bureauId = new mongoose.Types.ObjectId(input.bureauId)
   item.status = CASE_STATUS.TRANSFERRED
+  await refreshAutomaticDeadline(item)
   await item.save()
 
   await appendCaseAction({

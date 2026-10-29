@@ -1,4 +1,5 @@
 import { ACTION_TYPE, CASE_STATUS, RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
+import { isBeyondTimeline } from '#/lib/case-metrics'
 import { parseRange } from '#/lib/date-range'
 import {
   type ScopeUser,
@@ -47,6 +48,7 @@ interface ReportCase {
   regionId?: unknown
   bureauId?: unknown
   receivedAt: Date
+  expectedDisposalAt?: Date
 }
 
 interface GroupCounts {
@@ -69,6 +71,7 @@ export interface ReportsSummary {
     open: number
     disposed: number
     reopened: number
+    beyondTimelines: number
     disposalRate: number
   }
   byStatus: Array<{ status: string; count: number }>
@@ -328,6 +331,7 @@ export async function getReportsSummary(
     regionId: 1,
     bureauId: 1,
     receivedAt: 1,
+    expectedDisposalAt: 1,
   }).lean()) as unknown as ReportCase[]
 
   const [institutions, bureaus, regions] = await Promise.all([
@@ -351,6 +355,7 @@ export async function getReportsSummary(
     accumulate(regionGroups, regionId, item)
   }
 
+  const now = new Date()
   const total = cases.length
   const disposed = byStatus.get(CASE_STATUS.DISPOSED) ?? 0
   const reopened = byStatus.get(CASE_STATUS.REOPENED) ?? 0
@@ -383,6 +388,7 @@ export async function getReportsSummary(
       open: total - disposed,
       disposed,
       reopened,
+      beyondTimelines: cases.filter((item) => isBeyondTimeline(item, now)).length,
       disposalRate: total === 0 ? 0 : Math.round((disposed / total) * 100),
     },
     byStatus: toSortedEntries(byStatus).map(({ key, count }) => ({ status: key, count })),

@@ -13,6 +13,7 @@ import { NotificationsPage } from '#/features/notifications/pages/notifications-
 import { OverlapDetailPage } from '#/features/overlaps/pages/overlap-detail-page'
 import { OverlapsPage } from '#/features/overlaps/pages/overlaps-page'
 import { ReportsPage } from '#/features/reports/pages/reports-page'
+import { SlaConfigPage } from '#/features/sla/pages/sla-config-page'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: 'overlaps/:id', element: <OverlapDetailPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'admin/sla', element: <SlaConfigPage /> },
     ],
   },
 ])

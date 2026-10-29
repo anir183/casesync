@@ -93,11 +93,18 @@ async function seedSlaConfigs(masters: SeedMastersResult) {
         regionId: regionId ?? null,
       },
       {
-        $set: { slaDays: demo.slaDays, active: true },
+        $set: {
+          slaDays: demo.slaDays,
+          active: true,
+          ...(demo.pendingReminderDays ? { pendingReminderDays: demo.pendingReminderDays } : {}),
+          ...(demo.reminderDays ? { reminderDays: demo.reminderDays } : {}),
+        },
         $unset: {
           ...(bureauId ? {} : { bureauId: 1 }),
           ...(demo.category ? {} : { category: 1 }),
           ...(regionId ? {} : { regionId: 1 }),
+          ...(demo.pendingReminderDays ? {} : { pendingReminderDays: 1 }),
+          ...(demo.reminderDays ? {} : { reminderDays: 1 }),
         },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
@@ -357,6 +364,7 @@ async function seedCases(
           status: demo.status,
           receivedAt,
           expectedDisposalAt,
+          expectedDisposalAtManual: true,
           slaDays: demo.slaDays,
           lastActionAt: receivedAt,
           ...(demo.nextAction ? { nextAction: demo.nextAction } : {}),

@@ -19,6 +19,7 @@ import { Institution } from '#/models/institution.model'
 import { Region } from '#/models/region.model'
 import { listCases } from '#/modules/cases/case.service'
 import { reassessInstitutionOverlaps } from '#/modules/overlaps/overlap.service'
+import { recalculateDeadlinesForInstitution } from '#/modules/sla/sla.service'
 
 const DUPLICATE_CHECK_LIMIT = 10
 
@@ -204,6 +205,7 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
       }
       if (body.regionId) {
         await Case.updateMany({ institutionId: params.id }, { regionId: body.regionId })
+        await recalculateDeadlinesForInstitution(params.id)
       }
       const identityChanged =
         body.name !== undefined ||

@@ -16,6 +16,7 @@ export interface ReportsSummary {
     open: number
     disposed: number
     reopened: number
+    beyondTimelines: number
     disposalRate: number
   }
   byStatus: Array<{ status: string; count: number }>

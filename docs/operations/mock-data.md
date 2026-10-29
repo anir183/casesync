@@ -132,8 +132,11 @@ enriches the assessment. The seed does not call the real Jev provider.
 ## 6. Demo SLA configs
 
 `seed:demo` creates 5 Stage 5-shaped configs: default 30 days, PGRC 21, RB 45,
-`HARASSMENT` 15, and `NORTH` 30. Stage 4 dashboard/report “beyond timeline” still uses
-`cases.expectedDisposalAt`; SLA-driven calculation and jobs are Stage 5.
+`HARASSMENT` 15, and `NORTH` 30. The global config carries the locked reminder windows
+(7/3/1 days) and a 7-day pending reminder. Demo cases keep explicit
+`expectedDisposalAt` values (`expectedDisposalAtManual: true`) so reseeding stays stable,
+while new cases derive deadlines from these rules. Dashboard/report “beyond timeline”
+uses the same shared calculation as the SLA scan.
 
 ## 7. Local caveat
 

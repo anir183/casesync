@@ -11,6 +11,7 @@ export interface ICase extends Document {
   status: string
   receivedAt: Date
   expectedDisposalAt?: Date
+  expectedDisposalAtManual: boolean
   nextAction?: string
   nextActionDueAt?: Date
   lastActionAt?: Date
@@ -30,6 +31,7 @@ const CaseSchema = new Schema<ICase>(
     status: { type: String, enum: Object.values(CASE_STATUS), default: CASE_STATUS.RECEIVED },
     receivedAt: { type: Date, required: true },
     expectedDisposalAt: { type: Date },
+    expectedDisposalAtManual: { type: Boolean, default: false },
     nextAction: { type: String },
     nextActionDueAt: { type: Date },
     lastActionAt: { type: Date },

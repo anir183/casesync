@@ -304,11 +304,12 @@ export function ReportsPage() {
 
       {data && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <StatCard label="Total cases" value={data.totals.total} />
             <StatCard label="Open cases" value={data.totals.open} />
             <StatCard label="Disposed" value={data.totals.disposed} />
             <StatCard label="Reopened" value={data.totals.reopened} />
+            <StatCard label="Beyond timeline" value={data.totals.beyondTimelines} />
             <StatCard label="Disposal rate" value={`${data.totals.disposalRate}%`} />
           </div>
 

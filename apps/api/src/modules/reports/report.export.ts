@@ -24,6 +24,7 @@ export function buildReportsCsv(summary: ReportsSummary): string {
     ['totals', 'cases', 'open', summary.totals.open],
     ['totals', 'cases', 'disposed', summary.totals.disposed],
     ['totals', 'cases', 'reopened', summary.totals.reopened],
+    ['totals', 'cases', 'beyondTimelines', summary.totals.beyondTimelines],
     ['totals', 'cases', 'disposalRate', summary.totals.disposalRate],
   ]
 

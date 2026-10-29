@@ -2,10 +2,10 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stages 1–4 are complete. Case/institution APIs, web workflows, overlap
-> correctness/coordination, and scoped monitoring/search/reporting are wired, typecheck,
-> and are covered by API integration tests. Browser/component E2E is still a Stage 7 item,
-> and periodic overlap sweeps plus SLA jobs are next. Sections that describe the target
+> Stages 1–5 are complete. Case/institution APIs, web workflows, overlap
+> correctness/coordination, scoped monitoring/search/reporting, and SLA configuration,
+> deadline calculation, and scheduled alerts are wired, typecheck, and are covered by
+> API integration tests. Browser/component E2E and periodic overlap sweeps remain. Sections that describe the target
 > contract are still the target; they are not a claim that every part is wired today.
 
 ## 1) Final Tech Stack
@@ -68,7 +68,7 @@ casesync/
 │   │   │   ├── models/
 │   │   │   ├── modules/    # feature modules
 │   │   │   ├── services/   # jev/
-│   │   │   ├── jobs/       # Stage 5
+│   │   │   ├── jobs/       # SLA scan + cron scheduler
 │   │   │   └── index.ts
 │   │   ├── tests/
 │   │   └── package.json
@@ -112,19 +112,21 @@ casesync/
 | `bureaus` | PGRC/RB/others | `code` (unique), `name`, `active`; seeded |
 | `categories` | Complaint categories | `code` (unique), `name`, `active`; seeded |
 | `user` | Better Auth user collection | `role`, `bureauId`, `regionId`, `active`; admin-managed. The collection name is singular `user` and is owned by Better Auth. |
-| `cases` | Complaint/case records | `institutionId`, `regionId` (denormalized), `bureauId`, `caseNumber` (unique), `status`, `category`, `description`, `receivedAt`, `expectedDisposalAt`, `nextAction`, `nextActionDueAt`, `lastActionAt`, `priority?`, `acknowledgedAt?`, `closedAt?`, `disposalOutcome?` |
+| `cases` | Complaint/case records | `institutionId`, `regionId` (denormalized), `bureauId`, `caseNumber` (unique), `status`, `category`, `description`, `receivedAt`, `expectedDisposalAt`, `expectedDisposalAtManual`, `nextAction`, `nextActionDueAt`, `lastActionAt`, `priority?`, `acknowledgedAt?`, `closedAt?`, `disposalOutcome?` |
 | `case_actions` | **Append-only** audit trail | Never update/delete. `actorId`, `actionType`, `from/to`, `remarks`, `metadata`, timestamps |
 | `case_assignments` | Assignment history | `caseId`, `bureauId`, `officerId`, `assignedAt`, `endedAt`, `assignedBy` |
 | `case_overlap_assessments` | **Jev AI history** | Normalized pair `{caseAId,caseBId}` with `$min/$max`. Unique compound. Store rawResponse, probabilities, modelVersion, tokens, latency, status |
 | `case_relationships` | **Human decisions** | Link to `assessmentId`. `reviewStatus` PENDING/CONFIRMED/DISMISSED, reviewer, notes, manual/link metadata |
 | `notifications` | Alerts | Per-recipient; add `caseId?`, `link?`, `periodKey?`, `channel`; unique dedupe index |
 | `attachments` | Metadata + files | `caseId`, `storagePath`, mime/size, uploader, `visibility`, optional `messageId` |
-| `sla_config` | SLA rules (Stage 5) | `bureauId`/`category`/`regionId`/`slaDays`/`active`; add `acknowledgeDays`, `resolveDays`, `reminderDays[]` |
+| `sla_config` | SLA rules | Unique `{bureauId,category,regionId}` scope, `slaDays`, `pendingReminderDays`, `reminderDays[]`, `active` |
+| `job_runs` | Scheduled/manual job log | `jobName`, `trigger`, `status`, `startedAt`, `finishedAt`, counts, error |
 | `audit_log` | **Add:** admin audit | Non-case changes: user/role/bureau/region/category/SLA/institution merge |
 
 Indexes to add: `cases.{regionId,status}`, `cases.{bureauId,status}`,
 `notifications.{recipientId,type,referenceId,periodKey}` unique, `regions.code` unique,
-`categories.code` unique, `audit_log.{entityType,entityId,createdAt}`.
+`categories.code` unique, `sla_config.{bureauId,category,regionId}` unique,
+`job_runs.{jobName,startedAt}`, `audit_log.{entityType,entityId,createdAt}`.
 
 
 ## 5) Code Conventions
@@ -194,6 +196,7 @@ INSTITUTION_FUZZY_THRESHOLD=0.85
 STAFF_SIGNUP_ENABLED=false
 CRON_ENABLED=true
 DEFAULT_SLA_DAYS=30
+PENDING_REMINDER_DAYS=7
 SLA_REMINDER_DAYS=7,3,1
 SLA_TIMEZONE=Asia/Kolkata
 SEED_PASSWORD=Passw0rd!123
@@ -254,8 +257,8 @@ committed; `.env.example` lists names with empty/placeholder values.
   bureaus, regions, categories, SLA config, institution verify/merge, audit log.
 - **Attachments** (Stage 6): upload/download endpoints with MIME/size/path validation,
   scoped access checks, and a `visibility` field. No public static serving of uploads.
-- **SLA** (Stage 5): config CRUD, computed `expectedDisposalAt`, and read endpoints for
-  approaching/overdue state.
+- **SLA** (Stage 5): `/sla-configs` admin CRUD, computed `expectedDisposalAt`,
+  `/admin/jobs/runs`, and manual `POST /admin/jobs/sla/run`.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
 - **Exports** (Stage 4): CSV from the same scoped filter set; PDF optional.
 - **Docs**: Swagger/OpenAPI generated from Elysia route schemas; keep auth/pagination/
@@ -264,10 +267,12 @@ committed; `.env.example` lists names with empty/placeholder values.
 ## 10) Jobs (node-cron)
 
 - Bootstrap a single scheduler in the API process, guarded by `CRON_ENABLED`.
-- Jobs: pending-case reminders, approaching-deadline alerts, overdue alerts, overlap
-  sweep/re-assessment, notification cleanup.
-- **Idempotency**: each run writes a `periodKey` (e.g. `caseId:type:YYYY-MM-DD`) and
-  relies on the notifications unique index; re-running must not duplicate.
+- Implemented: daily SLA scan at 02:00 in `SLA_TIMEZONE` (pending reminders,
+  approaching-deadline alerts, overdue alerts) with `job_runs` logging.
+- Remaining: periodic overlap sweep/re-assessment and notification cleanup.
+- **Idempotency**: each alert writes a `periodKey` (`OVERDUE:YYYY-MM-DD`,
+  `APPROACHING:D{N}`, `PENDING:{ISO week}`) and relies on the notifications unique
+  index; re-running does not duplicate.
 - **Run log**: start/end, counts, errors; a failed job must not crash the API.
 - **Clock injection** for tests; never depend on real "now" in unit tests.
 - Timezone: store UTC, compute/display IST (`SLA_TIMEZONE`) consistently in jobs,

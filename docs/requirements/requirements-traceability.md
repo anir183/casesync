@@ -19,14 +19,14 @@ Status legend:
 
 | Area | Status | Summary |
 |---|---|---|
-| Objectives | Partial | Core monitoring/overlap/reporting and the case workflow work; SLA alerts and admin UI remain. |
+| Objectives | Partial | Core monitoring/overlap/reporting, case workflow, and SLA alerts work; broader administration screens remain. |
 | Institution profile | Partial | Registry list/create/edit/verify + profile/history work; merge/alias remains. |
 | Case tracking | Partial → strong | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
 | Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Browser E2E remains. |
-| Dashboard | **Done** (SLA overdue remains Stage 5) | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, and 30s refresh. |
+| Dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, SLA-derived beyond-timeline count, and 30s refresh. |
 | Workflow/audit | Partial | Append-only API + staff action/history UI; attachments model-only; admin audit missing. |
 | Search/filters | **Done** | Case region/date/category/status/bureau filters, sorting, pagination, exports, and paginated/filterable notifications. |
-| Alerts | Partial | Overlap notifications are scoped and deduped, and escalation notifications work; no pending/SLA jobs. |
+| Alerts | Partial | Overlap, pending, approaching, and overdue notifications are scoped/deduped; escalation delivery remains role-broadcast. |
 | Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
 | Target users | Done | Roles, bureau/region scoping, and admin user management (API) implemented in Stage 1. |
@@ -42,7 +42,7 @@ Status legend:
 | Overlap policy | Always create base PENDING relationship for same-institution cross-bureau pairs; Jev enriches, never suppresses | Stage 3 correctness fix |
 | Regions | Official AICTE regional offices as a `regions` master | Stage 1 model/seed; Stage 4 labels/filters complete |
 | "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports complete |
-| SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs |
+| SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs implemented; manual escalation only |
 | Target users | Authorized AICTE officials = MVP | Role/scope matrix |
 
 ## 1. Objectives
@@ -54,9 +54,9 @@ Status legend:
 | OBJ-03 | Track complete status and movement | **Partial → strong** | `cases.status`, `case_actions`, `case_assignments`, state machine | API complete; UI action panel and history tabs implemented. Browser E2E remains. |
 | OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change. Browser E2E remains. |
 | OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, manual link/unlink, `case_relationships` | Review and link decisions are append-only; re-linking a reviewed pair returns 409. |
-| OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Done** | Shared `case-metrics` helpers, dashboard tiles, unassigned bucket, reports | SLA-driven overdue remains Stage 5. |
+| OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Done** | Shared `case-metrics` helpers, dashboard tiles, unassigned bucket, reports | SLA deadlines now drive overdue classifications. |
 | OBJ-07 | Reports by institution/region/bureau/status | **Done** | `report.service.ts`, `report.export.ts` | Filtered reports with names, series, overlap summary, and CSV export. |
-| OBJ-08 | Alerts for pending cases and approaching timelines | **Gap** | `notifications`; no `jobs/` implementation | No cron, SLA due-date calculation, pending/approaching/overdue notifications. |
+| OBJ-08 | Alerts for pending cases and approaching timelines | **Done** | `jobs/sla.ts`, `jobs/scheduler.ts`, SLA rules, notifications | Daily scan is idempotent and scoped; manual escalation remains. |
 
 ## 2. Feature 1 — Centralized Institution Profile
 
@@ -80,7 +80,7 @@ Status legend:
 | CASE-06 | Assigned officer/official | **Done** | `case_assignments.officerId`; scoped `/users/directory`; names resolved in list/detail/history | — |
 | CASE-07 | Last action taken | **Done** | `case_actions`, `cases.lastActionAt` | Confirm all mutation paths update it. |
 | CASE-08 | Next action required | **Done** | `cases.nextAction`, `nextActionDueAt` | Audit uses `REMARK_ADDED`; consider `NEXT_ACTION_SET`. |
-| CASE-09 | Date of last action and expected disposal | **Partial** | `lastActionAt`, `expectedDisposalAt` | Expected disposal is manual; no SLA config calculation. |
+| CASE-09 | Date of last action and expected disposal | **Done** | `lastActionAt`, `expectedDisposalAt`, `expectedDisposalAtManual`, `lib/sla.ts` | Explicit dates are preserved; automatic dates recompute on assignment/transfer/region change. |
 | CASE-10 | Register a case | **Done** | `POST /cases`; `/cases/new` registration UI | Browser E2E pending. |
 | CASE-11 | Perform lifecycle actions | **Done** | assign/transfer/escalate/dispose/status APIs + role-gated action panel | Browser E2E pending. |
 | CASE-12 | Assignment/officer history | **Done** | `case_assignments`, `GET /:id/assignments`, assignments tab | — |
@@ -107,7 +107,7 @@ Status legend:
 | DASH-03 | Under process | **Done** | `UNDER_PROCESS` tile | — |
 | DASH-04 | Disposed | **Done** | `DISPOSED` tile | — |
 | DASH-05 | Transferred | **Done** | `TRANSFERRED` tile | — |
-| DASH-06 | Pending beyond prescribed timelines | **Partial** | `expectedDisposalAt < now` | `slaConfig` not used; cases without a date never count. |
+| DASH-06 | Pending beyond prescribed timelines | **Done** | Shared `isBeyondTimeline`; SLA-computed deadlines; backfill job | Dashboard and reports use the same definition; disposed cases excluded. |
 | DASH-07 | Institution-wise case status | **Done** | `institutionWise` top 10, scoped | Profile provides full institution history. |
 | DASH-08 | Bureau/Cell-wise workload | **Done** | `bureauWise` with status counts and unassigned row | — |
 | DASH-09 | Region-wise view | **Done** | `regionWise` with names and legacy institution fallback | — |
@@ -148,10 +148,10 @@ Status legend:
 | ID | Requirement | Status | Evidence | Remaining work |
 |---|---|---|---|---|
 | ALRT-01 | Duplicate/overlapping alerts | **Done** | `OVERLAP_ALERT` + queue | Scoped to involved bureaus/regions + oversight roles; deduped by `{recipientId,type,referenceId,periodKey}`. |
-| ALRT-02 | Pending case reminders | **Gap** | Enum only | Add scheduled scan with dedupe key. |
+| ALRT-02 | Pending case reminders | **Done** | `jobs/sla.ts` weekly pending scan | Deduped per local ISO week and scoped to bureau/region/oversight. |
 | ALRT-03 | Escalation alerts | **Partial** | `notifyRoles` on escalate | Notify concerned bureau/senior; still role broadcast rather than case-scoped. |
-| ALRT-04 | Timeline/SLA alerts | **Gap** | Enums only | Add SLA calculation + cron + notifications. |
-| ALRT-05 | Notification dedupe/scoping | **Partial** | `caseId`, `link`, `periodKey`, dedupe index; overlap notifications scoped/deduped | SLA/job-level dedupe and escalation scoping remain (Stage 5). |
+| ALRT-04 | Timeline/SLA alerts | **Done** | `lib/sla.ts`, `jobs/sla.ts`, cron scheduler | Approaching per 7/3/1 threshold; overdue daily; manual overrides respected. |
+| ALRT-05 | Notification dedupe/scoping | **Done** (except escalation) | Unique `{recipientId,type,referenceId,periodKey}` index; overlap and SLA notifications scoped/deduped | Escalation recipient scoping remains under ALRT-03. |
 | ALRT-06 | Read/unread UX | **Done** | Notification centre + badge + type/unread filters + pagination | — |
 | ALRT-07 | Email/SMS | **Extension** | In-app only | Optional adapter later. |
 
@@ -268,7 +268,7 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
    on create/assign/transfer/institution change; manual link/unlink; notification
    scoping/dedupe; exact heading test.~~ Done in Stage 3 (periodic sweep remains).
 4. ~~Scoped dashboard/search/reports, region names, pagination, export.~~ Done in Stage 4.
-5. SLA config + cron + pending/approaching/overdue alerts + dedupe.
+5. ~~SLA config + cron + pending/approaching/overdue alerts + dedupe.~~ Done in Stage 5.
 6. Attachments, admin audit, institution verification/merge.
 7. Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.
 8. Optional public complainant portal.

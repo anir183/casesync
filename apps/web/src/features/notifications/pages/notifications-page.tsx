@@ -23,8 +23,7 @@ const DEFAULT_FILTERS: NotificationFilters = {
 function referenceLink(type: string, referenceId?: string) {
   if (!referenceId) return undefined
   if (type === NOTIFICATION_TYPE.OVERLAP_ALERT) return `/overlaps/${referenceId}`
-  if (type === NOTIFICATION_TYPE.ESCALATION) return `/cases/${referenceId}`
-  return undefined
+  return `/cases/${referenceId}`
 }
 
 function typeLabel(type: string) {

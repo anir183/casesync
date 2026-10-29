@@ -5,6 +5,7 @@ import { env } from '#/config/env'
 import { auth } from '#/lib/auth'
 import { HTTP_STATUS } from '#/lib/errors'
 import { toErrorResponse } from '#/middleware/error'
+import { jobsRoutes } from '#/modules/admin/jobs.routes'
 import { adminUsersRoutes } from '#/modules/admin/users.routes'
 import { bureausRoutes } from '#/modules/bureaus/routes'
 import { casesRoutes } from '#/modules/cases/routes'
@@ -15,6 +16,7 @@ import { notificationsRoutes } from '#/modules/notifications/routes'
 import { overlapsRoutes } from '#/modules/overlaps/routes'
 import { regionsRoutes } from '#/modules/regions/routes'
 import { reportsRoutes } from '#/modules/reports/routes'
+import { slaRoutes } from '#/modules/sla/routes'
 import { usersRoutes } from '#/modules/users/routes'
 
 export const app = new Elysia()
@@ -59,7 +61,9 @@ export const app = new Elysia()
       .use(notificationsRoutes)
       .use(reportsRoutes)
       .use(dashboardRoutes)
-      .use(adminUsersRoutes),
+      .use(slaRoutes)
+      .use(adminUsersRoutes)
+      .use(jobsRoutes),
   )
   .get('/', () => ({ status: 'ok', service: 'casesync-api' }))
   .get('/health', () => ({ ok: true }))
