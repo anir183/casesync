@@ -3,9 +3,10 @@
 Status: **current demo runbook**. Location: `docs/operations/demo-script.md`.
 Companion: [`mock-data.md`](mock-data.md).
 
-Stages 0–7 are implemented. The demo includes institution registry, case registration,
+Stages 0–8 are implemented. The demo includes institution registry, case registration,
 staff lifecycle actions, overlap coordination, scoped dashboard/search/reports, SLA
-jobs and admin, full admin users/organization/audit screens, and scoped attachments.
+jobs and admin, full admin users/organization/audit screens, scoped attachments, and the
+optional public complainant portal (verification, filing/tracking, conversation).
 Use the availability table in [Current demoable slice](#current-demoable-slice) before
 presenting.
 
@@ -22,14 +23,18 @@ presenting.
 | SLA-driven approaching/overdue notifications | Yes (daily scan; manual trigger at `/admin/sla`) |
 | Admin users/organization/SLA/audit screens | Yes |
 | Attachments upload/download on case detail Documents tab | Yes |
+| Public complainant signup/login, verification, filing/tracking, conversation | Yes |
+| Admin complainant-verification queue | Yes |
 
 All sections below are demoable; do not fake missing behaviour.
 
 ## 1. Pre-demo checks
 
 - API and web running; database reachable; `JEV_ENABLED` set as intended.
-- Run `bun run seed:demo`. It idempotently creates masters, users, 8 institutions,
-  13 cases, 6 overlap scenarios, related history, notifications, and 5 SLA configs.
+- Run `bun run seed:demo`. It idempotently creates masters, 7 staff users, the verified
+  demo complainant, 8 institutions, 13 staff cases, 6 overlap scenarios, related
+  history, notifications, and 5 SLA configs.
+- Portal credentials: `complainant@casesync.test` / `Passw0rd!123` (linked to `dit`).
 - Optional release rehearsal: `bun run verify && bun run test:e2e && bun run test:perf`
   (performance uses 5,000 stress cases and resets them automatically).
 - To restore the demo after manual changes, run `bun run seed:reset` (it asks for
@@ -42,7 +47,7 @@ All sections below are demoable; do not fake missing behaviour.
 - If Jev is enabled, verify the key and one test assessment; otherwise use
   `JEV_ENABLED=false` and present the rule-based path.
 
-## 2. Target 10-minute script
+## 2. Target 10-minute staff script (plus optional 3-minute portal)
 
 ### 2.1 Dashboard and scope (1 min) — available
 
@@ -106,6 +111,22 @@ All sections below are demoable; do not fake missing behaviour.
 3. Show the admin audit log entry and the institution merge/alias controls.
 4. Show scoped attachment access on a case.
 
+### 2.7 Public portal (optional, 3 min) — available
+
+1. Sign out; open `/portal/signup` and register a fresh complainant. Use the exact AICTE
+   permanent ID for an institution to auto-verify; repeat with a mismatched ID to show
+   document-review fallback.
+2. Sign in as admin, open `/admin/verifications`, and approve/reject the pending request.
+3. As the verified complainant, file a complaint at `/portal/complaints/new`; show the
+   status timeline and own-complaints dashboard.
+4. As a staff officer, open the case **Conversation** tab; request information and post a
+   public reply. Optionally add an internal note/document to show it is absent from the
+   complainant view.
+5. At `/portal/track`, show case number + email tracking; wrong pairs return a generic
+   404. Acknowledge/resolve as staff, then accept resolution as the complainant.
+6. Mention: ownership checks, public projections, unverified filing block, and portal
+   rate limits. Institution representative accounts are deferred.
+
 ## 3. Reset and repeatability
 
 - `bun run seed:demo` is idempotent and additive; it upserts the demo dataset by stable
@@ -128,6 +149,8 @@ All sections below are demoable; do not fake missing behaviour.
 - [x] Overdue and approaching-SLA cases exist, with shared dashboard/report/SLA-job calculations.
 - [x] Notifications are per-user and deep-link correctly.
 - [x] Dashboard/report/institution numbers share metric helpers and are reconciliation-tested.
+- [x] Verified demo complainant can file; unverified flow reaches admin review.
+- [x] Public tracking uses case number + email and rejects unknown pairs.
 - [x] Institution profile shows multi-bureau history and a server-scoped summary.
 - [x] Reset is one guarded command and reseeds idempotently.
 - [x] No real PII, secrets, or real AICTE documents in the repo.

@@ -194,6 +194,8 @@ AI_PROVIDER=jev
 OVERLAP_AUTO_ASSESS=true
 INSTITUTION_FUZZY_THRESHOLD=0.85
 STAFF_SIGNUP_ENABLED=false
+COMPLAINANT_SIGNUP_ENABLED=true
+COMPLAINT_REOPEN_DAYS=30
 CRON_ENABLED=true
 DEFAULT_SLA_DAYS=30
 PENDING_REMINDER_DAYS=7
@@ -212,13 +214,13 @@ committed; `.env.example` lists names with empty/placeholder values.
 
 - **Staff accounts are admin-invite-only.** Public self-sign-up is disabled
   (`STAFF_SIGNUP_ENABLED=false`); the Better Auth sign-up path must be blocked or
-  restricted. There is no `COMPLAINANT` role in the MVP.
-- **Complainant extension (Stage 8, not MVP)**: self-signup verified automatically
-  against an AICTE institution ID; unmatched/missing IDs fall back to ID + document
-  upload reviewed and approved by an admin. Unverified accounts get public-only
-  access and cannot file. Design the verification model now; do not let it block MVP.
+  restricted. Staff routes do not accept `COMPLAINANT` sessions.
+- **Complainant extension (Stage 8, implemented, not MVP)**: self-signup auto-verifies
+  only on an exact AICTE permanent-ID match; institution-only/mismatched IDs fall back to
+  document upload reviewed and approved by an admin. Unverified accounts can sign in
+  but cannot file. Public projections and ownership checks isolate complainant data.
 - **Roles**: `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`,
-  `REGIONAL_OFFICER`, `VIEWER`.
+  `REGIONAL_OFFICER`, `VIEWER`, `COMPLAINANT`.
 - **`active` enforcement**: `requireAuth` rejects or downgrades users with
   `active !== true`; deactivating a user invalidates their sessions.
 - **Scope helper** (single module, used by every list/detail query):

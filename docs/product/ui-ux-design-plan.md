@@ -93,6 +93,10 @@ Use CSS variables for theming.
 
 **No duplicate nav entries.** Every feature accessible via exactly one primary route.
 
+**Portal nav (separate shell):** Dashboard · Verification · File complaint ·
+Notifications · Track complaint · Sign out. Staff navigation is not shown to
+complainants, and portal routes are not shown to staff.
+
 ## Core Screens
 
 | Screen | Purpose | UX Notes |
@@ -112,6 +116,13 @@ Use CSS variables for theming.
 | **Admin — Users** | Staff management | Invite/create, role/bureau/region assign, deactivate/reactivate; no public sign-up |
 | **Admin — Organization** | Masters | Bureaus, regions, categories (code/name/active); SLA config |
 | **Admin — Audit** | Non-case audit | Filter by entity/actor/date; read-only |
+| **Admin — Verification** | Complainant review | Pending/approved/rejected requests; institution/AICTE/document evidence; approve/reject with note |
+| **Portal Landing** | Public entry | Clear sign-in/sign-up/track paths, no internal data |
+| **Portal Signup/Login** | Complainant auth | Institution + exact AICTE ID; upload fallback documents; explain verification status |
+| **Portal Dashboard** | My complaints | Own cases, status badges, new-complaint CTA, verification banner |
+| **Portal Complaint Detail** | Track/respond | Public status stepper, conversation, public documents, accept resolution, reopen |
+| **Portal Track** | Anonymous lookup | Case number + email; generic not-found state; no attachments |
+| **Portal Notifications** | Complainant updates | Public deep links only, no internal references |
 
 ## Staff Workflow Screens
 
@@ -230,8 +241,9 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 3. **Shared components** - PageHeader, DataTable (pagination/sort/export), StatusBadge,
    Timeline, SLA badge, EmptyState, ErrorState, ConfirmDialog
 4. **Core routes** - Dashboard, Cases, Institutions, Overlaps, Reports, Notifications
+   plus the separate portal shell (landing/signup/login/dashboard/detail/track)
 5. **Staff workflow** - Case registration, action panel, history/assignments tabs
-6. **Admin** - Users, organization masters, SLA, audit (role-gated)
+6. **Admin** - Users, organization masters, SLA, audit, complainant verification (role-gated)
 7. **Compare view** - Critical for Jev flow, side-by-side, clear actions
 8. **Polish** - Spacing, empty/loading/error/permission states, responsive tables
 9. **Test UX** - Keyboard nav, focus trapping, contrast, theme switch

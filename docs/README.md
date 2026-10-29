@@ -11,11 +11,12 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–7 are implemented. Stage 7 hardening is locally verified: component tests,
-seeded Playwright smoke, accessibility scan, performance budgets, stress seed, coverage
-gate, and CI workflow are in place. The only outstanding release check is observing CI
-green on a pushed commit; the MVP is otherwise ready for demo/review. The optional
-public portal (Stage 8) is not built.**
+**Stages 0–8 are implemented. The internal MVP is hardened and the optional public
+complainant portal is built: self-registration, exact-AICTE verification with document
+review fallback, filing/tracking, public/internal conversation and documents, ownership
+checks, and admin verification review. Local lint, typechecks, unit tests, and builds
+pass; Mongo-backed integration, coverage, seeded browser, and performance suites run in
+CI. The remaining release check is observing the full pushed CI run green.**
 
 Last verified: 2026-10-29.
 
@@ -28,13 +29,21 @@ Last verified: 2026-10-29.
 | Stage 4 — monitoring, search, reports | Complete; browser smoke present |
 | Stage 5 — SLA, deadlines, alerts | Complete |
 | Stage 6 — admin, attachments, audit | Complete |
-| Stage 7 — hardening and release | Complete locally; remote CI and independent runbook walkthrough pending |
-| Stage 8 — public portal | Optional; not started |
+| Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
+| Stage 8 — public portal | Complete (optional extension); institution representatives deferred |
 
 ### Working
 
 - Better Auth sessions with admin-invite-only staff accounts, roles, bureau/region
   scoping, and `active` enforcement with session revocation.
+- Public complainant signup/login, exact-AICTE auto-verification, document-review
+  fallback with admin approval, and unverified filing blocks.
+- Complainant dashboard, complaint filing, tracked status timeline, accept/reopen,
+  public/internal messages, and public/internal attachment visibility.
+- Server-side complainant ownership/IDOR checks, public projection rules, and dedicated
+  signup/track/portal rate limits.
+- Staff complaint conversation, acknowledge/request-information/resolve actions, and
+  admin complainant-verification queue.
 - Case lifecycle APIs, append-only `case_actions`, assignments, transfers, escalation,
   disposal, and reopen.
 - Overlap detection with exact and fuzzy institution matching, optional Jev assessment,
@@ -68,26 +77,38 @@ Last verified: 2026-10-29.
   deduped scoped notifications, and shared dashboard/report overdue metrics.
 - Search input is bounded and regex-escaped; abuse-prone auth/search/assessment/upload
   routes are rate-limited with `429`/retry metadata.
-- **71 API unit tests, 10 web component/URL tests, 45 opt-in database integration tests,
-  3 seeded browser smoke journeys, 1 accessibility scan, and 1 stress-data performance
-  test.** Jev is always mocked and a fetch guard blocks real Jev calls.
+- **71 API unit tests, 10 web component/URL tests, 50 opt-in database integration tests,
+  3 staff smoke journeys, 2 portal journeys, 1 accessibility scan, and 1 stress-data
+  performance test.** Jev is always mocked and a fetch guard blocks real Jev calls.
 - CI workflow covers lint/typecheck, unit/component, Mongo-backed integration/coverage,
-  builds, seeded browser smoke/accessibility, and dependency audit.
+  builds, seeded browser smoke/portal/accessibility, and dependency audit.
 
-### Stage 7 evidence
+### Stage 7 evidence (historical)
 
 - `bun run verify`: Biome, API/web typechecks, API unit + web component tests, both builds.
-- `bun run test:integration`: 45 DB-backed tests.
+- `bun run test:integration`: 45 DB-backed tests at Stage 7.
 - `bun run test:coverage`: 89.4% lines / 90.0% functions; 85% floor.
 - `bun run test:e2e`: three seeded smoke journeys + axe scan of nine core pages.
 - `bun run test:perf`: 5,000 stress cases within documented budgets; auto-reset.
 - `bun audit --audit-level=high`: no vulnerabilities.
-- GitHub Actions has not yet been observed green on a pushed commit because changes are
-  uncommitted unless explicitly requested.
+
+### Stage 8 evidence
+
+- API module `apps/api/src/modules/complaints/` with public, portal, staff, and admin
+  routes; public projections hide internal notes, findings, actor IDs, and Jev data.
+- Verification auto-approves only on an exact AICTE permanent-ID match; institution-only
+  selection and mismatches require document review.
+- `apps/api/tests/integration/stage8.integration.test.ts`: verification paths, ownership
+  isolation, public/internal messages and attachment visibility, accept/reopen.
+- `apps/web/e2e/portal.spec.ts`: complainant filing/conversation/tracking, admin
+  acknowledge/request-information/resolve, and closure acceptance.
+- Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
 
 ### Remaining non-blocking gaps
 
-- Observing the new CI workflow green on GitHub.
+- Observing the Stage 8 CI run green on GitHub.
+- Institution representative accounts are deferred; they require a separate external
+  role, institution-side scoping, and approval model.
 - Optional periodic overlap sweep/background batch for production scale.
 - Optional shared integration factories, distributed rate limiting, malware scanning,
   and manual screen-reader/mobile accessibility passes.
@@ -135,8 +156,9 @@ A single-window dashboard for authorized AICTE officials to:
 
 A public complainant portal with self-registration, filing/tracking, two-way
 conversation, and document exchange. Signup is verified against an AICTE institution ID,
-with a document-review/admin-approval fallback. It must not delay the internal MVP. See
-[`product/user-flow.md`](product/user-flow.md); public-portal sections are future scope.
+with a document-review/admin-approval fallback. It does not delay the internal MVP. See
+[`product/user-flow.md`](product/user-flow.md); the flow is implemented as Stage 8.
+Institution representative accounts remain deferred.
 
 ## Problem statement (summary)
 
@@ -247,8 +269,9 @@ bun run seed:reset  # guarded demo-only reset, then reseed
 - 9 AICTE regional offices;
 - 10 categories;
 - 4 bureaus (`PGRC`, `RB`, `ACAD`, `FIN`);
-- 7 users, one per role, with the dev password from `SEED_PASSWORD`;
-- with `seed:demo`: 8 institutions, 13 cases, 6 overlap scenarios, related
+- 7 staff users, one per role, plus one verified complainant, all using the dev
+  password from `SEED_PASSWORD`;
+- with `seed:demo`: 8 institutions, 13 staff cases, 6 overlap scenarios, related
   actions/assignments/notifications, and 5 SLA configs.
 
 `seed:reset` removes only demo-owned records and never truncates collections.
@@ -265,7 +288,7 @@ bun run test:unit      # API unit + web component tests
 bun run build          # API + web builds
 bun run test:integration
 bun run test:coverage  # 85% lines/functions floor
-bun run test:e2e       # demo seed + Playwright smoke/accessibility
+bun run test:e2e       # demo seed + Playwright staff/portal/accessibility
 bun run test:perf      # stress seed + performance budgets + reset
 bun audit --audit-level=high
 ```

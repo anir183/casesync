@@ -1,18 +1,19 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–7 implemented. Stage 7 hardening is locally verified (component tests, seeded Playwright smoke/accessibility, performance budgets, stress seed, coverage gate, security checklist, runbook, CI workflow). The remaining release checks are observing CI green on a pushed commit and an independent runbook walkthrough; changes remain uncommitted by default.
+**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local typecheck, unit tests, Biome, and build pass; DB-backed Stage 8 integration and seeded portal E2E tests are wired for CI. The remaining release check is observing the full CI run green on the pushed commit.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
 > **Verification note.** API and web typechecks pass; Biome is clean. The API suite has
-> 71 unit tests and 45 DB-backed integration tests (116 total); web has 10 component/URL
-> tests. `bun run verify` passes locally and in a clean source copy; `test:integration`,
-> `test:coverage` (89.4% lines / 90.0% functions), seeded `test:e2e` (3 smoke +
-> accessibility), and `test:perf` (5,000 stress cases, auto-reset) pass locally. `bun audit --audit-level=high` reports no
-> vulnerabilities. Integration tests install a fetch guard that fails on any real
-> `jevmodel.org` call. GitHub Actions has not yet been observed green on a pushed commit.
+> 71 unit tests and 50 DB-backed integration tests (121 total); web has 10 component/URL
+> tests. Stage 8 adds 5 integration tests covering auto/document verification, complaint
+> lifecycle, public projections, ownership isolation, and reopen; seeded Playwright adds
+> two portal journeys plus public accessibility pages. `bun run verify` covers lint,
+> typecheck, unit tests, and build; DB-backed integration, coverage, seeded E2E, and
+> performance run in CI or with a local MongoDB. Integration tests install a fetch guard
+> that fails on any real `jevmodel.org` call.
 
 ## Rules
 
@@ -209,26 +210,30 @@ rejects unsupported/empty/oversized files, and admin changes are audited.
 - [x] Docs reconciliation + demo/performance rehearsal
 - [x] No known P0/P1 open bugs
 
-**Exit:** all local gates pass, including `verify` in a clean source copy. The CI
-workflow is committed-ready but has not run remotely because no commit/push was
-requested; an independent runbook walkthrough is also pending. Demo script smoke
-journeys and security/a11y/performance gates pass.
+**Exit:** all local gates pass, including `verify` in a clean source copy. CI is green
+on pushed commit `4abd2f3`; an independent runbook walkthrough remains desirable.
+Demo script smoke journeys and security/a11y/performance gates pass.
 
-## Stage 8 — Public complainant portal (OPTIONAL, not MVP)
+## Stage 8 — Public complainant portal (DONE — optional extension)
 
-- [ ] `COMPLAINANT` role + self-registration
-- [ ] Auto-verify signup against AICTE institution ID
-- [ ] Fallback: ID + document upload → admin review/approval
-- [ ] Unverified accounts limited to public data (no filing)
-- [ ] File/track complaint, public status stepper
-- [ ] Public/internal message separation
-- [ ] Attachments with visibility
-- [ ] Institution representative accounts (optional)
-- [ ] Ownership/IDOR checks + rate limits
-- [ ] Public projection rules (no internal notes/Jev/actor IDs)
-- [ ] Separate E2E/security suite
+- [x] `COMPLAINANT` role + self-registration (`/public/complainant/sign-up`)
+- [x] Auto-verify signup only on an exact AICTE permanent-ID match
+- [x] Fallback: institution/document upload → admin review/approval
+- [x] Unverified accounts can sign in but cannot file
+- [x] File/track complaint, public status timeline, accept/reopen
+- [x] Public/internal message separation
+- [x] Attachments with public/internal visibility
+- [ ] Institution representative accounts (deferred; not required for Stage 8 exit)
+- [x] Ownership/IDOR checks + public rate limits
+- [x] Public projection rules (no internal notes/Jev/actor IDs)
+- [x] Separate integration, E2E, and accessibility coverage
+- [x] Admin verification queue + staff complaint conversation/actions
+- [x] Demo complainant seed and portal runbook
 
-**Exit:** complainant sees only own case/public data; no internal leakage; staff workflow unchanged.
+**Exit:** met in implementation and test coverage. Institution representative accounts are
+intentionally deferred because they add a second external role, institution-side scoping,
+and a separate approval model that is not needed to prove the complainant flow. The
+portal remains an extension outside MVP acceptance.
 
 ## Testing Definition of Done
 
@@ -245,5 +250,8 @@ journeys and security/a11y/performance gates pass.
 - [x] SLA clock/boundaries and idempotent re-run tested
 - [x] Frontend critical flows tested
 - [x] E2E critical journeys pass
+- [x] Stage 8 verification/ownership/public-projection integration tests
+- [x] Portal E2E + public accessibility pages
 - [x] Jev never hit in tests (integration fetch guard + mocked provider)
-- [ ] CI green on clean checkout
+- [x] Stage 7 CI green on clean checkout (`4abd2f3`)
+- [ ] Stage 8 CI green on clean checkout

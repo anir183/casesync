@@ -1,17 +1,16 @@
 # CaseSync — User Flow & Portal Plan
 
-Status: planning artifact. Internal-official MVP is the committed scope; the public
-complainant experience is an **optional Stage 8 extension** and is not part of MVP
+Status: implemented design. Internal-official MVP is the committed scope; the public
+complainant experience is an **optional Stage 8 extension** and remains outside MVP
 acceptance. See `docs/requirements/requirements-realignment.md` for the gap list and
 `docs/product/end-product-and-stages.md` for stage criteria.
 
 > **Scope banner.** CaseSync MVP is an **internal, authorized-official dashboard**
 > (RB, PGRC, other bureaus/cells, regional offices, senior management, competent
-> authority, admin). The current implementation has **no `COMPLAINANT` role, no public
-> sign-up, and no public portal**. A complainant portal is planned as an optional
-> Stage 8 extension, with self-signup verified by AICTE institution ID and a
-> document-review/admin-approval fallback. Sections below that assume a public portal
-> describe that extension; do not use them as MVP acceptance criteria.
+> authority, admin). **Stage 8 is implemented** as a separate public complainant portal,
+> with self-signup verified by AICTE institution ID and a document-review/admin-approval
+> fallback. Public-portal sections below describe that extension; do not use them as MVP
+> acceptance criteria.
 
 ## 1. Purpose
 
@@ -23,16 +22,18 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 ## 2. Current state (verified 2026-10-29)
 
 ### What exists
-- Login page only; no sign-up page. Staff accounts are admin-invite-only
-  (`STAFF_SIGNUP_ENABLED=false`) and the API rejects public staff sign-up with HTTP 403
-  `SIGNUP_DISABLED`.
-- Seven seeded users, one per role: `admin@`, `senior@`, `competent@`,
-  `pgrc.officer@`, `rb.officer@`, `regional.north@`, `viewer@casesync.test`.
+- Staff accounts are admin-invite-only (`STAFF_SIGNUP_ENABLED=false`) and the API
+  rejects public staff sign-up with HTTP 403 `SIGNUP_DISABLED`.
+- Seven seeded staff users, one per role, plus a verified demo complainant:
+  `admin@`, `senior@`, `competent@`, `pgrc.officer@`, `rb.officer@`,
+  `regional.north@`, `viewer@casesync.test`, and `complainant@casesync.test`.
 - Roles: `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`,
-  `REGIONAL_OFFICER`, `VIEWER`.
-- Screens: dashboard, case registry, case detail (overview/actions/assignments/related),
-  case registration, institution registry list/create/edit/verify, institution profile,
-  overlap queue/detail, reports, notifications.
+  `REGIONAL_OFFICER`, `VIEWER`, `COMPLAINANT`.
+- Staff screens: dashboard, case registry, case detail (overview/actions/assignments/
+  related/conversation), case registration, institution registry list/create/edit/verify,
+  institution profile, overlap queue/detail, reports, notifications, admin verification.
+- Portal screens: landing, sign-up, login, dashboard, verification, file complaint,
+  complaint detail, public tracking, notifications.
 - Staff can register a case, assign it, move it through valid transitions, transfer,
   escalate, dispose, reopen, add remarks, and set the next action from the UI.
 - Paginated case and institution lists with totals; overlap queue filters/paginates;
@@ -45,19 +46,21 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Notifications are scoped to the recipient; overlap alerts target involved
   bureaus/regions plus oversight roles.
 - Institution write endpoints are role-gated and region-bound, with duplicate warnings.
-- 71 API unit tests + 10 web component/URL tests + 45 opt-in DB-backed integration
-  tests, plus seeded Playwright smoke/accessibility and stress-data performance tests.
-  Integration tests cannot call real Jev.
+- 71 API unit tests + 10 web component/URL tests + 50 opt-in DB-backed integration
+  tests, plus seeded staff smoke, portal E2E, accessibility, and stress-data performance
+  tests. Integration tests cannot call real Jev.
 
-### What is missing for a real grievance portal
-- `COMPLAINANT` role and public self-registration.
-- Complaint filing form, my-complaints list, public status timeline.
-- Two-way conversation, information requests, document upload.
-- Public vs internal note separation and public status mapping.
-- Public notifications and complainant ownership/IDOR checks.
-- Document review/admin approval for incomplete AICTE verification.
-- Attachment visibility controls for public vs internal documents.
-- Public complaint filing form and tracked-complaint timeline.
+### Stage 8 delivery
+- `COMPLAINANT` role and public self-registration at `/portal/signup`.
+- Exact AICTE permanent-ID auto-verification; institution-only selection and mismatches
+  require document review, approved or rejected at `/admin/verifications`.
+- Complaint filing, own-complaint list, public status timeline, accept-resolution, and
+  reopen within `COMPLAINT_REOPEN_DAYS`.
+- Two-way public conversation, staff information requests, and `AWAITING_COMPLAINANT`.
+- Public/internal note and attachment separation enforced server-side.
+- Public notifications, complainant ownership/IDOR checks, dedicated rate limits, and
+  public projections with no internal notes, findings, actor IDs, or Jev data.
+- Institution representative accounts are deferred.
 
 ## 3. Personas and roles
 
@@ -79,12 +82,12 @@ read-only internal/auditor role, not as the default public role.
 
 ### Sign-up rules
 Staff accounts are **admin-invite-only**; the public staff sign-up path is disabled.
-The optional Stage 8 complainant portal uses self-signup with automatic verification
-against an AICTE institution ID. If the ID is missing or unmatched, the user uploads
-supporting documents and an admin reviews/approves. Unverified accounts see only
-public data and cannot file. Public staff sign-up is blocked (`STAFF_SIGNUP_ENABLED=false`,
-HTTP 403 `SIGNUP_DISABLED`); the Stage 8 flow must never grant a staff role and must not
-reuse the `VIEWER` default.
+The Stage 8 complainant portal uses self-signup with automatic verification only when
+the entered AICTE permanent ID exactly matches the selected institution. If the ID is
+missing or unmatched, the user uploads supporting documents and an admin reviews/
+approves. Unverified accounts can sign in but cannot file. Public staff sign-up remains
+blocked (`STAFF_SIGNUP_ENABLED=false`, HTTP 403 `SIGNUP_DISABLED`); the complainant flow
+never grants a staff role and does not reuse the `VIEWER` default.
 
 ## 4. Permission matrix
 
@@ -369,27 +372,23 @@ Expose:
 
 ## 13. Delivery phases
 
-### Phase A — Auth & role foundation
-- Add `COMPLAINANT`; change default self-signup role.
-- Sign-up/login/forgot-password UI.
-- Enforce `active`. (Done for staff; deactivation revokes sessions.)
-- Seed users for each role (admin, PGRC officer, RB officer, senior, complainant).
-- Role-aware nav and route guards. (Done for staff.)
-- Acceptance: each role can sign in and sees only permitted routes.
+### Phase A — Auth & role foundation (done)
+- `COMPLAINANT` role with public sign-up/login and staff route separation.
+- `active` enforced; deactivation revokes staff sessions.
+- Seeded staff roles plus the verified demo complainant.
+- Role-aware nav and route guards for staff and portal.
 
-### Phase B — Complaint intake & tracking
-- Extend case model with complainant/source/priority/nextActionOwner fields.
-- Complaint filing form and API.
-- My complaints list + detail with public status stepper.
-- Public projection endpoint.
-- Acceptance: complainant can file and track; staff see new case in scoped queue.
+### Phase B — Complaint intake & tracking (done)
+- Case model includes complainant/source/priority/nextActionOwner fields.
+- Complaint filing form, portal dashboard/detail, public status stepper, and tracking by
+  case number + email with generic 404 and rate limit.
+- Staff see portal complaints in the scoped case registry and case workspace.
 
-### Phase C — Conversation & documents
+### Phase C — Conversation & documents (done)
 - `case_messages` with PUBLIC/INTERNAL visibility.
 - Request-info flow and `AWAITING_COMPLAINANT`.
-- Attachment upload/download with access control.
-- Complainant notifications.
-- Acceptance: two-way exchange works; internal notes never visible publicly.
+- Attachment upload/download with PUBLIC/INTERNAL visibility and ownership checks.
+- Complainant notifications; internal notes and attachments never appear publicly.
 
 ### Phase D — Staff workflow UI
 - Acknowledge, assign, transfer, escalate, resolve, reopen actions in UI. (Done for
@@ -406,11 +405,10 @@ Expose:
 - Acceptance: SLA notifications fire once per case per period; scoped users see
   only their data. (Met.)
 
-### Phase F — Hardening
-- Integration/E2E tests, accessibility pass, rate limits. (Done in Stage 7; CI remote
-  run pending.)
+### Phase F — Hardening (done)
+- Staff and portal integration/E2E tests, accessibility pass, and rate limits.
 - Audit export remains a follow-up.
-- Acceptance: critical journeys pass in CI; no IDOR/public leakage. (Local gates pass.)
+- Acceptance: critical journeys run in CI; ownership/IDOR and public-leakage tests pass.
 
 ## 14. Testing strategy
 
@@ -423,6 +421,9 @@ Expose:
 - State machine additions.
 
 ### Integration (API + test DB)
+- `apps/api/tests/integration/stage8.integration.test.ts` covers exact-AICTE and
+  document verification, filing/tracking, ownership isolation, public/internal
+  messages and documents, accept/reopen, and fallback approval.
 - Signup/login/session.
 - File complaint → staff acknowledge → reply → resolve → complainant accepts/reopens.
 - Scoping: PGRC officer cannot see RB-only cases; regional officer only own region.
@@ -446,16 +447,16 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   empty/error states. Keep component tests focused; E2E covers whole flows.
 
 ### CI gates
-- `bun run check`
-- `bun test`
-- API and web builds
-- E2E smoke suite on a test database
+- `bun run verify` (lint, typechecks, unit/component, builds)
+- Mongo-backed integration/coverage
+- Seeded staff + portal E2E and accessibility
+- Dependency audit
 
 ## 15. Decisions (locked 2026-10-28) and remaining questions
 
 ### Locked
 
-1. **Complainant portal**: optional Stage 8, designed now, not MVP-blocking.
+1. **Complainant portal**: optional Stage 8, implemented; not MVP-blocking.
 2. **Staff accounts**: admin-invite-only. Public staff self-sign-up is disabled.
 3. **Complainant sign-up**: self-service, verified automatically with an AICTE
    institution ID. If the institution ID is unavailable/unmatched, fall back to

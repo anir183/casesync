@@ -4,16 +4,18 @@ Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
 Audit date: 2026-10-28. Last verified: 2026-10-29.
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
-separately as an **optional extension**, not as MVP acceptance criteria.
+separately as an **optional Stage 8 extension**, now implemented but still outside MVP
+acceptance criteria.
 
 ## 0. Verdict
 
-CaseSync is **MVP-complete for the internal staff scope** and locally release-ready.
-The hardest part — rules-first cross-bureau overlap detection with optional Jev
-assessment and human review — is built and verified, and Stage 7 adds CI, security,
-accessibility, performance, stress-seed, and runbook gates.
+CaseSync is **MVP-complete for the internal staff scope** plus the optional Stage 8
+complainant portal. The hardest part — rules-first cross-bureau overlap detection with
+optional Jev assessment and human review — is built and verified. Stage 7 adds CI,
+security, accessibility, performance, stress-seed, and runbook gates; Stage 8 adds the
+external intake surface with separate ownership and public-projection controls.
 
-Current position: **release candidate; CI remote-green observation pending**.
+Current position: **release candidate; Stage 7 CI green, Stage 8 CI pending**.
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -30,20 +32,24 @@ Current position: **release candidate; CI remote-green observation pending**.
 - Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
   reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
   notification pagination, deterministic demo seed/reset, and reconciliation tests.
-  71 API unit tests, 10 web component/URL tests, and 45 DB-backed integration tests pass;
-  tests cannot call real Jev.
+  71 API unit tests, 10 web component/URL tests, and 50 DB-backed integration tests are
+  present; tests cannot call real Jev.
 - Stage 5 is implemented and verified: admin SLA rules, automatic/manual deadlines,
   daily pending/approaching/overdue scans, scoped dedupe, job run history, minimal SLA
   admin UI, and shared dashboard/report overdue metrics.
 - Stage 6 is implemented and verified: admin users/organization/audit web screens,
   bureau/region/category CRUD, institution aliases/merge, scoped attachments, password
   reset/invite, and backup/retention policy.
-- Stage 7 is implemented and locally verified: seeded browser smoke + accessibility,
-  performance budgets on 5,000 cases, component tests, rate limiting, coverage gate,
-  stress seed, security checklist, runbook, and CI workflow.
-- Remaining for final release: observe the new CI workflow green on a pushed commit.
-  Malware scanning, distributed rate limiting, and manual screen-reader/mobile passes
-  are production hardening follow-ups, not MVP blockers.
+- Stage 7 is implemented and CI is green on pushed commit `4abd2f3`: seeded browser
+  smoke + accessibility, performance budgets on 5,000 cases, component tests, rate
+  limiting, coverage gate, stress seed, security checklist, runbook, and CI workflow.
+- Stage 8 is implemented: public complainant signup/login, exact-AICTE verification with
+  document-review approval, filing/tracking, public/internal conversation and documents,
+  ownership checks, portal rate limits, staff complaint workflow, and admin verification
+  queue. Institution representative accounts are deferred.
+- Remaining for final release: observe the pushed Stage 8 CI run green. Malware scanning,
+  distributed rate limiting, and manual screen-reader/mobile passes are production
+  hardening follow-ups, not MVP blockers.
 
 ## 1. Status legend
 
@@ -296,7 +302,7 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests after Stage 7: 71 API unit tests + 10 web tests + 45 DB-backed integration tests.
+- Tests after Stage 8: 71 API unit tests + 10 web tests + 50 DB-backed integration tests.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
 - Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Stage 7 added
   rate limits, component/E2E/accessibility/performance gates, CI, stress seed, and runbook.
@@ -406,23 +412,27 @@ Still open from Stage 3:
 16. Email/SMS notifications.
 17. Advanced analytics/trends/export PDF.
 18. Fuzzy matching at scale (Atlas Search/indexed blocking).
-19. Public complainant portal extension (see §17).
+19. ~~Public complainant portal extension (see §17).~~ Done in Stage 8; institution
+    representative accounts remain deferred.
 
 ## 17. Optional extension — public complainant portal
 
-This is **not** required by the original problem statement and should not block MVP
-acceptance. It is a separate product surface:
+This is **not** required by the original problem statement and does not block MVP
+acceptance. It is a separate product surface, now implemented as Stage 8:
 
-- `COMPLAINANT` role and self-registration.
-- File/track complaint, public status stepper, conversation, document upload.
-- Public vs internal note separation.
-- Institution representative accounts (optional).
-- Public projection rules (no internal notes, actor IDs, Jev raw data).
-- Ownership/IDOR checks and rate limits.
-- Separate acceptance tests and security review.
+- `COMPLAINANT` role, public signup/login, and self-service dashboard — done.
+- File/track complaint, public status timeline, conversation, document upload — done.
+- Exact AICTE permanent-ID verification; document-review/admin-approval fallback — done.
+- Public vs internal note and attachment separation — done server-side.
+- Public projection rules (no internal notes, findings, actor IDs, Jev raw data) — done.
+- Ownership/IDOR checks, generic public tracking, and portal rate limits — done.
+- Staff conversation/acknowledge/request-info/resolve and admin verification queue — done.
+- Institution representative accounts — deferred; separate role/scoping/approval model.
+- Separate integration, portal E2E, component, and accessibility coverage — added.
 
-The original target users are **authorized AICTE officials**, so the internal
-dashboard remains the source of truth even if the public portal is added later.
+The original target users are **authorized AICTE officials**, so the internal dashboard
+remains the source of truth. The portal writes into the same case model with public
+projections and ownership constraints.
 
 ## 18. MVP acceptance criteria
 
@@ -462,10 +472,10 @@ The MVP is accepted only when all of these are true:
 
 1. **Overlap semantics**: always surface same-institution cross-bureau pairs; Jev
    enriches/ranks and never suppresses.
-2. **Public portal**: optional Stage 8; designed now, not MVP-blocking.
-3. **Signup**: staff are admin-invite-only; complainant self-signup (Stage 8) verifies
-   automatically with an AICTE institution ID, falling back to ID + document review
-   with admin approval.
+2. **Public portal**: optional Stage 8; implemented, not MVP-blocking.
+3. **Signup**: staff are admin-invite-only; complainant self-signup verifies
+   automatically only on an exact AICTE permanent-ID match, falling back to ID +
+   document review with admin approval.
 4. **Region master**: official AICTE regional offices, seeded as `regions`
    (code/name/active).
 5. **"Pending"**: not one bucket; show pending/unassigned, assigned-not-started,

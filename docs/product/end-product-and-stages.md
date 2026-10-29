@@ -183,8 +183,8 @@ layout.
 | 4 | Monitoring, search & reporting | **Done** | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
 | 5 | SLA, alerts & scheduled jobs | **Done** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
-| 7 | Hardening, QA & release | **Done** (local); remote CI pending | Trust, security, maintainability, demo readiness | Critical E2E and security checklist pass; runbook walkthrough and CI remote run pending |
-| 8 | Public complainant portal (optional) | **Not started** | Transparency extension beyond original scope | Separate acceptance and security review |
+| 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
+| 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage |
 
 ### Current position (honest)
 
@@ -206,11 +206,14 @@ layout.
   UTC bounds, notification pagination, deterministic demo seed/reset, and reconciliation
   tests; Stage 7 browser smoke and performance gates now exist.
 - Stage 5 SLA and Stage 6 administration/attachments/audit are implemented and verified.
-  Stage 7 hardening is implemented and locally verified (component/E2E/a11y/perf/CI/
-  security/runbook/stress seed); remote CI green and an independent runbook walkthrough
-  remain the final release checks.
-- The internal MVP is functionally complete and locally release-ready; the optional
-  Stage 8 public portal is not built.
+  Stage 7 hardening is implemented and CI is green on `4abd2f3`; an independent runbook
+  walkthrough remains desirable.
+- Stage 8 is implemented: complainant signup/login, exact-AICTE verification, document
+  review fallback with admin approval, filing/tracking, ownership checks, public/internal
+  messages and attachments, staff conversation/actions, and dedicated security/E2E
+  coverage. Institution representative accounts are explicitly deferred.
+- The internal MVP and optional public portal are functionally complete and release-ready
+  pending the full pushed Stage 8 CI run.
 
 ## 6. Stage details and expectations
 
@@ -533,9 +536,23 @@ edit DB" from operations.
 - Complaint filing/tracking, public status mapping, public messages.
 - Public vs internal visibility enforced server-side.
 - Attachments with visibility.
-- Institution representative accounts (optional).
+- Institution representative accounts (deferred; not required for this stage).
 - Rate limits, abuse controls, PII redaction, public projections.
 - Separate E2E/security suite.
+
+**Delivered**
+- Public routes `/public/complainant/sign-up`, `/sign-in`, `/track`, and portal routes
+  `/portal/dashboard`, `/verification`, `/complaints/new`, `/complaints/:id`,
+  `/notifications`.
+- Admin verification queue at `/admin/verifications`; staff case conversation plus
+  acknowledge/request-information/resolve actions.
+- Exact AICTE ID auto-verification; institution-only selection and mismatches go to
+  admin document review. Unverified accounts can sign in but cannot file.
+- Public projections omit internal findings/remarks, actor IDs, uploaded-by/checksum,
+  staff-only messages, and internal attachments. Public tracking is generic-404 and
+  rate-limited.
+- Stage 8 integration, portal E2E, component, and accessibility coverage added; demo
+  complainant seed included in `seed:demo`.
 
 **Exit criteria**
 - Complainant can file and track only their own complaint.
@@ -579,13 +596,13 @@ Stage 3 (done — overlap correctness + coordination UX)
    ↓
 Stage 4 (done — scoped monitoring + reports)
    ↓
-Stage 5 (SLA + jobs + alerts)
+Stage 5 (done — SLA + jobs + alerts)
    ↓
-Stage 6 (admin + attachments + data quality)
+Stage 6 (done — admin + attachments + data quality)
    ↓
-Stage 7 (QA + CI + release)
+Stage 7 (done — QA + CI + release)
    ↓
-Stage 8 (optional public portal)
+Stage 8 (done — optional public portal; institution representatives deferred)
 ```
 
 Parallelizable now:
@@ -593,8 +610,8 @@ Parallelizable now:
 - Stage 5 job scaffolding can start once SLA semantics are decided.
 - Stage 7 CI can start early (lint/typecheck/unit) and grow per stage.
 
-Do not start Stage 8 before Stage 7; the public portal multiplies the security
-surface and would delay the MVP.
+Stage 8 followed Stage 7 so the public portal could reuse the hardened security, test,
+and CI foundation instead of delaying the MVP.
 
 ## 9. Risks and mitigations
 

@@ -29,16 +29,17 @@ Status legend:
 | Alerts | Partial | Overlap, pending, approaching, and overdue notifications are scoped/deduped; escalation delivery remains role-broadcast. |
 | Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
-| Target users | **Done** | Roles, scoping, admin user management, and admin web screens. |
-| Non-functional | Done (local) | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; remote CI run pending. |
+| Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
+| Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Institution representatives deferred. |
+| Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 7 CI green on `4abd2f3`. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
 | Decision | Choice | Impact |
 |---|---|---|
-| Public complainant portal | Optional Stage 8; designed now, not MVP-blocking | MVP acceptance excludes complainant flows |
+| Public complainant portal | Optional Stage 8; implemented, not MVP-blocking | MVP acceptance excludes complainant flows |
 | Staff accounts | Admin-invite-only; public staff signup disabled | Stage 1 admin user management |
-| Complainant signup | Auto-verify with AICTE institution ID; fallback ID + documents + admin approval | Stage 8; public-only access until verified |
+| Complainant signup | Auto-verify only on exact AICTE permanent-ID match; fallback ID + documents + admin approval | Stage 8; unverified users can sign in but cannot file |
 | Overlap policy | Always create base PENDING relationship for same-institution cross-bureau pairs; Jev enriches, never suppresses | Stage 3 correctness fix |
 | Regions | Official AICTE regional offices as a `regions` master | Stage 1 model/seed; Stage 4 labels/filters complete |
 | "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports complete |
@@ -192,41 +193,57 @@ Status legend:
 | USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit web UI, institution merge, `audit_log` | Admin flows are API-tested; Stage 7 axe scan covers `/admin/sla`. |
 | USER-07 | Read-only auditor/viewer | **Done** | `VIEWER`; read-only all-scope + dedicated `/admin/audit` view | — |
 
+## 11.1 Public portal extension requirements
+
+| ID | Requirement | Status | Evidence | Remaining work |
+|---|---|---|---|---|
+| EXT-01 | `COMPLAINANT` role and public self-registration | **Done** | `/public/complainant/sign-up`, `/portal/signup`, `COMPLAINANT_SIGNUP_ENABLED` | — |
+| EXT-02 | AICTE auto-verification only on exact permanent-ID match | **Done** | `submitVerification`; Stage 8 integration tests | — |
+| EXT-03 | Document-review fallback with admin approval/rejection | **Done** | `/portal/verification`, `/admin/complainant-verifications` | Verification notification deep-link is a polish item. |
+| EXT-04 | Unverified accounts cannot file; verified accounts file/track own complaint | **Done** | `/portal/complaints/new`, dashboard/detail, ownership filters | — |
+| EXT-05 | Public status timeline, accept-resolution, reopen within window | **Done** | `/portal/complaints/:id`, `COMPLAINT_REOPEN_DAYS` | — |
+| EXT-06 | Public/internal messages and attachments enforced server-side | **Done** | `case_messages`, attachment `visibility`, portal/staff routes | — |
+| EXT-07 | No internal notes/findings/actor IDs/Jev data in public projections | **Done** | Public DTO projections; Stage 8 integration tests | — |
+| EXT-08 | Public tracking without account enumeration | **Done** | `/public/track`, case number + email, generic 404, rate limit | — |
+| EXT-09 | Ownership/IDOR protection and portal rate limits | **Done** | Complainant-scoped queries; signup/track/write limits | — |
+| EXT-10 | Admin verification queue and staff complaint workflow | **Done** | `/admin/verifications`, case Conversation tab, acknowledge/request-info/resolve | — |
+| EXT-11 | Institution representative accounts | **Deferred** | Documented deferral | Separate role, institution scoping, and approval model. |
+
 ## 12. Non-functional requirements
 
 | Area | Status | Gap/action |
 |---|---|---|
-| Authentication | **Done** | Better Auth email/password; public staff signup blocked with `SIGNUP_DISABLED`; accounts are admin-created. |
+| Authentication | **Done** | Better Auth email/password; staff accounts admin-created with `SIGNUP_DISABLED`; separate complainant signup guarded by `COMPLAINANT_SIGNUP_ENABLED`. |
 | Authorization | **Done** | Central `lib/scope.ts`; `active` enforced in `requireAuth`; deactivation revokes sessions. |
 | Institution writes | **Done** | `POST`/`PATCH` role-gated; regional officers are region-bound; invalid regions rejected. |
-| IDOR | **Done** | Case/institution/overlap/admin-user detail endpoints apply scope and return 404; covered by DB-backed tests. |
+| IDOR | **Done** | Case/institution/overlap/admin-user detail endpoints apply scope and return 404; complainant message/attachment/detail queries are ownership-filtered; covered by DB-backed tests. |
 | Audit immutability | **Partial** | Append-only by convention; no DB/application guard. |
 | Input validation | **Partial** | Elysia schemas exist; malformed ObjectIds map to 404 and duplicate keys to 409; status/category remain partly free strings. |
 | Pagination/performance | **Partial** | Case/institution lists and the overlap queue paginate with totals; notifications, dashboard/report internals, and fuzzy scan still load broadly. |
 | Observability | **Partial** | Logger and admin audit exist; request IDs, metrics, and readiness remain. |
-| Rate limiting | **Done** | Fixed-window limits on auth/search/manual assessment/uploads with 429 + retry headers; in-memory per process. |
+| Rate limiting | **Done** | Fixed-window limits on auth/search/manual assessment/uploads plus complainant signup/track/portal writes with 429 + retry headers; in-memory per process. |
 | File security | **Done** | Scoped upload/download, MIME/size/empty checks, UUID filenames, path containment, `nosniff`/`no-store`, SHA-256 checksum; malware scanning/rate limits remain. |
-| Accessibility | **Done (automated)** | axe WCAG A/AA scan on nine core pages reports no serious/critical violations; manual keyboard/screen-reader pass remains. |
+| Accessibility | **Done (automated)** | axe WCAG A/AA scan covers staff core pages plus portal landing/login/signup/track and admin verification; manual keyboard/screen-reader pass remains. |
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
 | Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
 ## 13. Test and ops baseline (verified)
 
-- 71 API unit tests, 10 web component/URL tests, and 45 database-backed integration
+- 71 API unit tests, 10 web component/URL tests, and 50 database-backed integration
   tests; Jev is mocked and a fetch guard blocks real calls.
 - Integration coverage includes signup blocking, scoping/IDOR, dashboard/report
   reconciliation, overlap correctness/coordination, SLA jobs, admin/master CRUD,
-  attachments, invite/reset, and Stage 7 search/regex/operator/rate-limit checks.
-  `RUN_INTEGRATION=1` runs locally against run-scoped records; CI uses `mongo:7`.
+  attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, and Stage 8
+  verification/ownership/public-visibility/reopen flows. `RUN_INTEGRATION=1` runs
+  locally against run-scoped records; CI uses `mongo:7`.
 - Coverage is 89.4% lines / 90.0% functions with an 85% floor.
-- 3 seeded Playwright smoke journeys, an axe accessibility scan of nine core pages, and
-  a tagged 5,000-case performance test pass.
+- 3 seeded staff smoke journeys, 2 portal E2E journeys, an axe accessibility scan, and a
+  tagged 5,000-case performance test.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
-  7 users. `seed:demo` adds 8 institutions, 13 cases, 6 overlaps, notifications, and 5
-  SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
+  7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
+  staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
 - API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
-  reports no vulnerabilities. CI workflow is implemented but not yet observed green on
-  a pushed commit.
+  reports no vulnerabilities. CI is green on Stage 7 (`4abd2f3`); Stage 8 CI is pending.
 
 ## 14. Documentation corrections applied
 
@@ -264,4 +281,5 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
 6. ~~Attachments, admin audit, institution verification/merge.~~ Done in Stage 6.
 7. ~~Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.~~ Done in
    Stage 7; observe CI green on a pushed commit.
-8. Optional public complainant portal.
+8. ~~Optional public complainant portal.~~ Done in Stage 8; institution representative
+   accounts remain deferred.

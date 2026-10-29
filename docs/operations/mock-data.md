@@ -41,10 +41,11 @@ Safety guards:
 - 10 categories;
 - 4 bureaus: `PGRC` Public Grievance Redressal Cell, `RB` Regulation Bureau,
   `ACAD` Academic Bureau, `FIN` Finance Bureau;
-- 7 users, one per role.
+- 7 staff users, one per staff role, plus 1 verified complainant.
 
 All seeded users use `Passw0rd!123` unless `SEED_PASSWORD` overrides it. Emails are
-fictional `.test` addresses.
+fictional `.test` addresses. The complainant is linked to the demo `dit` institution
+and can file immediately.
 
 | Name | Email | Role | Bureau | Region |
 |---|---|---|---|---|
@@ -55,9 +56,11 @@ fictional `.test` addresses.
 | RB Officer | `rb.officer@casesync.test` | `BUREAU_OFFICER` | `RB` | — |
 | Northern Regional Officer | `regional.north@casesync.test` | `REGIONAL_OFFICER` | — | `NORTH` |
 | Read-only Viewer | `viewer@casesync.test` | `VIEWER` | — | — |
+| Demo Complainant | `complainant@casesync.test` | `COMPLAINANT` | — | `NORTH` |
 
-Staff signup is disabled (`STAFF_SIGNUP_ENABLED=false`); these accounts are seed/admin
-created.
+Staff signup is disabled (`STAFF_SIGNUP_ENABLED=false`); staff accounts are seed/admin
+created. Complainant self-signup is enabled by default
+(`COMPLAINANT_SIGNUP_ENABLED=true`).
 
 ### 2.1 Regions
 

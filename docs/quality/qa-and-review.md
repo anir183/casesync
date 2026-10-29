@@ -30,18 +30,20 @@ exit criteria.
   state machine, scope/permission, dates, CSV, metrics, demo fixtures, report export,
   case filters, SLA timezone/rule/alert boundaries, rate limiting, pagination,
   confirmation dialogs, attachment permissions, and URL filters.
-- **45 database-backed integration tests** in `apps/api/tests/integration/` covering
+- **50 database-backed integration tests** in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user guards,
   deactivation/session revocation, institution writes/merge, case-registration scope,
   pagination contracts, duplicate checks, officer-directory scoping, auto numbering,
   rejected transitions, ordered lifecycle audit, Stage 3 overlap behavior, Stage 4
   dashboard/report reconciliation, Stage 5 SLA rules/jobs, Stage 6 admin/master CRUD,
-  attachments, invite/reset, and Stage 7 search bounds/regex/operator-notation/rate-limit
-  checks. They are opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7`
-  service, while local runs use run-scoped records in the configured dev database.
-- **4 seeded Playwright browser tests**: three critical smoke journeys (officer case
-  search/timeline, viewer scope/IDOR, overlap queue/reports) plus an axe
-  serious/critical accessibility scan of nine core pages.
+  attachments, invite/reset, Stage 7 search bounds/regex/operator-notation/rate-limit
+  checks, and Stage 8 verification/ownership/public-visibility/reopen flows. They are
+  opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service, while local
+  runs use run-scoped records in the configured dev database.
+- **6 seeded Playwright browser tests**: three staff smoke journeys (officer case
+  search/timeline, viewer scope/IDOR, overlap queue/reports), two portal journeys
+  (file/converse/track/resolve/accept, invalid tracking), plus an axe serious/critical
+  accessibility scan of staff, portal, and verification pages.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
@@ -175,6 +177,9 @@ Keep the rest of the current contract:
 ### 5.2 API cases
 
 **Auth/RBAC**
+- Complainant cannot access staff routes; staff cannot access `/portal/*`.
+- Cross-complainant case/message/attachment access → 404.
+- Unverified complainant filing → 403.
 - Unauthenticated request → 401 JSON.
 - Inactive user → 401/403.
 - Wrong role → 403.

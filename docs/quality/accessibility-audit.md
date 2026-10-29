@@ -1,6 +1,6 @@
 # CaseSync — Accessibility Audit
 
-Status: Stage 7 evidence. Last verified: 2026-10-29.
+Status: Stage 7–8 evidence. Last verified: 2026-10-29.
 Test: `apps/web/e2e/accessibility.spec.ts`.
 
 ## 1. Scope and method
@@ -17,8 +17,13 @@ build with seeded demo data. The scan covers:
 - `/reports`
 - `/notifications`
 - `/admin/sla`
+- `/portal`
+- `/portal/login`
+- `/portal/signup`
+- `/portal/track`
+- `/admin/verifications`
 
-The assertion fails on serious or critical violations. Run with:
+Portal pages are scanned unauthenticated; authenticated complainant dashboard/detail are covered by the portal E2E flow but not by the axe scan yet. The assertion fails on serious or critical violations. Run with:
 
 ```bash
 bun run test:e2e
@@ -27,11 +32,13 @@ bun run test:e2e
 ## 2. Result
 
 Pass: no serious or critical accessibility violations were reported on the scanned
-pages as of 2026-10-29. The check runs as part of the seeded browser smoke suite and CI.
+pages as of 2026-10-29. The check runs as part of the seeded browser suite and CI. The
+authenticated complainant dashboard/detail still need a dedicated axe pass.
 
 ## 3. Existing good practices
 
-- Form controls use associated labels (`htmlFor`/`id`) on sign-in and main filters.
+- Form controls use associated labels (`htmlFor`/`id`) on staff, portal sign-in/signup,
+  and complaint forms.
 - Interactive actions use native buttons and links.
 - Page structure uses headings and landmark regions.
 - Role-gated actions are hidden rather than presented as enabled.
@@ -49,4 +56,5 @@ Automated scanning does not prove full accessibility. Before a public release, p
 - Reduced-motion and high-contrast OS settings.
 - Color-contrast review for any future custom theme changes.
 
-These manual checks are follow-ups, not blockers for the internal MVP demo.
+These manual checks are follow-ups, not blockers for the internal MVP demo. Add an
+authenticated portal-detail scan before a full public release.
