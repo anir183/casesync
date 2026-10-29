@@ -2,18 +2,20 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { AttachmentsPanel } from '#/features/attachments/components/attachments-panel'
 import { CaseLinkPanel } from '#/features/overlaps/components/case-link-panel'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { cn, formatDate, formatDateOnly } from '#/lib/utils'
 import { type CaseDetail, useCaseDetail } from '../api'
 import { CaseActionPanel } from '../components/case-action-panel'
 
-type Tab = 'overview' | 'actions' | 'assignments' | 'related'
+type Tab = 'overview' | 'actions' | 'assignments' | 'documents' | 'related'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'actions', label: 'Actions' },
   { id: 'assignments', label: 'Assignments' },
+  { id: 'documents', label: 'Documents' },
   { id: 'related', label: 'Related' },
 ]
 
@@ -229,6 +231,17 @@ export function CaseDetailPage() {
           </CardHeader>
           <CardContent>
             <AssignmentHistory item={item} />
+          </CardContent>
+        </Card>
+      )}
+
+      {tab === 'documents' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Supporting documents</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AttachmentsPanel caseId={item.id} />
           </CardContent>
         </Card>
       )}

@@ -1,6 +1,9 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '#/components/layout/app-shell'
 import { AuthGuard } from '#/components/layout/auth-guard'
+import { AdminAuditPage } from '#/features/admin/pages/admin-audit-page'
+import { AdminOrganizationPage } from '#/features/admin/pages/admin-organization-page'
+import { AdminUsersPage } from '#/features/admin/pages/admin-users-page'
 import { LoginPage } from '#/features/auth/pages/login-page'
 import { CaseDetailPage } from '#/features/cases/pages/case-detail-page'
 import { CaseRegistrationPage } from '#/features/cases/pages/case-registration-page'
@@ -41,6 +44,9 @@ export const router = createBrowserRouter([
       { path: 'overlaps/:id', element: <OverlapDetailPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'admin/users', element: <AdminUsersPage /> },
+      { path: 'admin/organization', element: <AdminOrganizationPage /> },
+      { path: 'admin/audit', element: <AdminAuditPage /> },
       { path: 'admin/sla', element: <SlaConfigPage /> },
     ],
   },

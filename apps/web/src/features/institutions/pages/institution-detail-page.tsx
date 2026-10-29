@@ -1,14 +1,16 @@
-import { PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { PAGINATION, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Input } from '#/components/ui/input'
 import { CaseTable } from '#/features/cases/components/case-table'
 import { useCurrentUser } from '#/lib/session'
+import { useDebouncedValue } from '#/lib/use-debounced-value'
 import { formatDate } from '#/lib/utils'
-import { useInstitution, useUpdateInstitution } from '../api'
+import { useInstitution, useInstitutions, useMergeInstitution, useUpdateInstitution } from '../api'
 
 function DetailRow({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
@@ -16,6 +18,86 @@ function DetailRow({ label, value }: { label: string; value?: React.ReactNode })
       <span className="shrink-0 text-muted-foreground">{label}</span>
       <span className="text-right">{value ?? '—'}</span>
     </div>
+  )
+}
+
+function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
+  const [query, setQuery] = useState('')
+  const debouncedQuery = useDebouncedValue(query, 400)
+  const { data, isFetching } = useInstitutions(
+    { q: debouncedQuery, page: 1, pageSize: 6 },
+    debouncedQuery.trim().length >= 2,
+  )
+  const mergeInstitution = useMergeInstitution(institutionId)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const candidates = (data?.items ?? []).filter((item) => item.id !== institutionId)
+
+  function merge(targetId: string, targetName: string) {
+    if (
+      !window.confirm(
+        `Merge this institution into “${targetName}”? Its cases and aliases will move to the target.`,
+      )
+    ) {
+      return
+    }
+    setFeedback(null)
+    mergeInstitution.mutate(targetId, {
+      onSuccess: (merged) => navigate(`/institutions/${merged.id}`),
+      onError: (error) =>
+        setFeedback(error instanceof Error ? error.message : 'Institution could not be merged'),
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Merge duplicate institution</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Find the authoritative record. This record’s cases, aliases, and search identity will move
+          to the target, then this record will be removed.
+        </p>
+        <Input
+          aria-label="Find merge target"
+          placeholder="Search target institution by name or AICTE ID"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        {isFetching && <p className="text-sm text-muted-foreground">Searching...</p>}
+        {debouncedQuery.trim().length >= 2 && !isFetching && candidates.length === 0 && (
+          <p className="text-sm text-muted-foreground">No matching target found.</p>
+        )}
+        {candidates.length > 0 && (
+          <div className="divide-y divide-border rounded-md border border-border">
+            {candidates.map((candidate) => (
+              <div
+                key={candidate.id}
+                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium">{candidate.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {candidate.aictePermanentId ?? 'No AICTE ID'} ·{' '}
+                    {candidate.regionName ?? 'No region'}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={mergeInstitution.isPending}
+                  onClick={() => merge(candidate.id, candidate.name)}
+                >
+                  Merge into this
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        {feedback && <p className="text-sm text-red-600">{feedback}</p>}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -131,6 +213,10 @@ export function InstitutionDetailPage() {
           </CardHeader>
           <CardContent className="divide-y divide-border">
             <DetailRow label="AICTE permanent ID" value={institution.aictePermanentId} />
+            <DetailRow
+              label="Aliases"
+              value={institution.aliases?.length ? institution.aliases.join(', ') : undefined}
+            />
             <DetailRow label="Address" value={institution.address} />
             <DetailRow label="Region" value={institution.regionName} />
             <DetailRow label="Created" value={formatDate(institution.createdAt)} />
@@ -151,6 +237,8 @@ export function InstitutionDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {user?.role === ROLES.ADMIN && <InstitutionMergePanel institutionId={institution.id} />}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2">

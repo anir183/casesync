@@ -107,7 +107,7 @@ casesync/
 
 | Collection | Purpose | Notes |
 |---|---|---|
-| `institutions` | Canonical institutions | `aictePermanentId` (sparse unique), `nameNormalized`, `verified`, `regionId` |
+| `institutions` | Canonical institutions | `aictePermanentId` (sparse unique), `nameNormalized`, `aliases`/`aliasesNormalized`, `verified`, `regionId` |
 | `regions` | AICTE regional offices | `code` (unique), `name`, `officeCity`, `active`; seeded |
 | `bureaus` | PGRC/RB/others | `code` (unique), `name`, `active`; seeded |
 | `categories` | Complaint categories | `code` (unique), `name`, `active`; seeded |
@@ -118,12 +118,12 @@ casesync/
 | `case_overlap_assessments` | **Jev AI history** | Normalized pair `{caseAId,caseBId}` with `$min/$max`. Unique compound. Store rawResponse, probabilities, modelVersion, tokens, latency, status |
 | `case_relationships` | **Human decisions** | Link to `assessmentId`. `reviewStatus` PENDING/CONFIRMED/DISMISSED, reviewer, notes, manual/link metadata |
 | `notifications` | Alerts | Per-recipient; add `caseId?`, `link?`, `periodKey?`, `channel`; unique dedupe index |
-| `attachments` | Metadata + files | `caseId`, `storagePath`, mime/size, uploader, `visibility`, optional `messageId` |
+| `attachments` | Metadata + files | `caseId`, safe relative `storagePath`, original filename, mime/size, SHA-256 `checksum`, uploader, `visibility`, optional `messageId` |
 | `sla_config` | SLA rules | Unique `{bureauId,category,regionId}` scope, `slaDays`, `pendingReminderDays`, `reminderDays[]`, `active` |
 | `job_runs` | Scheduled/manual job log | `jobName`, `trigger`, `status`, `startedAt`, `finishedAt`, counts, error |
-| `audit_log` | **Add:** admin audit | Non-case changes: user/role/bureau/region/category/SLA/institution merge |
+| `audit_log` | Admin/org audit | Non-case changes: user/role/bureau/region/category/SLA/institution merge/attachment; actor, before/after, metadata |
 
-Indexes to add: `cases.{regionId,status}`, `cases.{bureauId,status}`,
+Indexes: `cases.{regionId,status}`, `cases.{bureauId,status}`,
 `notifications.{recipientId,type,referenceId,periodKey}` unique, `regions.code` unique,
 `categories.code` unique, `sla_config.{bureauId,category,regionId}` unique,
 `job_runs.{jobName,startedAt}`, `audit_log.{entityType,entityId,createdAt}`.
@@ -255,8 +255,10 @@ committed; `.env.example` lists names with empty/placeholder values.
 - **Pagination/sorting** is server-side; UI keeps filters in the URL.
 - **Admin endpoints** (Stage 1/6): users/invite/deactivate/role/bureau/region,
   bureaus, regions, categories, SLA config, institution verify/merge, audit log.
-- **Attachments** (Stage 6): upload/download endpoints with MIME/size/path validation,
-  scoped access checks, and a `visibility` field. No public static serving of uploads.
+- **Attachments** (Stage 6): `/cases/:id/attachments` and
+  `/attachments/:id/download` use MIME/size/empty checks, UUID filenames, path
+  containment, scoped access, SHA-256 checksums, and a `visibility` field. No public
+  static serving of uploads.
 - **SLA** (Stage 5): `/sla-configs` admin CRUD, computed `expectedDisposalAt`,
   `/admin/jobs/runs`, and manual `POST /admin/jobs/sla/run`.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
@@ -340,13 +342,16 @@ history, and a **Related Cases** tab. Use the exact overlap heading.
 - **Config**: env validated at boot; fail fast on missing required secrets; health
   `GET /health` plus a readiness check that pings Mongo.
 - **Build/run**: `bun install`, `bun run build`, run API and serve `apps/web/dist`.
-- **Seed**: idempotent `bun run seed` only. It creates regions, categories, bureaus,
-  and users; it does not create institutions/cases. `seed:reset` and `seed:stress` are
-  Stage 7 work and do not exist. The script refuses to run in production without
-  `ALLOW_SEED=true`.
+- **Seed**: idempotent `bun run seed` creates regions, categories, bureaus, and users.
+  `seed:demo` adds institutions/cases/overlaps/notifications/SLA configs; `seed:reset`
+  removes only demo-owned data and reseeds. `seed:stress` is Stage 7. The script
+  refuses destructive operations in production without the documented confirmation
+  flags.
 - **Migrations/indexes**: Mongoose index sync reviewed; no destructive auto-sync in
   production.
-- **Backups**: Atlas continuous backup; document restore steps and retention.
+- **Backups**: Atlas continuous backup/PITR plus a consistent attachment-volume
+  snapshot; see [`../operations/backup-and-retention.md`](../operations/backup-and-retention.md)
+  for RPO/RTO, retention, restore steps, and known gaps.
 - **Observability**: structured logs, request IDs, job run log; error tracking later.
 - **CI**: lint + typecheck + unit + integration + build + E2E smoke + coverage gate on
   a clean checkout (Stage 7).

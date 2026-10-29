@@ -50,3 +50,6 @@ Thumbs.db
 .temp
 tmp
 *.tsbuildinfo
+
+# Local attachment storage
+storage/

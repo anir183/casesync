@@ -177,20 +177,20 @@ layout.
 | Stage | Name | Current state | Contribution to end product | Exit gate |
 |---|---|---|---|---|
 | 0 | Foundation & guardrails | **Done** | Reproducible monorepo, stack, models, auth skeleton, conventions | Build/lint/typecheck; env documented; models indexed |
-| 1 | Identity, organization & access | **Done** (bureau CRUD/audit → Stage 6) | Correct users, roles, bureaus, regions, scoping; makes every number and permission meaningful | Role/scope matrix tests pass; each seeded role sees only allowed data |
+| 1 | Identity, organization & access | **Done** | Correct users, roles, bureaus, regions, scoping; makes every number and permission meaningful | Role/scope matrix tests pass; each seeded role sees only allowed data |
 | 2 | Institution registry & case operations | **Done** (implementation); browser E2E pending | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
 | 3 | Overlap intelligence & coordination | **Done** (implementation); browser E2E pending | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
 | 4 | Monitoring, search & reporting | **Done** (implementation); browser E2E pending | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
-| 5 | SLA, alerts & scheduled jobs | **Gap** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
-| 6 | Administration, attachments & data quality | **Gap** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
+| 5 | SLA, alerts & scheduled jobs | **Done** (implementation); browser E2E pending | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
+| 6 | Administration, attachments & data quality | **Done** (implementation); browser E2E pending | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Partial** | Trust, security, maintainability, demo readiness | CI green; critical E2E; security checklist; runbook |
 | 8 | Public complainant portal (optional) | **Not started** | Transparency extension beyond original scope | Separate acceptance and security review |
 
 ### Current position (honest)
 
 - Stage 0 complete.
-- Stage 1 complete for the backend/admin API (admin web screens land with Stage 6;
-  bureau CRUD and admin audit with Stage 6).
+- Stage 1 complete, including admin web screens, bureau CRUD, and admin audit delivered
+  in Stage 6.
 - Stage 2 implementation complete: institution registry UI, case registration UI,
   role-gated action panel, action/assignment history, officer/actor/bureau/region name
   resolution, and paginated case/institution lists. Automated browser/component E2E is
@@ -199,13 +199,14 @@ layout.
   relationship is always created for same-institution cross-bureau pairs, Jev only
   enriches, re-assessment runs on create/assign/transfer/institution change, review
   notifications are scoped and deduped, the queue is filtered/paginated, and manual
-  link/unlink is available. API and web typecheck; 57 API unit tests, 3 web tests, and 35
+  link/unlink is available. API and web typecheck; 67 API unit tests, 3 web tests, and 43
   DB-backed integration tests pass; integration tests cannot call real Jev.
 - Stage 4 implementation is complete: scoped dashboard/search/reports, region names and
   filters, quarterly grouping, CSV exports, shared disposal/reopened metrics, inclusive
   UTC bounds, notification pagination, deterministic demo seed/reset, and reconciliation
   tests. Browser E2E and page-performance gates remain Stage 7 work.
-- Stages 5, 6, and 7 are the remaining MVP path.
+- Stage 5 SLA and Stage 6 administration/attachments/audit are implemented and verified.
+  Stage 7 hardening, browser E2E, CI, and release remain.
 - The project is **not** MVP-complete; it is at "core engine + operational case workflow
   + overlap coordination + dashboard + access control complete, with SLA, admin UI, and
   release work left".
@@ -243,7 +244,7 @@ write files.
 **Scope**
 - `regions` collection; seed AICTE regional offices; link institutions/users.
 - `categories` collection (or a controlled list) for case categories.
-- Region/category masters seeded; bureau/region/category CRUD is deferred to Stage 6.
+- Region/category/bureau masters seeded; CRUD is implemented in Stage 6.
 - User administration: invite/create/deactivate; assign role, bureau, region.
 - Disable public staff signup; admin-invite-only. (Public complainant signup is
   Stage 8 only.)
@@ -257,7 +258,7 @@ write files.
 **Deliverables**
 - `apps/api/src/modules/regions/`, `categories/`, `admin/`.
 - `apps/api/src/lib/scope.ts` (central scope helpers).
-- `apps/web/src/features/admin/users/`, `organization/` (deferred to Stage 6).
+- `apps/web/src/features/admin/` users, organization, and audit screens.
 - Seed users for every role.
 - RBAC documentation.
 
@@ -266,19 +267,19 @@ write files.
 - A PGRC officer cannot fetch an RB-only case by ID (403/404, not data).
 - A regional officer cannot fetch another region's institution/case.
 - Deactivated user's request is rejected immediately; sessions are revoked.
-- Admin can create/deactivate/assign users. Admin `audit_log` is deferred to Stage 6.
+- Admin can create/deactivate/assign users and reset passwords; admin changes are audited.
 - Institution `POST`/`PATCH` requires an authorized role.
 
 **Contribution:** turns a demo into a system that can be given to real AICTE
 officials without cross-bureau data leakage.
 
-**Current gaps:** bureau CRUD and admin `audit_log` (deferred to Stage 6); admin
-users/organization web screens (deferred to Stage 6). The backend API is complete and
-verified by database-backed integration tests, now 27 in total with the Stage 3 cases,
-covering signup blocking, scoping, IDOR, dashboard totals, admin guards,
-deactivation/session revocation, institution writes, case registration scope,
-pagination, duplicate checks, officer directory, the full lifecycle audit trail, and
-Stage 3 overlap correctness/coordination.
+**Current gaps:** browser E2E and rate limiting. Bureau/region/category CRUD, admin
+`audit_log`, and admin users/organization web screens are delivered in Stage 6. The
+backend is verified by 43 DB-backed integration tests covering signup blocking, scoping,
+IDOR, dashboard totals, admin guards, deactivation/session revocation, institution
+writes, case registration scope, pagination, duplicate checks, officer directory, the
+full lifecycle audit trail, Stage 3 overlap correctness/coordination, and Stage 6
+administration/attachments/audit.
 
 ---
 
@@ -479,11 +480,12 @@ dashboard proactive.
 - Data retention/backup policy documented.
 
 **Exit criteria**
-- Admin can add a bureau/region/category and use it immediately.
-- Merge preserves case history and relationships.
-- Unauthorized attachment download is blocked (IDOR test).
-- Oversized/wrong-type upload rejected with a clear error.
-- Admin changes appear in audit log.
+- Admin can add a bureau/region/category and use it immediately. **Met.**
+- Merge preserves case history and relationships. **Met.**
+- Unauthorized attachment download is blocked (IDOR test). **Met.**
+- Oversized/wrong-type upload rejected with a clear error. **Met.**
+- Admin changes appear in audit log. **Met.**
+- Backup/retention policy documented in `docs/operations/backup-and-retention.md`.
 
 **Contribution:** sustainability and evidence handling; removes "developer must
 edit DB" from operations.

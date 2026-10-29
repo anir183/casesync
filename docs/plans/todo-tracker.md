@@ -1,15 +1,15 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–5 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset; Stage 5 SLA rules, deadline calculation, and scheduled alerts). Automated browser E2E, remaining admin web screens, and release hardening remain, so the MVP is not complete.
+**Status:** Stages 0–6 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset; Stage 5 SLA rules, deadline calculation, and scheduled alerts; Stage 6 administration, attachments, audit, and data quality). Automated browser E2E and release hardening remain, so the MVP is not complete.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
-> **Verification note.** API and web typechecks pass, Biome is clean (153 files), the API
-> unit suite passes 67 tests with 39 DB-backed integration tests skipped by default, and
-> the web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 39 DB-backed
-> integration tests pass. Both production builds succeed. Demo seed was run twice
+> **Verification note.** API and web typechecks pass, Biome is clean, the API suite
+> passes 67 unit tests with 43 DB-backed integration tests skipped by default, and the
+> web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 110 API tests pass
+> (67 unit + 43 integration). Both production builds succeed. Demo seed was run twice
 > idempotently and reset + reseed succeeded. Integration tests install a fetch guard that
 > fails on any real `jevmodel.org` call, so Jev is only ever exercised through mocks.
 > Browser/component E2E remains a Stage 7 item.
@@ -63,8 +63,8 @@
 
 **Exit:** each seeded role sees only permitted data; inactive rejected; admin can manage users; IDOR tests pass.
 
-**Deferred:** bureau CRUD and admin `audit_log` → Stage 6; admin users/organization
-web screens → Stage 6.
+**Delivered in Stage 6:** bureau CRUD, admin `audit_log`, and admin
+users/organization web screens.
 
 ## Stage 2 — Institution registry & case operations (DONE — implementation)
 
@@ -102,7 +102,7 @@ web screens → Stage 6.
 
 - [ ] Automated browser/component E2E: register → assign → remark → transfer → escalate → dispose
 - [ ] Optimistic UI for mutations (currently pending/disabled states)
-- [ ] Admin user/organization web screens (Stage 6)
+- [x] Admin user/organization web screens (Stage 6)
 
 **Exit:** officer runs a case end-to-end in UI; no manual API calls; audit exactly once per mutation. Met via manual runtime smoke checks and API integration tests.
 
@@ -179,16 +179,18 @@ web screens → Stage 6.
 
 ## Stage 6 — Administration, attachments & data quality
 
-- [ ] Bureau/region/category CRUD
+- [x] Bureau/region/category CRUD (activate/deactivate, uniqueness, referenced-delete guard)
 - [x] SLA admin UI (delivered in Stage 5)
-- [ ] Institution verify/merge/alias + duplicate warnings
-- [ ] Attachment upload/download + MIME/size/path validation + access checks
-- [ ] Attachment UI on case detail
-- [ ] `audit_log` for admin changes
-- [ ] Password reset/invite flow
-- [ ] Backup/retention policy documented
+- [x] Institution verify/merge/alias + duplicate warnings
+- [x] Attachment upload/download + MIME/size/path validation + access checks
+- [x] Attachment UI on case detail
+- [x] `audit_log` for admin changes
+- [x] Password reset/invite flow
+- [x] Backup/retention policy documented (`docs/operations/backup-and-retention.md`)
 
-**Exit:** admin operates without DB edits; unauthorized download blocked; admin changes audited.
+**Exit:** met through API integration tests and the admin/case-detail web screens; an
+admin operates without DB edits, out-of-scope downloads return 404, upload validation
+rejects unsupported/empty/oversized files, and admin changes are audited.
 
 ## Stage 7 — Hardening, QA & release
 

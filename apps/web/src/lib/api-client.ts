@@ -41,6 +41,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
+async function upload<T>(path: string, body: FormData): Promise<T> {
+  const response = await fetch(`${API_BASE}/api/v1${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    body,
+  })
+  if (!response.ok) throw await parseError(response)
+  return (await response.json()) as T
+}
+
 async function download(path: string, fallbackFilename: string) {
   const response = await fetch(`${API_BASE}/api/v1${path}`, { credentials: 'include' })
   if (!response.ok) throw await parseError(response)
@@ -59,6 +69,7 @@ async function download(path: string, fallbackFilename: string) {
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
+  upload,
   download,
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {

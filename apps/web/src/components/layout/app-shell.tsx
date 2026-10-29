@@ -5,14 +5,26 @@ import { useNotifications } from '#/features/notifications/api'
 import { signOut, useSession } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
 
-const NAV_ITEMS: Array<{ to: string; label: string; showUnread?: boolean; adminOnly?: boolean }> = [
+const NAV_ITEMS: Array<{
+  to: string
+  label: string
+  showUnread?: boolean
+  roles?: readonly string[]
+}> = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/cases', label: 'Cases' },
   { to: '/institutions', label: 'Institutions' },
   { to: '/overlaps', label: 'Overlap queue' },
   { to: '/reports', label: 'Reports' },
   { to: '/notifications', label: 'Notifications', showUnread: true },
-  { to: '/admin/sla', label: 'SLA rules', adminOnly: true },
+  { to: '/admin/users', label: 'Users', roles: ['ADMIN'] },
+  { to: '/admin/organization', label: 'Organization', roles: ['ADMIN'] },
+  { to: '/admin/sla', label: 'SLA rules', roles: ['ADMIN'] },
+  {
+    to: '/admin/audit',
+    label: 'Audit log',
+    roles: ['ADMIN', 'SENIOR_MANAGEMENT', 'COMPETENT_AUTHORITY', 'VIEWER'],
+  },
 ]
 
 export function AppShell() {
@@ -21,7 +33,7 @@ export function AppShell() {
   const navigate = useNavigate()
   const unreadCount = notifications?.unreadCount ?? 0
   const role = (session?.user as { role?: string } | undefined)?.role
-  const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || role === 'ADMIN')
+  const navItems = NAV_ITEMS.filter((item) => !item.roles || (role && item.roles.includes(role)))
 
   async function handleSignOut() {
     await signOut()
@@ -34,7 +46,7 @@ export function AppShell() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
             <span className="text-lg font-semibold">CaseSync</span>
-            <nav className="flex items-center gap-1">
+            <nav className="flex flex-wrap items-center gap-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}

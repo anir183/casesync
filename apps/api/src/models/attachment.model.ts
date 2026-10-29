@@ -7,6 +7,8 @@ export interface IAttachment extends Document {
   storagePath: string
   mimeType?: string
   sizeBytes?: number
+  checksum?: string
+  visibility: string
   createdAt: Date
 }
 
@@ -18,6 +20,8 @@ const AttachmentSchema = new Schema<IAttachment>(
     storagePath: { type: String, required: true },
     mimeType: { type: String },
     sizeBytes: { type: Number },
+    checksum: { type: String },
+    visibility: { type: String, default: 'INTERNAL' },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )

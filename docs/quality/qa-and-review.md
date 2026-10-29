@@ -29,7 +29,7 @@ exit criteria.
   similarity, interpret, Jev provider, overlap-Jev, reports, state machine,
   scope/permission, dates, CSV, metrics, demo fixtures, report export, case filters,
   and SLA timezone/rule/alert boundaries.
-- 39 database-backed integration tests in `apps/api/tests/integration/` covering
+- 43 database-backed integration tests in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
   guards, deactivation/session revocation, institution writes, case-registration
   scope, pagination contracts, duplicate checks, officer directory scoping, auto
@@ -42,14 +42,19 @@ exit criteria.
   transfer-triggered re-assessment, and Stage 4 dashboard/report filters, exports,
   region names, quarterly boundaries, reconciliation, and Stage 5 SLA rule CRUD,
   automatic/manual deadlines, scoped deduped scan notifications, transfer recompute,
-  and dashboard/report overdue agreement. They are opt-in via
-  `RUN_INTEGRATION=1` and use run-scoped records in the dev database (Atlas credentials
-  cannot create/drop databases).
+  and dashboard/report overdue agreement. Stage 6 adds admin/master CRUD audit and
+  non-admin 403s, referenced-delete 409 guards, institution alias search/duplicate
+  warnings/admin merge with case and relationship preservation, scoped attachment
+  upload/list/download with MIME/size/empty/oversize and IDOR checks, checksum and safe
+  storage-path assertions, invite/temporary-password sign-in, password reset with session
+  revocation, and audit filtering. They are opt-in via `RUN_INTEGRATION=1` and use
+  run-scoped records in the dev database (Atlas credentials cannot create/drop
+  databases).
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
 - Minimal web URL-filter tests exist; no component or browser E2E tests, no coverage
   gate, no CI.
-- API and web typecheck; Biome is clean; API and web production builds pass. Stages 3–4
+- API and web typecheck; Biome is clean; API and web production builds pass. Stages 3–6
   behavior is verified through the API integration suite; browser E2E remains.
 
 ## 3. Test pyramid and ownership
@@ -280,8 +285,9 @@ Do not duplicate full integration coverage; test UI behavior and error handling.
   pagination, invalid dates, unknown enum values.
 - **Injection**: Mongo operator injection (`$ne`, `$gt`) rejected by schema; regex
   escaping; no `eval`.
-- **File upload** (later): MIME/size, randomized names, no path traversal, access
-  check on download, no executable serving.
+- **File upload**: MIME/size, randomized names, no path traversal, access check on
+  download, no executable serving. Covered for PDF/unsupported/empty/oversize uploads,
+  scoped list/download, safe storage paths, and SHA-256 checksums.
 - **Secrets**: `JEVMODEL_API_KEY` server-only; `.env` ignored; no secrets in logs.
 - **Transport**: secure cookies in production; CORS restricted; HTTPS.
 - **Rate limits**: login, signup (if any), search, manual Jev assessment, uploads.
@@ -295,7 +301,8 @@ Do not duplicate full integration coverage; test UI behavior and error handling.
 - Regional officer guesses another region's institution ID.
 - Viewer calls `POST /cases/:id/assign`.
 - User marks another user's notification read.
-- User uploads a 100 MB file or `.exe` (when attachments exist).
+- User uploads a 100 MB file or a disallowed MIME type; a user from another bureau
+  lists or downloads an attachment.
 - User sends regex `.*` or `(` to search.
 - User calls manual overlap assess repeatedly (rate limit/cost).
 - User with `active=false` reuses an old session.

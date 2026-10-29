@@ -1,5 +1,6 @@
 import { ROLES } from '@casesync/config'
 import mongoose from 'mongoose'
+import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
 import { auth } from '#/lib/auth'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { Bureau } from '#/models/bureau.model'
@@ -184,7 +185,16 @@ export async function createUser(
   if (!user) {
     throw new AppError(HTTP_STATUS.INTERNAL, 'Created user was not found', 'USER_CREATE_FAILED')
   }
-  return { user: toDto(user as never), temporaryPassword }
+  const dto = toDto(user as never)
+  await recordAudit({
+    actorId,
+    action: AUDIT_ACTION.CREATE,
+    entityType: AUDIT_ENTITY.USER,
+    entityId: dto.id,
+    after: { ...dto },
+    metadata: { invite: true, temporaryPasswordIssued: true },
+  })
+  return { user: dto, temporaryPassword }
 }
 
 export async function updateUser(
@@ -252,7 +262,54 @@ export async function updateUser(
   if (!user) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'User not found', 'USER_NOT_FOUND')
   }
-  return toDto(user as never)
+  const dto = toDto(user as never)
+  await recordAudit({
+    actorId,
+    action: AUDIT_ACTION.UPDATE,
+    entityType: AUDIT_ENTITY.USER,
+    entityId: id,
+    before: { ...toDto(existing as never) },
+    after: { ...dto },
+    ...(input.active === false ? { metadata: { sessionsRevoked: true } } : {}),
+  })
+  return dto
+}
+
+export async function resetUserPassword(
+  id: string,
+  actorId: string,
+): Promise<{ user: AdminUserDto; temporaryPassword: string }> {
+  const existing = await User.findById(id).lean()
+  if (!existing) {
+    throw new AppError(HTTP_STATUS.NOT_FOUND, 'User not found', 'USER_NOT_FOUND')
+  }
+
+  const temporaryPassword = generateTemporaryPassword()
+  const ctx = await auth.$context
+  const hashedPassword = await ctx.password.hash(temporaryPassword)
+  const credential = await ctx.internalAdapter.findCredentialAccount(id)
+  if (credential) {
+    await ctx.internalAdapter.updatePassword(id, hashedPassword)
+  } else {
+    await ctx.internalAdapter.createAccount({
+      userId: id,
+      providerId: 'credential',
+      accountId: id,
+      password: hashedPassword,
+    })
+  }
+  const revokedSessions = await deleteUserSessions(id)
+
+  const dto = toDto(existing as never)
+  await recordAudit({
+    actorId,
+    action: AUDIT_ACTION.RESET_PASSWORD,
+    entityType: AUDIT_ENTITY.USER,
+    entityId: id,
+    after: { ...dto },
+    metadata: { temporaryPasswordIssued: true, revokedSessions },
+  })
+  return { user: dto, temporaryPassword }
 }
 
 export async function deleteUserSessions(id: string) {

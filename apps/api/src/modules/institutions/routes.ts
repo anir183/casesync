@@ -1,6 +1,8 @@
 import { normalizeInstitutionName } from '@casesync/utils'
 import { Elysia, t } from 'elysia'
+import mongoose from 'mongoose'
 import { env } from '#/config/env'
+import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
 import { addToStatusCounts, emptyStatusCounts, withOpen } from '#/lib/case-metrics'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
@@ -12,7 +14,7 @@ import {
   mergeFilters,
   resolveScope,
 } from '#/lib/scope'
-import { requireAuth } from '#/middleware/rbac'
+import { requireAuth, requireRole } from '#/middleware/rbac'
 import { CaseAssignment } from '#/models/case-assignment.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
@@ -22,6 +24,43 @@ import { reassessInstitutionOverlaps } from '#/modules/overlaps/overlap.service'
 import { recalculateDeadlinesForInstitution } from '#/modules/sla/sla.service'
 
 const DUPLICATE_CHECK_LIMIT = 10
+const ADMIN_ROLES = ['ADMIN']
+
+function cleanAliases(name: string, aliases?: string[]) {
+  const seen = new Set<string>([normalizeInstitutionName(name)])
+  const values: string[] = []
+  for (const alias of aliases ?? []) {
+    const trimmed = alias.trim()
+    const normalized = normalizeInstitutionName(trimmed)
+    if (!trimmed || seen.has(normalized)) continue
+    seen.add(normalized)
+    values.push(trimmed)
+  }
+  return {
+    aliases: values,
+    aliasesNormalized: values.map((alias) => normalizeInstitutionName(alias)),
+  }
+}
+
+function institutionAuditSnapshot(item: {
+  _id: unknown
+  name: string
+  aictePermanentId?: string
+  aliases?: string[]
+  address?: string
+  regionId?: unknown
+  verified?: boolean
+}) {
+  return {
+    id: String(item._id),
+    name: item.name,
+    aictePermanentId: item.aictePermanentId,
+    aliases: item.aliases ?? [],
+    address: item.address,
+    regionId: item.regionId ? String(item.regionId) : undefined,
+    verified: item.verified === true,
+  }
+}
 
 function triggerInstitutionReassessment(institutionId: string, actorId: string) {
   if (!env.OVERLAP_AUTO_ASSESS) return
@@ -77,10 +116,11 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
       const paging = resolvePageQuery(query)
       const filter: Record<string, unknown> = {}
       if (query.q) {
-        filter.nameNormalized = {
+        const pattern = {
           $regex: escapeRegex(normalizeInstitutionName(query.q)),
           $options: 'i',
         }
+        filter.$or = [{ nameNormalized: pattern }, { aliasesNormalized: pattern }]
       }
       if (query.aictePermanentId) {
         filter.aictePermanentId = { $regex: escapeRegex(query.aictePermanentId), $options: 'i' }
@@ -124,7 +164,8 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
         conditions.push({ aictePermanentId: query.aictePermanentId.trim() })
       }
       if (query.name?.trim()) {
-        conditions.push({ nameNormalized: normalizeInstitutionName(query.name) })
+        const normalized = normalizeInstitutionName(query.name)
+        conditions.push({ nameNormalized: normalized }, { aliasesNormalized: normalized })
       }
       if (conditions.length === 0) return { duplicates: [] }
 
@@ -166,14 +207,29 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
         }
       }
       const nameNormalized = normalizeInstitutionName(body.name)
-      const item = await Institution.create({ ...body, regionId, nameNormalized })
+      const aliasFields = cleanAliases(body.name, body.aliases)
+      const item = await Institution.create({
+        ...body,
+        ...aliasFields,
+        regionId,
+        nameNormalized,
+      })
+      const plain = item.toObject()
+      await recordAudit({
+        actorId: user.id,
+        action: AUDIT_ACTION.CREATE,
+        entityType: AUDIT_ENTITY.INSTITUTION,
+        entityId: String(item._id),
+        after: institutionAuditSnapshot(plain),
+      })
       const regionNames = await loadRegionNames([item])
-      return toInstitutionDto(item.toObject(), regionNames)
+      return toInstitutionDto(plain, regionNames)
     },
     {
       body: t.Object({
         name: t.String({ minLength: 1 }),
         aictePermanentId: t.Optional(t.String()),
+        aliases: t.Optional(t.Array(t.String({ maxLength: 200 }), { maxItems: 25 })),
         address: t.Optional(t.String()),
         regionId: t.Optional(t.String()),
         verified: t.Optional(t.Boolean()),
@@ -199,6 +255,12 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
 
       const update: Record<string, unknown> = { ...body }
       if (body.name !== undefined) update.nameNormalized = normalizeInstitutionName(body.name)
+      if (body.aliases !== undefined || body.name !== undefined) {
+        Object.assign(
+          update,
+          cleanAliases(body.name ?? existing.name, body.aliases ?? existing.aliases),
+        )
+      }
       const item = await Institution.findByIdAndUpdate(params.id, update, { new: true }).lean()
       if (!item) {
         throw new AppError(HTTP_STATUS.NOT_FOUND, 'Institution not found', 'INSTITUTION_NOT_FOUND')
@@ -213,16 +275,100 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
         body.regionId !== undefined
       if (identityChanged) triggerInstitutionReassessment(params.id, user.id)
       const regionNames = await loadRegionNames([item])
+      await recordAudit({
+        actorId: user.id,
+        action: AUDIT_ACTION.UPDATE,
+        entityType: AUDIT_ENTITY.INSTITUTION,
+        entityId: params.id,
+        before: institutionAuditSnapshot(existing),
+        after: institutionAuditSnapshot(item),
+      })
       return toInstitutionDto(item, regionNames)
     },
     {
       body: t.Object({
         name: t.Optional(t.String({ minLength: 1 })),
         aictePermanentId: t.Optional(t.String()),
+        aliases: t.Optional(t.Array(t.String({ maxLength: 200 }), { maxItems: 25 })),
         address: t.Optional(t.String()),
         regionId: t.Optional(t.String()),
         verified: t.Optional(t.Boolean()),
         otherDetails: t.Optional(t.Record(t.String(), t.Unknown())),
+      }),
+    },
+  )
+  .post(
+    '/:id/merge',
+    async ({ params, body, user }) => {
+      requireRole(user, ADMIN_ROLES)
+      if (
+        !mongoose.isValidObjectId(params.id) ||
+        !mongoose.isValidObjectId(body.targetInstitutionId)
+      ) {
+        throw new AppError(
+          HTTP_STATUS.BAD_REQUEST,
+          'Valid institution ids are required',
+          'INVALID_INSTITUTION',
+        )
+      }
+      if (params.id === body.targetInstitutionId) {
+        throw new AppError(
+          HTTP_STATUS.BAD_REQUEST,
+          'An institution cannot be merged into itself',
+          'INVALID_INSTITUTION_MERGE',
+        )
+      }
+      const [source, target] = await Promise.all([
+        Institution.findById(params.id).lean(),
+        Institution.findById(body.targetInstitutionId).lean(),
+      ])
+      if (!source || !target) {
+        throw new AppError(HTTP_STATUS.NOT_FOUND, 'Institution not found', 'INSTITUTION_NOT_FOUND')
+      }
+
+      const mergedAliases = cleanAliases(target.name, [
+        ...(target.aliases ?? []),
+        ...(source.aliases ?? []),
+        source.name,
+      ])
+      const update: Record<string, unknown> = { ...mergedAliases }
+      if (!target.aictePermanentId && source.aictePermanentId) {
+        update.aictePermanentId = source.aictePermanentId
+      }
+      const merged = await Institution.findByIdAndUpdate(body.targetInstitutionId, update, {
+        new: true,
+      }).lean()
+      const caseUpdate: Record<string, unknown> = { institutionId: target._id }
+      if (target.regionId) caseUpdate.regionId = target.regionId
+      const casesMoved = await Case.updateMany({ institutionId: source._id }, { $set: caseUpdate })
+      await Institution.findByIdAndDelete(source._id)
+      await recalculateDeadlinesForInstitution(String(target._id))
+      triggerInstitutionReassessment(String(target._id), user.id)
+
+      await recordAudit({
+        actorId: user.id,
+        action: AUDIT_ACTION.MERGE,
+        entityType: AUDIT_ENTITY.INSTITUTION,
+        entityId: body.targetInstitutionId,
+        before: {
+          source: institutionAuditSnapshot(source),
+          target: institutionAuditSnapshot(target),
+        },
+        after: merged ? institutionAuditSnapshot(merged) : undefined,
+        metadata: {
+          sourceInstitutionId: params.id,
+          casesMoved: casesMoved.modifiedCount,
+        },
+      })
+      const regionNames = merged ? await loadRegionNames([merged]) : new Map<string, string>()
+      if (!merged) {
+        throw new AppError(HTTP_STATUS.NOT_FOUND, 'Institution not found', 'INSTITUTION_NOT_FOUND')
+      }
+      return toInstitutionDto(merged, regionNames)
+    },
+    {
+      body: t.Object({
+        targetInstitutionId: t.String({ minLength: 1 }),
       }),
     },
   )

@@ -4,6 +4,8 @@ export interface IInstitution extends Document {
   aictePermanentId?: string
   name: string
   nameNormalized: string
+  aliases: string[]
+  aliasesNormalized: string[]
   address?: string
   regionId?: mongoose.Types.ObjectId
   otherDetails?: Record<string, unknown>
@@ -17,6 +19,8 @@ const InstitutionSchema = new Schema<IInstitution>(
     aictePermanentId: { type: String, sparse: true, unique: true },
     name: { type: String, required: true },
     nameNormalized: { type: String, required: true },
+    aliases: { type: [String], default: [] },
+    aliasesNormalized: { type: [String], default: [] },
     address: { type: String },
     regionId: { type: Schema.Types.ObjectId, ref: 'Region' },
     otherDetails: { type: Schema.Types.Mixed },
@@ -26,4 +30,5 @@ const InstitutionSchema = new Schema<IInstitution>(
 )
 
 InstitutionSchema.index({ nameNormalized: 1 })
+InstitutionSchema.index({ aliasesNormalized: 1 })
 export const Institution = mongoose.model<IInstitution>('Institution', InstitutionSchema)

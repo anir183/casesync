@@ -1,6 +1,7 @@
 import { ROLES } from '@casesync/config'
 import mongoose from 'mongoose'
 import { env } from '#/config/env'
+import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import {
   LOCKED_SLA_DEFAULTS,
@@ -350,7 +351,20 @@ export async function listSlaConfigs() {
   }
 }
 
-export async function createSlaConfig(input: SlaConfigInput) {
+function auditSnapshot(item: ISlaConfig) {
+  return {
+    id: String(item._id),
+    bureauId: item.bureauId ? String(item.bureauId) : undefined,
+    category: item.category,
+    regionId: item.regionId ? String(item.regionId) : undefined,
+    slaDays: item.slaDays,
+    pendingReminderDays: item.pendingReminderDays,
+    reminderDays: item.reminderDays,
+    active: item.active,
+  }
+}
+
+export async function createSlaConfig(input: SlaConfigInput, actorId?: string) {
   const normalized = normalizeInput(input)
   const slaDays = validateSlaDays(normalized.slaDays, true) as number
   await validateReferences(normalized)
@@ -370,10 +384,20 @@ export async function createSlaConfig(input: SlaConfigInput) {
     active: normalized.active ?? true,
   })
   const { bureauNames, regionNames } = await enrich([item])
-  return toDto(item, bureauNames, regionNames)
+  const dto = toDto(item, bureauNames, regionNames)
+  if (actorId) {
+    await recordAudit({
+      actorId,
+      action: AUDIT_ACTION.CREATE,
+      entityType: AUDIT_ENTITY.SLA_CONFIG,
+      entityId: String(item._id),
+      after: dto,
+    })
+  }
+  return dto
 }
 
-export async function updateSlaConfig(id: string, input: SlaConfigInput) {
+export async function updateSlaConfig(id: string, input: SlaConfigInput, actorId?: string) {
   if (!mongoose.isValidObjectId(id)) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'SLA rule not found', 'SLA_CONFIG_NOT_FOUND')
   }
@@ -444,16 +468,36 @@ export async function updateSlaConfig(id: string, input: SlaConfigInput) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'SLA rule not found', 'SLA_CONFIG_NOT_FOUND')
   }
   const { bureauNames, regionNames } = await enrich([item])
-  return toDto(item, bureauNames, regionNames)
+  const dto = toDto(item, bureauNames, regionNames)
+  if (actorId) {
+    await recordAudit({
+      actorId,
+      action: AUDIT_ACTION.UPDATE,
+      entityType: AUDIT_ENTITY.SLA_CONFIG,
+      entityId: id,
+      before: auditSnapshot(existing),
+      after: dto,
+    })
+  }
+  return dto
 }
 
-export async function deleteSlaConfig(id: string) {
+export async function deleteSlaConfig(id: string, actorId?: string) {
   if (!mongoose.isValidObjectId(id)) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'SLA rule not found', 'SLA_CONFIG_NOT_FOUND')
   }
   const item = await SlaConfig.findByIdAndDelete(id)
   if (!item) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'SLA rule not found', 'SLA_CONFIG_NOT_FOUND')
+  }
+  if (actorId) {
+    await recordAudit({
+      actorId,
+      action: AUDIT_ACTION.DELETE,
+      entityType: AUDIT_ENTITY.SLA_CONFIG,
+      entityId: id,
+      before: auditSnapshot(item),
+    })
   }
   return { deleted: true }
 }

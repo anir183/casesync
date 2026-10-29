@@ -5,7 +5,7 @@ import type { ReportsSummary } from '#/modules/reports/report.service'
 const SUMMARY: ReportsSummary = {
   generatedAt: '2026-10-29T12:00:00.000Z',
   range: { from: '2026-10-01T00:00:00.000Z', to: '2026-10-31T23:59:59.999Z' },
-  totals: { total: 2, open: 1, disposed: 1, reopened: 0, disposalRate: 50 },
+  totals: { total: 2, open: 1, disposed: 1, reopened: 0, beyondTimelines: 0, disposalRate: 50 },
   byStatus: [{ status: 'DISPOSED', count: 1 }],
   byCategory: [{ category: 'FEES', count: 1 }],
   byBureau: [{ bureauId: 'b1', name: 'RB', total: 2, open: 1, disposed: 1 }],

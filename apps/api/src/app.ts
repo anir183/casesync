@@ -5,8 +5,10 @@ import { env } from '#/config/env'
 import { auth } from '#/lib/auth'
 import { HTTP_STATUS } from '#/lib/errors'
 import { toErrorResponse } from '#/middleware/error'
+import { auditRoutes } from '#/modules/admin/audit.routes'
 import { jobsRoutes } from '#/modules/admin/jobs.routes'
 import { adminUsersRoutes } from '#/modules/admin/users.routes'
+import { attachmentsRoutes } from '#/modules/attachments/routes'
 import { bureausRoutes } from '#/modules/bureaus/routes'
 import { casesRoutes } from '#/modules/cases/routes'
 import { categoriesRoutes } from '#/modules/categories/routes'
@@ -57,12 +59,14 @@ export const app = new Elysia()
       .use(categoriesRoutes)
       .use(usersRoutes)
       .use(casesRoutes)
+      .use(attachmentsRoutes)
       .use(overlapsRoutes)
       .use(notificationsRoutes)
       .use(reportsRoutes)
       .use(dashboardRoutes)
       .use(slaRoutes)
       .use(adminUsersRoutes)
+      .use(auditRoutes)
       .use(jobsRoutes),
   )
   .get('/', () => ({ status: 'ok', service: 'casesync-api' }))

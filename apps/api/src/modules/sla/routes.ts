@@ -42,7 +42,7 @@ export const slaRoutes = new Elysia({ prefix: '/sla-configs' })
     async ({ body, user, set }) => {
       requireRole(user, SLA_ADMIN_ROLES)
       set.status = 201
-      return createSlaConfig(body)
+      return createSlaConfig(body, user.id)
     },
     { body: createBody },
   )
@@ -50,11 +50,11 @@ export const slaRoutes = new Elysia({ prefix: '/sla-configs' })
     '/:id',
     async ({ params, body, user }) => {
       requireRole(user, SLA_ADMIN_ROLES)
-      return updateSlaConfig(params.id, body)
+      return updateSlaConfig(params.id, body, user.id)
     },
     { body: updateBody },
   )
   .delete('/:id', async ({ params, user }) => {
     requireRole(user, SLA_ADMIN_ROLES)
-    return deleteSlaConfig(params.id)
+    return deleteSlaConfig(params.id, user.id)
   })

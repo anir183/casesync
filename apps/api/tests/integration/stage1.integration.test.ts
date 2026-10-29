@@ -1,4 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'bun:test'
+import { rm } from 'node:fs/promises'
+import path from 'node:path'
 import {
   ACTION_TYPE,
   CASE_STATUS,
@@ -70,6 +72,8 @@ interface Runtime {
   Notification: typeof import('#/models/notification.model').Notification
   SlaConfig: typeof import('#/models/sla-config.model').SlaConfig
   JobRun: typeof import('#/models/job-run.model').JobRun
+  Attachment: typeof import('#/models/attachment.model').Attachment
+  AuditLog: typeof import('#/models/audit_log.model').AuditLog
   auth: typeof import('#/lib/auth').auth
 }
 
@@ -122,6 +126,33 @@ async function signIn(emailAddress: string): Promise<string> {
   const cookie = cookieFrom(response)
   cookies.set(emailAddress, cookie)
   return cookie
+}
+
+async function signInWithPassword(emailAddress: string, password: string) {
+  const response = await runtime.app.handle(
+    new Request('http://localhost/api/auth/sign-in/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: emailAddress, password }),
+    }),
+  )
+  if (response.status === 200) cookies.set(emailAddress, cookieFrom(response))
+  return response
+}
+
+async function uploadAttachment(emailAddress: string, caseId: string, file: File) {
+  const headers: Record<string, string> = {}
+  const cookie = cookies.get(emailAddress)
+  if (cookie) headers.cookie = cookie
+  const body = new FormData()
+  body.set('file', file)
+  return runtime.app.handle(
+    new Request(`http://localhost/api/v1/cases/${caseId}/attachments`, {
+      method: 'POST',
+      headers,
+      body,
+    }),
+  )
 }
 
 async function api(
@@ -310,7 +341,17 @@ async function cleanup() {
       ],
     }),
   ])
+  await runtime.Attachment.deleteMany({ caseId: { $in: caseIds } })
   await runtime.Case.deleteMany({ _id: { $in: caseIds } })
+  await Promise.all(
+    caseIds.map((caseId) =>
+      rm(path.resolve(env.ATTACHMENT_STORAGE_DIR, String(caseId)), {
+        recursive: true,
+        force: true,
+      }),
+    ),
+  )
+  await runtime.AuditLog.deleteMany({ actorId: { $in: [...userIds.values()] } })
 
   await runtime.SlaConfig.deleteMany({
     $or: [
@@ -351,6 +392,8 @@ beforeAll(async () => {
     notificationModule,
     slaConfigModule,
     jobRunModule,
+    attachmentModule,
+    auditLogModule,
   ] = await Promise.all([
     import('#/app'),
     import('#/lib/auth'),
@@ -366,6 +409,8 @@ beforeAll(async () => {
     import('#/models/notification.model'),
     import('#/models/sla-config.model'),
     import('#/models/job-run.model'),
+    import('#/models/attachment.model'),
+    import('#/models/audit_log.model'),
   ])
 
   runtime = {
@@ -383,6 +428,8 @@ beforeAll(async () => {
     Notification: notificationModule.Notification,
     SlaConfig: slaConfigModule.SlaConfig,
     JobRun: jobRunModule.JobRun,
+    Attachment: attachmentModule.Attachment,
+    AuditLog: auditLogModule.AuditLog,
   }
 
   await runtime.Region.create([
@@ -1802,5 +1849,305 @@ suite('Stage 5 SLA configuration and scan integration', () => {
       await api(email('admin'), `/cases/${manualCase.id}`),
     )
     expect(manualDetail.expectedDisposalAt).toBe(manualDeadline)
+  })
+})
+
+suite('Stage 6 administration, attachments and data quality integration', () => {
+  test('admin master CRUD is guarded and audited', async () => {
+    const bureauCode = code('BAUX')
+    const regionCode = code('RAUX')
+    const categoryCode = code('CAUX')
+    const admin = email('admin')
+
+    const bureauResponse = await api(admin, '/bureaus', {
+      method: 'POST',
+      body: { code: bureauCode, name: `Audit Bureau ${RUN_ID}` },
+    })
+    expect(bureauResponse.status).toBe(200)
+    const bureau = await json<{ _id: string; active: boolean }>(bureauResponse)
+    expect(bureau.active).toBe(true)
+
+    const bureauPatch = await api(admin, `/bureaus/${bureau._id}`, {
+      method: 'PATCH',
+      body: { name: `Audit Bureau Updated ${RUN_ID}`, active: false },
+    })
+    expect(bureauPatch.status).toBe(200)
+    expect((await json<{ active: boolean }>(bureauPatch)).active).toBe(false)
+
+    const regionResponse = await api(admin, '/regions', {
+      method: 'POST',
+      body: { code: regionCode, name: `Audit Region ${RUN_ID}`, officeCity: 'Test City' },
+    })
+    expect(regionResponse.status).toBe(200)
+    const region = await json<{ _id: string }>(regionResponse)
+    expect(
+      (
+        await api(admin, `/regions/${region._id}`, {
+          method: 'PATCH',
+          body: { name: `Audit Region Updated ${RUN_ID}` },
+        })
+      ).status,
+    ).toBe(200)
+
+    const categoryResponse = await api(admin, '/categories', {
+      method: 'POST',
+      body: { code: categoryCode, name: `Audit Category ${RUN_ID}` },
+    })
+    expect(categoryResponse.status).toBe(200)
+    const category = await json<{ _id: string }>(categoryResponse)
+    expect(
+      (
+        await api(admin, `/categories/${category._id}`, {
+          method: 'PATCH',
+          body: { name: `Audit Category Updated ${RUN_ID}` },
+        })
+      ).status,
+    ).toBe(200)
+
+    const referencedBureau = await api(admin, `/bureaus/${PGRC_BUREAU}`, { method: 'DELETE' })
+    expect(referencedBureau.status).toBe(409)
+    expect((await json<{ error: string }>(referencedBureau)).error).toBe('BUREAU_IN_USE')
+    const referencedRegion = await api(admin, `/regions/${NORTH_REGION}`, { method: 'DELETE' })
+    expect(referencedRegion.status).toBe(409)
+    expect((await json<{ error: string }>(referencedRegion)).error).toBe('REGION_IN_USE')
+
+    expect((await api(admin, `/bureaus/${bureau._id}`, { method: 'DELETE' })).status).toBe(200)
+    expect((await api(admin, `/regions/${region._id}`, { method: 'DELETE' })).status).toBe(200)
+    expect((await api(admin, `/categories/${category._id}`, { method: 'DELETE' })).status).toBe(200)
+
+    const denied = await api(email('pgrc'), '/bureaus', {
+      method: 'POST',
+      body: { code: code('DENIED'), name: `Denied Bureau ${RUN_ID}` },
+    })
+    expect(denied.status).toBe(403)
+
+    const auditResponse = await api(admin, '/admin/audit?entityType=BUREAU&pageSize=100')
+    expect(auditResponse.status).toBe(200)
+    const audit =
+      await json<PageBody<{ action: string; entityId: string; actorName?: string }>>(auditResponse)
+    const bureauAudit = audit.items.filter((item) => item.entityId === bureau._id)
+    expect(bureauAudit.map((item) => item.action)).toEqual(
+      expect.arrayContaining(['CREATE', 'UPDATE', 'DELETE']),
+    )
+    expect(bureauAudit.find((item) => item.action === 'CREATE')?.actorName).toBe('admin')
+
+    expect((await api(email('viewer'), '/admin/audit')).status).toBe(200)
+    expect((await api(email('pgrc'), '/admin/audit')).status).toBe(403)
+  })
+
+  test('institution aliases are searchable and merge preserves cases and relationships', async () => {
+    const admin = email('admin')
+    const sourceName = `Merge Source ${RUN_ID}`
+    const targetName = `Merge Target ${RUN_ID}`
+    const alias = `Legacy Campus ${RUN_ID}`
+
+    const sourceResponse = await api(admin, '/institutions', {
+      method: 'POST',
+      body: {
+        name: sourceName,
+        regionId: String(NORTH_REGION),
+        aliases: [alias, 'Former Name'],
+      },
+    })
+    expect(sourceResponse.status).toBe(200)
+    const source = await json<{ id: string }>(sourceResponse)
+    createdInstitutionIds.push(new mongoose.Types.ObjectId(source.id))
+
+    const targetResponse = await api(admin, '/institutions', {
+      method: 'POST',
+      body: { name: targetName, regionId: String(SOUTH_REGION) },
+    })
+    expect(targetResponse.status).toBe(200)
+    const target = await json<{ id: string }>(targetResponse)
+    createdInstitutionIds.push(new mongoose.Types.ObjectId(target.id))
+
+    const aliasSearch = await api(
+      admin,
+      `/institutions?q=${encodeURIComponent(alias)}&pageSize=100`,
+    )
+    expect(aliasSearch.status).toBe(200)
+    const aliasResults = await json<PageBody<{ id: string }>>(aliasSearch)
+    expect(aliasResults.items.some((item) => item.id === source.id)).toBe(true)
+
+    const duplicateSearch = await api(
+      admin,
+      `/institutions/check-duplicate?name=${encodeURIComponent(alias)}`,
+    )
+    expect(duplicateSearch.status).toBe(200)
+    const duplicates = await json<{ duplicates: Array<{ id: string }> }>(duplicateSearch)
+    expect(duplicates.duplicates.some((item) => item.id === source.id)).toBe(true)
+
+    const caseNumbers = [`MERGE-${RUN_ID}-A`, `MERGE-${RUN_ID}-B`]
+    const createdCases: string[] = []
+    for (const caseNumber of caseNumbers) {
+      const created = await api(admin, '/cases', {
+        method: 'POST',
+        body: {
+          institutionId: source.id,
+          bureauId: String(PGRC_BUREAU),
+          caseNumber,
+          description: 'Case moved by institution merge',
+        },
+      })
+      expect(created.status).toBe(200)
+      const createdBody = await json<{ id: string }>(created)
+      createdCases.push(createdBody.id)
+      createdCaseIds.push(createdBody.id)
+    }
+    const relationship = await runtime.CaseRelationship.create({
+      caseAId: createdCases[0],
+      caseBId: createdCases[1],
+      matchType: RELATIONSHIP_MATCH_TYPE.INSTITUTION_EXACT_ID,
+      reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
+      reason: 'Merge preservation test',
+    })
+
+    const denied = await api(email('viewer'), `/institutions/${source.id}/merge`, {
+      method: 'POST',
+      body: { targetInstitutionId: target.id },
+    })
+    expect(denied.status).toBe(403)
+
+    const mergeResponse = await api(admin, `/institutions/${source.id}/merge`, {
+      method: 'POST',
+      body: { targetInstitutionId: target.id },
+    })
+    expect(mergeResponse.status).toBe(200)
+    const merged = await json<{ id: string; aliases: string[] }>(mergeResponse)
+    expect(merged.id).toBe(target.id)
+    expect(merged.aliases).toEqual(expect.arrayContaining([alias, sourceName]))
+
+    expect((await api(admin, `/institutions/${source.id}`)).status).toBe(404)
+    for (const caseId of createdCases) {
+      const moved = await runtime.Case.findById(caseId).lean()
+      expect(String(moved?.institutionId)).toBe(target.id)
+      expect(String(moved?.regionId)).toBe(String(SOUTH_REGION))
+    }
+    expect(await runtime.CaseRelationship.findById(relationship._id).lean()).toBeTruthy()
+
+    const movedSearch = await api(
+      admin,
+      `/institutions?q=${encodeURIComponent(alias)}&pageSize=100`,
+    )
+    const movedResults = await json<PageBody<{ id: string }>>(movedSearch)
+    expect(movedResults.items.some((item) => item.id === target.id)).toBe(true)
+    expect(movedResults.items.some((item) => item.id === source.id)).toBe(false)
+
+    const mergeAudit = await api(admin, '/admin/audit?entityType=INSTITUTION&action=MERGE')
+    const mergeAuditBody = await json<PageBody<{ entityId: string }>>(mergeAudit)
+    expect(mergeAuditBody.items.some((item) => item.entityId === target.id)).toBe(true)
+  })
+
+  test('attachments validate type/size, use safe storage, and block out-of-scope access', async () => {
+    const admin = email('admin')
+    const pgrc = email('pgrc')
+    const rb = email('rb')
+    const caseId = await testCaseId(CASES.pgrcNorth)
+    const content = new TextEncoder().encode('%PDF-1.4 CaseSync attachment test')
+    const file = new File([content], 'evidence.pdf', { type: 'application/pdf' })
+
+    const upload = await uploadAttachment(pgrc, caseId, file)
+    expect(upload.status).toBe(201)
+    const attachment = await json<{ id: string; filename: string; mimeType: string }>(upload)
+    expect(attachment.filename).toBe('evidence.pdf')
+    expect(attachment.mimeType).toBe('application/pdf')
+
+    const stored = await runtime.Attachment.findById(attachment.id).lean()
+    expect(stored?.storagePath.startsWith(`${caseId}/`)).toBe(true)
+    expect(stored?.storagePath.includes('evidence.pdf')).toBe(false)
+    expect(stored?.checksum).toHaveLength(64)
+
+    const list = await api(pgrc, `/cases/${caseId}/attachments`)
+    expect(list.status).toBe(200)
+    const listed = await json<{ items: Array<{ id: string }> }>(list)
+    expect(listed.items.map((item) => item.id)).toContain(attachment.id)
+
+    const download = await api(pgrc, `/attachments/${attachment.id}/download`)
+    expect(download.status).toBe(200)
+    expect(download.headers.get('content-type')).toContain('application/pdf')
+    expect(download.headers.get('x-content-type-options')).toBe('nosniff')
+    expect(new Uint8Array(await download.arrayBuffer())).toEqual(content)
+
+    expect((await api(rb, `/cases/${caseId}/attachments`)).status).toBe(404)
+    expect((await api(rb, `/attachments/${attachment.id}/download`)).status).toBe(404)
+    expect((await api(email('viewer'), `/attachments/${attachment.id}/download`)).status).toBe(200)
+
+    const wrongType = await uploadAttachment(
+      admin,
+      caseId,
+      new File(['<script>alert(1)</script>'], 'attack.html', { type: 'text/html' }),
+    )
+    expect(wrongType.status).toBe(400)
+    expect((await json<{ error: string }>(wrongType)).error).toBe('ATTACHMENT_TYPE_NOT_ALLOWED')
+
+    const empty = await uploadAttachment(
+      admin,
+      caseId,
+      new File([], 'empty.pdf', { type: 'application/pdf' }),
+    )
+    expect(empty.status).toBe(400)
+
+    const oversized = await uploadAttachment(
+      admin,
+      caseId,
+      new File([new Uint8Array(env.ATTACHMENT_MAX_BYTES + 1)], 'large.pdf', {
+        type: 'application/pdf',
+      }),
+    )
+    expect(oversized.status).toBe(400)
+    expect((await json<{ error: string }>(oversized)).error).toBe('ATTACHMENT_TOO_LARGE')
+
+    const deniedUpload = await uploadAttachment(
+      email('viewer'),
+      caseId,
+      new File(['viewer'], 'viewer.txt', { type: 'text/plain' }),
+    )
+    expect(deniedUpload.status).toBe(403)
+
+    const attachmentAudit = await api(admin, '/admin/audit?entityType=ATTACHMENT')
+    expect(attachmentAudit.status).toBe(200)
+    const attachmentAuditBody = await json<PageBody<{ entityId: string }>>(attachmentAudit)
+    expect(attachmentAuditBody.items.some((item) => item.entityId === attachment.id)).toBe(true)
+  })
+
+  test('admin invites and password resets issue one-time credentials and revoke sessions', async () => {
+    const admin = email('admin')
+    const inviteEmail = email('invitee')
+
+    const createResponse = await api(admin, '/admin/users', {
+      method: 'POST',
+      body: { name: 'Invited User', email: inviteEmail, role: 'VIEWER' },
+    })
+    expect(createResponse.status).toBe(200)
+    const created = await json<{
+      user: { id: string }
+      temporaryPassword: string
+    }>(createResponse)
+    expect(created.temporaryPassword.length).toBeGreaterThanOrEqual(12)
+
+    const initialLogin = await signInWithPassword(inviteEmail, created.temporaryPassword)
+    expect(initialLogin.status).toBe(200)
+    const oldCookie = cookies.get(inviteEmail)
+    expect(oldCookie).toBeTruthy()
+
+    const resetResponse = await api(admin, `/admin/users/${created.user.id}/reset-password`, {
+      method: 'POST',
+    })
+    expect(resetResponse.status).toBe(200)
+    const reset = await json<{ temporaryPassword: string }>(resetResponse)
+    expect(reset.temporaryPassword).not.toBe(created.temporaryPassword)
+
+    const oldSession = await runtime.app.handle(
+      new Request('http://localhost/api/v1/cases', {
+        headers: { cookie: oldCookie as string },
+      }),
+    )
+    expect(oldSession.status).toBe(401)
+    expect((await signInWithPassword(inviteEmail, created.temporaryPassword)).status).not.toBe(200)
+    expect((await signInWithPassword(inviteEmail, reset.temporaryPassword)).status).toBe(200)
+
+    const resetAudit = await api(admin, '/admin/audit?action=RESET_PASSWORD')
+    const resetAuditBody = await json<PageBody<{ entityId: string }>>(resetAudit)
+    expect(resetAuditBody.items.some((item) => item.entityId === created.user.id)).toBe(true)
   })
 })

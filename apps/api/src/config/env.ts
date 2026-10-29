@@ -31,6 +31,17 @@ const envSchema = z.object({
   PENDING_REMINDER_DAYS: z.coerce.number().int().positive().default(7),
   CRON_ENABLED: booleanFromEnv,
   SLA_TIMEZONE: z.string().default('Asia/Kolkata'),
+  ATTACHMENT_STORAGE_DIR: z.string().default('storage/attachments'),
+  ATTACHMENT_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024),
+  ATTACHMENT_ALLOWED_MIME_TYPES: z
+    .string()
+    .default(
+      'application/pdf,image/png,image/jpeg,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ),
 })
 
 export const env = envSchema.parse(process.env)

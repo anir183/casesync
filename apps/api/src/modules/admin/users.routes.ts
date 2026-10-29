@@ -1,7 +1,7 @@
 import { ROLES } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { requireAuth, requireRole } from '#/middleware/rbac'
-import { createUser, listUsers, updateUser } from './users.service'
+import { createUser, listUsers, resetUserPassword, updateUser } from './users.service'
 
 const userBody = t.Object({
   name: t.String({ minLength: 1, maxLength: 200 }),
@@ -60,3 +60,7 @@ export const adminUsersRoutes = new Elysia({ prefix: '/admin/users' })
     },
     { body: updateBody },
   )
+  .post('/:id/reset-password', async ({ params, user }) => {
+    requireRole(user, [ROLES.ADMIN])
+    return resetUserPassword(params.id, user.id)
+  })

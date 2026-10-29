@@ -23,6 +23,7 @@ import {
 const institutionSchema = z.object({
   name: z.string().min(1, 'Institution name is required'),
   aictePermanentId: z.string().optional(),
+  aliases: z.string().optional(),
   address: z.string().optional(),
   regionId: z.string().min(1, 'Select a region'),
   verified: z.boolean(),
@@ -57,6 +58,7 @@ export function InstitutionFormPage() {
     defaultValues: {
       name: '',
       aictePermanentId: '',
+      aliases: '',
       address: '',
       regionId: '',
       verified: false,
@@ -79,6 +81,7 @@ export function InstitutionFormPage() {
     reset({
       name: institution.name,
       aictePermanentId: institution.aictePermanentId ?? '',
+      aliases: (institution.aliases ?? []).join('\n'),
       address: institution.address ?? '',
       regionId: institution.regionId ?? '',
       verified: institution.verified,
@@ -95,6 +98,10 @@ export function InstitutionFormPage() {
     const payload = {
       name: values.name.trim(),
       aictePermanentId: values.aictePermanentId?.trim() || undefined,
+      aliases: (values.aliases ?? '')
+        .split(/[\n,]/)
+        .map((alias) => alias.trim())
+        .filter(Boolean),
       address: values.address?.trim() || undefined,
       regionId: values.regionId,
       verified: values.verified,
@@ -163,6 +170,18 @@ export function InstitutionFormPage() {
               <Input id="aictePermanentId" {...register('aictePermanentId')} />
               <p className="text-xs text-muted-foreground">
                 Leave blank only when the official ID is not yet available.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <FieldLabel htmlFor="aliases">Aliases</FieldLabel>
+              <Textarea
+                id="aliases"
+                rows={3}
+                placeholder="One alternate institution name per line"
+                {...register('aliases')}
+              />
+              <p className="text-xs text-muted-foreground">
+                Aliases are searchable and are carried forward when records are merged.
               </p>
             </div>
             <div className="space-y-1">

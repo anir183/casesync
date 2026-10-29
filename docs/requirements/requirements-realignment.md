@@ -29,16 +29,19 @@ Current position: **late in the build, early in operability**.
 - Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
   reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
   notification pagination, deterministic demo seed/reset, and reconciliation tests.
-  67 API unit tests, 3 web tests, and 39 DB-backed integration tests pass; tests cannot
+  67 API unit tests, 3 web tests, and 43 DB-backed integration tests pass; tests cannot
   call real Jev.
 - Stage 5 is implemented and verified: admin SLA rules, automatic/manual deadlines,
   daily pending/approaching/overdue scans, scoped dedupe, job run history, minimal SLA
   admin UI, and shared dashboard/report overdue metrics.
-- Missing for MVP: remaining admin web screens, attachments, browser E2E, CI, and
+- Stage 6 is implemented and verified: admin users/organization/audit web screens,
+  bureau/region/category CRUD, institution aliases/merge, scoped attachments, password
+  reset/invite, and backup/retention policy.
+- Missing for MVP: browser E2E, CI, rate limiting, malware scanning, and the full
   runbook.
 
-The biggest sequencing issue is no longer the staff workflow, reporting, or SLA engine;
-it is remaining admin operability, E2E/CI, and release hardening.
+The biggest sequencing issue is no longer administration, the staff workflow, reporting,
+or the SLA engine; it is E2E/CI and release hardening.
 
 ## 1. Status legend
 
@@ -225,12 +228,12 @@ This is a change from the current implementation, where a Jev-enabled
 
 | ID | Target user | Status | Current role mapping | Gap |
 |---|---|---|---|---|
-| USER-01 | AICTE Regulation Bureau (RB) | **Done** | `BUREAU_OFFICER` + `bureauId` | Bureau scoping enforced; bureau CRUD in Stage 6. |
+| USER-01 | AICTE Regulation Bureau (RB) | **Done** | `BUREAU_OFFICER` + `bureauId`; scoping and bureau CRUD | — |
 | USER-02 | Public Grievance Redressal Cell (PGRC) | **Done** | `BUREAU_OFFICER` + `bureauId` | Same. |
-| USER-03 | Other concerned Bureaus/Cells | **Done** | `BUREAU_OFFICER` + `bureauId` | Bureau CRUD in Stage 6. |
-| USER-04 | Regional Offices/Centres | **Partial** | `REGIONAL_OFFICER` + `regionId`; seeded regions; region scoping | Region-wise breakdown/labels in Stage 4. |
-| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin user API | Admin web screens in Stage 6. |
-| USER-06 | Competent Authority/AICTE administration | **Partial** | `COMPETENT_AUTHORITY`, `ADMIN`; admin user + org master APIs | Admin UI, verify/merge, audit log in Stage 6. |
+| USER-03 | Other concerned Bureaus/Cells | **Done** | `BUREAU_OFFICER` + `bureauId`; bureau CRUD | — |
+| USER-04 | Regional Offices/Centres | **Done** | `REGIONAL_OFFICER` + `regionId`; region scoping, labels, and filters | Browser E2E is Stage 7. |
+| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin web screens | Browser E2E is Stage 7. |
+| USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit UI, verify/merge, audit log | Browser E2E is Stage 7. |
 | USER-07 | Read-only auditor/viewer | **Partial** | `VIEWER`; read-only all-scope | Dedicated audit view in Stage 6. |
 
 ## 14. Non-functional requirements (implied but necessary)
@@ -274,7 +277,7 @@ These were deliberate corrections to `docs/requirements/requirements-traceabilit
 10. **USER-01..04** (at audit time): scoping was not implemented. Stage 1 implemented
     central bureau/region scope.
 11. Baseline counts at audit time: 26 unit tests, no integration/E2E/UI tests.
-    *(Superseded by §15.3: 57 API unit + 3 web tests + 35 DB-backed integration tests.)*
+    *(Superseded: 67 API unit + 3 web tests + 43 DB-backed integration tests.)*
 12. Infrastructure at audit time: no seed script, CI, Docker, or deployment runbook.
     *(Superseded by §15.1: an idempotent seed script exists; CI/Docker/runbook do not.)*
 
@@ -291,9 +294,9 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests: 57 API unit tests + 3 web tests + 35 DB-backed integration tests after Stage 4.
+- Tests: 67 API unit tests + 3 web tests + 43 DB-backed integration tests after Stage 6.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
-- Still open: admin web screens (Stage 6), bureau CRUD and `audit_log` (Stage 6),
+- Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Still open:
   rate limits, E2E, CI, runbook.
 
 ### 15.2 Stage 2 implementation update (applied 2026-10-29)
@@ -349,7 +352,7 @@ Stage 3 (3A correctness + 3B coordination) is implemented and verified:
 - The overlap queue filters by status/bureau/region/match type/institution and paginates
   with totals; the detail page shows rationale and supports unlink; the case Related tab
   supports manual linking.
-- Tests: 35 DB-backed integration tests total, including rules-only, Jev
+- Tests: 43 DB-backed integration tests total, including rules-only, Jev
   different-issue non-suppression, Jev failure/timeout, scoped/deduped notifications
   with the exact heading, manual link/unlink, queue pagination/filtering, and
   transfer-triggered re-assessment. A fetch guard fails the suite on any real Jev call.

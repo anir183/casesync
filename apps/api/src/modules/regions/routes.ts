@@ -1,8 +1,13 @@
 import { ROLES } from '@casesync/config'
 import { Elysia, t } from 'elysia'
+import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { requireAuth, requireRole } from '#/middleware/rbac'
+import { Case } from '#/models/case.model'
+import { Institution } from '#/models/institution.model'
 import { Region } from '#/models/region.model'
+import { SlaConfig } from '#/models/sla-config.model'
+import { User } from '#/models/user.model'
 
 const regionBody = t.Object({
   code: t.String({ minLength: 2, maxLength: 32 }),
@@ -22,6 +27,36 @@ function normalizeCode(code: string) {
   return code.trim().toUpperCase()
 }
 
+async function assertUniqueCode(code: string, excludeId?: string) {
+  const existing = await Region.findOne({
+    code,
+    ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+  }).lean()
+  if (existing) {
+    throw new AppError(
+      HTTP_STATUS.CONFLICT,
+      'A region with this code already exists',
+      'DUPLICATE_KEY',
+    )
+  }
+}
+
+function auditSnapshot(item: {
+  _id: unknown
+  code: string
+  name: string
+  officeCity?: string
+  active?: boolean
+}) {
+  return {
+    id: String(item._id),
+    code: item.code,
+    name: item.name,
+    officeCity: item.officeCity,
+    active: item.active !== false,
+  }
+}
+
 export const regionsRoutes = new Elysia({ prefix: '/regions' })
   .use(requireAuth)
   .get(
@@ -38,8 +73,18 @@ export const regionsRoutes = new Elysia({ prefix: '/regions' })
     '/',
     async ({ body, user }) => {
       requireRole(user, [ROLES.ADMIN])
-      const item = await Region.create({ ...body, code: normalizeCode(body.code) })
-      return item.toObject()
+      const code = normalizeCode(body.code)
+      await assertUniqueCode(code)
+      const item = await Region.create({ ...body, code })
+      const plain = item.toObject()
+      await recordAudit({
+        actorId: user.id,
+        action: AUDIT_ACTION.CREATE,
+        entityType: AUDIT_ENTITY.REGION,
+        entityId: String(item._id),
+        after: auditSnapshot(plain),
+      })
+      return plain
     },
     { body: regionBody },
   )
@@ -47,13 +92,57 @@ export const regionsRoutes = new Elysia({ prefix: '/regions' })
     '/:id',
     async ({ params, body, user }) => {
       requireRole(user, [ROLES.ADMIN])
+      const existing = await Region.findById(params.id).lean()
+      if (!existing) {
+        throw new AppError(HTTP_STATUS.NOT_FOUND, 'Region not found', 'REGION_NOT_FOUND')
+      }
       const update = { ...body }
-      if (update.code) update.code = normalizeCode(update.code)
+      if (body.code) {
+        update.code = normalizeCode(body.code)
+        await assertUniqueCode(update.code, params.id)
+      }
       const item = await Region.findByIdAndUpdate(params.id, update, { new: true }).lean()
       if (!item) {
         throw new AppError(HTTP_STATUS.NOT_FOUND, 'Region not found', 'REGION_NOT_FOUND')
       }
+      await recordAudit({
+        actorId: user.id,
+        action: AUDIT_ACTION.UPDATE,
+        entityType: AUDIT_ENTITY.REGION,
+        entityId: params.id,
+        before: auditSnapshot(existing),
+        after: auditSnapshot(item),
+      })
       return item
     },
     { body: updateBody },
   )
+  .delete('/:id', async ({ params, user }) => {
+    requireRole(user, [ROLES.ADMIN])
+    const existing = await Region.findById(params.id).lean()
+    if (!existing) {
+      throw new AppError(HTTP_STATUS.NOT_FOUND, 'Region not found', 'REGION_NOT_FOUND')
+    }
+    const [caseCount, institutionCount, userCount, slaCount] = await Promise.all([
+      Case.countDocuments({ regionId: params.id }),
+      Institution.countDocuments({ regionId: params.id }),
+      User.countDocuments({ regionId: params.id }),
+      SlaConfig.countDocuments({ regionId: params.id }),
+    ])
+    if (caseCount + institutionCount + userCount + slaCount > 0) {
+      throw new AppError(
+        HTTP_STATUS.CONFLICT,
+        'Region is referenced by cases, institutions, users, or SLA rules; deactivate it instead',
+        'REGION_IN_USE',
+      )
+    }
+    await Region.findByIdAndDelete(params.id)
+    await recordAudit({
+      actorId: user.id,
+      action: AUDIT_ACTION.DELETE,
+      entityType: AUDIT_ENTITY.REGION,
+      entityId: params.id,
+      before: auditSnapshot(existing),
+    })
+    return { deleted: true }
+  })

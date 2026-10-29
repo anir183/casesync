@@ -11,22 +11,24 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–5 implemented. Stage 3 overlap correctness/coordination, Stage 4
-monitoring/search/reporting, and Stage 5 SLA rules/deadline scans are covered by
-DB-backed integration tests; automated browser E2E and page-performance gates are still
-missing. Remaining admin screens and release hardening are next. The MVP is not complete.**
+**Stages 0–6 implemented. Stage 3 overlap correctness/coordination, Stage 4
+monitoring/search/reporting, Stage 5 SLA rules/deadline scans, and Stage 6
+administration/attachments/audit are covered by DB-backed integration tests; automated
+browser E2E and page-performance gates are still missing. Release hardening is next. The
+MVP is not complete.**
 
 Last verified: 2026-10-29.
 
 | Area | State |
 |---|---|
 | Stage 0 — foundation | Complete |
-| Stage 1 — identity, organization, access | Complete (backend/admin API) |
+| Stage 1 — identity, organization, access | Complete |
 | Stage 2 — registry and case operations | Complete (implementation); browser E2E pending |
 | Stage 3 — overlap intelligence and coordination | Complete (implementation); browser E2E pending |
 | Stage 4 — monitoring, search, reports | Complete (implementation); browser E2E pending |
 | Stage 5 — SLA, deadlines, alerts | Complete (implementation); browser E2E pending |
-| Stages 6–7 — admin, release | Partial / not started |
+| Stage 6 — admin, attachments, audit | Complete (implementation); browser E2E pending |
+| Stage 7 — hardening and release | Not started |
 | Stage 8 — public portal | Optional; not started |
 
 ### Working
@@ -57,11 +59,14 @@ Last verified: 2026-10-29.
   panel for assign, transfer, escalate, dispose, reopen, remark, and next action.
 - Paginated case, institution, and overlap lists with totals; officer, actor, bureau, and
   region names resolved server-side.
-- Region/category masters, admin user management (API), and a deterministic demo seed
+- Region/category/bureau masters, admin user management and password reset, admin audit
+  log, institution aliases/merge, scoped attachments, and a deterministic demo seed
   (`seed:demo`) plus guarded demo-only reset (`seed:reset`).
+- Admin web screens for users, organization masters, and audit; attachment upload/download
+  on the case detail **Documents** tab.
 - SLA rules with admin UI, automatic deadlines, daily pending/approaching/overdue scans,
   deduped scoped notifications, and shared dashboard/report overdue metrics.
-- 67 API unit tests, 3 web URL-filter tests, and 39 opt-in database integration tests;
+- 67 API unit tests, 3 web URL-filter tests, and 43 opt-in database integration tests;
   Jev is always mocked and a fetch guard blocks real Jev calls.
 
 ### Stage 2 completion and remaining gaps
@@ -75,14 +80,12 @@ Remaining, non-blocking gaps:
 - No automated browser/component E2E yet; Stage 2–3 flows are verified by API
   integration tests and manual runtime smoke checks.
 - Mutations use pending/disabled states rather than optimistic UI.
-- Admin user/organization web screens remain Stage 6 work.
 
 ### Not built yet
 
 - Stage 3 follow-ups: periodic overlap sweep/background batch and browser E2E for
   confirm/dismiss/link/unlink.
-- Stage 6 attachments, admin web screens, institution merge/alias, `audit_log`.
-- Browser/component E2E tests, CI, Docker, runbook, and the stress seed helper.
+- Browser/component E2E tests, CI, Docker, the full runbook, and the stress seed helper.
 
 ## Documentation map
 
@@ -97,6 +100,7 @@ Remaining, non-blocking gaps:
 | [`quality/qa-and-review.md`](quality/qa-and-review.md) | Test pyramid, integration/E2E/security/performance, CI, review, release gate. |
 | [`operations/mock-data.md`](operations/mock-data.md) | Current demo seed/reset commands, fixtures, and safety guards. |
 | [`operations/demo-script.md`](operations/demo-script.md) | Target 10-minute demo runbook and current demoable slice. |
+| [`operations/backup-and-retention.md`](operations/backup-and-retention.md) | Backup targets, retention, restore procedure, and known gaps. |
 | [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
 | [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
 
@@ -261,13 +265,13 @@ Typechecks are run per app because the root `tsc` setup does not resolve workspa
 paths:
 
 ```bash
-./apps/web/node_modules/.bin/tsc -p apps/api/tsconfig.json --noEmit
+bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json
 cd apps/web && ./node_modules/.bin/tsc -b --noEmit
 ```
 
-API and web typechecks, Biome (153 files), 67 API unit tests, 3 web tests, 39 DB-backed
-integration tests, both production builds, and demo seed/reset pass against the current
-tree at the verification date above. See
+API and web typechecks, Biome, 67 API unit tests, 3 web tests, 43 DB-backed integration
+tests, both production builds, and demo seed/reset pass against the current tree at the
+verification date above. See
 [`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and review
 gates.
 

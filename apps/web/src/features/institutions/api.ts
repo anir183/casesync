@@ -7,6 +7,7 @@ export interface Institution {
   id: string
   name: string
   aictePermanentId?: string
+  aliases?: string[]
   address?: string
   regionId?: string
   regionName?: string
@@ -51,6 +52,7 @@ export interface InstitutionProfile {
 export interface InstitutionInput {
   name: string
   aictePermanentId?: string
+  aliases?: string[]
   address?: string
   regionId?: string
   verified?: boolean
@@ -61,6 +63,7 @@ interface RawInstitution {
   id?: string
   name: string
   aictePermanentId?: string
+  aliases?: string[]
   address?: string
   regionId?: string
   regionName?: string
@@ -92,7 +95,7 @@ export const institutionKeys = {
 }
 
 function toInstitution(item: RawInstitution): Institution {
-  return { ...item, id: item.id ?? item._id }
+  return { ...item, id: item.id ?? item._id, aliases: item.aliases ?? [] }
 }
 
 export function fetchInstitutions(filters: InstitutionFilters): Promise<Page<Institution>> {
@@ -180,6 +183,24 @@ export function useUpdateInstitution(id: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: Partial<InstitutionInput>) => updateInstitution(id, input),
+    onSuccess: () => invalidateInstitutions(queryClient),
+  })
+}
+
+export function mergeInstitution(
+  sourceInstitutionId: string,
+  targetInstitutionId: string,
+): Promise<Institution> {
+  return apiClient
+    .post<RawInstitution>(`/institutions/${sourceInstitutionId}/merge`, { targetInstitutionId })
+    .then((data) => toInstitution(data))
+}
+
+export function useMergeInstitution(sourceInstitutionId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (targetInstitutionId: string) =>
+      mergeInstitution(sourceInstitutionId, targetInstitutionId),
     onSuccess: () => invalidateInstitutions(queryClient),
   })
 }
