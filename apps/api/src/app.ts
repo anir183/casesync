@@ -1,4 +1,5 @@
 import { cors } from '@elysiajs/cors'
+import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
 import { env } from '#/config/env'
 import { auth } from '#/lib/auth'
@@ -25,6 +26,18 @@ import { slaRoutes } from '#/modules/sla/routes'
 import { usersRoutes } from '#/modules/users/routes'
 
 export const app = new Elysia()
+  .use(
+    swagger({
+      path: '/docs',
+      documentation: {
+        info: {
+          title: 'CaseSync API',
+          version: '1.0.0',
+          description: 'REST API documentation for the CaseSync platform',
+        },
+      },
+    }),
+  )
   .use(
     cors({
       origin: env.CORS_ORIGIN,

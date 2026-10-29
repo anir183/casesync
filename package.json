@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "bun run --filter @casesync/api dev & bun run --filter @casesync/web dev",
+    "dev": "bun run --filter \"@casesync/*\" dev",
     "dev:api": "bun run --filter @casesync/api dev",
     "dev:web": "bun run --filter @casesync/web dev",
     "seed": "bun run --filter @casesync/api seed",
@@ -32,7 +32,5 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4"
   },
-  "overrides": {
-    "zod": "^4.6.7"
-  }
+  "overrides": {}
 }
