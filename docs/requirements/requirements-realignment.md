@@ -18,16 +18,20 @@ Current position: **late in the build, early in operability**.
   search, reports, notifications: present.
 - Stage 1 access model: `regions`/`categories`, admin user management (API), signup
   lock, `active` enforcement with session revocation, central bureau/region scoping.
-- Stage 2 has started but is **paused mid-edit**: transition/pagination constants,
-  pagination helpers, and user-directory helpers exist; the case service, routes, and
-  all Stage 2 web screens are unfinished, and the API does not currently typecheck.
-- Missing for MVP: admin/staff/institution web screens, case registration UI, wired
-  pagination and officer names, SLA jobs and reminders, attachments, E2E tests, CI,
-  runbook.
+- Stage 2 implementation is complete: paginated case/institution APIs, auto case numbers,
+  optional initial assignment, institution duplicate checks, scoped officer directory,
+  institution registry UI, case registration UI, role-gated action panel, and
+  action/assignment history with resolved names. Automated browser/component E2E is
+  still missing.
+- Stage 3 is implemented and verified: base overlap relationships always survive Jev,
+  re-assessment runs on movement/identity changes, notifications are scoped/deduped,
+  the queue filters/paginates, and manual link/unlink is audited. 41 unit tests and 27
+  DB-backed integration tests pass; tests cannot call real Jev.
+- Missing for MVP: admin web screens, SLA jobs and reminders, attachments, browser E2E,
+  CI, and runbook.
 
-The biggest sequencing issue: the project went deep on overlap intelligence and
-analytics **before** the day-to-day staff workflow was finished. That workflow is now
-the critical path to a credible demo; the access model is in place.
+The biggest sequencing issue is no longer the staff workflow; it is operational depth
+(SLA jobs, admin screens, E2E/CI) and Stage 3 overlap correctness.
 
 ## 1. Status legend
 
@@ -44,13 +48,13 @@ Evidence paths are relative to the repo root.
 
 | Area | Status | Why |
 |---|---|---|
-| Centralized institution profile | **Partial** | Profile API + detail page and a seeded `regions` master exist; no institution registry/list UI and no verify/merge workflow. |
-| Case tracking | **Partial** | Full lifecycle API and read-only detail UI; no case registration or mutation UI; officer names unresolved; pagination helpers added but not wired. Stage 2 paused mid-edit. |
-| Cross-bureau overlap | **Partial → strong** | Exact + fuzzy + Jev + human review work. Jev can currently suppress a rule-based same-institution alert; re-assessment triggers, manual linking, notification scoping, and scale are gaps. |
+| Centralized institution profile | **Partial** | Profile API + detail page, registry list/create/edit/verify UI, duplicate warnings, and a seeded `regions` master exist; merge/alias workflow remains. |
+| Case tracking | **Partial → strong** | Full lifecycle API and operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
+| Cross-bureau overlap | **Done** (implementation) | Exact + fuzzy + Jev + human review work. The base alert always survives Jev, re-assessment triggers and manual link/unlink are wired, and notifications are scoped/deduped. Periodic sweep and browser E2E remain. |
 | Real-time dashboard | **Partial** | Required tiles and two workload tables exist; scoping is done. On-demand only, no region view, no date range, no SLA-driven definition of overdue. |
-| Workflow/action history | **Partial** | Append-only actions, assignments, transfer/escalation history exist in API; no staff action UI, no attachments, actor names not resolved. |
-| Search/filters | **Partial** | Case ID, institution name, AICTE ID, bureau, category, status, date range work; region filter missing; pagination helpers exist but are not wired. |
-| Alerts/notifications | **Partial** | Overlap + escalation notifications and notification centre work; pending reminders, SLA alerts, dedupe, and scoping missing. |
+| Workflow/action history | **Partial** | Append-only actions, assignments, transfer/escalation history work in API and UI; actor names resolved. Attachments remain model-only. |
+| Search/filters | **Partial** | Case ID, institution name, AICTE ID, bureau, category, status, date range work; region filter still missing; case/institution lists and the overlap queue paginate. |
+| Alerts/notifications | **Partial** | Overlap notifications are scoped and deduped, and escalation notifications work; pending reminders and SLA alerts missing. |
 | Reports/analytics | **Partial** | Bureau/institution/status/category/ageing/overlap/monthly exist; scoping is done. Region labels are raw IDs; no quarterly view, export, or bureau/region/status filters; disposal metric needs definition. |
 | Innovation | **Done (core)** | Rules-first matching and Jev pairwise assessment are real, explainable, and human-reviewed. |
 | Target users | **Done** | Roles, bureau/region scoping, and admin user management (API) are implemented and tested (Stage 1). |
@@ -60,11 +64,11 @@ Evidence paths are relative to the repo root.
 
 | ID | Original requirement | Status | Evidence | What remains |
 |---|---|---|---|---|
-| OBJ-01 | View all institution-related cases in one place | **Partial** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/`, dashboard | Works, but the list is hard-capped; pagination helpers exist but are not wired. No case registration UI, so "all" depends on API/seed data. |
-| OBJ-02 | Identify the Bureau/Cell currently handling each case | **Done** | `cases.bureauId`, current `case_assignments`, case detail | Add bureau names to all lists/exports; already enriched in case list. |
-| OBJ-03 | Track complete status and movement | **Partial** | `cases.status`, append-only `case_actions`, `case_assignments`, state machine | API is solid; no UI to perform status/assignment changes. |
-| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Partial** | `apps/api/src/modules/overlaps/overlap.service.ts` | Detection exists; Jev-enabled path can suppress a base same-institution alert; no re-scan on transfer/assignment/institution change. |
-| OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, `case_relationships` | Human-in-the-loop is respected. Add manual link/unlink and coordination notes if needed. |
+| OBJ-01 | View all institution-related cases in one place | **Partial → strong** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/`, dashboard | List is paginated with totals and there is a case registration UI. Browser E2E remains. |
+| OBJ-02 | Identify the Bureau/Cell currently handling each case | **Done** | `cases.bureauId`, current `case_assignments`, case detail | Bureau names resolved in case list/detail/history; add to exports when exports exist. |
+| OBJ-03 | Track complete status and movement | **Partial → strong** | `cases.status`, append-only `case_actions`, `case_assignments`, state machine, action panel | UI action panel and history tabs implemented; browser E2E remains. |
+| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change. Browser E2E remains. |
+| OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, manual link/unlink, `case_relationships` | Human-in-the-loop is respected; reviewed pairs return 409 on re-link. |
 | OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Partial** | Status enum + dashboard tiles | "Pending" currently means only `RECEIVED`; define the bucket set and add assigned/reopened/overdue clarity. |
 | OBJ-07 | Reports by institution/region/bureau/status | **Partial** | `apps/api/src/modules/reports/report.service.ts`, reports page | Region is grouped by raw `regionId` with no region names; no report filters by bureau/region; no export. |
 | OBJ-08 | Alerts for pending cases and approaching timelines | **Gap** | `notifications`; no `jobs/` implementation | No cron, no SLA due-date calculation, no pending/approaching/overdue notifications. |
@@ -73,41 +77,41 @@ Evidence paths are relative to the repo root.
 
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
-| INST-01 | Unique Institution ID / AICTE Permanent ID | **Done** | `institutions.aictePermanentId` sparse unique | Add validation/format guidance and duplicate detection on create. |
-| INST-02 | Name, address, region, other details | **Partial** | `institutions.name`, `address`, `regionId`, `otherDetails`; seeded `regions` master | API/UI still expose a raw `regionId` in places. Resolve region code/name in institution and case responses (Stage 2/4). |
-| INST-03 | Consolidated complaint/case history | **Done** | `GET /institutions/:id`, institution profile UI | Reachable only by direct URL or case link. |
-| INST-04 | Find/browse institutions | **Gap** | API `GET /institutions` exists; no web route/nav | Add `/institutions` list/search with name, AICTE ID, region, case counts. |
-| INST-05 | Institution data quality | **Gap** | `verified` flag exists but no workflow | Add verify/merge/alias workflow or at least admin edit + duplicate warning. |
+| INST-01 | Unique Institution ID / AICTE Permanent ID | **Done** | `institutions.aictePermanentId` sparse unique; duplicate check route | Add validation/format guidance. |
+| INST-02 | Name, address, region, other details | **Partial** | `institutions.name`, `address`, `regionId`, `otherDetails`; seeded `regions` master; registry UI | Region names resolved in institution/case lists; verify/merge workflow remains. |
+| INST-03 | Consolidated complaint/case history | **Done** | `GET /institutions/:id` (paginated), institution profile UI | Reachable from registry and case links. |
+| INST-04 | Find/browse institutions | **Done** | Paginated `GET /institutions`; `/institutions` list/search UI with nav | — |
+| INST-05 | Institution data quality | **Partial** | `verified` flag, verify UI, duplicate warnings on name/AICTE ID | Merge/alias workflow remains. |
 
 ## 5. Feature 2 — Complaint/Case Tracking
 
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
-| CASE-01 | Unique Complaint/Case ID | **Done** | `cases.caseNumber` unique | Define numbering convention per bureau/year; currently caller-supplied. |
+| CASE-01 | Unique Complaint/Case ID | **Done** | `cases.caseNumber` unique; auto `<bureau|CASE>-<year>-<6 digits>` | Explicit numbers still accepted. |
 | CASE-02 | Date of receipt | **Done** | `cases.receivedAt` | Validate not-in-future? Decide policy. |
-| CASE-03 | Nature/category | **Done** | `cases.category` | Free text; add category master for consistent reports. |
-| CASE-04 | Current status | **Done** | `cases.status`, state machine | Define policy for direct `RECEIVED → DISPOSED`; currently allowed. |
+| CASE-03 | Nature/category | **Done** | `cases.category`; seeded category master; registration select | — |
+| CASE-04 | Current status | **Done** | `cases.status`, state machine, action panel | Define policy for direct `RECEIVED → DISPOSED`; currently allowed. |
 | CASE-05 | Presently assigned Bureau/Cell | **Done** | `cases.bureauId`, current assignment | Enforce bureau exists and is active. |
-| CASE-06 | Assigned officer/official | **Partial** | `case_assignments.officerId`, `currentAssignment.officerId` | Stored as raw Better Auth user ID; UI shows the ID. Add user directory and resolve names. |
+| CASE-06 | Assigned officer/official | **Done** | `case_assignments.officerId`, `currentAssignment.officerId`, scoped user directory | Names resolved in case list/detail/history. |
 | CASE-07 | Last action taken | **Done** | `case_actions`, `cases.lastActionAt` | `lastActionAt` is updated on append; confirm all mutation paths use it. |
 | CASE-08 | Next action required | **Done** | `cases.nextAction`, `nextActionDueAt` | Audit action type is `REMARK_ADDED`; consider `NEXT_ACTION_SET` for clarity. |
 | CASE-09 | Date of last action and expected disposal date | **Partial** | `lastActionAt`, `expectedDisposalAt` | Expected disposal is manual; not derived from SLA config. |
-| CASE-10 | Register a case | **Partial** | `POST /cases` API only | Add case registration UI (staff roles) with institution search/select. |
-| CASE-11 | Perform lifecycle actions | **Partial** | assign/transfer/escalate/dispose/status APIs | Add action UI with confirmation dialogs, remarks, and optimistic/error states. |
-| CASE-12 | Assignment/officer history | **Partial** | `case_assignments`, `GET /:id/assignments` | API exists; detail UI shows only the current assignment. Add history tab. |
+| CASE-10 | Register a case | **Done** | `POST /cases`; `/cases/new` registration UI with institution search | Browser E2E pending. |
+| CASE-11 | Perform lifecycle actions | **Done** | assign/transfer/escalate/dispose/status APIs; role-gated action panel | Browser E2E pending. |
+| CASE-12 | Assignment/officer history | **Done** | `case_assignments`, `GET /:id/assignments`, assignments tab | — |
 
 ## 6. Feature 3 — Cross-Bureau/Cell Overlap Detection
 
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
-| OVR-01 | Automatically identify same institution across RB/PGRC/others | **Partial** | `overlap.service.ts`: exact institution, fuzzy Jaro-Winkler, cross-bureau filter, Jev pairwise | Detection is real. But when Jev is enabled and returns `same_institution_different_issue` / low coordination, **no relationship is created**. The original requirement is same-institution cross-bureau coordination, so Jev should enrich, not suppress, the base rule. |
-| OVR-02 | Overlap alert to authorized officials | **Done** | Notifications + overlap queue | Exact heading `"Potential Overlapping Cases – Coordination Required"` is used. |
-| OVR-03 | Link/map related complaints and cases | **Partial** | `case_relationships`, confirm/dismiss, related tab | No manual link/unlink API despite `LINKED`/`UNLINKED` action constants. |
-| OVR-04 | Re-evaluate after case movement | **Gap** | Assessment runs on create or manual `POST /overlaps/assess` | Transfer/assign/institution change should re-run or enqueue assessment; add periodic sweep. |
-| OVR-05 | Explain why cases are related | **Done** | `matchType`, `confidence`, `reason`, assessment probabilities, compare view | Good. Add institution names/region names instead of IDs. |
-| OVR-06 | Notify only concerned officials | **Partial** | `notifyRoles(OVERLAP_NOTIFY_ROLES, ...)` | Broadcasts to every user in those roles, not the two bureaus/regions involved. Add scoping and dedupe. |
+| OVR-01 | Automatically identify same institution across RB/PGRC/others | **Done** | `overlap.service.ts`: exact institution, fuzzy Jaro-Winkler, cross-bureau filter, Jev pairwise enrichment | Base PENDING relationship is created before assessment; Jev can never suppress it. |
+| OVR-02 | Overlap alert to authorized officials | **Done** | Notifications + overlap queue | Exact heading `"Potential Overlapping Cases – Coordination Required"` is asserted. |
+| OVR-03 | Link/map related complaints and cases | **Done** | `case_relationships`, confirm/dismiss, manual link/unlink, related tab | Linking an existing PENDING pair confirms it; reviewed pairs return 409. |
+| OVR-04 | Re-evaluate after case movement | **Done** | Re-assessment on create/assign/transfer/institution name/AICTE/region change; manual `POST /overlaps/assess` | Periodic sweep/background batch remains. |
+| OVR-05 | Explain why cases are related | **Done** | `matchType`, `confidence`, `reason`, assessment probabilities/rationale, compare view | Institution/region names resolved in DTOs. |
+| OVR-06 | Notify only concerned officials | **Done** | `lib/notifications.ts` scoped recipients | Involved bureau/regional officers plus `ADMIN`/`SENIOR_MANAGEMENT`/`COMPETENT_AUTHORITY`; deduped per relationship. |
 | OVR-07 | Human decision only | **Done** | PENDING relationships; confirm/dismiss; no auto-merge | Preserve this invariant. |
-| OVR-08 | Scale | **Gap** | Fuzzy scan loads up to 500 institutions and scores in memory | Acceptable for demo; replace with indexed blocking/Atlas Search or a background batch for production. |
+| OVR-08 | Scale | **Partial** | Fuzzy scan capped at 500 institutions; sequential Jev calls | Acceptable for demo; replace with indexed blocking/Atlas Search or a background batch for production. |
 
 ### 6.1 Overlap decision that must be locked
 
@@ -150,11 +154,11 @@ This is a change from the current implementation, where a Jev-enabled
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
 | WF-01 | Complete chronological history | **Done** | `case_actions` append-only, sorted ascending | Add immutable enforcement (Mongoose hooks/DB permissions) and tests. |
-| WF-02 | Officer/Bureau responsible for each action | **Partial** | `actorId`, `bureauFromId/ToId`, `officerFromId/ToId` | IDs only; resolve actor/officer names in API/UI. |
+| WF-02 | Officer/Bureau responsible for each action | **Done** | `actorId`, `bureauFromId/ToId`, `officerFromId/ToId`; names resolved in API/UI | — |
 | WF-03 | Date/time stamp | **Done** | `createdAt` UTC | Document UTC display/localization policy. |
 | WF-04 | Remarks and supporting documents | **Partial** | `remarks` works; `attachments` model only | Add upload/download endpoints, validation, access control, UI. |
-| WF-05 | Transfer/escalation history | **Done** | `case_actions` + `case_assignments` | Add UI history view. |
-| WF-06 | Staff workflow UI | **Gap** | Case detail is read-only | Add assign/transfer/escalate/dispose/remark/next-action controls gated by role. |
+| WF-05 | Transfer/escalation history | **Done** | `case_actions` + `case_assignments`, history tabs | — |
+| WF-06 | Staff workflow UI | **Done** | Case action panel: assign/transfer/escalate/dispose/reopen/remark/next action, role-gated | Browser E2E pending. |
 | WF-07 | Audit admin actions | **Gap** | No admin audit log | Add `audit_log` for user/role/bureau/SLA changes. |
 | WF-08 | Action metadata | **Partial** | `metadata` JSONB-ish field | Add IP/user-agent/request ID where appropriate; do not store secrets. |
 
@@ -162,26 +166,26 @@ This is a change from the current implementation, where a Jev-enabled
 
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
-| SRCH-01 | Institution name | **Done** | `cases?q=` matches normalized institution name | Add institution list UI. |
-| SRCH-02 | AICTE Permanent ID | **Done** | `q` matches `aictePermanentId`; institution query supports it | Escape regex in institution search. |
+| SRCH-01 | Institution name | **Done** | `cases?q=` matches normalized institution name; institution list search | — |
+| SRCH-02 | AICTE Permanent ID | **Done** | `q` matches `aictePermanentId`; institution query and duplicate check support it | Regex inputs escaped; add length limits. |
 | SRCH-03 | Complaint/Case ID | **Done** | `caseNumber` regex | Escape already done for case search. |
 | SRCH-04 | Bureau/Cell | **Done** | `bureauId` filter | Add bureau code display/filter. |
-| SRCH-05 | Region | **Partial** | `GET /institutions?regionId=` only | **Case registry has no region filter.** Traceability doc previously said Done; correct to Partial. Add region filter via institution lookup or denormalized `regionId` on cases. |
-| SRCH-06 | Complaint category | **Done** | `category` filter | Category master needed for consistency. |
+| SRCH-05 | Region | **Partial** | `GET /institutions?regionId=`; case list exposes `regionName` | **Case registry has no region filter.** Add region filter via institution lookup or denormalized `regionId` on cases. |
+| SRCH-06 | Complaint category | **Done** | `category` filter; seeded category master | — |
 | SRCH-07 | Status | **Done** | `status` filter | Validate enum instead of free string. |
 | SRCH-08 | Date range | **Done** | `receivedAt` from/to | Validate from <= to; define inclusive end-of-day. |
-| SRCH-09 | Pagination / result limits | **Gap** | Hard `limit(100)`; no `skip`/cursor | Add `page/pageSize` or cursor; return `total`. |
-| SRCH-10 | Search safety | **Partial** | Case `q` escapes regex; institution `q`/AICTE ID do not | Escape/length-limit all regex inputs; add tests. |
+| SRCH-09 | Pagination / result limits | **Done** | `Page<T>` with `page/pageSize/total` for cases, institutions, and the overlap queue; invalid pages fall back and size caps at 100 | Notification list still caps at 100 without pagination. |
+| SRCH-10 | Search safety | **Partial** | Case, institution, and duplicate-check regex inputs are escaped | Add length limits and tests. |
 
 ## 10. Feature 7 — Alerts and Notifications
 
 | ID | Requirement | Status | Evidence | Gap / action |
 |---|---|---|---|---|
-| ALRT-01 | Duplicate/overlapping case alerts | **Done** | `OVERLAP_ALERT` notification + queue | Dedupe and bureau/region scoping needed. |
+| ALRT-01 | Duplicate/overlapping case alerts | **Done** | `OVERLAP_ALERT` notification + queue | Scoped to involved bureaus/regions + oversight roles and deduped per relationship. |
 | ALRT-02 | Pending case reminders | **Gap** | `PENDING_REMINDER` enum only | Add scheduled scan with dedupe key. |
-| ALRT-03 | Escalation alerts | **Done** | `notifyRoles` on escalate | Notify concerned bureau/senior; currently role broadcast. |
+| ALRT-03 | Escalation alerts | **Partial** | `notifyRoles` on escalate | Still role broadcast rather than case-scoped. |
 | ALRT-04 | Timeline/SLA alerts | **Gap** | `APPROACHING_DEADLINE`, `OVERDUE` enums only | Add SLA calculation + cron + notifications. |
-| ALRT-05 | Notification dedupe/scoping | **Gap** | `notifications` model has no dedupe key/link/scope | Add `{recipientId, type, referenceId, periodKey}` unique index and `caseId`/`link`. |
+| ALRT-05 | Notification dedupe/scoping | **Partial** | `notifications` has `caseId`, `link`, `periodKey`, a dedupe index; overlap notifications are scoped/deduped | SLA/job-level dedupe and escalation scoping remain (Stage 5). |
 | ALRT-06 | Read/unread UX | **Done** | Notification centre + badge | Add filter by type/unread; pagination. |
 | ALRT-07 | Email/SMS | **Extension** | In-app only | Optional adapter later; not MVP. |
 
@@ -218,8 +222,8 @@ This is a change from the current implementation, where a Jev-enabled
 | USER-02 | Public Grievance Redressal Cell (PGRC) | **Done** | `BUREAU_OFFICER` + `bureauId` | Same. |
 | USER-03 | Other concerned Bureaus/Cells | **Done** | `BUREAU_OFFICER` + `bureauId` | Bureau CRUD in Stage 6. |
 | USER-04 | Regional Offices/Centres | **Partial** | `REGIONAL_OFFICER` + `regionId`; seeded regions; region scoping | Region-wise breakdown/labels in Stage 4. |
-| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin user API | Admin web screens in Stage 2. |
-| USER-06 | Competent Authority/AICTE administration | **Partial** | `COMPETENT_AUTHORITY`, `ADMIN`; admin user + org master APIs | Admin UI, verify/merge, audit log in Stages 2/6. |
+| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin user API | Admin web screens in Stage 6. |
+| USER-06 | Competent Authority/AICTE administration | **Partial** | `COMPETENT_AUTHORITY`, `ADMIN`; admin user + org master APIs | Admin UI, verify/merge, audit log in Stage 6. |
 | USER-07 | Read-only auditor/viewer | **Partial** | `VIEWER`; read-only all-scope | Dedicated audit view in Stage 6. |
 
 ## 14. Non-functional requirements (implied but necessary)
@@ -232,7 +236,7 @@ This is a change from the current implementation, where a Jev-enabled
 | IDOR | **Done** | Case, institution, overlap, and admin-user detail endpoints apply scope and return 404; covered by integration tests. |
 | Audit immutability | **Partial** | Append-only by convention; no DB-level guard. |
 | Input validation | **Partial** | Elysia schemas exist; malformed ObjectIds map to 404 and duplicate keys to 409; status/category remain partly free strings. |
-| Pagination/performance | **Partial** | Pagination helpers exist but are not wired; hard limits remain; dashboard/reports load all cases into memory; fuzzy scan in memory. |
+| Pagination/performance | **Partial** | Case/institution lists and the overlap queue paginate with totals; notifications, dashboard/report internals, and fuzzy scan still load broadly. |
 | Observability | **Partial** | Logger exists; no request IDs, metrics, health readiness for DB/Jev, or audit of admin actions. |
 | Rate limiting | **Gap** | No limits on auth, search, manual overlap assessment, or future uploads. |
 | File security | **Gap** | Attachments not implemented; MIME/size/path checks needed. |
@@ -254,7 +258,7 @@ These were deliberate corrections to `docs/requirements/requirements-traceabilit
 3. **RPT-07 Monthly/quarterly**: `Done` → `Partial`. Monthly only, last 6 months.
 4. **DASH-06 Beyond timelines**: `Done` → `Partial`. Uses manual `expectedDisposalAt`; `slaConfig` not wired.
 5. **CASE-06 Assigned officer** (at audit time): ID stored, name not resolved. Stage 2
-   added user-directory helpers but has not wired them.
+   wired the scoped user directory and resolved names in case list/detail/history.
 6. **OBJ-01/OBJ-03**: qualify as API-complete/UI-partial.
 7. **OBJ-08**: keep `Partial`, but explicitly state no SLA job exists.
 8. **WF-04**: keep `Partial`; attachments are model-only.
@@ -263,7 +267,7 @@ These were deliberate corrections to `docs/requirements/requirements-traceabilit
 10. **USER-01..04** (at audit time): scoping was not implemented. Stage 1 implemented
     central bureau/region scope.
 11. Baseline counts at audit time: 26 unit tests, no integration/E2E/UI tests.
-    *(Superseded by §15.1: 41 unit + 13 DB-backed integration tests.)*
+    *(Superseded by §15.3: 41 unit + 27 DB-backed integration tests.)*
 12. Infrastructure at audit time: no seed script, CI, Docker, or deployment runbook.
     *(Superseded by §15.1: an idempotent seed script exists; CI/Docker/runbook do not.)*
 
@@ -280,35 +284,73 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests: 41 unit tests + 13 DB-backed integration tests (opt-in `RUN_INTEGRATION=1`).
+- Tests: 41 unit tests + 13 DB-backed integration tests at Stage 1 (27 after Stage 3).
 - Seed script: `apps/api/src/seed.ts` is idempotent.
-- Still open: admin web screens (Stage 2), bureau CRUD and `audit_log` (Stage 6),
+- Still open: admin web screens (Stage 6), bureau CRUD and `audit_log` (Stage 6),
   rate limits, E2E, CI, runbook.
 
-### 15.2 Stage 2 progress (paused 2026-10-29)
+### 15.2 Stage 2 implementation update (applied 2026-10-29)
 
-Stage 2 is not complete. The following backend scaffolding exists but is not wired:
+Stage 2 is implemented and verified:
 
-- `CASE_TRANSITIONS` and `PAGINATION` constants in `packages/config`.
-- `apps/api/src/lib/pagination.ts` (`resolvePageQuery`, `buildPage`, `parseSort`).
-- `apps/api/src/lib/user-directory.ts` (`loadUserMap`, `listDirectoryUsers`,
-  `toDirectoryUser`).
-- Partial `case.service.ts` changes: filter/list query types, optional
-  `caseNumber`/`officerId` on create, and `regionName`/`officerId`/`officerName` on the
-  case DTO.
+- Case list returns `Page<T>` (`items`, `total`, `page`, `pageSize`); invalid page input
+  falls back and oversized pages cap at 100.
+- Auto case numbers use `<bureauCode|CASE>-<UTC year>-<6 random digits>`; explicit
+  `caseNumber` is still accepted.
+- Optional `officerId` on create records an initial assignment, sets `ASSIGNED`, and
+  appends an assignment action.
+- Case detail enriches actions and assignments with actor/officer/bureau names and
+  exposes `currentAssignment`; history sorting is deterministic.
+- Institution list and institution case history paginate; `GET /institutions/check-duplicate`
+  checks normalized name and exact AICTE ID within scope.
+- `GET /users/directory` is scoped to the signed-in account.
+- Shared `ROLE_GROUPS`/`hasAnyRole` drive API route guards and web affordances.
+- Web: institution registry list/create/edit/verify, `/cases/new` registration,
+  overview/actions/assignments/related tabs, role-gated action panel, paginated tables.
+- Tests: Stage 2 integration cases cover pagination, duplicate checks, directory scoping,
+  auto numbering + initial assignment, rejected transitions writing no audit action, and
+  the ordered lifecycle audit trail.
 
-Unfinished or missing:
+Still open from Stage 2:
 
-- `listCases` still returns an array, references an undefined `LIST_LIMIT`, and does not
-  enrich officer/region names.
-- No paginated route contract, no user-directory route, no institution duplicate
-  detection/pagination.
-- No Stage 2 web screens (institution registry, case registration, action panel,
-  assignment/history tabs).
-- No Stage 2 tests. The API does not typecheck in the current tree.
+- Automated browser/component E2E (register → assign → remark → transfer → escalate →
+  dispose).
+- Optimistic UI for mutations (pending/disabled states are used instead).
+- Admin user/organization web screens (Stage 6).
 
 The seed script is idempotent for regions, categories, bureaus, and users only; it does
 not create institutions, cases, overlaps, notifications, or SLA configs.
+
+### 15.3 Stage 3 implementation update (applied 2026-10-29)
+
+Stage 3 (3A correctness + 3B coordination) is implemented and verified:
+
+- The base PENDING `case_relationships` row is created before Jev runs. A
+  `same_institution_different_issue` answer, low coordination score, disabled Jev, or
+  Jev failure/timeout only changes the assessment; it never removes the alert.
+- Assessments store `rationale`, remain separate from relationships, and attach to an
+  existing relationship when one already exists (self-healing older rows).
+- Re-assessment runs after case create, assignment change, transfer, and institution
+  name/AICTE ID/region change. Institution-wide reassessment dedupes pairs by skipping
+  the upper side of each pair.
+- Manual link confirms an existing PENDING pair instead of creating a duplicate; manual
+  unlink dismisses the relationship, records `UNLINKED` actions on both cases, and
+  retains the row for audit. Re-reviewing returns 409.
+- Overlap notifications target involved bureau officers, involved regional officers,
+  and `ADMIN`/`SENIOR_MANAGEMENT`/`COMPETENT_AUTHORITY`; dedupe key is
+  `{recipientId,type,referenceId,periodKey}` with `periodKey = INITIAL`.
+- The overlap queue filters by status/bureau/region/match type/institution and paginates
+  with totals; the detail page shows rationale and supports unlink; the case Related tab
+  supports manual linking.
+- Tests: 27 DB-backed integration tests total, including rules-only, Jev
+  different-issue non-suppression, Jev failure/timeout, scoped/deduped notifications
+  with the exact heading, manual link/unlink, queue pagination/filtering, and
+  transfer-triggered re-assessment. A fetch guard fails the suite on any real Jev call.
+
+Still open from Stage 3:
+
+- Periodic overlap sweep/background batch and production-scale fuzzy blocking.
+- Automated browser E2E for confirm/dismiss/link/unlink.
 
 ## 16. Gap backlog (prioritized)
 
@@ -318,11 +360,19 @@ not create institutions, cases, overlaps, notifications, or SLA configs.
    `active` enforcement; public signup disabled; admin user/role/bureau/region
    management; server-side scope on cases, dashboard, reports, overlaps,
    notifications, institutions.
-2. **Staff workflow UI**: register case; assign/transfer/escalate/dispose; add remark; set next action; action/assignment history; officer names.
-3. **Institution registry UI**: `/institutions` search/list + profile; region names; create/edit with role checks.
-4. **Overlap correctness**: always create base cross-bureau coordination relationship; Jev enriches/ranks; re-assess on create/assign/transfer/institution change; manual link/unlink; notification scoping/dedupe; exact heading test.
+2. **Staff workflow UI** — **Done (Stage 2)**: register case; assign/transfer/escalate/
+   dispose; add remark; set next action; action/assignment history; officer names.
+   Browser E2E remains.
+3. **Institution registry UI** — **Done (Stage 2)**: `/institutions` search/list +
+   profile; region names; create/edit with role checks; duplicate warnings. Merge/alias
+   remains.
+4. **Overlap correctness** — **Done (Stage 3)**: base cross-bureau relationship always
+   created; Jev enriches/ranks; re-assess on create/assign/transfer/institution change;
+   manual link/unlink; notification scoping/dedupe; exact heading test. Periodic sweep
+   remains.
 5. **SLA + alerts**: `slaConfig` CRUD; compute expected disposal; node-cron scan; pending/approaching/overdue notifications; dedupe; dashboard/report use same calculation.
-6. **Pagination + query safety** on cases, institutions, overlaps, notifications; return totals.
+6. **Pagination + query safety**: cases, institutions, and the overlap queue paginate
+   with totals; add notification pagination and finish query-safety tests.
 7. **Demo data completeness**: the idempotent seed covers org and users; add
    institutions/cases/overlaps and a guarded one-command reset (Stage 7).
 
@@ -330,7 +380,9 @@ not create institutions, cases, overlaps, notifications, or SLA configs.
 
 8. Attachments upload/download with access control and validation.
 9. Reports: region names, quarterly view, filters, export, corrected disposal metric and date bounds.
-10. Integration tests for auth/RBAC/scoping, case lifecycle/audit, overlap rules/Jev fallback, notifications, reports.
+10. Integration tests for auth/RBAC/scoping, case lifecycle/audit, pagination,
+    duplicate checks, overlap rules/Jev fallback, and notifications are done; reports
+    still need DB-backed coverage.
 11. E2E critical journeys + component tests for forms/visibility.
 12. CI (lint, typecheck, unit, integration, build), coverage thresholds, security checklist.
 13. Admin audit log; category master; institution verify/merge.
@@ -373,10 +425,12 @@ The MVP is accepted only when all of these are true:
 3. An officer can register a case, assign it, add a remark, set next action,
    transfer, escalate, dispose, and see the full audit trail in the UI.
 4. Same-institution cross-bureau cases automatically produce a PENDING overlap
-   relationship with the exact heading, regardless of Jev availability.
+   relationship with the exact heading, regardless of Jev availability. *(Done —
+   Stage 3, integration-tested.)*
 5. Jev enabled: assessment stored and shown; Jev disabled/failing: rule-based
-   relationship still created.
-6. A human can confirm/dismiss; no auto-merge; decisions are audited.
+   relationship still created. *(Done — Stage 3, integration-tested.)*
+6. A human can confirm/dismiss; no auto-merge; decisions are audited. *(Done — Stage 3;
+   manual link/unlink also audited.)*
 7. Dashboard and reports show correct totals by status, bureau, region,
    institution, ageing, disposal rate, and overlaps, scoped to the user.
 8. SLA cron creates pending/approaching/overdue notifications once per period;

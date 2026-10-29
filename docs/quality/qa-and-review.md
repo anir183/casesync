@@ -23,21 +23,26 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-10-28; tree now mid-edit)
+## 2. Current test baseline (verified 2026-10-29)
 
 - 41 unit tests across 9 files: pair, normalize, similarity, interpret, Jev provider,
   overlap-Jev, reports, state machine, and scope/permission helpers.
-- 13 database-backed integration tests in `apps/api/tests/integration/` covering
+- 27 database-backed integration tests in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
-  guards, deactivation/session revocation, institution writes, and case-registration
-  scope. They are opt-in via `RUN_INTEGRATION=1` and use run-scoped records in the dev
-  database (Atlas credentials cannot create/drop databases).
-- No Stage 2 tests exist. No frontend component tests, no E2E tests, no coverage gate,
-  no CI.
-- Jev is mocked in tests; that invariant must remain.
-- **Warning:** Stage 2 backend edits are incomplete. `case.service.ts` does not
-  typecheck and no Stage 2 behavior has been verified. Do not quote this baseline as
-  the state of the current tree.
+  guards, deactivation/session revocation, institution writes, case-registration
+  scope, pagination contracts, duplicate checks, officer directory scoping, auto
+  numbering + initial assignment, rejected transitions writing no audit action, the
+  ordered lifecycle audit trail, and Stage 3 overlap behavior: rules-only base
+  relationship, Jev different-issue non-suppression, Jev failure/timeout fallback,
+  scoped/deduped notifications with the exact heading, manual link/unlink, queue
+  filters/pagination, and transfer-triggered re-assessment. They are opt-in via
+  `RUN_INTEGRATION=1` and use run-scoped records in the dev database (Atlas
+  credentials cannot create/drop databases).
+- A module-level fetch guard fails the integration suite if anything calls
+  `jevmodel.org`; Jev unit tests likewise mock `fetch`.
+- No frontend component tests, no browser E2E tests, no coverage gate, no CI.
+- API and web typecheck; Biome is clean; API and web production builds pass. Stage 3
+  behavior is verified through the API integration suite; browser E2E remains.
 
 ## 3. Test pyramid and ownership
 

@@ -1,9 +1,14 @@
-import { CASE_STATUS } from '@casesync/config'
+import { CASE_STATUS, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
+import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { CaseTable } from '#/features/cases/components/case-table'
-import { useInstitution } from '../api'
+import { useCurrentUser } from '#/lib/session'
+import { formatDate } from '#/lib/utils'
+import { useInstitution, useUpdateInstitution } from '../api'
 
 function DetailRow({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
@@ -16,7 +21,15 @@ function DetailRow({ label, value }: { label: string; value?: React.ReactNode })
 
 export function InstitutionDetailPage() {
   const { id = '' } = useParams()
-  const { data, isLoading, isError, error } = useInstitution(id)
+  const [page, setPage] = useState<number>(PAGINATION.DEFAULT_PAGE)
+  const [pageSize, setPageSize] = useState<number>(PAGINATION.DEFAULT_PAGE_SIZE)
+  const { data, isLoading, isError, error } = useInstitution(id, page, pageSize)
+  const updateInstitution = useUpdateInstitution(id)
+  const { user } = useCurrentUser()
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [verifyError, setVerifyError] = useState<string | null>(null)
+  const canWrite = hasAnyRole(user?.role, ROLE_GROUPS.INSTITUTION_WRITE)
+  const canRegister = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading institution…</p>
 
@@ -26,21 +39,46 @@ export function InstitutionDetailPage() {
         <p className="text-sm text-red-600">
           {error instanceof Error ? error.message : 'Institution not found'}
         </p>
-        <Link to="/cases" className="text-sm underline underline-offset-4">
-          Back to case registry
+        <Link to="/institutions" className="text-sm underline underline-offset-4">
+          Back to institutions
         </Link>
       </div>
     )
   }
 
-  const { institution, cases } = data
-  const disposed = cases.filter((item) => item.status === CASE_STATUS.DISPOSED).length
+  const { institution, cases, total } = data
+  const disposedOnPage = cases.filter((item) => item.status === CASE_STATUS.DISPOSED).length
+
+  function toggleVerified() {
+    setFeedback(null)
+    setVerifyError(null)
+    updateInstitution.mutate(
+      { verified: !institution.verified },
+      {
+        onSuccess: () =>
+          setFeedback(
+            institution.verified
+              ? 'Institution marked unverified.'
+              : 'Institution marked verified.',
+          ),
+        onError: (mutationError) =>
+          setVerifyError(
+            mutationError instanceof Error
+              ? mutationError.message
+              : 'Verification status could not be updated',
+          ),
+      },
+    )
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <Link to="/cases" className="text-sm text-muted-foreground underline underline-offset-4">
-          ← Back to case registry
+        <Link
+          to="/institutions"
+          className="text-sm text-muted-foreground underline underline-offset-4"
+        >
+          ← Back to institutions
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold">{institution.name}</h1>
@@ -51,6 +89,40 @@ export function InstitutionDetailPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Consolidated complaint history across all Bureaus and Cells.
         </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {canWrite && (
+            <Link
+              to={`/institutions/${institution.id}/edit`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Edit institution
+            </Link>
+          )}
+          {canWrite && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleVerified}
+              disabled={updateInstitution.isPending}
+            >
+              {updateInstitution.isPending
+                ? 'Saving...'
+                : institution.verified
+                  ? 'Mark unverified'
+                  : 'Mark verified'}
+            </Button>
+          )}
+          {canRegister && (
+            <Link
+              to={`/cases/new?institutionId=${institution.id}`}
+              className={buttonVariants({ size: 'sm' })}
+            >
+              Register case
+            </Link>
+          )}
+        </div>
+        {feedback && <p className="mt-2 text-sm text-emerald-700">{feedback}</p>}
+        {verifyError && <p className="mt-2 text-sm text-red-600">{verifyError}</p>}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -61,7 +133,9 @@ export function InstitutionDetailPage() {
           <CardContent className="divide-y divide-border">
             <DetailRow label="AICTE permanent ID" value={institution.aictePermanentId} />
             <DetailRow label="Address" value={institution.address} />
-            <DetailRow label="Region" value={institution.regionId} />
+            <DetailRow label="Region" value={institution.regionName} />
+            <DetailRow label="Created" value={formatDate(institution.createdAt)} />
+            <DetailRow label="Updated" value={formatDate(institution.updatedAt)} />
           </CardContent>
         </Card>
         <Card>
@@ -69,19 +143,33 @@ export function InstitutionDetailPage() {
             <CardTitle>Case summary</CardTitle>
           </CardHeader>
           <CardContent className="divide-y divide-border">
-            <DetailRow label="Total cases" value={cases.length} />
-            <DetailRow label="Open" value={cases.length - disposed} />
-            <DetailRow label="Disposed" value={disposed} />
+            <DetailRow label="Total cases" value={total} />
+            <DetailRow label="On this page" value={cases.length} />
+            <DetailRow label="Disposed on this page" value={disposedOnPage} />
+            <DetailRow label="Open on this page" value={cases.length - disposedOnPage} />
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle>All cases</CardTitle>
+          <span className="text-sm text-muted-foreground">{total} total</span>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <CaseTable cases={cases} />
+          {total > 0 && (
+            <Pagination
+              page={data.page}
+              pageSize={data.pageSize}
+              total={total}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size)
+                setPage(PAGINATION.DEFAULT_PAGE)
+              }}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

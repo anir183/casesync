@@ -9,6 +9,7 @@ export interface ICaseOverlapAssessment extends Document {
   coordinationReviewNoul?: number
   probabilities?: Record<string, number>
   confidence?: number
+  rationale?: string
   status: string
   tokensIn?: number
   tokensOut?: number
@@ -29,6 +30,7 @@ const CaseOverlapAssessmentSchema = new Schema<ICaseOverlapAssessment>(
     coordinationReviewNoul: { type: Number },
     probabilities: { type: Schema.Types.Mixed },
     confidence: { type: Number },
+    rationale: { type: String },
     status: {
       type: String,
       enum: Object.values(JEV_ASSESSMENT_STATUS),

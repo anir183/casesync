@@ -13,20 +13,14 @@ import { jaroWinkler, normalizePairKey } from '@casesync/utils'
 import { env } from '#/config/env'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
-import { notifyRoles } from '#/lib/notifications'
+import { notifyRecipients, resolveScopedRecipients } from '#/lib/notifications'
 import { Bureau } from '#/models/bureau.model'
 import { CaseAction } from '#/models/case-action.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
-import {
-  JevError,
-  interpretAssessment,
-  jevConfig,
-  jevProvider,
-  shouldFlagForReview,
-} from '#/services/jev'
+import { JevError, interpretAssessment, jevConfig, jevProvider } from '#/services/jev'
 import { type CaseForAssessment, buildJevRequest } from './overlap.jev'
 
 export interface AssessSummary {
@@ -39,9 +33,15 @@ export interface AssessSummary {
   jevEnabled: boolean
 }
 
+export interface AssessOptions {
+  force?: boolean
+  skipUpperSide?: boolean
+}
+
 interface CaseDoc extends CaseForAssessment {
   _id: unknown
   institutionId: unknown
+  regionId?: unknown
 }
 
 type Pair = { caseAId: string; caseBId: string }
@@ -52,10 +52,35 @@ interface Candidate {
   confidence?: number
 }
 
-const FUZZY_INSTITUTION_LIMIT = 500
+interface RelationshipLike {
+  _id: unknown
+  assessmentId?: unknown
+}
+
+type AssessmentOutcome = 'assessed' | 'skipped' | 'failed'
+
+interface PairOutcome {
+  relationshipCreated: boolean
+  assessment: AssessmentOutcome
+}
+
+const OVERLAP_OVERSIGHT_ROLES = [
+  ROLES.ADMIN,
+  ROLES.SENIOR_MANAGEMENT,
+  ROLES.COMPETENT_AUTHORITY,
+] as const
 
 function isJevConfigured() {
   return jevConfig.enabled && Boolean(jevConfig.apiKey)
+}
+
+function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: number }).code === 11000
+  )
 }
 
 function toStatusForError(error: unknown): JevAssessmentStatus {
@@ -88,7 +113,7 @@ async function findSimilarInstitutions(source: CaseDoc) {
     _id: { $ne: source.institutionId },
     nameNormalized: { $type: 'string' },
   })
-    .limit(FUZZY_INSTITUTION_LIMIT)
+    .limit(OVERLAP.FUZZY_INSTITUTION_LIMIT)
     .lean()
 
   return others
@@ -146,22 +171,50 @@ async function loadAssessmentContext(caseA: CaseDoc, caseB: CaseDoc) {
   }
 }
 
-async function recordLinkedActions(
+async function recordCaseActions(
   caseIds: unknown[],
   actorId: string,
-  relationshipId: unknown,
+  actionType: string,
+  remarks: string,
   metadata: Record<string, unknown>,
 ) {
   await CaseAction.insertMany(
     caseIds.map((caseId) => ({
       caseId,
       actorId,
-      actionType: ACTION_TYPE.LINKED,
-      remarks: OVERLAP.HEADING,
-      metadata: { relationshipId, ...metadata },
+      actionType,
+      remarks,
+      metadata,
     })),
   )
   await Case.updateMany({ _id: { $in: caseIds } }, { lastActionAt: new Date() })
+}
+
+async function recordLinkedActions(
+  caseIds: unknown[],
+  actorId: string,
+  relationshipId: unknown,
+  metadata: Record<string, unknown>,
+) {
+  await recordCaseActions(caseIds, actorId, ACTION_TYPE.LINKED, OVERLAP.HEADING, {
+    relationshipId,
+    ...metadata,
+  })
+}
+
+async function recordUnlinkActions(
+  caseIds: unknown[],
+  actorId: string,
+  relationshipId: unknown,
+  notes: string,
+) {
+  await recordCaseActions(
+    caseIds,
+    actorId,
+    ACTION_TYPE.UNLINKED,
+    notes || OVERLAP.MANUAL_UNLINK_REASON,
+    { relationshipId, manual: true },
+  )
 }
 
 function buildFallbackReason(matchType: string) {
@@ -172,53 +225,47 @@ function buildFallbackReason(matchType: string) {
   return `${OVERLAP.HEADING}. ${basis}`
 }
 
-const OVERLAP_NOTIFY_ROLES = [
-  ROLES.ADMIN,
-  ROLES.SENIOR_MANAGEMENT,
-  ROLES.COMPETENT_AUTHORITY,
-  ROLES.BUREAU_OFFICER,
-  ROLES.REGIONAL_OFFICER,
-]
+function involvedIds(cases: CaseDoc[], field: 'bureauId' | 'regionId') {
+  return [
+    ...new Set(
+      cases
+        .map((item) => item[field])
+        .filter((value): value is NonNullable<typeof value> => Boolean(value))
+        .map(String),
+    ),
+  ]
+}
 
 async function notifyOverlap(source: CaseDoc, candidate: CaseDoc, relationshipId: unknown) {
-  await notifyRoles(OVERLAP_NOTIFY_ROLES, {
+  const recipients = await resolveScopedRecipients({
+    roles: OVERLAP_OVERSIGHT_ROLES,
+    bureauIds: involvedIds([source, candidate], 'bureauId'),
+    regionIds: involvedIds([source, candidate], 'regionId'),
+  })
+  await notifyRecipients(recipients, {
     type: NOTIFICATION_TYPE.OVERLAP_ALERT,
     referenceId: String(relationshipId),
+    link: `/overlaps/${relationshipId}`,
+    periodKey: OVERLAP.NOTIFICATION_PERIOD_KEY,
     title: OVERLAP.HEADING,
     message: `${source.caseNumber} and ${candidate.caseNumber} concern the same institution but are handled by different Bureaus/Cells. Human review is required.`,
   })
 }
 
-async function assessOnePair(
+async function ensureBaseRelationship(
   source: CaseDoc,
   candidate: CaseDoc,
   pair: Pair,
   actorId: string,
   trigger: Candidate,
-): Promise<'created' | 'skipped' | 'assessed' | 'failed'> {
-  const existing = await CaseOverlapAssessment.findOne({
-    caseAId: pair.caseAId,
-    caseBId: pair.caseBId,
-  }).lean()
-  if (existing) return 'skipped'
+): Promise<{ relationship: RelationshipLike; created: boolean }> {
+  const existing = await CaseRelationship.findOne(pair)
+  if (existing) return { relationship: existing, created: false }
 
-  const ordered = String(source._id) === pair.caseAId ? [source, candidate] : [candidate, source]
-  const [caseA, caseB] = ordered
-  const assessment = await CaseOverlapAssessment.create({
-    caseAId: pair.caseAId,
-    caseBId: pair.caseBId,
-    status: JEV_ASSESSMENT_STATUS.PENDING,
-  })
-
-  if (!isJevConfigured()) {
-    await CaseOverlapAssessment.updateOne(
-      { _id: assessment._id },
-      { status: JEV_ASSESSMENT_STATUS.SKIPPED },
-    )
+  try {
     const relationship = await CaseRelationship.create({
       caseAId: pair.caseAId,
       caseBId: pair.caseBId,
-      assessmentId: assessment._id,
       matchType: trigger.matchType,
       confidence: trigger.confidence,
       reason: buildFallbackReason(trigger.matchType),
@@ -227,10 +274,42 @@ async function assessOnePair(
     await recordLinkedActions([source._id, candidate._id], actorId, relationship._id, {
       aiAssisted: false,
     })
-    await notifyOverlap(source, candidate, relationship._id)
-    return 'created'
+    return { relationship, created: true }
+  } catch (error) {
+    if (!isDuplicateKeyError(error)) throw error
+    const raced = await CaseRelationship.findOne(pair)
+    if (!raced) throw error
+    return { relationship: raced, created: false }
   }
+}
 
+async function attachAssessment(relationship: RelationshipLike, assessmentId: unknown) {
+  if (String(relationship.assessmentId ?? '') === String(assessmentId)) return
+  await CaseRelationship.updateOne({ _id: relationship._id }, { assessmentId })
+  relationship.assessmentId = assessmentId
+}
+
+async function createAssessment(pair: Pair, status: JevAssessmentStatus) {
+  try {
+    return await CaseOverlapAssessment.create({
+      caseAId: pair.caseAId,
+      caseBId: pair.caseBId,
+      status,
+    })
+  } catch (error) {
+    if (!isDuplicateKeyError(error)) throw error
+    const existing = await CaseOverlapAssessment.findOne(pair)
+    if (!existing) throw error
+    return existing
+  }
+}
+
+async function runJevAssessment(
+  caseA: CaseDoc,
+  caseB: CaseDoc,
+  pair: Pair,
+  assessmentId: unknown,
+): Promise<AssessmentOutcome> {
   const ctx = await loadAssessmentContext(caseA, caseB)
   const request = buildJevRequest(caseA, caseB, ctx, jevConfig.model)
 
@@ -241,7 +320,7 @@ async function assessOnePair(
     )
     const interpreted = interpretAssessment(data)
     await CaseOverlapAssessment.updateOne(
-      { _id: assessment._id },
+      { _id: assessmentId },
       {
         status: JEV_ASSESSMENT_STATUS.ASSESSED,
         modelVersion: interpreted.modelVersion,
@@ -249,6 +328,7 @@ async function assessOnePair(
         coordinationReviewNoul: interpreted.coordinationReviewNoul,
         confidence: interpreted.confidence,
         probabilities: interpreted.probabilities,
+        rationale: interpreted.rationale,
         tokensIn: interpreted.tokensIn,
         tokensOut: interpreted.tokensOut,
         latencyMs,
@@ -256,59 +336,87 @@ async function assessOnePair(
         assessedAt: new Date(),
       },
     )
-
-    if (!shouldFlagForReview(interpreted, jevConfig.coordinationThreshold)) {
-      return 'assessed'
-    }
-
-    const relationship = await CaseRelationship.create({
-      caseAId: pair.caseAId,
-      caseBId: pair.caseBId,
-      assessmentId: assessment._id,
-      matchType: RELATIONSHIP_MATCH_TYPE.COMPLAINT_SIMILAR,
-      confidence: interpreted.confidence,
-      reason: `${OVERLAP.AI_REASON_PREFIX} ${interpreted.rationale} Same verified institution, different Bureaus/Cells.`,
-      reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
-    })
-    await recordLinkedActions([source._id, candidate._id], actorId, relationship._id, {
-      aiAssisted: true,
-      relationshipChoice: interpreted.relationshipChoice,
-      coordinationReviewNoul: interpreted.coordinationReviewNoul,
-    })
-    await notifyOverlap(source, candidate, relationship._id)
-    return 'created'
+    return 'assessed'
   } catch (error) {
     const status = toStatusForError(error)
     const message = error instanceof Error ? error.message : 'Unknown Jev failure'
-    await CaseOverlapAssessment.updateOne(
-      { _id: assessment._id },
-      { status, errorMessage: message },
-    )
-    logger.warn('overlap assessment failed, falling back to rule-based alert', {
+    await CaseOverlapAssessment.updateOne({ _id: assessmentId }, { status, errorMessage: message })
+    logger.warn('overlap assessment failed, keeping rule-based relationship', {
       pair: `${pair.caseAId}:${pair.caseBId}`,
       status,
       message,
     })
-
-    const relationship = await CaseRelationship.create({
-      caseAId: pair.caseAId,
-      caseBId: pair.caseBId,
-      assessmentId: assessment._id,
-      matchType: trigger.matchType,
-      confidence: trigger.confidence,
-      reason: buildFallbackReason(trigger.matchType),
-      reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
-    })
-    await recordLinkedActions([source._id, candidate._id], actorId, relationship._id, {
-      aiAssisted: false,
-      assessmentFailed: true,
-    })
-    await notifyOverlap(source, candidate, relationship._id)
     return 'failed'
   }
 }
 
-export async function assessCaseOverlaps(caseId: string, actorId: string): Promise<AssessSummary> {
+async function assessPair(
+  source: CaseDoc,
+  candidate: CaseDoc,
+  pair: Pair,
+  relationship: RelationshipLike,
+  force: boolean,
+): Promise<AssessmentOutcome> {
+  const existing = await CaseOverlapAssessment.findOne(pair).lean()
+  if (existing) await attachAssessment(relationship, existing._id)
+
+  if (existing?.status === JEV_ASSESSMENT_STATUS.ASSESSED && !force) return 'skipped'
+
+  if (!isJevConfigured()) {
+    if (!existing) {
+      const skipped = await createAssessment(pair, JEV_ASSESSMENT_STATUS.SKIPPED)
+      await attachAssessment(relationship, skipped._id)
+    } else if (existing.status === JEV_ASSESSMENT_STATUS.PENDING) {
+      await CaseOverlapAssessment.updateOne(
+        { _id: existing._id },
+        { status: JEV_ASSESSMENT_STATUS.SKIPPED },
+      )
+    }
+    return 'skipped'
+  }
+
+  const assessment = existing ?? (await createAssessment(pair, JEV_ASSESSMENT_STATUS.PENDING))
+  await attachAssessment(relationship, assessment._id)
+
+  const ordered = String(source._id) === pair.caseAId ? [source, candidate] : [candidate, source]
+  const [caseA, caseB] = ordered
+  return runJevAssessment(caseA, caseB, pair, assessment._id)
+}
+
+async function assessOnePair(
+  source: CaseDoc,
+  candidate: CaseDoc,
+  pair: Pair,
+  actorId: string,
+  trigger: Candidate,
+  force: boolean,
+): Promise<PairOutcome> {
+  const { relationship, created } = await ensureBaseRelationship(
+    source,
+    candidate,
+    pair,
+    actorId,
+    trigger,
+  )
+
+  if (created) {
+    await notifyOverlap(source, candidate, relationship._id).catch((error) => {
+      logger.warn('overlap notification failed', {
+        relationshipId: String(relationship._id),
+        message: error instanceof Error ? error.message : String(error),
+      })
+    })
+  }
+
+  const assessment = await assessPair(source, candidate, pair, relationship, force)
+  return { relationshipCreated: created, assessment }
+}
+
+export async function assessCaseOverlaps(
+  caseId: string,
+  actorId: string,
+  options: AssessOptions = {},
+): Promise<AssessSummary> {
   const source = (await Case.findById(caseId).lean()) as unknown as CaseDoc | null
   if (!source) {
     throw new AppError(HTTP_STATUS.NOT_FOUND, 'Case not found', 'CASE_NOT_FOUND')
@@ -327,13 +435,22 @@ export async function assessCaseOverlaps(caseId: string, actorId: string): Promi
 
   for (const candidate of candidates) {
     const candidateCase = candidate.case
+    if (options.skipUpperSide && String(source._id) > String(candidateCase._id)) continue
+
     const pair = normalizePairKey(String(source._id), String(candidateCase._id))
     try {
-      const outcome = await assessOnePair(source, candidateCase, pair, actorId, candidate)
-      if (outcome === 'skipped') summary.skipped += 1
-      if (outcome === 'created') summary.created += 1
-      if (outcome === 'assessed') summary.assessed += 1
-      if (outcome === 'failed') summary.failed += 1
+      const outcome = await assessOnePair(
+        source,
+        candidateCase,
+        pair,
+        actorId,
+        candidate,
+        Boolean(options.force),
+      )
+      if (outcome.relationshipCreated) summary.created += 1
+      if (outcome.assessment === 'skipped') summary.skipped += 1
+      if (outcome.assessment === 'assessed') summary.assessed += 1
+      if (outcome.assessment === 'failed') summary.failed += 1
     } catch (error) {
       summary.failed += 1
       logger.error('overlap pair processing failed', {
@@ -345,4 +462,116 @@ export async function assessCaseOverlaps(caseId: string, actorId: string): Promi
   }
 
   return summary
+}
+
+export async function reassessInstitutionOverlaps(institutionId: string, actorId: string) {
+  const cases = await Case.find(
+    { institutionId, status: { $ne: CASE_STATUS.DISPOSED } },
+    { _id: 1 },
+  )
+    .limit(OVERLAP.REASSESS_CASE_LIMIT)
+    .lean()
+
+  for (const item of cases) {
+    try {
+      await assessCaseOverlaps(String(item._id), actorId, {
+        force: true,
+        skipUpperSide: true,
+      })
+    } catch (error) {
+      logger.warn('institution overlap reassessment failed', {
+        institutionId,
+        caseId: String(item._id),
+        message: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  return { cases: cases.length }
+}
+
+export async function linkCasePair(
+  caseAId: string,
+  caseBId: string,
+  notes: string | undefined,
+  actorId: string,
+) {
+  if (caseAId === caseBId) {
+    throw new AppError(HTTP_STATUS.BAD_REQUEST, 'A case cannot be linked to itself', 'SAME_CASE')
+  }
+
+  const pair = normalizePairKey(caseAId, caseBId)
+  const existing = await CaseRelationship.findOne(pair)
+  if (existing) {
+    if (existing.reviewStatus !== RELATIONSHIP_REVIEW_STATUS.PENDING) {
+      throw new AppError(
+        HTTP_STATUS.CONFLICT,
+        'This overlap has already been reviewed',
+        'OVERLAP_REVIEWED',
+      )
+    }
+    existing.reviewStatus = RELATIONSHIP_REVIEW_STATUS.CONFIRMED
+    existing.reviewedBy = actorId
+    existing.reviewedAt = new Date()
+    existing.reviewNotes = notes
+    await existing.save()
+    await recordLinkedActions([caseAId, caseBId], actorId, existing._id, {
+      manual: true,
+      confirmedExisting: true,
+      notes,
+    })
+    return String(existing._id)
+  }
+
+  const reason = notes ? `${OVERLAP.MANUAL_REASON} ${notes}` : OVERLAP.MANUAL_REASON
+  const relationship = await CaseRelationship.create({
+    caseAId: pair.caseAId,
+    caseBId: pair.caseBId,
+    matchType: RELATIONSHIP_MATCH_TYPE.MANUAL,
+    reason,
+    reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
+    reviewedBy: actorId,
+    reviewedAt: new Date(),
+    reviewNotes: notes,
+  })
+  await recordLinkedActions([caseAId, caseBId], actorId, relationship._id, {
+    manual: true,
+    notes,
+  })
+  return String(relationship._id)
+}
+
+export async function unlinkRelationship(
+  relationship: RelationshipLike & {
+    caseAId: unknown
+    caseBId: unknown
+    reviewStatus: string
+  },
+  notes: string | undefined,
+  actorId: string,
+) {
+  if (relationship.reviewStatus === RELATIONSHIP_REVIEW_STATUS.DISMISSED) {
+    throw new AppError(
+      HTTP_STATUS.CONFLICT,
+      'This overlap has already been dismissed',
+      'OVERLAP_REVIEWED',
+    )
+  }
+
+  await CaseRelationship.updateOne(
+    { _id: relationship._id },
+    {
+      reviewStatus: RELATIONSHIP_REVIEW_STATUS.DISMISSED,
+      reviewedBy: actorId,
+      reviewedAt: new Date(),
+      reviewNotes: notes,
+    },
+  )
+  await recordUnlinkActions(
+    [relationship.caseAId, relationship.caseBId],
+    actorId,
+    relationship._id,
+    notes ?? '',
+  )
+  return String(relationship._id)
 }

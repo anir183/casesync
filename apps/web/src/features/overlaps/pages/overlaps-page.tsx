@@ -1,13 +1,21 @@
-import { OVERLAP } from '@casesync/config'
+import { OVERLAP, PAGINATION } from '@casesync/config'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import type { Overlap, ReviewStatus } from '#/features/overlaps/api'
-import { useOverlaps } from '#/features/overlaps/api'
+import { Select } from '#/components/ui/select'
+import { useBureaus, useRegions } from '#/features/organization/api'
+import {
+  type Overlap,
+  type OverlapFilters,
+  type ReviewStatus,
+  useOverlaps,
+} from '#/features/overlaps/api'
 import { ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
+  MATCH_TYPE_OPTIONS,
   assessmentStatusLabel,
   choiceLabel,
   matchTypeLabel,
@@ -20,6 +28,12 @@ const TABS: Array<{ value: ReviewStatus; label: string }> = [
   { value: 'CONFIRMED', label: 'Confirmed' },
   { value: 'DISMISSED', label: 'Dismissed' },
 ]
+
+const DEFAULT_FILTERS: OverlapFilters = {
+  status: 'PENDING',
+  page: PAGINATION.DEFAULT_PAGE,
+  pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+}
 
 function OverlapCard({ overlap }: { overlap: Overlap }) {
   return (
@@ -93,8 +107,18 @@ function OverlapCard({ overlap }: { overlap: Overlap }) {
 }
 
 export function OverlapsPage() {
-  const [status, setStatus] = useState<ReviewStatus>('PENDING')
-  const { data, isLoading, isError, error, refetch } = useOverlaps(status)
+  const [filters, setFilters] = useState<OverlapFilters>(DEFAULT_FILTERS)
+  const { data, isLoading, isError, error, refetch } = useOverlaps(filters)
+  const { data: bureaus } = useBureaus()
+  const { data: regions } = useRegions()
+
+  function updateFilter(key: keyof OverlapFilters, value: string) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value || undefined,
+      page: PAGINATION.DEFAULT_PAGE,
+    }))
+  }
 
   return (
     <div className="space-y-6">
@@ -111,13 +135,60 @@ export function OverlapsPage() {
           <Button
             key={tab.value}
             size="sm"
-            variant={status === tab.value ? 'default' : 'outline'}
-            onClick={() => setStatus(tab.value)}
+            variant={filters.status === tab.value ? 'default' : 'outline'}
+            onClick={() =>
+              setFilters((current) => ({
+                ...current,
+                status: tab.value,
+                page: PAGINATION.DEFAULT_PAGE,
+              }))
+            }
           >
             {tab.label}
           </Button>
         ))}
       </div>
+
+      <Card>
+        <CardContent className="grid gap-3 pt-6 md:grid-cols-3">
+          <Select
+            aria-label="Filter by bureau"
+            value={filters.bureauId ?? ''}
+            onChange={(event) => updateFilter('bureauId', event.target.value)}
+          >
+            <option value="">All bureaus/cells</option>
+            {bureaus?.map((bureau) => (
+              <option key={bureau.id} value={bureau.id}>
+                {bureau.name}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Filter by region"
+            value={filters.regionId ?? ''}
+            onChange={(event) => updateFilter('regionId', event.target.value)}
+          >
+            <option value="">All regions</option>
+            {regions?.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.name}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Filter by match type"
+            value={filters.matchType ?? ''}
+            onChange={(event) => updateFilter('matchType', event.target.value)}
+          >
+            <option value="">All match types</option>
+            {MATCH_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+        </CardContent>
+      </Card>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading overlap queue...</p>}
 
@@ -134,22 +205,34 @@ export function OverlapsPage() {
         </Card>
       )}
 
-      {!isLoading && !isError && data?.length === 0 && (
+      {!isLoading && !isError && data?.items.length === 0 && (
         <Card>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              No {status.toLowerCase()} overlap alerts. New alerts appear automatically when a
-              cross-bureau case is registered.
+              No {filters.status.toLowerCase()} overlap alerts match these filters. New alerts
+              appear automatically when a cross-bureau case is registered.
             </p>
           </CardContent>
         </Card>
       )}
 
       <div className="space-y-4">
-        {data?.map((overlap) => (
+        {data?.items.map((overlap) => (
           <OverlapCard key={overlap.id} overlap={overlap} />
         ))}
       </div>
+
+      {data && data.total > 0 && (
+        <Pagination
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) =>
+            setFilters((current) => ({ ...current, page: 1, pageSize }))
+          }
+        />
+      )}
     </div>
   )
 }

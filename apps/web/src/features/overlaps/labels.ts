@@ -19,6 +19,11 @@ const ASSESSMENT_STATUS_LABELS: Record<string, string> = {
   SKIPPED: 'Rule-based match (AI disabled)',
 }
 
+export const MATCH_TYPE_OPTIONS = Object.entries(MATCH_TYPE_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}))
+
 export function choiceLabel(choice?: string) {
   if (!choice) return 'Not classified'
   return CHOICE_LABELS[choice] ?? choice

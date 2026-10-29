@@ -1,4 +1,4 @@
-import { ROLES } from '@casesync/config'
+import { ROLES, ROLE_GROUPS } from '@casesync/config'
 import mongoose from 'mongoose'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { Institution } from '#/models/institution.model'
@@ -26,11 +26,7 @@ const ALL_SCOPE_ROLES: string[] = [
 const BUREAU_SCOPE_ROLES: string[] = [ROLES.BUREAU_OFFICER]
 const REGION_SCOPE_ROLES: string[] = [ROLES.REGIONAL_OFFICER]
 
-const INSTITUTION_WRITE_ROLES: string[] = [
-  ROLES.ADMIN,
-  ROLES.BUREAU_OFFICER,
-  ROLES.REGIONAL_OFFICER,
-]
+const INSTITUTION_WRITE_ROLES: string[] = [...ROLE_GROUPS.INSTITUTION_WRITE]
 
 function scopeNotConfigured(field: string): AppError {
   return new AppError(

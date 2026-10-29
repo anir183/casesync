@@ -1,4 +1,4 @@
-import { OVERLAP } from '@casesync/config'
+import { OVERLAP, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ConfirmDialog } from '#/components/shared/confirm-dialog'
@@ -7,7 +7,7 @@ import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import type { OverlapCase, ReviewAction } from '#/features/overlaps/api'
-import { useOverlap, useReviewOverlap } from '#/features/overlaps/api'
+import { useOverlap, useReviewOverlap, useUnlinkOverlap } from '#/features/overlaps/api'
 import { CaseStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
   assessmentStatusLabel,
@@ -15,7 +15,10 @@ import {
   matchTypeLabel,
   percent,
 } from '#/features/overlaps/labels'
+import { useCurrentUser } from '#/lib/session'
 import { formatDate, formatDateOnly } from '#/lib/utils'
+
+type PendingAction = ReviewAction | 'unlink'
 
 const CHOICE_VARIANT: Record<string, 'success' | 'warning' | 'muted'> = {
   likely_same_issue: 'success',
@@ -71,8 +74,11 @@ export function OverlapDetailPage() {
   const { id = '' } = useParams()
   const { data: overlap, isLoading, isError, error } = useOverlap(id)
   const review = useReviewOverlap(id)
+  const unlink = useUnlinkOverlap(id)
+  const { user } = useCurrentUser()
+  const canReview = hasAnyRole(user?.role, ROLE_GROUPS.OVERLAP_REVIEW)
   const [notes, setNotes] = useState('')
-  const [pendingAction, setPendingAction] = useState<ReviewAction | null>(null)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [reviewError, setReviewError] = useState<string | null>(null)
 
@@ -114,6 +120,22 @@ export function OverlapDetailPage() {
         },
       },
     )
+  }
+
+  function submitUnlink() {
+    setReviewError(null)
+    unlink.mutate(notes.trim() || undefined, {
+      onSuccess: () => {
+        setPendingAction(null)
+        setFeedback('Cases unlinked. The relationship is dismissed and retained for audit.')
+      },
+      onError: (mutationError) => {
+        setPendingAction(null)
+        setReviewError(
+          mutationError instanceof Error ? mutationError.message : 'Unlink could not be saved',
+        )
+      },
+    })
   }
 
   return (
@@ -173,6 +195,9 @@ export function OverlapDetailPage() {
             <p className="text-sm text-muted-foreground">
               {overlap.reason ?? OVERLAP.RULE_BASED_REASON}
             </p>
+            {assessment?.rationale && (
+              <p className="text-sm text-muted-foreground">{assessment.rationale}</p>
+            )}
             {assessment?.errorMessage && (
               <p className="text-sm text-amber-700">
                 AI assessment note: {assessment.errorMessage}
@@ -202,7 +227,7 @@ export function OverlapDetailPage() {
           <CardTitle>Human decision</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {overlap.reviewStatus === 'PENDING' ? (
+          {overlap.reviewStatus === 'PENDING' && canReview ? (
             <>
               <p className="text-sm text-muted-foreground">
                 Confirming records a human-confirmed link between both cases. Dismissing keeps the
@@ -229,16 +254,42 @@ export function OverlapDetailPage() {
               </div>
             </>
           ) : (
-            <div className="space-y-2 text-sm">
-              <p>
-                This overlap was <strong>{overlap.reviewStatus.toLowerCase()}</strong> by a human
-                reviewer on {formatDate(overlap.reviewedAt)}.
-              </p>
+            <div className="space-y-3 text-sm">
+              {overlap.reviewStatus === 'PENDING' ? (
+                <p className="text-muted-foreground">
+                  This alert is awaiting review. Your role can view it but cannot confirm or dismiss
+                  overlaps.
+                </p>
+              ) : (
+                <p>
+                  This overlap was <strong>{overlap.reviewStatus.toLowerCase()}</strong> by a human
+                  reviewer on {formatDate(overlap.reviewedAt)}.
+                </p>
+              )}
               {overlap.reviewNotes && (
                 <p className="text-muted-foreground">Notes: {overlap.reviewNotes}</p>
               )}
+              {overlap.reviewStatus === 'CONFIRMED' && canReview && (
+                <>
+                  <div className="space-y-2">
+                    <FieldLabel htmlFor="unlink-notes">Unlink notes (optional)</FieldLabel>
+                    <Textarea
+                      id="unlink-notes"
+                      rows={2}
+                      maxLength={2000}
+                      value={notes}
+                      onChange={(event) => setNotes(event.target.value)}
+                      placeholder="Explain why the cases should no longer be linked..."
+                    />
+                  </div>
+                  {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+                  <Button variant="outline" onClick={() => setPendingAction('unlink')}>
+                    Unlink cases
+                  </Button>
+                </>
+              )}
               <p className="text-muted-foreground">
-                The review is recorded on both case histories and cannot be overwritten here.
+                The review is recorded on both case histories and is retained for audit.
               </p>
             </div>
           )}
@@ -248,17 +299,34 @@ export function OverlapDetailPage() {
 
       <ConfirmDialog
         open={pendingAction !== null}
-        title={pendingAction === 'confirm' ? 'Confirm overlap?' : 'Dismiss overlap?'}
+        title={
+          pendingAction === 'confirm'
+            ? 'Confirm overlap?'
+            : pendingAction === 'unlink'
+              ? 'Unlink cases?'
+              : 'Dismiss overlap?'
+        }
         description={
           pendingAction === 'confirm'
             ? 'Both cases will be linked and the decision will be written to their audit history.'
-            : 'The alert will leave the active queue. The AI assessment remains stored for audit.'
+            : pendingAction === 'unlink'
+              ? 'The link will be removed from both cases and retained as a dismissed relationship for audit.'
+              : 'The alert will leave the active queue. The AI assessment remains stored for audit.'
         }
-        confirmLabel={pendingAction === 'confirm' ? 'Confirm overlap' : 'Dismiss overlap'}
-        destructive={pendingAction === 'dismiss'}
-        pending={review.isPending}
+        confirmLabel={
+          pendingAction === 'confirm'
+            ? 'Confirm overlap'
+            : pendingAction === 'unlink'
+              ? 'Unlink cases'
+              : 'Dismiss overlap'
+        }
+        destructive={pendingAction === 'dismiss' || pendingAction === 'unlink'}
+        pending={review.isPending || unlink.isPending}
         onCancel={() => setPendingAction(null)}
-        onConfirm={() => pendingAction && submit(pendingAction)}
+        onConfirm={() => {
+          if (pendingAction === 'unlink') submitUnlink()
+          else if (pendingAction) submit(pendingAction)
+        }}
       />
     </div>
   )

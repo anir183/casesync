@@ -44,6 +44,7 @@ export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PAGE_SIZE: 20,
   MAX_PAGE_SIZE: 100,
+  PAGE_SIZE_OPTIONS: [20, 50, 100],
 } as const
 
 export const ACTION_TYPE = {
@@ -112,6 +113,12 @@ export const OVERLAP = {
   FUZZY_REASON:
     'Institution names match after normalization; verify that both records refer to the same institution.',
   AI_REASON_PREFIX: 'AI-assisted assessment:',
+  MANUAL_REASON: 'Related cases linked manually by a human reviewer.',
+  MANUAL_UNLINK_REASON: 'Related cases unlinked manually by a human reviewer.',
+  NOTIFICATION_PERIOD_KEY: 'INITIAL',
+  FUZZY_INSTITUTION_LIMIT: 500,
+  REASSESS_CASE_LIMIT: 200,
+  MAX_NOTES_LENGTH: 2000,
 } as const
 
 export const NOTIFICATION_TYPE = {

@@ -1,15 +1,16 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–1 complete (Stage 1 backend/admin API). **Stage 2 in progress and paused mid-edit.** Core overlap engine + read-only dashboard slice built. MVP not complete.  
+**Status:** Stages 0–3 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3A overlap correctness; Stage 3B coordination UX/notifications). Automated browser E2E, SLA jobs, admin web screens, and release hardening remain, so the MVP is not complete.  
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
-> **Paused-tree warning.** Stage 2 backend scaffolding is partially wired. The API does
-> not typecheck right now: `case.service.ts` imports pagination/user-directory helpers
-> but `listCases` still returns an array and references an undefined `LIST_LIMIT`.
-> Finish that file before running API checks. Do not describe Stage 2 as usable.
+> **Verification note.** API and web typechecks pass, Biome is clean, 41 unit tests and
+> 27 opt-in DB-backed integration tests pass, and both production builds succeed.
+> Integration tests install a fetch guard that fails on any real `jevmodel.org` call, so
+> Jev is only ever exercised through mocks. Stage 3 flows are verified through the API;
+> there is no automated browser/component E2E yet.
 
 ## Rules
 
@@ -41,7 +42,7 @@
 - [x] Mongoose models + indexes for core collections
 - [x] Better Auth sessions
 - [x] Centralized errors/logging
-- [x] API/web typecheck + builds passed at Stage 0 completion (current Stage 2 tree does not typecheck)
+- [x] API/web typecheck + builds passed at Stage 0 completion; still green after Stage 2
 - [ ] CI workflow (moved to Stage 7)
 
 ## Stage 1 — Identity, organization & access (DONE — backend/admin API)
@@ -55,51 +56,56 @@
 - [x] Scope cases, actions, assignments, related, overlaps, institutions
 - [x] Scope dashboard, reports, notifications
 - [x] Institution write role checks + region validation/backfill
-- [x] Role/scope/IDOR tests (13 DB-backed integration tests, opt-in `RUN_INTEGRATION=1`)
+- [x] Role/scope/IDOR tests (27 DB-backed integration tests total after Stage 3, opt-in `RUN_INTEGRATION=1`)
 - [x] Seed users for every role (`src/seed.ts`, idempotent)
 - [x] Update docs/role matrix
 
 **Exit:** each seeded role sees only permitted data; inactive rejected; admin can manage users; IDOR tests pass.
 
 **Deferred:** bureau CRUD and admin `audit_log` → Stage 6; admin users/organization
-web screens → Stage 2.
+web screens → Stage 6.
 
-## Stage 2 — Institution registry & case operations (IN PROGRESS — PAUSED)
+## Stage 2 — Institution registry & case operations (DONE — implementation)
 
-**Backend scaffolding added (partial, not wired):**
+**Backend:**
 
-- [x] Shared `CASE_TRANSITIONS` and `PAGINATION` constants (`packages/config`)
+- [x] Shared `CASE_TRANSITIONS`, `PAGINATION`, and `ROLE_GROUPS` constants (`packages/config`)
 - [x] Pagination helpers: `resolvePageQuery`, `buildPage`, `parseSort` (`lib/pagination.ts`)
 - [x] User directory helpers: `loadUserMap`, `listDirectoryUsers`, `toDirectoryUser` (`lib/user-directory.ts`)
-- [x] Case filter/list-query types, optional `caseNumber`/`officerId` on create, officer/region fields on DTO (partial)
+- [x] Paginated `listCases` (`Page<T>` with total/page/pageSize) and server-side filtering
+- [x] Auto case numbers `<bureauCode|CASE>-<UTC year>-<6 random digits>`; explicit numbers still accepted
+- [x] Optional `officerId` on create → initial assignment, `ASSIGNED` status, audit action
+- [x] Officer/region/bureau name enrichment on case list, detail, actions, and assignments
+- [x] Deterministic action/assignment ordering (`createdAt`/`assignedAt` + `_id`)
+- [x] Paginated institution list and paginated institution case history
+- [x] `GET /institutions/check-duplicate` (normalized name + exact AICTE ID, scope-aware)
+- [x] Scoped `GET /users/directory` for officer selection
+- [x] Role groups applied to routes, scope, and web gating
 
-**Still to do:**
+**Web:**
 
-- [ ] Finish `case.service.ts`: paginated `listCases` with total/sort, `LIST_LIMIT` fix,
-      officer/region name enrichment, detail actor/assignment names
-- [ ] Wire routes: paginated case list, user directory, assignment history DTOs
-- [ ] Institution list endpoint pagination/total + duplicate warning data
-- [ ] `/institutions` list/search UI + nav
-- [ ] Institution create/edit/verify UI (role-gated)
-- [ ] Duplicate AICTE ID/name warning
-- [ ] Case registration UI (`/cases/new`)
-- [ ] Staff action UI: assign, transfer, escalate, dispose, remark, next action
-- [ ] Confirmation dialogs + optimistic/error states
-- [ ] Assignment history + action history tabs
-- [ ] Resolve officer/actor names in every list/detail view
-- [ ] Pagination + total on case registry and other lists
-- [ ] Append-only/audit tests for new mutation paths
-- [ ] E2E: register → assign → remark → transfer → escalate → dispose
+- [x] `/institutions` list/search UI + nav
+- [x] Institution create/edit/verify UI (role-gated) with duplicate warnings
+- [x] Case registration UI (`/cases/new`): institution search, bureau/category routing, dates, next action, optional officer
+- [x] Staff action UI: assign, transfer, escalate, dispose, reopen, remark, next action
+- [x] Case detail tabs: overview, actions, assignments, related
+- [x] Assignment history + action history with resolved names
+- [x] Server-side pagination + totals on case registry and institution lists
+- [x] Role-gated affordances matching server permissions
 
-**Exit:** officer runs a case end-to-end in UI; no manual API calls; audit exactly once per mutation.
+**Tests:**
 
-**Paused at:** partial `apps/api/src/modules/cases/case.service.ts`. The file imports
-`Page`, `buildPage`, `parseSort`, `resolvePageQuery`, `DirectoryUser`, and `loadUserMap`
-but does not use all of them. `listCases` still returns `CaseDto[]`, `LIST_LIMIT` is
-undefined, and `loadCaseNameMaps` remains the only name enrichment. There are no Stage 2
-tests and no Stage 2 web screens.
+- [x] Integration coverage for pagination metadata, invalid page fallback/cap, institution detail pagination, duplicate check, scoped directory, auto number + initial assignment, rejected transitions writing no audit action, and ordered lifecycle audit trail
 
-## Stage 3 — Overlap intelligence & coordination (HARDEN)
+**Remaining (not blocking Stage 2 exit):**
+
+- [ ] Automated browser/component E2E: register → assign → remark → transfer → escalate → dispose
+- [ ] Optimistic UI for mutations (currently pending/disabled states)
+- [ ] Admin user/organization web screens (Stage 6)
+
+**Exit:** officer runs a case end-to-end in UI; no manual API calls; audit exactly once per mutation. Met via manual runtime smoke checks and API integration tests.
+
+## Stage 3 — Overlap intelligence & coordination (DONE — 3A correctness + 3B coordination)
 
 - [x] Exact institution matching
 - [x] Normalized/fuzzy institution matching (Jaro-Winkler)
@@ -110,18 +116,21 @@ tests and no Stage 2 web screens.
 - [x] Confirm/dismiss + audit
 - [x] Rules-first fallback (`JEV_ENABLED=false`)
 - [x] Exact heading
-- [ ] **Always create base PENDING relationship** for same-institution cross-bureau pairs
-- [ ] Jev enriches/ranks; never suppresses the base alert
-- [ ] Re-assess on create/assign/transfer/institution change
-- [ ] Periodic sweep / admin “scan now”
-- [ ] Manual link/unlink with notes
-- [ ] Scope + dedupe overlap notifications to involved bureaus/regions
-- [ ] Queue filters + pagination
-- [ ] Fuzzy scan scale guard / background batch
-- [ ] Exact-heading + enabled/disabled/failure/timeout tests
-- [ ] Re-assessment test after transfer
+- [x] **Always create base PENDING relationship** for same-institution cross-bureau pairs
+- [x] Jev enriches/ranks; never suppresses the base alert
+- [x] Re-assess on create/assign/transfer/institution name/AICTE/region change
+- [x] Manual per-case re-assessment (`POST /overlaps/assess`, force)
+- [x] Manual link/unlink with notes; confirmed links reuse an existing PENDING pair
+- [x] Scope + dedupe overlap notifications to involved bureaus/regions plus oversight roles
+- [x] Queue filters (`status`, bureau, region, match type, institution) + pagination
+- [x] Fuzzy scan cap (`OVERLAP.FUZZY_INSTITUTION_LIMIT = 500`)
+- [x] Exact-heading + enabled/disabled/failure/timeout tests
+- [x] Re-assessment test after transfer
+- [x] Integration fetch guard proves tests never call real Jev
+- [ ] Periodic overlap sweep / background batch for fuzzy scans at production scale
+- [ ] Browser E2E for confirm, dismiss, manual link, and unlink flows
 
-**Exit:** rules-first E2E works; Jev mocked; no auto-confirm; no duplicate alerts; exact heading asserted.
+**Exit:** rules-first E2E works; Jev mocked; no auto-confirm; no duplicate alerts; exact heading asserted. Met through API integration tests; browser E2E is a Stage 7 item.
 
 ## Stage 4 — Monitoring, search & reporting
 
@@ -215,14 +224,14 @@ tests and no Stage 2 web screens.
 - [x] Jev interpretation/provider tested with mocks
 - [x] State machine tested
 - [x] Report age bucketing tested
-- [ ] Overlap orchestration tested with DB (enabled/disabled/failure)
-- [ ] Case lifecycle + append-only audit integration tested
-- [ ] Stage 2 pagination/name/route tests (not added; code is mid-edit)
+- [x] Overlap orchestration tested with DB (enabled/disabled/failure/timeout)
+- [x] Case lifecycle + append-only audit integration tested
+- [x] Stage 2 pagination/name/route/duplicate/directory integration tests
 - [x] Auth/RBAC/scoping/IDOR tested
 - [ ] Dashboard/report reconciliation tested
-- [ ] Notification dedupe tested
+- [x] Notification dedupe tested (overlap `INITIAL` period + reference ID)
 - [ ] SLA clock/boundaries tested
 - [ ] Frontend critical flows tested
 - [ ] E2E critical journeys pass
-- [ ] Jev never hit in tests
+- [x] Jev never hit in tests (integration fetch guard + mocked provider)
 - [ ] CI green on clean checkout

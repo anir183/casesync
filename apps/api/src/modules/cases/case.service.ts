@@ -9,7 +9,13 @@ import mongoose from 'mongoose'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
 import { notifyRoles } from '#/lib/notifications'
-import { type Page, type PageQueryInput, buildPage, parseSort, resolvePageQuery } from '#/lib/pagination'
+import {
+  type Page,
+  type PageQueryInput,
+  buildPage,
+  parseSort,
+  resolvePageQuery,
+} from '#/lib/pagination'
 import {
   type ScopeUser,
   assertBureauAssignment,
@@ -25,6 +31,7 @@ import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
 import { Region } from '#/models/region.model'
+import { User } from '#/models/user.model'
 import { assertTransition } from './state-machine'
 
 const INTERNAL_LIST_LIMIT = 200
@@ -156,33 +163,108 @@ function toCaseDto(item: CaseLike): CaseDto {
 interface CaseNameMaps {
   institutionById: Map<string, string>
   bureauById: Map<string, string>
+  regionById: Map<string, string>
+  officerByCaseId: Map<string, string>
+  userById: Map<string, DirectoryUser>
 }
 
 async function loadCaseNameMaps(items: CaseLike[]): Promise<CaseNameMaps> {
+  const caseIds = items.map((item) => item._id)
   const institutionIds = [...new Set(items.map((item) => String(item.institutionId)))]
   const bureauIds = [
     ...new Set(items.flatMap((item) => (item.bureauId ? [String(item.bureauId)] : []))),
   ]
-  const [institutions, bureaus] = await Promise.all([
+  const regionIds = [
+    ...new Set(items.flatMap((item) => (item.regionId ? [String(item.regionId)] : []))),
+  ]
+  const [institutions, bureaus, regions, assignments] = await Promise.all([
     Institution.find({ _id: { $in: institutionIds } }, { name: 1 }).lean(),
     bureauIds.length
       ? Bureau.find({ _id: { $in: bureauIds } }, { name: 1 }).lean()
       : Promise.resolve([]),
+    regionIds.length
+      ? Region.find({ _id: { $in: regionIds } }, { name: 1 }).lean()
+      : Promise.resolve([]),
+    caseIds.length
+      ? CaseAssignment.find(
+          { caseId: { $in: caseIds }, endedAt: { $exists: false } },
+          { caseId: 1, officerId: 1 },
+        ).lean()
+      : Promise.resolve([]),
   ])
+  const userById = await loadUserMap(assignments.map((assignment) => assignment.officerId))
 
   return {
     institutionById: new Map(institutions.map((item) => [String(item._id), item.name])),
     bureauById: new Map(bureaus.map((item) => [String(item._id), item.name])),
+    regionById: new Map(regions.map((item) => [String(item._id), item.name])),
+    officerByCaseId: new Map(
+      assignments
+        .filter((assignment) => assignment.officerId)
+        .map((assignment) => [String(assignment.caseId), assignment.officerId as string]),
+    ),
+    userById,
   }
 }
 
 function withNames(item: CaseLike, maps: CaseNameMaps): CaseDto {
   const dto = toCaseDto(item)
+  const officerId = maps.officerByCaseId.get(dto.id)
   return {
     ...dto,
     institutionName: maps.institutionById.get(dto.institutionId),
     bureauName: dto.bureauId ? maps.bureauById.get(dto.bureauId) : undefined,
+    regionName: dto.regionId ? maps.regionById.get(dto.regionId) : undefined,
+    officerId,
+    officerName: officerId ? maps.userById.get(officerId)?.name : undefined,
   }
+}
+
+async function loadBureauNames(ids: unknown[]): Promise<Map<string, string>> {
+  const valid = [...new Set(ids.filter(Boolean).map((id) => String(id)))]
+  if (valid.length === 0) return new Map()
+  const bureaus = await Bureau.find({ _id: { $in: valid } }, { name: 1 }).lean()
+  return new Map(bureaus.map((bureau) => [String(bureau._id), bureau.name]))
+}
+
+async function enrichActions<
+  T extends {
+    actorId?: string
+    officerFromId?: string
+    officerToId?: string
+    bureauFromId?: unknown
+    bureauToId?: unknown
+  },
+>(actions: T[]) {
+  const [userById, bureauNames] = await Promise.all([
+    loadUserMap(
+      actions.flatMap((action) => [action.actorId, action.officerFromId, action.officerToId]),
+    ),
+    loadBureauNames(actions.flatMap((action) => [action.bureauFromId, action.bureauToId])),
+  ])
+  return actions.map((action) => ({
+    ...action,
+    actorName: action.actorId ? userById.get(action.actorId)?.name : undefined,
+    officerFromName: action.officerFromId ? userById.get(action.officerFromId)?.name : undefined,
+    officerToName: action.officerToId ? userById.get(action.officerToId)?.name : undefined,
+    bureauFromName: action.bureauFromId ? bureauNames.get(String(action.bureauFromId)) : undefined,
+    bureauToName: action.bureauToId ? bureauNames.get(String(action.bureauToId)) : undefined,
+  }))
+}
+
+async function enrichAssignments<
+  T extends { officerId?: string; assignedBy?: string; bureauId?: unknown },
+>(assignments: T[]) {
+  const [userById, bureauNames] = await Promise.all([
+    loadUserMap(assignments.flatMap((assignment) => [assignment.officerId, assignment.assignedBy])),
+    loadBureauNames(assignments.map((assignment) => assignment.bureauId)),
+  ])
+  return assignments.map((assignment) => ({
+    ...assignment,
+    officerName: assignment.officerId ? userById.get(assignment.officerId)?.name : undefined,
+    assignedByName: assignment.assignedBy ? userById.get(assignment.assignedBy)?.name : undefined,
+    bureauName: assignment.bureauId ? bureauNames.get(String(assignment.bureauId)) : undefined,
+  }))
 }
 
 async function requireCase(caseId: string, user: ScopeUser) {
@@ -242,6 +324,48 @@ export async function appendCaseAction(input: {
   return action
 }
 
+function randomDigits(length: number) {
+  const bytes = crypto.getRandomValues(new Uint8Array(length))
+  return [...bytes].map((value) => String(value % 10)).join('')
+}
+
+async function generateCaseNumber(bureauId: string | undefined, receivedAt: Date) {
+  const bureau = bureauId ? await Bureau.findById(bureauId).lean() : null
+  const prefix = bureau?.code ?? 'CASE'
+  const year = receivedAt.getUTCFullYear()
+  for (let attempt = 0; attempt < CASE_NUMBER_ATTEMPTS; attempt += 1) {
+    const caseNumber = `${prefix}-${year}-${randomDigits(CASE_NUMBER_SUFFIX_LENGTH)}`
+    if (!(await Case.exists({ caseNumber }))) return caseNumber
+  }
+  throw new AppError(
+    HTTP_STATUS.INTERNAL,
+    'Could not allocate a case number',
+    'CASE_NUMBER_ALLOCATION_FAILED',
+  )
+}
+
+async function requireAssignableOfficer(officerId: string, bureauId?: string) {
+  if (!bureauId) {
+    throw new AppError(
+      HTTP_STATUS.BAD_REQUEST,
+      'A bureau is required when assigning an officer',
+      'BUREAU_REQUIRED',
+    )
+  }
+  const officer = await User.findOne({ _id: officerId, active: { $ne: false } }).lean()
+  if (!officer) {
+    throw new AppError(HTTP_STATUS.BAD_REQUEST, 'Officer not found', 'OFFICER_NOT_FOUND')
+  }
+  if (officer.bureauId && String(officer.bureauId) !== bureauId) {
+    throw new AppError(
+      HTTP_STATUS.BAD_REQUEST,
+      'Officer belongs to another bureau',
+      'OFFICER_BUREAU_MISMATCH',
+    )
+  }
+  return officer
+}
+
 export async function createCase(
   input: CreateCaseInput,
   actorId: string,
@@ -261,13 +385,18 @@ export async function createCase(
       )
     }
   }
+  if (input.officerId) await requireAssignableOfficer(input.officerId, input.bureauId)
 
   const receivedAt = parseDate(input.receivedAt) ?? new Date()
   const expectedDisposalAt = parseDate(input.expectedDisposalAt)
   const nextActionDueAt = parseDate(input.nextActionDueAt)
+  const { officerId, caseNumber, ...rest } = input
+  const resolvedCaseNumber =
+    caseNumber?.trim() || (await generateCaseNumber(input.bureauId, receivedAt))
 
   const item = await Case.create({
-    ...input,
+    ...rest,
+    caseNumber: resolvedCaseNumber,
     regionId: institution.regionId,
     receivedAt,
     expectedDisposalAt,
@@ -286,24 +415,46 @@ export async function createCase(
     metadata: { caseNumber: item.caseNumber },
   })
 
-  return toCaseDto(item.toObject())
+  if (officerId && input.bureauId) {
+    await createAssignment(item._id, actorId, {
+      bureauId: input.bureauId,
+      officerId,
+      remarks: 'Initial assignment',
+    })
+    item.status = CASE_STATUS.ASSIGNED
+    await item.save()
+    await appendCaseAction({
+      caseId: item._id,
+      actorId,
+      actionType: ACTION_TYPE.ASSIGNED,
+      fromStatus: CASE_STATUS.RECEIVED,
+      toStatus: CASE_STATUS.ASSIGNED,
+      bureauToId: input.bureauId,
+      officerToId: officerId,
+      remarks: 'Initial assignment',
+    })
+  }
+
+  const plain = item.toObject()
+  return withNames(plain, await loadCaseNameMaps([plain]))
 }
 
-export async function listCases(filters: CaseFilters, user: ScopeUser): Promise<CaseDto[]> {
+export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<Page<CaseDto>> {
+  const paging = resolvePageQuery(query)
   const filter: Record<string, unknown> = {}
-  if (filters.institutionId) filter.institutionId = filters.institutionId
-  if (filters.bureauId) filter.bureauId = filters.bureauId
-  if (filters.regionId) filter.regionId = filters.regionId
-  if (filters.status) filter.status = filters.status
-  if (filters.category) filter.category = filters.category
+  if (query.institutionId) filter.institutionId = query.institutionId
+  if (query.bureauId) filter.bureauId = query.bureauId
+  if (query.regionId) filter.regionId = query.regionId
+  if (query.status) filter.status = query.status
+  if (query.category) filter.category = query.category
 
-  if (filters.q) {
-    const pattern = { $regex: escapeRegex(filters.q), $options: 'i' }
+  if (query.q) {
+    const pattern = { $regex: escapeRegex(query.q), $options: 'i' }
     const institutions = await Institution.find(
       { $or: [{ nameNormalized: pattern }, { aictePermanentId: pattern }] },
       { _id: 1 },
     )
-      .limit(LIST_LIMIT)
+      .limit(INTERNAL_LIST_LIMIT)
       .lean()
     filter.$or = [
       { caseNumber: pattern },
@@ -311,8 +462,8 @@ export async function listCases(filters: CaseFilters, user: ScopeUser): Promise<
     ]
   }
 
-  const dateFrom = parseDate(filters.dateFrom)
-  const dateTo = parseDate(filters.dateTo)
+  const dateFrom = parseDate(query.dateFrom)
+  const dateTo = parseDate(query.dateTo)
   if (dateFrom || dateTo) {
     filter.receivedAt = {
       ...(dateFrom ? { $gte: dateFrom } : {}),
@@ -322,31 +473,52 @@ export async function listCases(filters: CaseFilters, user: ScopeUser): Promise<
 
   const scope = resolveScope(user)
   const scoped = mergeFilters(filter, await caseScopeFilter(scope))
-  const items = await Case.find(scoped).sort({ createdAt: -1 }).limit(LIST_LIMIT).lean()
+  const sort = parseSort(query.sort, CASE_SORT_FIELDS, 'createdAt')
+  const [items, total] = await Promise.all([
+    Case.find(scoped).sort(sort).skip(paging.skip).limit(paging.limit).lean(),
+    Case.countDocuments(scoped),
+  ])
   const maps = await loadCaseNameMaps(items)
-  return items.map((item) => withNames(item, maps))
+  return buildPage(
+    items.map((item) => withNames(item, maps)),
+    total,
+    paging,
+  )
 }
 
 export async function getCase(caseId: string, user: ScopeUser): Promise<CaseDto> {
   const item = await requireCase(caseId, user)
-  return toCaseDto(item.toObject())
+  const plain = item.toObject()
+  return withNames(plain, await loadCaseNameMaps([plain]))
 }
 
 export async function getCaseDetail(caseId: string, user: ScopeUser) {
   const item = await requireCase(caseId, user)
-  const [institution, bureau, currentAssignment, actions, relationships] = await Promise.all([
-    Institution.findById(item.institutionId).lean(),
-    item.bureauId ? Bureau.findById(item.bureauId).lean() : Promise.resolve(null),
-    CaseAssignment.findOne({ caseId: item._id, endedAt: { $exists: false } }).lean(),
-    CaseAction.find({ caseId: item._id }).sort({ createdAt: 1 }).lean(),
-    CaseRelationship.find({
-      $or: [{ caseAId: item._id }, { caseBId: item._id }],
-      reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
-    }).lean(),
+  const [institution, bureau, region, rawAssignments, rawActions, relationships] =
+    await Promise.all([
+      Institution.findById(item.institutionId).lean(),
+      item.bureauId ? Bureau.findById(item.bureauId).lean() : Promise.resolve(null),
+      item.regionId ? Region.findById(item.regionId).lean() : Promise.resolve(null),
+      CaseAssignment.find({ caseId: item._id }).sort({ assignedAt: 1, _id: 1 }).lean(),
+      CaseAction.find({ caseId: item._id }).sort({ createdAt: 1, _id: 1 }).lean(),
+      CaseRelationship.find({
+        $or: [{ caseAId: item._id }, { caseBId: item._id }],
+        reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
+      }).lean(),
+    ])
+  const [assignments, actions] = await Promise.all([
+    enrichAssignments(rawAssignments),
+    enrichActions(rawActions),
   ])
+  const currentAssignment = assignments.find((assignment) => !assignment.endedAt)
 
   return {
     ...toCaseDto(item.toObject()),
+    institutionName: institution?.name,
+    bureauName: bureau?.name,
+    regionName: region?.name,
+    officerId: currentAssignment?.officerId,
+    officerName: currentAssignment?.officerName,
     institution: institution
       ? {
           id: String(institution._id),
@@ -356,15 +528,9 @@ export async function getCaseDetail(caseId: string, user: ScopeUser) {
         }
       : undefined,
     bureau: bureau ? { id: String(bureau._id), name: bureau.name, code: bureau.code } : undefined,
-    currentAssignment: currentAssignment
-      ? {
-          id: String(currentAssignment._id),
-          bureauId: String(currentAssignment.bureauId),
-          officerId: currentAssignment.officerId,
-          assignedAt: currentAssignment.assignedAt,
-          assignedBy: currentAssignment.assignedBy,
-        }
-      : undefined,
+    region: region ? { id: String(region._id), name: region.name, code: region.code } : undefined,
+    currentAssignment,
+    assignments,
     actions,
     relatedCases: relationships.map((rel) => ({
       relationshipId: String(rel._id),
@@ -378,12 +544,14 @@ export async function getCaseDetail(caseId: string, user: ScopeUser) {
 
 export async function listCaseActions(caseId: string, user: ScopeUser) {
   await requireCase(caseId, user)
-  return CaseAction.find({ caseId }).sort({ createdAt: 1 }).lean()
+  const actions = await CaseAction.find({ caseId }).sort({ createdAt: 1, _id: 1 }).lean()
+  return enrichActions(actions)
 }
 
 export async function listCaseAssignments(caseId: string, user: ScopeUser) {
   await requireCase(caseId, user)
-  return CaseAssignment.find({ caseId }).sort({ assignedAt: 1 }).lean()
+  const assignments = await CaseAssignment.find({ caseId }).sort({ assignedAt: 1, _id: 1 }).lean()
+  return enrichAssignments(assignments)
 }
 
 export async function addRemark(
@@ -645,6 +813,7 @@ export async function listRelatedCases(caseId: string, user: ScopeUser) {
     String(rel.caseAId) === caseId ? rel.caseBId : rel.caseAId,
   )
   const related = await Case.find({ _id: { $in: relatedIds } }).lean()
+  const maps = await loadCaseNameMaps(related)
   const byId = new Map(related.map((item) => [String(item._id), item]))
 
   return relationships.map((rel) => ({
@@ -657,7 +826,7 @@ export async function listRelatedCases(caseId: string, user: ScopeUser) {
       const relatedCase = byId.get(
         String(rel.caseAId) === caseId ? String(rel.caseBId) : String(rel.caseAId),
       )
-      return relatedCase ? toCaseDto(relatedCase) : undefined
+      return relatedCase ? withNames(relatedCase, maps) : undefined
     })(),
   }))
 }

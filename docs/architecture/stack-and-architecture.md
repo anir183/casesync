@@ -2,10 +2,11 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stage 1 is complete. Stage 2 is paused mid-edit: pagination and user-directory helpers
-> exist, but `case.service.ts` is unfinished and the API does not currently typecheck.
-> Sections that describe the target contract are still the target; they are not a claim
-> that every part is wired today.
+> Stages 1–3 are complete. Case/institution APIs, the corresponding web workflows, and
+> overlap correctness/coordination are wired, typecheck, and are covered by API
+> integration tests. Browser/component E2E is still a Stage 7 item, and periodic overlap
+> sweeps plus Stage 4 reporting are next. Sections that describe the target contract are
+> still the target; they are not a claim that every part is wired today.
 
 ## 1) Final Tech Stack
 
@@ -148,12 +149,12 @@ Indexes to add: `cases.{regionId,status}`, `cases.{bureauId,status}`,
   `case_relationships` row** → if Jev enabled, assess and attach the assessment
   (enrich/rank) → notify.
 - **Never suppress**: Jev is advisory. A `same_institution_different_issue` or
-  low-coordination answer enriches the explanation and confidence; it must not delete
-  or hide the base same-institution cross-bureau alert. (Current code violates this;
-  Stage 3 fixes it.)
+  low-coordination answer enriches the explanation and confidence; it never deletes or
+  hides the base same-institution cross-bureau alert.
 - **Re-assessment triggers**: case create, assignment change, transfer, institution
-  change, and a periodic/admin sweep. Re-assessment updates `case_overlap_assessments`
-  and appends rationale; it never overwrites a human CONFIRMED/DISMISSED decision.
+  name/AICTE ID/region change, and a manual per-case `POST /overlaps/assess`. A periodic
+  sweep is still pending. Re-assessment updates `case_overlap_assessments` and stores
+  rationale; it never overwrites a human CONFIRMED/DISMISSED decision.
 - **Resiliency**: 10-15s timeout, `Idempotency-Key` on retries, exponential backoff
   `500ms * 2^attempt` for 429/502/503/504, timeouts and network errors. No retry for
   401/422. On failure mark assessment FAILED/TIMEOUT, keep the base relationship, and
@@ -238,14 +239,15 @@ committed; `.env.example` lists names with empty/placeholder values.
 ## 9) API conventions
 
 - REST/JSON, camelCase, versioned prefix if needed.
-- **Pagination contract**: `{ items, total, page, pageSize }` for every list. Defaults
+- **Pagination contract**: `{ items, total, page, pageSize }` for paginated lists. Defaults
   are constants (`DEFAULT_PAGE`, `DEFAULT_PAGE_SIZE`, `MAX_PAGE_SIZE`); never silently
-  truncate at 100. Helpers (`resolvePageQuery`, `buildPage`, `parseSort`) exist, but
-  Stage 2 routes are not wired to them yet.
+  truncate at 100. Helpers (`resolvePageQuery`, `buildPage`, `parseSort`) are wired for
+  cases and institutions; overlap queues and notifications still need pagination.
 - **Filters**: `q`, `status`, `bureauId`, `regionId`, `category`, `institutionId`,
   `from`, `to`; validate enums and `from <= to`; inclusive end-of-day.
-- **Errors**: `{ error, code, details? }`; duplicate key → HTTP 409 `DUPLICATE_KEY`;
-  validation → 422; auth → 401; forbidden → 403; not found/out-of-scope → 404.
+- **Errors**: `{ error, message }`; the `error` field carries the machine code
+  (duplicate key → HTTP 409 `DUPLICATE_KEY`; validation → 422; auth → 401; forbidden →
+  403; not found/out-of-scope → 404).
 - **Serialization**: return plain objects (`toObject()`), not raw Mongoose documents.
 - **Pagination/sorting** is server-side; UI keeps filters in the URL.
 - **Admin endpoints** (Stage 1/6): users/invite/deactivate/role/bureau/region,

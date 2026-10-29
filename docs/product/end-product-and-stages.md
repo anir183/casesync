@@ -178,8 +178,8 @@ layout.
 |---|---|---|---|---|
 | 0 | Foundation & guardrails | **Done** | Reproducible monorepo, stack, models, auth skeleton, conventions | Build/lint/typecheck; env documented; models indexed |
 | 1 | Identity, organization & access | **Done** (bureau CRUD/audit → Stage 6) | Correct users, roles, bureaus, regions, scoping; makes every number and permission meaningful | Role/scope matrix tests pass; each seeded role sees only allowed data |
-| 2 | Institution registry & case operations | **In progress (paused)** | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
-| 3 | Overlap intelligence & coordination | **Mostly done, needs hardening** | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
+| 2 | Institution registry & case operations | **Done** (implementation); browser E2E pending | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
+| 3 | Overlap intelligence & coordination | **Done** (implementation); browser E2E pending | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
 | 4 | Monitoring, search & reporting | **Partial** | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
 | 5 | SLA, alerts & scheduled jobs | **Gap** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
 | 6 | Administration, attachments & data quality | **Gap** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
@@ -189,17 +189,23 @@ layout.
 ### Current position (honest)
 
 - Stage 0 complete.
-- Stage 1 complete for the backend/admin API (admin web screens land with Stage 2;
+- Stage 1 complete for the backend/admin API (admin web screens land with Stage 6;
   bureau CRUD and admin audit with Stage 6).
-- Stage 2 is **in progress and paused mid-edit**. Shared transition/pagination constants
-  and pagination/user-directory helpers exist; the case service, routes, and all Stage 2
-  web screens are unfinished. The API does not currently typecheck.
-- Stage 3 is ahead of Stage 2 in implementation depth.
-- Stage 4 has a strong read-only slice.
-- Stages 2, 5, 6, 7 are the remaining MVP path.
-- The project is **not** at "Phase 4 complete" in the sense of MVP-complete; it is
-  at "core engine + read-only dashboard + access control complete, with Stage 2
-  backend scaffolding started".
+- Stage 2 implementation complete: institution registry UI, case registration UI,
+  role-gated action panel, action/assignment history, officer/actor/bureau/region name
+  resolution, and paginated case/institution lists. Automated browser/component E2E is
+  still missing.
+- Stage 3 implementation complete (3A correctness + 3B coordination): the base
+  relationship is always created for same-institution cross-bureau pairs, Jev only
+  enriches, re-assessment runs on create/assign/transfer/institution change, review
+  notifications are scoped and deduped, the queue is filtered/paginated, and manual
+  link/unlink is available. API and web typecheck; 41 unit tests and 27 DB-backed
+  integration tests pass; integration tests cannot call real Jev.
+- Stage 4 has a strong read-only slice; pagination/filters/export remain.
+- Stages 5, 6, 7 and the remaining Stage 4 items are the MVP path.
+- The project is **not** MVP-complete; it is at "core engine + operational case workflow
+  + overlap coordination + dashboard + access control complete, with SLA, admin UI, and
+  release work left".
 
 ## 6. Stage details and expectations
 
@@ -248,7 +254,7 @@ write files.
 **Deliverables**
 - `apps/api/src/modules/regions/`, `categories/`, `admin/`.
 - `apps/api/src/lib/scope.ts` (central scope helpers).
-- `apps/web/src/features/admin/users/`, `organization/` (deferred with Stage 2).
+- `apps/web/src/features/admin/users/`, `organization/` (deferred to Stage 6).
 - Seed users for every role.
 - RBAC documentation.
 
@@ -264,10 +270,12 @@ write files.
 officials without cross-bureau data leakage.
 
 **Current gaps:** bureau CRUD and admin `audit_log` (deferred to Stage 6); admin
-users/organization web screens (deferred to Stage 2). The backend API is complete and
-verified by 13 database-backed integration tests covering signup blocking, scoping,
-IDOR, dashboard totals, admin guards, deactivation/session revocation, institution
-writes, and case registration scope.
+users/organization web screens (deferred to Stage 6). The backend API is complete and
+verified by database-backed integration tests, now 27 in total with the Stage 3 cases,
+covering signup blocking, scoping, IDOR, dashboard totals, admin guards,
+deactivation/session revocation, institution writes, case registration scope,
+pagination, duplicate checks, officer directory, the full lifecycle audit trail, and
+Stage 3 overlap correctness/coordination.
 
 ---
 
@@ -297,7 +305,8 @@ writes, and case registration scope.
 - `/institutions`, `/institutions/:id`, `/cases/new`, expanded `/cases/:id`.
 - API additions: user lookup, assignment history in detail, paginated list,
   action DTOs with actor names.
-- E2E: register → assign → remark → transfer → escalate → dispose.
+- E2E: register → assign → remark → transfer → escalate → dispose. (API integration
+  coverage exists; automated browser E2E is still a Stage 7 item.)
 
 **Exit criteria**
 - No manual API calls needed to run a case.
@@ -310,13 +319,13 @@ writes, and case registration scope.
 **Contribution:** the product becomes operational instead of a read-only viewer;
 it also generates the clean audit data that reports depend on.
 
-**Current state (paused):** backend scaffolding only. `CASE_TRANSITIONS`,
-`PAGINATION`, pagination helpers, and user-directory helpers exist. `case.service.ts` is
-partially changed but unfinished (`listCases` still returns an array, `LIST_LIMIT` is
-undefined, names are not wired). There is no user-directory route, no institution list
-UI, no case registration UI, no action UI, no assignment history UI, and no registry
-pagination. Read-only case detail is still the only case screen. No Stage 2 tests exist.
-The API does not typecheck in this state.
+**Current state (implemented):** the institution registry (list/search/create/edit/
+verify with duplicate warnings), case registration (`/cases/new`), expanded case
+workspace (overview/actions/assignments/related), role-gated action panel, officer
+directory, resolved actor/officer/bureau/region names, and paginated case/institution
+lists are all wired. Mutations use pending/disabled states rather than optimistic UI.
+Automated browser/component E2E is not yet present; Stage 2 flows were verified with API
+integration tests and manual runtime smoke checks.
 
 ---
 
@@ -333,20 +342,22 @@ coordinate it.
   latency; store in `case_overlap_assessments`.
 - Jev disabled/failing: rule-based relationship + reason; assessment SKIPPED/
   FAILED/TIMEOUT; case creation never blocked.
-- Re-assess triggers: case create, assign, transfer, institution change; plus a
-  periodic sweep or admin "scan now".
-- Manual link/unlink with notes (optional but recommended).
-- Notification scoping: involved bureaus + senior/authority/admin; dedupe.
-- Queue/detail: filters, pagination, exact heading, side-by-side compare,
-  evidence, confirm/dismiss with notes, audit.
-- Scale guard: cap/skip fuzzy scan or move to background; concurrency limit for
-  Jev.
+- Re-assess triggers: case create, assign, transfer, institution change; manual per-case
+  re-assessment (`POST /overlaps/assess`). A periodic sweep/background batch remains.
+- Manual link/unlink with notes; linking an existing PENDING pair confirms it rather
+  than creating a duplicate.
+- Notification scoping: involved bureaus/regions + senior/authority/admin; dedupe by
+  `{recipientId,type,referenceId,periodKey}`.
+- Queue/detail: status/bureau/region/match-type/institution filters, pagination, exact
+  heading, side-by-side compare, evidence and rationale, confirm/dismiss with notes,
+  audit.
+- Scale guard: fuzzy institution scan is capped at 500; a background batch for
+  production-scale data remains.
 
 **Deliverables**
-- Hardened `overlap.service.ts`; `overlap.scan.ts` for sweeps.
+- Hardened `overlap.service.ts`; manual link/unlink routes; queue pagination/filters.
+- `overlap.scan.ts` for periodic sweeps (still pending).
 - Relationship creation policy module with tests.
-- Manual link/unlink routes (if approved).
-- Queue pagination/filters.
 - Tests: enabled/disabled/failure/timeout; exact heading; no auto-confirm;
   re-assessment after transfer.
 
@@ -364,8 +375,15 @@ coordinate it.
 **Contribution:** this is the product's reason to exist; it must be correct
 before analytics polish.
 
-**Current gaps:** Jev can suppress base alert, no re-assess triggers, no manual
-link/unlink, notification broadcast, fuzzy scan limit.
+**Current state (verified):** 3A correctness and 3B coordination are implemented. The
+base PENDING relationship is created before assessment and survives Jev
+disabled/failure/timeout or a `same_institution_different_issue` answer; Jev adds choice,
+probabilities, coordination score, rationale, model, and latency. Re-assessment covers
+create/assign/transfer and institution identity changes. Notifications target involved
+bureaus/regions plus oversight roles and dedupe on
+`{recipientId,type,referenceId,periodKey}`. The queue filters/paginates, and reviewers can
+confirm, dismiss, manually link, or unlink with notes and append-only audit actions.
+**Remaining:** periodic sweep/background batch and automated browser E2E for these flows.
 
 ---
 
@@ -546,11 +564,11 @@ A stage is done only when all are true:
 ```text
 Stage 0 (done)
    ↓
-Stage 1 (access + org + seed users)
+Stage 1 (done — access + org + seed users)
    ↓
-Stage 2 (case operations UI + institution registry)
+Stage 2 (done — case operations UI + institution registry)
    ↓
-Stage 3 hardening (overlap correctness + re-assessment)
+Stage 3 (done — overlap correctness + coordination UX)
    ↓
 Stage 4 (scoped monitoring + reports)
    ↓
@@ -563,8 +581,8 @@ Stage 7 (QA + CI + release)
 Stage 8 (optional public portal)
 ```
 
-Parallelizable once Stage 1 lands:
-- Stage 3 hardening and Stage 4 reporting can proceed in parallel with Stage 2 UI.
+Parallelizable now:
+- Stage 4 reporting can proceed while Stage 7 browser E2E is added for Stages 2–3.
 - Stage 5 job scaffolding can start once SLA semantics are decided.
 - Stage 7 CI can start early (lint/typecheck/unit) and grow per stage.
 

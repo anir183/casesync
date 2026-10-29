@@ -15,6 +15,7 @@ import { notificationsRoutes } from '#/modules/notifications/routes'
 import { overlapsRoutes } from '#/modules/overlaps/routes'
 import { regionsRoutes } from '#/modules/regions/routes'
 import { reportsRoutes } from '#/modules/reports/routes'
+import { usersRoutes } from '#/modules/users/routes'
 
 export const app = new Elysia()
   .use(
@@ -52,6 +53,7 @@ export const app = new Elysia()
       .use(bureausRoutes)
       .use(regionsRoutes)
       .use(categoriesRoutes)
+      .use(usersRoutes)
       .use(casesRoutes)
       .use(overlapsRoutes)
       .use(notificationsRoutes)

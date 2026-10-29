@@ -1,5 +1,6 @@
-import { RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
+import { PAGINATION, RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
+import { buildPage, resolvePageQuery } from '#/lib/pagination'
 import { type ScopeUser, caseScopeFilter, mergeFilters, resolveScope } from '#/lib/scope'
 import { Bureau } from '#/models/bureau.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
@@ -29,6 +30,7 @@ interface OverlapDto {
     coordinationReviewNoul?: number
     confidence?: number
     probabilities?: Record<string, number>
+    rationale?: string
     modelVersion?: string
     latencyMs?: number
     errorMessage?: string
@@ -45,6 +47,16 @@ interface OverlapDto {
     expectedDisposalAt?: Date
     nextAction?: string
   }>
+}
+
+export interface OverlapFilters {
+  status?: string
+  bureauId?: string
+  regionId?: string
+  matchType?: string
+  institutionId?: string
+  page?: number | string
+  pageSize?: number | string
 }
 
 interface RelationshipLike {
@@ -93,13 +105,12 @@ interface AssessmentLike {
   coordinationReviewNoul?: number
   confidence?: number
   probabilities?: Record<string, number>
+  rationale?: string
   modelVersion?: string
   latencyMs?: number
   errorMessage?: string
   assessedAt?: Date
 }
-
-const LIST_LIMIT = 100
 
 async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<OverlapDto[]> {
   const caseIds = relationships.flatMap((rel) => [rel.caseAId, rel.caseBId])
@@ -161,6 +172,7 @@ async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<Over
             coordinationReviewNoul: assessment.coordinationReviewNoul,
             confidence: assessment.confidence,
             probabilities: assessment.probabilities,
+            rationale: assessment.rationale,
             modelVersion: assessment.modelVersion,
             latencyMs: assessment.latencyMs,
             errorMessage: assessment.errorMessage,
@@ -191,25 +203,49 @@ function toCaseDto(c: CaseLike, bureauById: Map<string, BureauLike>) {
   }
 }
 
-async function relationshipScopeFilter(user: ScopeUser): Promise<Record<string, unknown>> {
+function caseFilterFor(filters: OverlapFilters): Record<string, unknown> {
+  const filter: Record<string, unknown> = {}
+  if (filters.bureauId) filter.bureauId = filters.bureauId
+  if (filters.regionId) filter.regionId = filters.regionId
+  if (filters.institutionId) filter.institutionId = filters.institutionId
+  return filter
+}
+
+async function relationshipScopeFilter(
+  user: ScopeUser,
+  filters: OverlapFilters = {},
+): Promise<Record<string, unknown>> {
   const scope = resolveScope(user)
-  if (scope.kind === 'all') return {}
-  const scopedCaseIds = await Case.distinct('_id', await caseScopeFilter(scope))
+  const caseFilter = caseFilterFor(filters)
+  if (scope.kind === 'all' && Object.keys(caseFilter).length === 0) return {}
+
+  const scopedCaseIds = await Case.distinct(
+    '_id',
+    mergeFilters(caseFilter, await caseScopeFilter(scope)),
+  )
   return {
     $or: [{ caseAId: { $in: scopedCaseIds } }, { caseBId: { $in: scopedCaseIds } }],
   }
 }
 
-export async function listOverlaps(
-  user: ScopeUser,
-  reviewStatus: string = RELATIONSHIP_REVIEW_STATUS.PENDING,
-): Promise<OverlapDto[]> {
-  const scopeFilter = await relationshipScopeFilter(user)
-  const relationships = await CaseRelationship.find(mergeFilters({ reviewStatus }, scopeFilter))
-    .sort({ createdAt: -1 })
-    .limit(LIST_LIMIT)
-    .lean()
-  return buildOverlapDtos(relationships)
+export async function listOverlaps(user: ScopeUser, filters: OverlapFilters = {}) {
+  const paging = resolvePageQuery(filters)
+  const baseFilter: Record<string, unknown> = {
+    reviewStatus: filters.status ?? RELATIONSHIP_REVIEW_STATUS.PENDING,
+  }
+  if (filters.matchType) baseFilter.matchType = filters.matchType
+
+  const filter = mergeFilters(baseFilter, await relationshipScopeFilter(user, filters))
+  const [relationships, total] = await Promise.all([
+    CaseRelationship.find(filter)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(paging.skip)
+      .limit(Math.min(paging.limit, PAGINATION.MAX_PAGE_SIZE))
+      .lean(),
+    CaseRelationship.countDocuments(filter),
+  ])
+
+  return buildPage(await buildOverlapDtos(relationships), total, paging)
 }
 
 export async function getOverlap(id: string, user: ScopeUser): Promise<OverlapDto> {

@@ -13,14 +13,16 @@ export function CaseTable({ cases }: { cases: CaseListItem[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] border-collapse text-left">
+      <table className="w-full min-w-[960px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
             <th className={CELL_CLASS}>Case</th>
             <th className={CELL_CLASS}>Institution</th>
             <th className={CELL_CLASS}>Bureau/Cell</th>
+            <th className={CELL_CLASS}>Region</th>
             <th className={CELL_CLASS}>Category</th>
             <th className={CELL_CLASS}>Status</th>
+            <th className={CELL_CLASS}>Officer</th>
             <th className={CELL_CLASS}>Received</th>
             <th className={CELL_CLASS}>Next action</th>
           </tr>
@@ -42,10 +44,12 @@ export function CaseTable({ cases }: { cases: CaseListItem[] }) {
                 </Link>
               </td>
               <td className={CELL_CLASS}>{item.bureauName ?? 'Unassigned'}</td>
+              <td className={CELL_CLASS}>{item.regionName ?? '—'}</td>
               <td className={CELL_CLASS}>{item.category ?? '—'}</td>
               <td className={CELL_CLASS}>
                 <CaseStatusBadge status={item.status} />
               </td>
+              <td className={CELL_CLASS}>{item.officerName ?? 'Unassigned'}</td>
               <td className={CELL_CLASS}>{formatDateOnly(item.receivedAt)}</td>
               <td className={CELL_CLASS}>
                 <div className="space-y-0.5">

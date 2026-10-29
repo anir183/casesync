@@ -11,8 +11,9 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–1 complete. Stage 2 is in progress and paused mid-edit. Stage 3 is ahead of
-Stage 2 in implementation depth. The MVP is not complete.**
+**Stages 0–3 implemented. Stage 3 overlap correctness and coordination are covered by
+DB-backed integration tests; automated browser E2E is still missing. Stage 4 reporting
+work is the next target. The MVP is not complete.**
 
 Last verified: 2026-10-29.
 
@@ -20,8 +21,8 @@ Last verified: 2026-10-29.
 |---|---|
 | Stage 0 — foundation | Complete |
 | Stage 1 — identity, organization, access | Complete (backend/admin API) |
-| Stage 2 — registry and case operations | **In progress, paused** — see below |
-| Stage 3 — overlap intelligence | Mostly complete; hardening remains |
+| Stage 2 — registry and case operations | Complete (implementation); browser E2E pending |
+| Stage 3 — overlap intelligence and coordination | Complete (implementation); browser E2E pending |
 | Stage 4 — monitoring, search, reports | Partial read-only slice |
 | Stages 5–7 — SLA, admin, release | Not started / partial |
 | Stage 8 — public portal | Optional; not started |
@@ -33,45 +34,49 @@ Last verified: 2026-10-29.
 - Case lifecycle APIs, append-only `case_actions`, assignments, transfers, escalation,
   disposal, and reopen.
 - Overlap detection with exact and fuzzy institution matching, optional Jev assessment,
-  review queue, compare view, and human confirm/dismiss.
+  review queue, compare view, human confirm/dismiss, manual link/unlink, and
+  re-assessment after case movement or institution identity changes.
+- Base overlap relationships always survive Jev; Jev only enriches with choice,
+  probabilities, coordination score, and rationale.
+- Review notifications are scoped to involved bureaus/regions plus oversight roles and
+  deduped per relationship.
 - Dashboard, case registry filters, institution profile, reports, and notifications.
+- Institution registry UI (`/institutions` list, create, edit, verify) with duplicate
+  warnings and a paginated institution case history.
+- Case registration UI (`/cases/new`) with institution search, bureau/category routing,
+  dates, description, next action, and optional initial assignment.
+- Case workspace tabs (overview, actions, assignments, related) and a role-gated action
+  panel for assign, transfer, escalate, dispose, reopen, remark, and next action.
+- Paginated case, institution, and overlap lists with totals; officer, actor, bureau, and
+  region names resolved server-side.
 - Region/category masters, admin user management (API), and an idempotent seed for
   organization and demo users.
-- 41 unit tests plus 13 opt-in database integration tests; Jev is always mocked.
+- 41 unit tests plus 27 opt-in database integration tests; Jev is always mocked and a
+  fetch guard blocks real Jev calls.
 
-### Stage 2 stopping point (paused)
+### Stage 2 completion and remaining gaps
 
-The tree is **not typecheck-green** at this point. Before pausing, these backend pieces
-were added or partially changed:
+Stage 2's core workflow is implemented: an authorized officer can register a case,
+assign it, move it through valid transitions, hand it over, dispose, reopen, and review
+the append-only history without manual API calls.
 
-- `CASE_TRANSITIONS` and `PAGINATION` constants in `packages/config`.
-- `apps/api/src/lib/pagination.ts` (`resolvePageQuery`, `buildPage`, `parseSort`).
-- `apps/api/src/lib/user-directory.ts` (`loadUserMap`, `listDirectoryUsers`,
-  `toDirectoryUser`).
-- `apps/api/src/modules/cases/case.service.ts` partially updated: filters, pagination
-  query type, optional `caseNumber`/`officerId` on create, and `regionName`/
-  `officerId`/`officerName` on the case DTO.
+Remaining, non-blocking gaps:
 
-Still unfinished: `listCases` still returns an array instead of a page, references an
-undefined `LIST_LIMIT`, and does not wire officer/region names. Routes, institution
-duplicates/pagination, the user-directory route, and all Stage 2 web screens are not
-started.
-
-Resume by finishing `case.service.ts`, then routes and DTOs, then the web screens. Do
-not treat Stage 2 as usable until the exit criteria in
-[`product/end-product-and-stages.md`](product/end-product-and-stages.md) pass.
+- No automated browser/component E2E yet; Stage 2–3 flows are verified by API
+  integration tests and manual runtime smoke checks.
+- Mutations use pending/disabled states rather than optimistic UI.
+- Admin user/organization web screens remain Stage 6 work.
+- Notification pagination remains Stage 4 work.
 
 ### Not built yet
 
-- Stage 2 institution registry UI, case registration UI, staff action UI, assignment
-  history UI, officer names, and registry pagination.
-- Stage 3 hardening: always create the base same-institution relationship, re-assessment
-  triggers, manual link/unlink, notification scoping/dedupe, scan scale guard.
+- Stage 3 follow-ups: periodic overlap sweep/background batch and browser E2E for
+  confirm/dismiss/link/unlink.
 - Stage 4 region labels/filters, quarterly reports, CSV export, refreshed metric
-  definitions.
+  definitions; pagination for notifications and report lists.
 - Stage 5 SLA config, cron jobs, reminders, and dedupe.
-- Stage 6 attachments, admin web screens, institution verify/merge, `audit_log`.
-- Component/E2E tests, CI, Docker, runbook, and reset/stress seed helpers.
+- Stage 6 attachments, admin web screens, institution merge/alias, `audit_log`.
+- Browser/component E2E tests, CI, Docker, runbook, and reset/stress seed helpers.
 
 ## Documentation map
 
@@ -86,7 +91,7 @@ not treat Stage 2 as usable until the exit criteria in
 | [`quality/qa-and-review.md`](quality/qa-and-review.md) | Test pyramid, integration/E2E/security/performance, CI, review, release gate. |
 | [`operations/mock-data.md`](operations/mock-data.md) | What the seed creates today and the target demo dataset. |
 | [`operations/demo-script.md`](operations/demo-script.md) | Target 10-minute demo runbook and current demoable slice. |
-| [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker and exact stopping point. |
+| [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
 | [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
 
 Source-of-truth order: the original problem statement, then requirements, then
@@ -250,12 +255,13 @@ paths:
 
 ```bash
 ./apps/web/node_modules/.bin/tsc -p apps/api/tsconfig.json --noEmit
-cd apps/web && ./node_modules/.bin/tsc --noEmit
+cd apps/web && ./node_modules/.bin/tsc -b --noEmit
 ```
 
-The Stage 2 backend is mid-edit, so the API typecheck will fail until it is resumed.
-See [`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and
-review gates.
+API and web typechecks, Biome, 41 unit tests, 27 DB-backed integration tests, and both
+production builds pass against the current tree at the verification date above. See
+[`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and review
+gates.
 
 ## Git rule
 

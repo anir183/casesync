@@ -3,8 +3,8 @@
 Status: **target demo runbook**. Location: `docs/operations/demo-script.md`.
 Companion: [`mock-data.md`](mock-data.md).
 
-Not every step below works today. Stage 2 (institution registry, case registration,
-staff action UI, assignment history) is paused mid-edit; Stage 5 (SLA jobs) and Stage 6
+Stages 2 and 3 (institution registry, case registration, staff action UI, assignment
+history, overlap correctness/coordination) are implemented. Stage 5 (SLA jobs) and Stage 6
 (admin screens, attachments) are not built. Use the availability table in
 [Current demoable slice](#current-demoable-slice) before presenting.
 
@@ -13,17 +13,16 @@ staff action UI, assignment history) is paused mid-edit; Stage 5 (SLA jobs) and 
 | Section | Available now? |
 |---|---|
 | Sign-in, roles, scoped dashboard | Yes |
-| Case registry, case detail (read-only), overlap queue/detail/confirm | Yes |
+| Case registry (paginated), case detail with tabs, overlap queue/detail/confirm, filters/pagination, manual link/unlink | Yes |
+| Register a case, assign/transfer/escalate/dispose/reopen from UI | Yes |
+| Institution list/search/create/edit/verify, institution profile | Yes |
+| Assignment/action history UI with officer names | Yes |
 | Reports and notification centre (read-only) | Yes |
-| Institution profile by URL | Yes |
-| Register a case, assign/transfer/escalate/dispose from UI | No — API only |
-| Institution list/search UI | No |
-| Assignment/action history UI with officer names | No |
 | SLA-driven approaching/overdue notifications | No |
 | Admin users/organization/SLA screens | No |
 | Attachments | No |
 
-If the demo needs Stage 2–6 steps, finish those stages first. Do not fake them in the UI.
+If the demo needs Stage 5–6 steps, finish those stages first. Do not fake them in the UI.
 
 ## 1. Pre-demo checks
 
@@ -45,32 +44,38 @@ If the demo needs Stage 2–6 steps, finish those stages first. Do not fake them
 3. Show institution-wise and bureau-wise workload.
 4. Sign in as `pgrc.officer@casesync.test`; show the dashboard is scoped to PGRC.
 
-### 2.2 Case lifecycle (2 min) — target, requires Stage 2
+### 2.2 Case lifecycle (2 min) — available
 
-1. As PGRC officer, open `PGRC-2026-001`.
+1. As PGRC officer, open `PGRC-2026-001` (or register a new case from `/cases/new`).
 2. Show overview: institution, bureau, category, received, expected disposal, last
    action, next action.
 3. Add a remark; set next action; show the timeline entry with actor/time.
 4. Assign, transfer, escalate, and dispose a spare case.
 5. Show assignment history and the append-only audit.
 
-### 2.3 Overlap detection (3 min) — core story, partially available
+### 2.3 Overlap detection (3 min) — core story, available
 
 1. Show `PGRC-2026-001` and `RB-2026-001`: same institution, different bureaus,
    different complaint descriptions.
 2. Open `/overlaps`; show the exact heading:
    **"Potential Overlapping Cases – Coordination Required"**.
-3. Open the pair; compare institution, bureau, status, dates, category, description, and
+3. Filter by bureau/region/match type and page through the queue; show that every
+   same-institution cross-bureau pair appears even when Jev views the issues as
+   different.
+4. Open the pair; compare institution, bureau, status, dates, category, description, and
    next action side by side.
-4. Show evidence: match type, confidence, reason; if Jev is enabled, choice,
-   probabilities, coordination score, model, and latency.
-5. Confirm with a note; show related cases and audit entries.
-6. Mention: rules work with Jev off; Jev never auto-confirms; assessments are separate
-   from human decisions.
+5. Show evidence: match type, confidence, reason; if Jev is enabled, choice,
+   probabilities, coordination score, rationale, model, and latency.
+6. Confirm with a note; show related cases and audit entries. On a spare pair, show
+   manual link from the case Related tab and unlink from overlap detail.
+7. Show the notification centre: overlap alerts are scoped to the involved bureaus/regions
+   plus oversight roles and deduped per relationship.
+8. Mention: rules work with Jev off; Jev never auto-confirms or suppresses; assessments
+   are separate from human decisions; reviews are append-only.
 
-### 2.4 Institution profile (1 min) — profile available; registry is target
+### 2.4 Institution registry and profile (1 min) — available
 
-1. Open `/institutions/:id` for `AICTE-1-999999` directly (the list route is not built).
+1. Open `/institutions`, search for `AICTE-1-999999`, and open the institution.
 2. Show consolidated history across bureaus, open/overdue counts, and overlaps.
 3. Explain fuzzy alias matching and human verification (no auto-merge).
 
@@ -84,7 +89,7 @@ If the demo needs Stage 2–6 steps, finish those stages first. Do not fake them
 4. Dashboard "beyond SLA" uses `expectedDisposalAt`; it does not yet use SLA config or
    cron.
 
-### 2.6 Admin (1 min) — target, requires Stage 2/6
+### 2.6 Admin (1 min) — target, requires Stage 6
 
 1. As admin, create a bureau/region/category or update an SLA.
 2. Create an officer, assign PGRC; show the new user can sign in.

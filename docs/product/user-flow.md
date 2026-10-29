@@ -30,30 +30,36 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
   `pgrc.officer@`, `rb.officer@`, `regional.north@`, `viewer@casesync.test`.
 - Roles: `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`,
   `REGIONAL_OFFICER`, `VIEWER`.
-- Screens: dashboard, case registry, case detail (read-only history), institution
-  profile, overlap queue/detail, reports, notifications.
-- Case creation and lifecycle actions exist via API but have no UI.
+- Screens: dashboard, case registry, case detail (overview/actions/assignments/related),
+  case registration, institution registry list/create/edit/verify, institution profile,
+  overlap queue/detail, reports, notifications.
+- Staff can register a case, assign it, move it through valid transitions, transfer,
+  escalate, dispose, reopen, add remarks, and set the next action from the UI.
+- Paginated case and institution lists with totals; overlap queue filters/paginates;
+  officer/actor/bureau/region names are resolved server-side.
+- Overlap coordination: base PENDING relationships always survive Jev, re-assessment
+  runs on case movement/identity changes, review notifications are scoped and deduped,
+  and reviewers can confirm, dismiss, manually link, or unlink with notes.
 - Read access is bureau/region scoped server-side; out-of-scope detail returns 404.
 - `active` is enforced and deactivation revokes sessions.
-- Notifications are scoped to the user's bureau/region.
-- Institution write endpoints are role-gated and region-bound.
-- Stage 2 is paused mid-edit: pagination and user-directory helpers exist but are not
-  wired; the API does not currently typecheck. No Stage 2 web screen exists.
-- 41 unit tests + 13 opt-in DB-backed integration tests; no Stage 2 tests, component
-  tests, or E2E tests.
+- Notifications are scoped to the recipient; overlap alerts target involved
+  bureaus/regions plus oversight roles.
+- Institution write endpoints are role-gated and region-bound, with duplicate warnings.
+- 41 unit tests + 27 opt-in DB-backed integration tests; no component or browser E2E
+  tests yet. Integration tests cannot call real Jev.
 
 ### What is missing for a real grievance portal
 - `COMPLAINANT` role and public self-registration.
 - Complaint filing form, my-complaints list, public status timeline.
 - Two-way conversation, information requests, document upload.
-- Staff action UI (assign, transfer, escalate, dispose, request info).
-- Case registration UI, institution registry UI, and officer-name resolution.
-- Pagination wired through the API and tables.
 - Public vs internal note separation.
 - Region-wise breakdowns and labels, and bureau/region/SLA admin screens.
 - Admin user/role/bureau/SLA web screens (user/org APIs exist).
 - SLA/reminder cron jobs.
 - Attachments.
+- Notification pagination.
+- Periodic overlap sweep/background batch.
+- Optimistic UI, component tests, and browser E2E.
 - Complainant ownership/IDOR checks (staff scoping and `active` enforcement are done).
 
 ## 3. Personas and roles
@@ -361,17 +367,17 @@ Expose:
 - Unread notification badges in nav.
 - Accessible forms: labels, keyboard focus, error summaries, mobile layout.
 - File upload progress and failure recovery.
-- Pagination/infinite scrolling for queues; the current hard limits must be replaced by
-  the Stage 2 pagination helpers before real use.
+- Pagination/infinite scrolling for queues; case and institution registries now use
+  server-side pagination, while the overlap queue and notifications still need it.
 
 ## 13. Delivery phases
 
 ### Phase A — Auth & role foundation
 - Add `COMPLAINANT`; change default self-signup role.
 - Sign-up/login/forgot-password UI.
-- Enforce `active`.
+- Enforce `active`. (Done for staff; deactivation revokes sessions.)
 - Seed users for each role (admin, PGRC officer, RB officer, senior, complainant).
-- Role-aware nav and route guards.
+- Role-aware nav and route guards. (Done for staff.)
 - Acceptance: each role can sign in and sees only permitted routes.
 
 ### Phase B — Complaint intake & tracking
@@ -389,9 +395,10 @@ Expose:
 - Acceptance: two-way exchange works; internal notes never visible publicly.
 
 ### Phase D — Staff workflow UI
-- Acknowledge, assign, transfer, escalate, resolve, reopen actions in UI.
-- Scoped queues and filters.
-- Admin user/role/bureau management.
+- Acknowledge, assign, transfer, escalate, resolve, reopen actions in UI. (Done for
+  internal staff via the case action panel.)
+- Scoped queues and filters. (Case registry done; overlap queue pagination pending.)
+- Admin user/role/bureau management. (API exists; web screens pending, Stage 6.)
 - Acceptance: officer can run a case end-to-end without API calls.
 
 ### Phase E — SLA, reminders, scoping, reports

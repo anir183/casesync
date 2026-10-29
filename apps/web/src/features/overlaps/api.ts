@@ -4,6 +4,13 @@ import { apiClient } from '#/lib/api-client'
 export type ReviewStatus = 'PENDING' | 'CONFIRMED' | 'DISMISSED'
 export type ReviewAction = 'confirm' | 'dismiss'
 
+export interface Page<T> {
+  items: T[]
+  total: number
+  page: number
+  pageSize: number
+}
+
 export interface OverlapCase {
   id: string
   caseNumber: string
@@ -23,6 +30,7 @@ export interface OverlapAssessment {
   coordinationReviewNoul?: number
   confidence?: number
   probabilities?: Record<string, number>
+  rationale?: string
   modelVersion?: string
   latencyMs?: number
   errorMessage?: string
@@ -48,21 +56,41 @@ export interface Overlap {
   cases: OverlapCase[]
 }
 
-interface OverlapListResponse {
-  items: Overlap[]
+export interface OverlapFilters {
+  status: ReviewStatus
+  bureauId?: string
+  regionId?: string
+  matchType?: string
+  institutionId?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface LinkCasesInput {
+  caseId: string
+  relatedCaseId: string
+  notes?: string
 }
 
 export const overlapKeys = {
-  list: (status: ReviewStatus) => ['overlaps', 'list', status] as const,
+  list: (filters: OverlapFilters) => ['overlaps', 'list', filters] as const,
   detail: (id: string) => ['overlaps', 'detail', id] as const,
 }
 
-export async function fetchOverlaps(status: ReviewStatus): Promise<Overlap[]> {
-  const data = await apiClient.get<OverlapListResponse>(`/overlaps?status=${status}`)
-  return data.items
+function buildQuery(filters: object) {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') params.set(key, String(value))
+  }
+  const query = params.toString()
+  return query ? `?${query}` : ''
 }
 
-export async function fetchOverlap(id: string): Promise<Overlap> {
+export function fetchOverlaps(filters: OverlapFilters): Promise<Page<Overlap>> {
+  return apiClient.get<Page<Overlap>>(`/overlaps${buildQuery(filters)}`)
+}
+
+export function fetchOverlap(id: string): Promise<Overlap> {
   return apiClient.get<Overlap>(`/overlaps/${id}`)
 }
 
@@ -70,10 +98,18 @@ export async function reviewOverlap(id: string, action: ReviewAction, notes?: st
   return apiClient.post<Overlap>(`/overlaps/${id}/review`, { action, notes })
 }
 
-export function useOverlaps(status: ReviewStatus) {
+export async function linkCases(input: LinkCasesInput): Promise<Overlap> {
+  return apiClient.post<Overlap>('/overlaps/link', input)
+}
+
+export async function unlinkOverlap(id: string, notes?: string): Promise<Overlap> {
+  return apiClient.post<Overlap>(`/overlaps/${id}/unlink`, { notes })
+}
+
+export function useOverlaps(filters: OverlapFilters) {
   return useQuery({
-    queryKey: overlapKeys.list(status),
-    queryFn: () => fetchOverlaps(status),
+    queryKey: overlapKeys.list(filters),
+    queryFn: () => fetchOverlaps(filters),
   })
 }
 
@@ -85,13 +121,38 @@ export function useOverlap(id: string) {
   })
 }
 
-export function useReviewOverlap(id: string) {
+function useInvalidateOverlaps() {
   const queryClient = useQueryClient()
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ['overlaps'] })
+    void queryClient.invalidateQueries({ queryKey: ['cases'] })
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    void queryClient.invalidateQueries({ queryKey: ['reports'] })
+    void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  }
+}
+
+export function useReviewOverlap(id: string) {
+  const invalidate = useInvalidateOverlaps()
   return useMutation({
     mutationFn: (input: { action: ReviewAction; notes?: string }) =>
       reviewOverlap(id, input.action, input.notes),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['overlaps'] })
-    },
+    onSuccess: invalidate,
+  })
+}
+
+export function useUnlinkOverlap(id: string) {
+  const invalidate = useInvalidateOverlaps()
+  return useMutation({
+    mutationFn: (notes?: string) => unlinkOverlap(id, notes),
+    onSuccess: invalidate,
+  })
+}
+
+export function useLinkCases() {
+  const invalidate = useInvalidateOverlaps()
+  return useMutation({
+    mutationFn: linkCases,
+    onSuccess: invalidate,
   })
 }

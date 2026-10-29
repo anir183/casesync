@@ -1,14 +1,21 @@
-import { CASE_STATUS } from '@casesync/config'
+import { CASE_STATUS, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
-import { Button } from '#/components/ui/button'
+import { Link } from 'react-router-dom'
+import { Pagination } from '#/components/shared/pagination'
+import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
-import { type CaseFilters, useBureaus, useCases } from '../api'
+import { useBureaus, useCategories } from '#/features/organization/api'
+import { useCurrentUser } from '#/lib/session'
+import { type CaseFilters, useCases } from '../api'
 import { CaseTable } from '../components/case-table'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
-const EMPTY_FILTERS: CaseFilters = {}
+const DEFAULT_FILTERS: CaseFilters = {
+  page: PAGINATION.DEFAULT_PAGE,
+  pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+}
 
 function cleanFilters(input: CaseFilters): CaseFilters {
   return Object.fromEntries(
@@ -18,9 +25,12 @@ function cleanFilters(input: CaseFilters): CaseFilters {
 
 export function CasesPage() {
   const [draft, setDraft] = useState<CaseFilters>({})
-  const [filters, setFilters] = useState<CaseFilters>(EMPTY_FILTERS)
+  const [filters, setFilters] = useState<CaseFilters>(DEFAULT_FILTERS)
   const { data: cases, isLoading, isError, error } = useCases(filters)
   const { data: bureaus } = useBureaus()
+  const { data: categories } = useCategories()
+  const { user } = useCurrentUser()
+  const canRegister = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
 
   function update(key: keyof CaseFilters, value: string) {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -28,21 +38,28 @@ export function CasesPage() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setFilters(cleanFilters(draft))
+    setFilters({ ...cleanFilters(draft), page: 1, pageSize: filters.pageSize })
   }
 
   function handleReset() {
     setDraft({})
-    setFilters(EMPTY_FILTERS)
+    setFilters({ ...DEFAULT_FILTERS, pageSize: filters.pageSize })
   }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Case registry</h1>
-        <p className="text-sm text-muted-foreground">
-          Every institution-related complaint across Bureaus and Cells.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Case registry</h1>
+          <p className="text-sm text-muted-foreground">
+            Every institution-related complaint across Bureaus and Cells.
+          </p>
+        </div>
+        {canRegister && (
+          <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
+            Register case
+          </Link>
+        )}
       </div>
 
       <Card>
@@ -81,12 +98,18 @@ export function CasesPage() {
                 </option>
               ))}
             </Select>
-            <Input
-              placeholder="Category"
+            <Select
               aria-label="Category"
               value={draft.category ?? ''}
               onChange={(event) => update('category', event.target.value)}
-            />
+            >
+              <option value="">All categories</option>
+              {categories?.map((category) => (
+                <option key={category.id} value={category.code}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
             <Input
               type="date"
               aria-label="Received from"
@@ -115,17 +138,28 @@ export function CasesPage() {
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle>Cases</CardTitle>
           <span className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading…' : `${cases?.length ?? 0} shown`}
+            {isLoading ? 'Loading…' : `${cases?.total ?? 0} total`}
           </span>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           {isError && (
             <p className="text-sm text-red-600">
               {error instanceof Error ? error.message : 'Unable to load cases'}
             </p>
           )}
           {isLoading && <p className="text-sm text-muted-foreground">Loading cases…</p>}
-          {!isLoading && !isError && <CaseTable cases={cases ?? []} />}
+          {!isLoading && !isError && <CaseTable cases={cases?.items ?? []} />}
+          {cases && cases.total > 0 && (
+            <Pagination
+              page={cases.page}
+              pageSize={cases.pageSize}
+              total={cases.total}
+              onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+              onPageSizeChange={(pageSize) =>
+                setFilters((current) => ({ ...current, page: 1, pageSize }))
+              }
+            />
+          )}
         </CardContent>
       </Card>
     </div>

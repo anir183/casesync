@@ -168,8 +168,8 @@ matching, not text similarity. Keep all content fictional.
 | Jev failure | One pair | exact | `FAILED`/`TIMEOUT` | `PENDING` rule fallback | Queue shows fallback reason |
 
 Seed the **base relationship for every cross-bureau pair**, even when Jev says the issues
-differ. Stage 3 must enforce this in code; the seed should not paper over the current
-suppression bug.
+differ. The API already enforces this; the future demo seed must mirror it rather than
+paper over it.
 
 ### 2.6 Actions, assignments, notifications
 

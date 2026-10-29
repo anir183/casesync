@@ -1,4 +1,4 @@
-import { ROLES } from '@casesync/config'
+import { ROLE_GROUPS } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { env } from '#/config/env'
 import { logger } from '#/lib/logger'
@@ -20,22 +20,9 @@ import {
   transferCase,
 } from './case.service'
 
-const CASE_WRITE_ROLES = [
-  ROLES.ADMIN,
-  ROLES.SENIOR_MANAGEMENT,
-  ROLES.COMPETENT_AUTHORITY,
-  ROLES.BUREAU_OFFICER,
-  ROLES.REGIONAL_OFFICER,
-]
-
-const CASE_SENSITIVE_ROLES = [
-  ROLES.ADMIN,
-  ROLES.SENIOR_MANAGEMENT,
-  ROLES.COMPETENT_AUTHORITY,
-  ROLES.BUREAU_OFFICER,
-]
-
-const CASE_DISPOSAL_ROLES = [ROLES.ADMIN, ROLES.SENIOR_MANAGEMENT, ROLES.COMPETENT_AUTHORITY]
+const CASE_WRITE_ROLES: string[] = [...ROLE_GROUPS.CASE_WRITE]
+const CASE_SENSITIVE_ROLES: string[] = [...ROLE_GROUPS.CASE_SENSITIVE]
+const CASE_DISPOSAL_ROLES: string[] = [...ROLE_GROUPS.CASE_DISPOSAL]
 
 const dateString = t.Optional(t.String({ minLength: 1 }))
 
@@ -45,9 +32,9 @@ const assignmentBody = t.Object({
   remarks: t.Optional(t.String({ maxLength: 2000 })),
 })
 
-function triggerOverlapAssessment(caseId: string, actorId: string) {
+function triggerOverlapAssessment(caseId: string, actorId: string, force = false) {
   if (!env.OVERLAP_AUTO_ASSESS) return
-  void assessCaseOverlaps(caseId, actorId).catch((error) => {
+  void assessCaseOverlaps(caseId, actorId, { force }).catch((error) => {
     logger.error('automatic overlap assessment failed', {
       caseId,
       message: error instanceof Error ? error.message : String(error),
@@ -60,8 +47,7 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
   .get(
     '/',
     async ({ query, user }) => {
-      const items = await listCases(query, user)
-      return { items }
+      return listCases(query, user)
     },
     {
       query: t.Object({
@@ -73,6 +59,9 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
         q: t.Optional(t.String()),
         dateFrom: dateString,
         dateTo: dateString,
+        page: t.Optional(t.String()),
+        pageSize: t.Optional(t.String()),
+        sort: t.Optional(t.String()),
       }),
     },
   )
@@ -88,13 +77,14 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
       body: t.Object({
         institutionId: t.String({ minLength: 1 }),
         bureauId: t.Optional(t.String()),
-        caseNumber: t.String({ minLength: 1 }),
+        caseNumber: t.Optional(t.String({ minLength: 1 })),
         category: t.Optional(t.String()),
         description: t.Optional(t.String()),
         receivedAt: dateString,
         expectedDisposalAt: dateString,
         nextAction: t.Optional(t.String()),
         nextActionDueAt: dateString,
+        officerId: t.Optional(t.String()),
       }),
     },
   )
@@ -156,7 +146,9 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
     '/:id/assign',
     async ({ params, body, user }) => {
       requireRole(user, CASE_WRITE_ROLES)
-      return assignCase(params.id, user.id, body, user)
+      const assignment = await assignCase(params.id, user.id, body, user)
+      triggerOverlapAssessment(params.id, user.id, true)
+      return assignment
     },
     { body: assignmentBody },
   )
@@ -164,7 +156,9 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
     '/:id/transfer',
     async ({ params, body, user }) => {
       requireRole(user, CASE_SENSITIVE_ROLES)
-      return transferCase(params.id, user.id, body, user)
+      const assignment = await transferCase(params.id, user.id, body, user)
+      triggerOverlapAssessment(params.id, user.id, true)
+      return assignment
     },
     { body: assignmentBody },
   )

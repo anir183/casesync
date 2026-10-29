@@ -8,6 +8,7 @@ import { cn } from '#/lib/utils'
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/cases', label: 'Cases' },
+  { to: '/institutions', label: 'Institutions' },
   { to: '/overlaps', label: 'Overlap queue' },
   { to: '/reports', label: 'Reports' },
   { to: '/notifications', label: 'Notifications', showUnread: true },

@@ -1,11 +1,12 @@
 # CaseSync - UI/UX Design Plan
 
-Status: target design. Location: `docs/product/ui-ux-design-plan.md`.
+Status: active design reference (implemented shell + remaining targets). Location: `docs/product/ui-ux-design-plan.md`.
 
-The implemented shell currently has login, dashboard, case registry and detail,
-institution profile (by URL), overlap queue and detail, reports, and notifications. The
-institution registry, case registration, staff action panel, history tabs, admin screens,
-and pagination controls are still Stage 2–6 targets.
+The implemented shell has login, dashboard, case registry and detail, case registration,
+institution registry (list/create/edit/verify) and profile, overlap queue and detail with
+filters/pagination and manual link/unlink, reports, notifications, and paginated tables.
+Remaining design targets are the admin user/organization screens, notification
+pagination, and optimistic mutation states (Stages 4–6).
 
 ## Goals
 - **Simple, minimal, modern** - Clean layout, no visual clutter
@@ -147,7 +148,7 @@ Use CSS variables for theming.
   access.
 - **SLA badge**: On track / Due soon / Overdue, derived from server-computed dates;
   include a relative countdown and absolute date. Never color-only — pair icon + text.
-- **Tables**: server-side pagination/sorting; page size selector (25/50/100); total
+- **Tables**: server-side pagination/sorting; page size selector (20/50/100); total
   count; filters persisted in the URL; "Clear filters"; CSV export of the current
   scoped filter set. Empty filtered state offers a clear-filters action.
 - **Dates**: store UTC, display IST with timezone label in detail views.
