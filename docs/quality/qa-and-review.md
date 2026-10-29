@@ -25,37 +25,39 @@ exit criteria.
 
 ## 2. Current test baseline (verified 2026-10-29)
 
-- 67 API unit tests across 17 files plus 3 web URL-filter tests: pair, normalize,
-  similarity, interpret, Jev provider, overlap-Jev, reports, state machine,
-  scope/permission, dates, CSV, metrics, demo fixtures, report export, case filters,
-  and SLA timezone/rule/alert boundaries.
-- 43 database-backed integration tests in `apps/api/tests/integration/` covering
-  signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
-  guards, deactivation/session revocation, institution writes, case-registration
-  scope, pagination contracts, duplicate checks, officer directory scoping, auto
-  numbering + initial assignment, rejected transitions writing no audit action, the
-  ordered lifecycle audit trail, and Stage 3 overlap behavior: rules-only base
-  relationship, Jev different-issue non-suppression, Jev failure/timeout fallback,
-  incomplete-response rejection, failed re-assessment preserving the last successful
-  result, no case/institution content mutation on failure, scoped/deduped notifications
-  with the exact heading, manual link/unlink, queue filters/pagination,
-  transfer-triggered re-assessment, and Stage 4 dashboard/report filters, exports,
-  region names, quarterly boundaries, reconciliation, and Stage 5 SLA rule CRUD,
-  automatic/manual deadlines, scoped deduped scan notifications, transfer recompute,
-  and dashboard/report overdue agreement. Stage 6 adds admin/master CRUD audit and
-  non-admin 403s, referenced-delete 409 guards, institution alias search/duplicate
-  warnings/admin merge with case and relationship preservation, scoped attachment
-  upload/list/download with MIME/size/empty/oversize and IDOR checks, checksum and safe
-  storage-path assertions, invite/temporary-password sign-in, password reset with session
-  revocation, and audit filtering. They are opt-in via `RUN_INTEGRATION=1` and use
-  run-scoped records in the dev database (Atlas credentials cannot create/drop
-  databases).
+- **71 API unit tests across 17 files** plus **10 web component/URL tests across 4
+  files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
+  state machine, scope/permission, dates, CSV, metrics, demo fixtures, report export,
+  case filters, SLA timezone/rule/alert boundaries, rate limiting, pagination,
+  confirmation dialogs, attachment permissions, and URL filters.
+- **45 database-backed integration tests** in `apps/api/tests/integration/` covering
+  signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user guards,
+  deactivation/session revocation, institution writes/merge, case-registration scope,
+  pagination contracts, duplicate checks, officer-directory scoping, auto numbering,
+  rejected transitions, ordered lifecycle audit, Stage 3 overlap behavior, Stage 4
+  dashboard/report reconciliation, Stage 5 SLA rules/jobs, Stage 6 admin/master CRUD,
+  attachments, invite/reset, and Stage 7 search bounds/regex/operator-notation/rate-limit
+  checks. They are opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7`
+  service, while local runs use run-scoped records in the configured dev database.
+- **4 seeded Playwright browser tests**: three critical smoke journeys (officer case
+  search/timeline, viewer scope/IDOR, overlap queue/reports) plus an axe
+  serious/critical accessibility scan of nine core pages.
+- **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
+  asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
+  data automatically.
+- **Coverage gate**: 89.4% lines and 90.0% functions from the full API suite; CI floor is
+  85% lines/functions.
+- **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks, unit/component
+  tests, Mongo-backed integration/coverage, builds, seeded E2E/accessibility, and a
+  high-severity dependency audit.
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
-- Minimal web URL-filter tests exist; no component or browser E2E tests, no coverage
-  gate, no CI.
-- API and web typecheck; Biome is clean; API and web production builds pass. Stages 3–6
-  behavior is verified through the API integration suite; browser E2E remains.
+- API and web typechecks; Biome is clean; API and web production builds pass.
+- `verify` passes locally and in a clean source copy after `bun install
+  --frozen-lockfile`. API unit tests preload inert test env defaults
+  (`apps/api/tests/setup.ts`), so they do not require a personal `apps/api/.env`;
+  integration/seed/E2E still require real DB/auth env. GitHub Actions itself has not
+  yet been observed green on a pushed commit.
 
 ## 3. Test pyramid and ownership
 
@@ -65,7 +67,7 @@ exit criteria.
 | Unit | Pure logic, state machines, permissions, SLA math, mapping | `bun test` | Every change / CI | Author |
 | Integration | API routes + MongoDB + auth + services | `bun test` + disposable DB + `app.handle()` | Every PR / CI | Author |
 | Contract | Request/response validation, error shapes, OpenAPI drift | Elysia schemas + snapshot tests | CI | Author |
-| Component | Forms, filters, dialogs, visibility, empty/error states | Vitest/RTL + MSW (add when UI grows) | PR / CI | Author |
+| Component | Forms, filters, dialogs, visibility, empty/error states | Bun + Happy DOM + React Testing Library | PR / CI | Author |
 | E2E | Critical staff journeys | Playwright | CI smoke + pre-demo | Author/reviewer |
 | Non-functional | Security, accessibility, performance, resilience | Scripts + axe + load tool | Stage gates / release | Reviewer |
 
@@ -153,12 +155,14 @@ Current (Stage 1) approach, because the Atlas user cannot create/drop databases:
 - `afterAll` deletes only records matching the run ID or the IDs created by the run.
 - Tests must never drop the database, list unrelated collections, or touch demo records.
 
-Target CI approach (Stage 7):
+CI approach (implemented Stage 7):
 
-- Add a disposable Mongo service (`mongo:7`) and point tests at a dedicated test URI.
-- Add a guard that refuses to run against a non-test database in CI.
-- Seed minimal fixtures per test and drop collections between tests when the database is
-  disposable.
+- GitHub Actions starts a disposable `mongo:7` service and points integration/coverage
+  and seeded E2E jobs at `casesync_test`.
+- Local integration remains run-scoped against the configured dev database because the
+  Atlas user cannot create/drop databases.
+- Shared integration factories are still optional follow-up work; existing tests use
+  run-scoped fixtures and IDs.
 
 Keep the rest of the current contract:
 
@@ -234,22 +238,24 @@ Keep the rest of the current contract:
 
 ## 6. Frontend component tests
 
-Add Vitest + React Testing Library + MSW when the staff UI grows.
+Implemented with Bun + Happy DOM + React Testing Library (`apps/web/tests/`, preloaded by
+`tests/dom.ts`). Current coverage:
 
-Test:
-- Case filter form: applies/clears filters; date validation; URL/state behavior.
-- Case registration form: required fields, institution picker, Zod errors, submit.
-- Action dialogs: role gating, confirmation, error display, pending state.
-- Overlap compare: exact heading, evidence, confirm/dismiss disabled after review.
-- Notifications: unread badge, mark read, empty/error states.
-- Permission denied: hidden/disabled actions for viewer/out-of-scope.
-- Accessibility basics: labels, focus, keyboard submit.
+- Case URL filter parsing/serialization.
+- Pagination controls.
+- Confirmation dialog behavior.
+- Attachment permission/visibility states.
 
-Do not duplicate full integration coverage; test UI behavior and error handling.
+Add behavior tests for new forms, role-gated dialogs, and empty/error states as the UI
+grows. Do not duplicate full integration coverage; test UI behavior and error handling.
 
 ## 7. E2E plan (Playwright)
 
-### Critical journeys
+Implemented now: three seeded smoke journeys plus the accessibility scan above, run
+against production builds on API port 3100 and web port 4173. The performance test is
+tagged and run separately with the stress seed.
+
+### Remaining full journeys
 
 1. **Officer case lifecycle**: sign in as PGRC officer → register case → assign →
    remark → next action → transfer → escalate → dispose → timeline shows all.
@@ -274,6 +280,8 @@ Do not duplicate full integration coverage; test UI behavior and error handling.
 - Keep the smoke suite small (1–2 journeys) for every PR; full suite pre-demo.
 
 ## 8. Security testing
+
+Detailed evidence and residual risks: [`security-checklist.md`](security-checklist.md).
 
 ### Checklist
 
@@ -309,6 +317,8 @@ Do not duplicate full integration coverage; test UI behavior and error handling.
 
 ## 9. Performance and resilience
 
+Implemented in `apps/web/e2e/performance.spec.ts` and `scripts/perf-smoke.sh`.
+
 ### Performance budgets (demo scale)
 
 | Operation | Target |
@@ -336,52 +346,40 @@ cap or aggregate in Mongo (`$group`) before claiming scale.
 
 ## 10. CI pipeline
 
-Add `.github/workflows/ci.yml` (or equivalent) with these jobs:
+Implemented in `.github/workflows/ci.yml`:
 
-1. **Install**: Bun, frozen lockfile.
-2. **Static**:
-   - `bunx biome check .` (no `--write` in CI)
-   - `apps/api`: `bunx tsc --noEmit`
-   - `apps/web`: `bunx tsc --noEmit` (use app-local toolchain)
-3. **Unit**: `bun test apps/api/tests/unit`
-4. **Integration**:
-   - start Mongo service
-   - `NODE_ENV=test`, `MONGODB_URI=mongodb://localhost:27017/casesync_test`
-   - `JEV_ENABLED=false`, dummy auth secret
-   - `bun test apps/api/tests/integration`
-5. **Build**: API build + web build.
-6. **E2E smoke** (release/pre-demo): Playwright with seeded DB.
-7. **Security**: dependency audit + secret scan (gitleaks/trufflehog if available).
-8. **Coverage**: upload report; fail below thresholds.
+1. **Static**: Biome check, API typecheck, web typecheck.
+2. **Unit**: API unit tests + web component tests via `bun run test:unit`.
+3. **Integration/coverage**: Mongo 7 service, `bun run test:coverage`, 85% floor,
+   coverage artifact upload.
+4. **Build**: API + web production builds.
+5. **E2E smoke**: Mongo 7 service, demo seed, Playwright Chromium, seeded smoke +
+   accessibility; report/artifacts on failure.
+6. **Security**: `bun audit --audit-level=high`.
 
-### Scripts to add
+Actual root scripts:
 
 ```json
 {
   "check:ci": "biome check .",
-  "typecheck:api": "cd apps/api && bunx tsc --noEmit",
-  "typecheck:web": "cd apps/web && bunx tsc --noEmit",
-  "test:unit": "bun test apps/api/tests/unit",
-  "test:integration": "bun test apps/api/tests/integration",
-  "test:e2e": "playwright test",
+  "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
+  "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
+  "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
+  "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test tests/integration",
+  "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
+  "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
+  "test:perf": "./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run test:unit && bun run build"
 }
 ```
 
-Keep `check` (write mode) for local use; CI must never rewrite files.
+CI must never rewrite files. Keep `check` (write mode) for local use.
 
-### Coverage thresholds (start realistic, raise over time)
+### Coverage thresholds
 
-| Area | Target |
-|---|---|
-| `packages/utils` | 90% lines |
-| API services (case/overlap/report/SLA) | 80% lines |
-| API routes | 70% lines |
-| Overall API | 75% lines |
-| Frontend critical forms/dialogs | 60% lines, behavior-focused |
-
-Coverage is a floor, not a goal. A critical rule with no test blocks the stage even
-if coverage is high.
+The CI gate currently enforces **85% lines and 85% functions** for the API suite. The
+full suite is at 89.4% lines / 90.0% functions. Coverage is a floor, not a goal; a critical
+rule with no test blocks the stage even if coverage is high.
 
 ## 11. Manual QA checklist (per stage)
 
@@ -409,7 +407,7 @@ if coverage is high.
 - [ ] Mobile layout for registry/detail.
 
 ### Ops
-- [ ] Seed works idempotently; reset/stress helpers exist (Stage 7).
+- [x] Seed works idempotently; reset/stress helpers exist.
 - [ ] Cron logs a run summary.
 - [ ] Health endpoint reports DB readiness.
 - [ ] Logs contain request ID and no secrets.
@@ -517,14 +515,15 @@ change description.
 
 ## 14. Release / pre-demo gate
 
-- [ ] Clean checkout install works.
-- [ ] `.env.example` complete; demo `.env` documented.
-- [ ] Seed runs idempotently; guarded reset helper works.
-- [ ] `verify` and integration/E2E suites pass.
-- [ ] CI green.
-- [ ] Security checklist complete.
-- [ ] Dashboard/report numbers reconciled with seed fixture.
-- [ ] Demo script rehearsed end-to-end.
-- [ ] Rollback/restore steps documented.
-- [ ] Docs match implementation.
-- [ ] No P0/P1 open bugs.
+- [x] Clean source copy installs with `bun install --frozen-lockfile` and passes `verify` without a personal `.env`.
+- [x] `.env.example` complete; demo `.env` documented.
+- [x] Seed runs idempotently; guarded reset/stress helpers work.
+- [x] `verify`, integration, coverage, E2E, accessibility, and performance suites pass locally.
+- [ ] CI green on a pushed commit.
+- [ ] Independent runbook walkthrough by someone other than the author.
+- [x] Security checklist complete.
+- [x] Dashboard/report numbers reconciled with seeded fixtures.
+- [x] Demo smoke journeys and performance rehearsal pass.
+- [x] Rollback/restore steps documented.
+- [x] Docs match implementation.
+- [x] No P0/P1 open bugs known.

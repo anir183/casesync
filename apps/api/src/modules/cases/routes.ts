@@ -1,4 +1,4 @@
-import { CASE_STATUS, ROLE_GROUPS } from '@casesync/config'
+import { CASE_STATUS, ROLE_GROUPS, SEARCH } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { env } from '#/config/env'
 import { csvFilename, setCsvHeaders } from '#/lib/csv'
@@ -37,7 +37,7 @@ const caseListQuery = t.Object({
   regionId: t.Optional(t.String()),
   status: statusString,
   category: t.Optional(t.String()),
-  q: t.Optional(t.String()),
+  q: t.Optional(t.String({ maxLength: SEARCH.MAX_QUERY_LENGTH })),
   dateFrom: dateString,
   dateTo: dateString,
   page: t.Optional(t.String()),

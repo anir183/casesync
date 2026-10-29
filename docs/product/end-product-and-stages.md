@@ -178,12 +178,12 @@ layout.
 |---|---|---|---|---|
 | 0 | Foundation & guardrails | **Done** | Reproducible monorepo, stack, models, auth skeleton, conventions | Build/lint/typecheck; env documented; models indexed |
 | 1 | Identity, organization & access | **Done** | Correct users, roles, bureaus, regions, scoping; makes every number and permission meaningful | Role/scope matrix tests pass; each seeded role sees only allowed data |
-| 2 | Institution registry & case operations | **Done** (implementation); browser E2E pending | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
-| 3 | Overlap intelligence & coordination | **Done** (implementation); browser E2E pending | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
-| 4 | Monitoring, search & reporting | **Done** (implementation); browser E2E pending | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
-| 5 | SLA, alerts & scheduled jobs | **Done** (implementation); browser E2E pending | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
-| 6 | Administration, attachments & data quality | **Done** (implementation); browser E2E pending | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
-| 7 | Hardening, QA & release | **Partial** | Trust, security, maintainability, demo readiness | CI green; critical E2E; security checklist; runbook |
+| 2 | Institution registry & case operations | **Done** | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
+| 3 | Overlap intelligence & coordination | **Done** | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
+| 4 | Monitoring, search & reporting | **Done** | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
+| 5 | SLA, alerts & scheduled jobs | **Done** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
+| 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
+| 7 | Hardening, QA & release | **Done** (local); remote CI pending | Trust, security, maintainability, demo readiness | Critical E2E and security checklist pass; runbook walkthrough and CI remote run pending |
 | 8 | Public complainant portal (optional) | **Not started** | Transparency extension beyond original scope | Separate acceptance and security review |
 
 ### Current position (honest)
@@ -193,23 +193,24 @@ layout.
   in Stage 6.
 - Stage 2 implementation complete: institution registry UI, case registration UI,
   role-gated action panel, action/assignment history, officer/actor/bureau/region name
-  resolution, and paginated case/institution lists. Automated browser/component E2E is
-  still missing.
+  resolution, and paginated case/institution lists. Stage 7 component tests and seeded
+  browser smoke are present.
 - Stage 3 implementation complete (3A correctness + 3B coordination): the base
   relationship is always created for same-institution cross-bureau pairs, Jev only
   enriches, re-assessment runs on create/assign/transfer/institution change, review
   notifications are scoped and deduped, the queue is filtered/paginated, and manual
-  link/unlink is available. API and web typecheck; 67 API unit tests, 3 web tests, and 43
-  DB-backed integration tests pass; integration tests cannot call real Jev.
+  link/unlink is available. API and web typecheck; 71 API unit tests, 10 web tests, and
+  45 DB-backed integration tests pass; integration tests cannot call real Jev.
 - Stage 4 implementation is complete: scoped dashboard/search/reports, region names and
   filters, quarterly grouping, CSV exports, shared disposal/reopened metrics, inclusive
   UTC bounds, notification pagination, deterministic demo seed/reset, and reconciliation
-  tests. Browser E2E and page-performance gates remain Stage 7 work.
+  tests; Stage 7 browser smoke and performance gates now exist.
 - Stage 5 SLA and Stage 6 administration/attachments/audit are implemented and verified.
-  Stage 7 hardening, browser E2E, CI, and release remain.
-- The project is **not** MVP-complete; it is at "core engine + operational case workflow
-  + overlap coordination + dashboard + access control complete, with SLA, admin UI, and
-  release work left".
+  Stage 7 hardening is implemented and locally verified (component/E2E/a11y/perf/CI/
+  security/runbook/stress seed); remote CI green and an independent runbook walkthrough
+  remain the final release checks.
+- The internal MVP is functionally complete and locally release-ready; the optional
+  Stage 8 public portal is not built.
 
 ## 6. Stage details and expectations
 
@@ -273,9 +274,10 @@ write files.
 **Contribution:** turns a demo into a system that can be given to real AICTE
 officials without cross-bureau data leakage.
 
-**Current gaps:** browser E2E and rate limiting. Bureau/region/category CRUD, admin
-`audit_log`, and admin users/organization web screens are delivered in Stage 6. The
-backend is verified by 43 DB-backed integration tests covering signup blocking, scoping,
+**Current gaps:** none blocking the internal MVP; manual screen-reader/mobile checks and
+hosting remain operational follow-ups. Bureau/region/category CRUD, admin `audit_log`,
+and admin users/organization web screens are delivered in Stage 6. The backend is
+verified by 45 DB-backed integration tests covering signup blocking, scoping,
 IDOR, dashboard totals, admin guards, deactivation/session revocation, institution
 writes, case registration scope, pagination, duplicate checks, officer directory, the
 full lifecycle audit trail, Stage 3 overlap correctness/coordination, and Stage 6
@@ -310,7 +312,7 @@ administration/attachments/audit.
 - API additions: user lookup, assignment history in detail, paginated list,
   action DTOs with actor names.
 - E2E: register → assign → remark → transfer → escalate → dispose. (API integration
-  coverage exists; automated browser E2E is still a Stage 7 item.)
+  coverage exists; Stage 7 adds seeded browser smoke for the core case paths.)
 
 **Exit criteria**
 - No manual API calls needed to run a case.
@@ -388,7 +390,7 @@ Re-assessment covers create/assign/transfer and institution identity changes. No
 bureaus/regions plus oversight roles and dedupe on
 `{recipientId,type,referenceId,periodKey}`. The queue filters/paginates, and reviewers can
 confirm, dismiss, manually link, or unlink with notes and append-only audit actions.
-**Remaining:** periodic sweep/background batch and automated browser E2E for these flows.
+**Remaining:** periodic sweep/background batch. Stage 7 browser smoke covers queue and report loading; confirm/dismiss/link/unlink remain API-tested.
 
 ---
 
@@ -425,8 +427,7 @@ confirm, dismiss, manually link, or unlink with notes and append-only audit acti
 **Contribution:** converts operational data into oversight and data-driven
 decision-making, one of the stated outcomes.
 
-**Current gaps:** automated browser E2E and the documented page-performance budget;
-SLA-driven overdue remains Stage 5.
+**Current gaps:** no blocking gaps; Stage 7 stress-data performance budgets cover the documented page budget. SLA-driven overdue remains Stage 5.
 
 ---
 
@@ -604,8 +605,8 @@ surface and would delay the MVP.
 | Jev API unavailable/expensive | Demo failure or slow flow | Rules-first always; Jev optional; mock in tests; timeout/fallback. |
 | Jev suppresses base overlap | Requirement miss | Always create base relationship; Jev enriches/ranks. |
 | Region labels missing | Reports/filters show raw IDs | Resolved in Stage 4: region names resolved in dashboard/reports; case region filters fall back to institution region. |
-| No reset/stress seed | Demo fragile after manual edits | Deterministic `seed:demo` + guarded demo-only `seed:reset` exist; add `seed:stress` in Stage 7. |
-| Thin integration coverage, no E2E/CI | Silent regressions | Extend DB-backed API tests per stage; add CI and critical E2E in Stage 7. |
+| No reset/stress seed | Demo fragile after manual edits | Deterministic `seed:demo` + guarded demo-only `seed:reset` exist; `seed:stress` and reset are verified on 5,000 cases. |
+| Regression coverage gaps | Silent regressions | DB-backed API coverage, CI workflow, and seeded E2E/a11y/perf gates are implemented. |
 | Analytics computed ad hoc | Numbers disagree | Single SLA/overdue helper; reconcile dashboard/report/job tests. |
 | Fuzzy scan in memory | Slow at scale | Cap for demo; background sweep/indexed blocking later. |
 | Large diff / uncommitted work | Hard review/recovery | Small stage-sized commits only when explicitly requested; review checklist. |

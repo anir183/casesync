@@ -45,22 +45,19 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Notifications are scoped to the recipient; overlap alerts target involved
   bureaus/regions plus oversight roles.
 - Institution write endpoints are role-gated and region-bound, with duplicate warnings.
-- 67 API unit tests + 3 web tests + 43 opt-in DB-backed integration tests; no
-  component or browser E2E tests yet. Integration tests cannot call real Jev.
+- 71 API unit tests + 10 web component/URL tests + 45 opt-in DB-backed integration
+  tests, plus seeded Playwright smoke/accessibility and stress-data performance tests.
+  Integration tests cannot call real Jev.
 
 ### What is missing for a real grievance portal
 - `COMPLAINANT` role and public self-registration.
 - Complaint filing form, my-complaints list, public status timeline.
 - Two-way conversation, information requests, document upload.
-- Public vs internal note separation.
-- Region-wise breakdowns and labels, and bureau/region/SLA admin screens.
-- Admin user/role/bureau/SLA web screens (user/org APIs exist).
-- SLA/reminder cron jobs.
-- Attachments.
-- Notification pagination.
-- Periodic overlap sweep/background batch.
-- Optimistic UI, component tests, and browser E2E.
-- Complainant ownership/IDOR checks (staff scoping and `active` enforcement are done).
+- Public vs internal note separation and public status mapping.
+- Public notifications and complainant ownership/IDOR checks.
+- Document review/admin approval for incomplete AICTE verification.
+- Attachment visibility controls for public vs internal documents.
+- Public complaint filing form and tracked-complaint timeline.
 
 ## 3. Personas and roles
 
@@ -397,21 +394,23 @@ Expose:
 ### Phase D — Staff workflow UI
 - Acknowledge, assign, transfer, escalate, resolve, reopen actions in UI. (Done for
   internal staff via the case action panel.)
-- Scoped queues and filters. (Case registry done; overlap queue pagination pending.)
-- Admin user/role/bureau management. (API exists; web screens pending, Stage 6.)
+- Scoped queues and filters. (Case registry and overlap queue pagination done.)
+- Admin user/role/bureau management. (API and web screens delivered in Stage 6.)
 - Acceptance: officer can run a case end-to-end without API calls.
 
 ### Phase E — SLA, reminders, scoping, reports
-- `sla_config` CRUD and node-cron scan.
-- Approaching/overdue/pending reminders, deduped.
-- Bureau/region scoping across dashboards and reports.
-- Email adapter (optional).
+- `sla_config` CRUD and node-cron scan. (Done in Stage 5.)
+- Approaching/overdue/pending reminders, deduped. (Done.)
+- Bureau/region scoping across dashboards and reports. (Done.)
+- Email adapter (optional, not built).
 - Acceptance: SLA notifications fire once per case per period; scoped users see
-  only their data.
+  only their data. (Met.)
 
 ### Phase F — Hardening
-- Integration and E2E tests, accessibility pass, rate limits, audit export.
-- Acceptance: critical journeys pass in CI; no IDOR/public leakage.
+- Integration/E2E tests, accessibility pass, rate limits. (Done in Stage 7; CI remote
+  run pending.)
+- Audit export remains a follow-up.
+- Acceptance: critical journeys pass in CI; no IDOR/public leakage. (Local gates pass.)
 
 ## 14. Testing strategy
 

@@ -19,10 +19,10 @@ Status legend:
 
 | Area | Status | Summary |
 |---|---|---|
-| Objectives | Partial | Core monitoring/overlap/reporting, case workflow, SLA alerts, and administration/attachments work; browser E2E and release hardening remain. |
+| Objectives | Partial | Core monitoring/overlap/reporting, case workflow, SLA alerts, and administration/attachments work; OBJ-06 pending-bucket definition remains. |
 | Institution profile | **Done** | Registry list/create/edit/verify + profile/history, aliases, duplicate checks, and admin merge. |
-| Case tracking | Partial → strong | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
-| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Browser E2E remains. |
+| Case tracking | **Done** | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired; Stage 7 smoke covers case list/timeline. |
+| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired; Stage 7 smoke covers queue/report loading. |
 | Dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, SLA-derived beyond-timeline count, and 30s refresh. |
 | Workflow/audit | **Done** | Append-only case history, scoped attachments, staff action UI, and admin `audit_log`. |
 | Search/filters | **Done** | Case region/date/category/status/bureau filters, sorting, pagination, exports, and paginated/filterable notifications. |
@@ -30,7 +30,7 @@ Status legend:
 | Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
 | Target users | **Done** | Roles, scoping, admin user management, and admin web screens. |
-| Non-functional | Partial | `active` enforcement, scoping, 409/404 mapping, and DB-backed tests done; rate limits, component/E2E tests, CI, and runbook remain. |
+| Non-functional | Done (local) | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; remote CI run pending. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -49,10 +49,10 @@ Status legend:
 
 | ID | Requirement | Status | Evidence | Remaining work |
 |---|---|---|---|---|
-| OBJ-01 | View all institution-related cases in one place | **Partial → strong** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/` | List is paginated with totals and has registration UI. Browser E2E remains. |
+| OBJ-01 | View all institution-related cases in one place | **Done** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/` | Paginated list with totals, registration UI, and Stage 7 case smoke. |
 | OBJ-02 | Identify the Bureau/Cell handling each case | **Done** | `cases.bureauId`, current `case_assignments`, case detail | Bureau names resolved in case list/detail/history. |
-| OBJ-03 | Track complete status and movement | **Partial → strong** | `cases.status`, `case_actions`, `case_assignments`, state machine | API complete; UI action panel and history tabs implemented. Browser E2E remains. |
-| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change. Browser E2E remains. |
+| OBJ-03 | Track complete status and movement | **Done** | `cases.status`, `case_actions`, `case_assignments`, state machine | API complete; UI action panel/history tabs implemented; Stage 7 smoke covers the timeline. |
+| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change; Stage 7 smoke covers the queue. |
 | OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, manual link/unlink, `case_relationships` | Review and link decisions are append-only; re-linking a reviewed pair returns 409. |
 | OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Done** | Shared `case-metrics` helpers, dashboard tiles, unassigned bucket, reports | SLA deadlines now drive overdue classifications. |
 | OBJ-07 | Reports by institution/region/bureau/status | **Done** | `report.service.ts`, `report.export.ts` | Filtered reports with names, series, overlap summary, and CSV export. |
@@ -187,9 +187,9 @@ Status legend:
 | USER-01 | AICTE Regulation Bureau (RB) | **Done** | `BUREAU_OFFICER` + `bureauId`; central bureau scope + IDOR 404s; admin bureau CRUD | Officer names resolved. |
 | USER-02 | Public Grievance Redressal Cell (PGRC) | **Done** | `BUREAU_OFFICER` + `bureauId`; central bureau scope + IDOR 404s | Same. |
 | USER-03 | Other concerned Bureaus/Cells | **Done** | `BUREAU_OFFICER` + `bureauId`; admin bureau CRUD | — |
-| USER-04 | Regional Offices/Centres | **Done** | `REGIONAL_OFFICER` + seeded `regions`; region scoping, labels, filters, and browser E2E pending | Browser E2E is Stage 7. |
-| USER-05 | Authorized officers/senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; all-scope reads + admin user API/web screens | Browser E2E is Stage 7. |
-| USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit web UI, institution merge, `audit_log` | Browser E2E is Stage 7. |
+| USER-04 | Regional Offices/Centres | **Done** | `REGIONAL_OFFICER` + seeded `regions`; region scoping, labels, filters | Stage 7 viewer smoke covers scoped/IDOR access. |
+| USER-05 | Authorized officers/senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; all-scope reads + admin user API/web screens | Stage 7 viewer smoke covers read-only/all-scope behavior. |
+| USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit web UI, institution merge, `audit_log` | Admin flows are API-tested; Stage 7 axe scan covers `/admin/sla`. |
 | USER-07 | Read-only auditor/viewer | **Done** | `VIEWER`; read-only all-scope + dedicated `/admin/audit` view | — |
 
 ## 12. Non-functional requirements
@@ -204,40 +204,29 @@ Status legend:
 | Input validation | **Partial** | Elysia schemas exist; malformed ObjectIds map to 404 and duplicate keys to 409; status/category remain partly free strings. |
 | Pagination/performance | **Partial** | Case/institution lists and the overlap queue paginate with totals; notifications, dashboard/report internals, and fuzzy scan still load broadly. |
 | Observability | **Partial** | Logger and admin audit exist; request IDs, metrics, and readiness remain. |
-| Rate limiting | **Gap** | None on auth/search/assessment/uploads. |
+| Rate limiting | **Done** | Fixed-window limits on auth/search/manual assessment/uploads with 429 + retry headers; in-memory per process. |
 | File security | **Done** | Scoped upload/download, MIME/size/empty checks, UUID filenames, path containment, `nosniff`/`no-store`, SHA-256 checksum; malware scanning/rate limits remain. |
-| Accessibility | **Partial** | Basic labels/aria; no systematic audit. |
+| Accessibility | **Done (automated)** | axe WCAG A/AA scan on nine core pages reports no serious/critical violations; manual keyboard/screen-reader pass remains. |
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
-| Deployment | **Gap** | No Docker/CI/hosting/runbook. |
+| Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
 ## 13. Test and ops baseline (verified)
 
-- 67 API unit tests and 3 web URL-filter tests; Jev is mocked.
-- 43 database-backed integration tests in `apps/api/tests/integration/` covering
-  signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
-  guards, session revocation, institution writes, case-registration scope, pagination
-  contracts, duplicate checks, officer directory scoping, auto numbering + initial
-  assignment, rejected transitions writing no audit action, the ordered lifecycle
-  audit trail, and Stage 3 overlap correctness/coordination: rules-only base
-  relationship, Jev different-issue non-suppression, Jev failure/timeout fallback,
-  incomplete-response rejection, failed re-assessment preserving the last successful
-  result, scoped/deduped notifications with the exact heading, manual link/unlink, queue
-  filters/pagination, transfer-triggered re-assessment, plus Stage 6 admin/master CRUD
-  audit and 403s, referenced-delete 409 guards, institution alias/merge preservation,
-  scoped attachment validation/IDOR/checksum, password reset/session revocation, and
-  audit filters. Run with `RUN_INTEGRATION=1`;
-  tests use run-scoped records and clean up by ID/email, including actions, assignments,
-  relationships, assessments, and notifications. A fetch guard fails the suite on any
-  real `jevmodel.org` request.
+- 71 API unit tests, 10 web component/URL tests, and 45 database-backed integration
+  tests; Jev is mocked and a fetch guard blocks real calls.
+- Integration coverage includes signup blocking, scoping/IDOR, dashboard/report
+  reconciliation, overlap correctness/coordination, SLA jobs, admin/master CRUD,
+  attachments, invite/reset, and Stage 7 search/regex/operator/rate-limit checks.
+  `RUN_INTEGRATION=1` runs locally against run-scoped records; CI uses `mongo:7`.
+- Coverage is 89.4% lines / 90.0% functions with an 85% floor.
+- 3 seeded Playwright smoke journeys, an axe accessibility scan of nine core pages, and
+  a tagged 5,000-case performance test pass.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
-  7 users. `seed:demo` additionally creates 8 institutions, 13 cases, 6 overlap
-  scenarios, notifications, and 5 SLA configs. `seed:reset` removes only demo-owned
-  records and reseeds.
-- No component tests, no browser E2E, no coverage gate, no CI workflow, no Dockerfile.
-- API/web typechecks, Biome, and production builds pass. The full API suite passes 67
-  unit tests with 43 integration tests skipped by default; web tests pass 3; all 43
-  DB-backed integration tests pass with `RUN_INTEGRATION=1`. Demo seed is idempotent and
-  reset/reseed succeeds against Atlas.
+  7 users. `seed:demo` adds 8 institutions, 13 cases, 6 overlaps, notifications, and 5
+  SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
+- API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
+  reports no vulnerabilities. CI workflow is implemented but not yet observed green on
+  a pushed commit.
 
 ## 14. Documentation corrections applied
 
@@ -265,13 +254,14 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
 1. ~~Regions/categories, admin users, `active` enforcement, bureau/region scoping.~~
    Done in Stage 1.
 2. ~~Finish `case.service.ts` pagination/name wiring, then institution registry + case
-   registration + staff action UI + officer names.~~ Done in Stage 2 (browser E2E still
-   pending).
+   registration + staff action UI + officer names.~~ Done in Stage 2; Stage 7 smoke
+   covers the core case list/timeline path.
 3. ~~Overlap correctness: always surface base relationship; Jev enriches; re-assess
    on create/assign/transfer/institution change; manual link/unlink; notification
    scoping/dedupe; exact heading test.~~ Done in Stage 3 (periodic sweep remains).
 4. ~~Scoped dashboard/search/reports, region names, pagination, export.~~ Done in Stage 4.
 5. ~~SLA config + cron + pending/approaching/overdue alerts + dedupe.~~ Done in Stage 5.
 6. ~~Attachments, admin audit, institution verification/merge.~~ Done in Stage 6.
-7. Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.
+7. ~~Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.~~ Done in
+   Stage 7; observe CI green on a pushed commit.
 8. Optional public complainant portal.

@@ -1,9 +1,9 @@
 import { cors } from '@elysiajs/cors'
-import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
 import { env } from '#/config/env'
 import { auth } from '#/lib/auth'
 import { HTTP_STATUS } from '#/lib/errors'
+import { enforceRateLimit } from '#/lib/rate-limit'
 import { toErrorResponse } from '#/middleware/error'
 import { auditRoutes } from '#/modules/admin/audit.routes'
 import { jobsRoutes } from '#/modules/admin/jobs.routes'
@@ -34,7 +34,10 @@ export const app = new Elysia()
     set.status = result.status
     return result.body
   })
-  .use(swagger())
+  .onRequest(({ request, set, server }) => {
+    const clientAddress = server?.requestIP(request)?.address
+    enforceRateLimit(request, set, clientAddress)
+  })
   .all('/api/auth/*', async ({ request }) => {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204 })

@@ -263,8 +263,9 @@ committed; `.env.example` lists names with empty/placeholder values.
   `/admin/jobs/runs`, and manual `POST /admin/jobs/sla/run`.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
 - **Exports** (Stage 4): CSV from the same scoped filter set; PDF optional.
-- **Docs**: Swagger/OpenAPI generated from Elysia route schemas; keep auth/pagination/
-  scope documented.
+- **Docs**: Elysia route schemas remain the API contract source; keep auth/pagination/
+  scope documented. The Swagger UI plugin was removed in Stage 7 because its transitive
+  Scalar/Zod 3 dependency carried a high-severity advisory.
 
 ## 10) Jobs (node-cron)
 
@@ -284,16 +285,16 @@ committed; `.env.example` lists names with empty/placeholder values.
 
 See `docs/quality/qa-and-review.md` for the full pyramid and CI gates.
 
-Current DB-backed tests use run-scoped records in the dev database because the Atlas
-user cannot create/drop databases. A disposable CI database is the Stage 7 target.
+Local DB-backed tests use run-scoped records in the dev database because the Atlas user
+cannot create/drop databases. CI uses a disposable `mongo:7` service.
 
 | Tool | Purpose | Notes |
 |---|---|---|
 | Bun Test | Unit + integration | Built-in, fast |
-| Run-scoped dev DB records (target: disposable DB) | DB-backed API tests | Unique run ID; cleanup by ID/email |
+| Run-scoped dev DB records / disposable CI Mongo | DB-backed API tests | Unique run ID locally; fresh `mongo:7` in CI |
 | fetch/MSW mocks | Mock Jev API | **Never hit real Jev in tests** |
-| Vitest + React Testing Library | Critical component tests | Forms, filters, dialogs, permission states |
-| Playwright | E2E critical journeys | Register → lifecycle → overlap → report |
+| Bun + Happy DOM + React Testing Library | Critical component tests | Forms, filters, dialogs, permission states |
+| Playwright + axe | E2E smoke, accessibility, performance | Seeded journeys; stress budgets; WCAG scan |
 
 **Priority:** utils (pair/normalize/similarity), overlap orchestration with DB
 (exact/fuzzy, Jev enabled/disabled/failure/timeout, base relationship always created),
@@ -344,7 +345,8 @@ history, and a **Related Cases** tab. Use the exact overlap heading.
 - **Build/run**: `bun install`, `bun run build`, run API and serve `apps/web/dist`.
 - **Seed**: idempotent `bun run seed` creates regions, categories, bureaus, and users.
   `seed:demo` adds institutions/cases/overlaps/notifications/SLA configs; `seed:reset`
-  removes only demo-owned data and reseeds. `seed:stress` is Stage 7. The script
+  removes only demo-owned data and reseeds; `seed:stress` creates a deterministic 5,000-case
+  load set with a dedicated reset. The script
   refuses destructive operations in production without the documented confirmation
   flags.
 - **Migrations/indexes**: Mongoose index sync reviewed; no destructive auto-sync in
@@ -354,11 +356,11 @@ history, and a **Related Cases** tab. Use the exact overlap heading.
   for RPO/RTO, retention, restore steps, and known gaps.
 - **Observability**: structured logs, request IDs, job run log; error tracking later.
 - **CI**: lint + typecheck + unit + integration + build + E2E smoke + coverage gate on
-  a clean checkout (Stage 7).
+  a clean checkout (implemented in `.github/workflows/ci.yml`).
 - **Security**: secrets server-side only, rate limits on auth/search/assessment/upload,
   no directory listing, scoped attachment access.
 - **Runbook**: setup, seed, demo reset, deploy/rollback, backup/restore, cron checks,
-  troubleshooting. Planned as `docs/operations/runbook.md`; it is not written yet.
+  troubleshooting in [`../operations/runbook.md`](../operations/runbook.md).
 - **Git**: never commit/push `.env`, secrets, real PII, or real AICTE documents; no
   commit/push unless explicitly instructed.
 

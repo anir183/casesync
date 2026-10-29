@@ -13,12 +13,26 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "test": "bun run --filter @casesync/api test && bun test apps/web/tests",
+    "test": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
     "test:watch": "bun test --watch",
     "test:api": "bun run --filter @casesync/api test",
-    "test:web": "bun test apps/web/tests"
+    "test:web": "bun run --filter @casesync/web test",
+    "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
+    "seed:stress": "bun run --filter @casesync/api seed:stress",
+    "seed:stress:reset": "bun run --filter @casesync/api seed:stress:reset",
+    "test:perf": "./scripts/perf-smoke.sh",
+    "check:ci": "biome check .",
+    "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
+    "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
+    "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
+    "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test tests/integration",
+    "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
+    "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run test:unit && bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4"
+  },
+  "overrides": {
+    "zod": "^4.6.7"
   }
 }

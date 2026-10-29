@@ -9,17 +9,18 @@
     "seed": "bun run src/seed.ts",
     "seed:demo": "bun run src/seed.ts --demo",
     "seed:reset": "bun run src/seed.ts --reset",
-    "test": "bun test"
+    "test": "bun test",
+    "seed:stress": "bun run src/seed.ts --stress",
+    "seed:stress:reset": "bun run src/seed.ts --stress-reset"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
-    "@elysiajs/swagger": "^1.1.6",
     "better-auth": "^1.0.0",
     "date-fns": "^4.1.0",
     "elysia": "^1.1.25",
     "mongoose": "^8.8.0",
     "node-cron": "^3.0.3",
-    "zod": "^3.23.8"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/bun": "latest",

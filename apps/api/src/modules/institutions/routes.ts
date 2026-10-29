@@ -1,3 +1,4 @@
+import { SEARCH } from '@casesync/config'
 import { normalizeInstitutionName } from '@casesync/utils'
 import { Elysia, t } from 'elysia'
 import mongoose from 'mongoose'
@@ -146,8 +147,8 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
     },
     {
       query: t.Object({
-        q: t.Optional(t.String()),
-        aictePermanentId: t.Optional(t.String()),
+        q: t.Optional(t.String({ maxLength: SEARCH.MAX_QUERY_LENGTH })),
+        aictePermanentId: t.Optional(t.String({ maxLength: SEARCH.MAX_QUERY_LENGTH })),
         regionId: t.Optional(t.String()),
         verified: t.Optional(t.String()),
         page: t.Optional(t.String()),

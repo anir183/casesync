@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "zod": "^3.23.8",
-    "@casesync/config": "workspace:*"
+    "@casesync/config": "workspace:*",
+    "zod": "^4.6.7"
   }
 }

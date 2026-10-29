@@ -8,11 +8,13 @@ import {
   OVERLAP,
   RELATIONSHIP_MATCH_TYPE,
   RELATIONSHIP_REVIEW_STATUS,
+  SEARCH,
 } from '@casesync/config'
 import mongoose from 'mongoose'
 import { env } from '#/config/env'
 import { runSlaJob } from '#/jobs/sla'
 import { notifyRecipients } from '#/lib/notifications'
+import { resetRateLimits } from '#/lib/rate-limit'
 import { addCalendarDaysEndOfDay } from '#/lib/sla'
 import type { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { assessCaseOverlaps } from '#/modules/overlaps/overlap.service'
@@ -2149,5 +2151,47 @@ suite('Stage 6 administration, attachments and data quality integration', () => 
     const resetAudit = await api(admin, '/admin/audit?action=RESET_PASSWORD')
     const resetAuditBody = await json<PageBody<{ entityId: string }>>(resetAudit)
     expect(resetAuditBody.items.some((item) => item.entityId === created.user.id)).toBe(true)
+  })
+})
+suite('Stage 7 security hardening', () => {
+  test('search inputs are bounded, regex-escaped, and operator-safe', async () => {
+    const admin = email('admin')
+    const oversized = 'x'.repeat(SEARCH.MAX_QUERY_LENGTH + 1)
+    for (const path of [
+      `/cases?q=${oversized}`,
+      `/institutions?q=${oversized}`,
+      `/users/directory?q=${oversized}`,
+      `/admin/users?q=${oversized}`,
+    ]) {
+      expect((await api(admin, path)).status).toBe(400)
+    }
+
+    const escaped = await api(admin, `/cases?q=${encodeURIComponent('[')}`)
+    expect(escaped.status).toBe(200)
+
+    const operatorInjection = await api(admin, '/cases?q%5B%24ne%5D=ignored')
+    expect(operatorInjection.status).toBe(200)
+  })
+
+  test('manual overlap assessment is rate limited with retry metadata', async () => {
+    resetRateLimits()
+    const request = () =>
+      runtime.app.handle(
+        new Request('http://localhost/api/v1/overlaps/assess', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ caseId: new mongoose.Types.ObjectId().toString() }),
+        }),
+      )
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      expect((await request()).status).toBe(401)
+    }
+
+    const limited = await request()
+    expect(limited.status).toBe(429)
+    expect((await json<{ error: string }>(limited)).error).toBe('RATE_LIMITED')
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0)
+    expect(limited.headers.get('x-ratelimit-remaining')).toBe('0')
   })
 })

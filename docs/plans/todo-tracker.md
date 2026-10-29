@@ -1,18 +1,18 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–6 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset; Stage 5 SLA rules, deadline calculation, and scheduled alerts; Stage 6 administration, attachments, audit, and data quality). Automated browser E2E and release hardening remain, so the MVP is not complete.
+**Status:** Stages 0–7 implemented. Stage 7 hardening is locally verified (component tests, seeded Playwright smoke/accessibility, performance budgets, stress seed, coverage gate, security checklist, runbook, CI workflow). The remaining release checks are observing CI green on a pushed commit and an independent runbook walkthrough; changes remain uncommitted by default.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
-> **Verification note.** API and web typechecks pass, Biome is clean, the API suite
-> passes 67 unit tests with 43 DB-backed integration tests skipped by default, and the
-> web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 110 API tests pass
-> (67 unit + 43 integration). Both production builds succeed. Demo seed was run twice
-> idempotently and reset + reseed succeeded. Integration tests install a fetch guard that
-> fails on any real `jevmodel.org` call, so Jev is only ever exercised through mocks.
-> Browser/component E2E remains a Stage 7 item.
+> **Verification note.** API and web typechecks pass; Biome is clean. The API suite has
+> 71 unit tests and 45 DB-backed integration tests (116 total); web has 10 component/URL
+> tests. `bun run verify` passes locally and in a clean source copy; `test:integration`,
+> `test:coverage` (89.4% lines / 90.0% functions), seeded `test:e2e` (3 smoke +
+> accessibility), and `test:perf` (5,000 stress cases, auto-reset) pass locally. `bun audit --audit-level=high` reports no
+> vulnerabilities. Integration tests install a fetch guard that fails on any real
+> `jevmodel.org` call. GitHub Actions has not yet been observed green on a pushed commit.
 
 ## Rules
 
@@ -44,7 +44,7 @@
 - [x] Better Auth sessions
 - [x] Centralized errors/logging
 - [x] API/web typecheck + builds passed at Stage 0 completion; still green after Stage 2
-- [ ] CI workflow (moved to Stage 7)
+- [x] CI workflow (delivered in Stage 7)
 
 ## Stage 1 — Identity, organization & access (DONE — backend/admin API)
 
@@ -131,7 +131,7 @@ users/organization web screens.
 - [ ] Periodic overlap sweep / background batch for fuzzy scans at production scale
 - [ ] Browser E2E for confirm, dismiss, manual link, and unlink flows
 
-**Exit:** rules-first E2E works; Jev mocked; no auto-confirm; no duplicate alerts; exact heading asserted. Met through API integration tests; browser E2E is a Stage 7 item.
+**Exit:** rules-first E2E works; Jev mocked; no auto-confirm; no duplicate alerts; exact heading asserted. Met through API integration tests plus Stage 7 browser smoke for the queue.
 
 ## Stage 4 — Monitoring, search & reporting
 
@@ -157,7 +157,7 @@ users/organization web screens.
 - [x] Unit tests for date bounds, CSV, metrics, demo fixtures, and report export
 - [x] Integration tests for dashboard scope, filters, overlap report, exports, and reconciliation
 
-**Exit:** met through DB-backed API tests; browser E2E and page-performance gates remain Stage 7 work.
+**Exit:** met through DB-backed API tests; Stage 7 browser smoke and page-performance gates now exist.
 
 ## Stage 5 — SLA, alerts & scheduled jobs
 
@@ -194,20 +194,25 @@ rejects unsupported/empty/oversized files, and admin changes are audited.
 
 ## Stage 7 — Hardening, QA & release
 
-- [ ] Disposable test DB + helpers/factories
-- [ ] Integration tests: auth/RBAC/scope, lifecycle/audit, overlap, notifications, reports
-- [ ] Component tests: forms/filters/dialogs/permission states
-- [ ] Playwright E2E critical journeys
-- [ ] Security checklist + IDOR/regex/upload tests
-- [ ] Accessibility audit
-- [ ] Performance budgets/pagination load test
-- [ ] CI: lint, typecheck, unit, integration, build, E2E smoke, coverage
-- [ ] Seed:stress script (demo seed/reset done in Stage 4)
-- [ ] Runbook: setup, seed, demo, deploy, backup/restore, troubleshooting
-- [ ] Docs reconciliation + demo rehearsal
-- [ ] No P0/P1 open bugs
+- [x] Disposable Mongo service in CI + run-scoped local integration fixtures
+      (shared factories remain optional follow-up)
+- [x] Integration tests: auth/RBAC/scope, lifecycle/audit, overlap, notifications, reports
+- [x] Component tests: forms/filters/dialogs/permission states
+- [x] Playwright E2E critical journeys (seeded smoke: sign-in/filter/timeline, viewer
+      scope/IDOR, overlap queue/reports)
+- [x] Security checklist + IDOR/regex/upload/search-bound/rate-limit tests
+- [x] Accessibility audit (axe WCAG A/AA on nine core pages; no serious/critical)
+- [x] Performance budgets/pagination load test on 5,000 stress cases
+- [x] CI: lint, typecheck, unit, integration, build, E2E smoke, coverage, audit
+- [x] `seed:stress` script (demo seed/reset delivered in Stage 4)
+- [x] Runbook: setup, seed, demo, deploy, backup/restore, troubleshooting
+- [x] Docs reconciliation + demo/performance rehearsal
+- [x] No known P0/P1 open bugs
 
-**Exit:** clean-checkout CI green; demo script passes; security/a11y/performance gates pass.
+**Exit:** all local gates pass, including `verify` in a clean source copy. The CI
+workflow is committed-ready but has not run remotely because no commit/push was
+requested; an independent runbook walkthrough is also pending. Demo script smoke
+journeys and security/a11y/performance gates pass.
 
 ## Stage 8 — Public complainant portal (OPTIONAL, not MVP)
 
@@ -238,7 +243,7 @@ rejects unsupported/empty/oversized files, and admin changes are audited.
 - [x] Dashboard/report reconciliation tested
 - [x] Notification dedupe tested (overlap `INITIAL` period + reference ID)
 - [x] SLA clock/boundaries and idempotent re-run tested
-- [ ] Frontend critical flows tested
-- [ ] E2E critical journeys pass
+- [x] Frontend critical flows tested
+- [x] E2E critical journeys pass
 - [x] Jev never hit in tests (integration fetch guard + mocked provider)
 - [ ] CI green on clean checkout

@@ -53,3 +53,7 @@ tmp
 
 # Local attachment storage
 storage/
+
+# Playwright
+playwright-report/
+test-results/

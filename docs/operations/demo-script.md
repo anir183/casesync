@@ -3,11 +3,11 @@
 Status: **current demo runbook**. Location: `docs/operations/demo-script.md`.
 Companion: [`mock-data.md`](mock-data.md).
 
-Stages 2–4 (institution registry, case registration, staff action UI, assignment
-history, overlap coordination, scoped dashboard/search/reports) are implemented.
-Stage 5 SLA jobs and the minimal SLA admin screen are built; broader Stage 6 admin
-screens, attachments, and audit are not. Use the
-availability table in [Current demoable slice](#current-demoable-slice) before presenting.
+Stages 0–7 are implemented. The demo includes institution registry, case registration,
+staff lifecycle actions, overlap coordination, scoped dashboard/search/reports, SLA
+jobs and admin, full admin users/organization/audit screens, and scoped attachments.
+Use the availability table in [Current demoable slice](#current-demoable-slice) before
+presenting.
 
 ## Current demoable slice
 
@@ -16,23 +16,26 @@ availability table in [Current demoable slice](#current-demoable-slice) before p
 | Sign-in, roles, scoped dashboard | Yes |
 | Case registry (paginated), case detail with tabs, overlap queue/detail/confirm, filters/pagination, manual link/unlink | Yes |
 | Register a case, assign/transfer/escalate/dispose/reopen from UI | Yes |
-| Institution list/search/create/edit/verify, institution profile | Yes |
+| Institution list/search/create/edit/verify/merge, institution profile | Yes |
 | Assignment/action history UI with officer names | Yes |
 | Reports with filters/quarterly/CSV, paginated notification centre | Yes |
 | SLA-driven approaching/overdue notifications | Yes (daily scan; manual trigger at `/admin/sla`) |
-| Admin users/organization/SLA screens | SLA only; broader admin screens are Stage 6 |
-| Attachments | No |
+| Admin users/organization/SLA/audit screens | Yes |
+| Attachments upload/download on case detail Documents tab | Yes |
 
-SLA steps are available. Do not fake remaining Stage 6 admin or attachment steps in the UI.
+All sections below are demoable; do not fake missing behaviour.
 
 ## 1. Pre-demo checks
 
 - API and web running; database reachable; `JEV_ENABLED` set as intended.
 - Run `bun run seed:demo`. It idempotently creates masters, users, 8 institutions,
   13 cases, 6 overlap scenarios, related history, notifications, and 5 SLA configs.
+- Optional release rehearsal: `bun run verify && bun run test:e2e && bun run test:perf`
+  (performance uses 5,000 stress cases and resets them automatically).
 - To restore the demo after manual changes, run `bun run seed:reset` (it asks for
   confirmation in a TTY; non-interactive runs need `SEED_RESET_CONFIRM=YES`). Reset is
-  demo-only and reseeds immediately.
+  demo-only and reseeds immediately. Use `bun run seed:stress:reset` to clear only
+  stress-owned records.
 - See [`mock-data.md`](mock-data.md) for the exact dataset and production guards.
 - Browser logged out; clean window; demo users ready.
 - Capture dashboard/report counts for reconciliation.
@@ -56,6 +59,8 @@ SLA steps are available. Do not fake remaining Stage 6 admin or attachment steps
 3. Add a remark; set next action; show the timeline entry with actor/time.
 4. Assign, transfer, escalate, and dispose a spare case.
 5. Show assignment history and the append-only audit.
+6. Upload a PDF/image attachment on the Documents tab and download it; show the scoped
+   access and checksum metadata.
 
 ### 2.3 Overlap detection (3 min) — core story, available
 
@@ -83,22 +88,23 @@ SLA steps are available. Do not fake remaining Stage 6 admin or attachment steps
 2. Show consolidated history across bureaus, open/overdue counts, and overlaps.
 3. Explain fuzzy alias matching and human verification (no auto-merge).
 
-### 2.5 Reports and alerts (2 min) — reports available; SLA alerts are target
+### 2.5 Reports and alerts (2 min) — available
 
 1. Open `/reports`; show bureau-wise, region-wise, institution-wise, status, ageing,
    disposal rate, overlap summary, monthly, and quarterly.
 2. Filter by date, bureau, region, status, and category; show region names, refreshed
    `generatedAt`, and CSV export.
-3. Show the notification centre with type/unread filters and pagination. Overlap and
-   escalation notifications are available; approaching/overdue SLA notifications are not.
-4. Dashboard "beyond SLA" uses `expectedDisposalAt`; it does not yet use SLA config or
-   cron.
+3. Show the notification centre with type/unread filters and pagination, including
+   overlap, escalation, pending, approaching, and overdue notifications.
+4. Show dashboard "beyond SLA" using the shared SLA calculation, and `/admin/sla` with
+   job run history/manual scan.
 
-### 2.6 Admin (1 min) — target, requires Stage 6
+### 2.6 Admin and attachments (1 min) — available
 
 1. As admin, create a bureau/region/category or update an SLA.
 2. Create an officer, assign PGRC; show the new user can sign in.
-3. Show the admin audit log entry.
+3. Show the admin audit log entry and the institution merge/alias controls.
+4. Show scoped attachment access on a case.
 
 ## 3. Reset and repeatability
 
@@ -119,7 +125,7 @@ SLA steps are available. Do not fake remaining Stage 6 admin or attachment steps
 - [x] Exact and fuzzy overlap scenarios appear.
 - [x] A Jev-disabled run still produces overlap relationships.
 - [x] A Jev failure scenario is demonstrable without blocking case creation.
-- [x] Overdue and approaching-SLA cases exist (dashboard uses `expectedDisposalAt`; SLA jobs remain Stage 5).
+- [x] Overdue and approaching-SLA cases exist, with shared dashboard/report/SLA-job calculations.
 - [x] Notifications are per-user and deep-link correctly.
 - [x] Dashboard/report/institution numbers share metric helpers and are reconciliation-tested.
 - [x] Institution profile shows multi-bureau history and a server-scoped summary.

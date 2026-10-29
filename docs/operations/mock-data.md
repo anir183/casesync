@@ -14,6 +14,8 @@ Run from the repository root with the API environment available:
 bun run seed        # masters + users only
 bun run seed:demo   # masters + users + full demo dataset (idempotent, additive)
 bun run seed:reset  # delete demo-owned records, then run the demo seed
+bun run seed:stress # 60 STRESS- institutions + 5,000 cases (STRESS_CASES overrides)
+bun run seed:stress:reset # remove only stress-owned records
 ```
 
 `seed:demo` upserts by stable natural keys and can be run repeatedly without duplicates.
@@ -27,7 +29,9 @@ Safety guards:
 - Production reset additionally requires `ALLOW_SEED_RESET=true`.
 - Non-interactive reset requires `SEED_RESET_CONFIRM=YES`.
 - The script prints the target Atlas host/database (redacted) before writing.
-- `seed:stress` does not exist; it remains Stage 7 work.
+- `seed:stress` is deterministic and uses `STRESS-` / `AICTE-STRESS-` prefixes;
+  `seed:stress:reset` removes only stress-owned cases, actions, assignments,
+  notifications, and institutions.
 
 ## 2. Masters and users
 
@@ -148,7 +152,7 @@ fixtures.
 
 Integration tests do not use the demo seed. They create run-scoped users, regions,
 bureaus, institutions, and cases with a unique `RUN_ID`, and clean up by ID/email because
-the Atlas user cannot create/drop databases. See
-[`../quality/qa-and-review.md`](../quality/qa-and-review.md).
+the local Atlas user cannot create/drop databases. CI uses a disposable `mongo:7`
+service instead. See [`../quality/qa-and-review.md`](../quality/qa-and-review.md).
 
 Test data must not reuse demo ObjectIds or emails.

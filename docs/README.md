@@ -11,11 +11,11 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–6 implemented. Stage 3 overlap correctness/coordination, Stage 4
-monitoring/search/reporting, Stage 5 SLA rules/deadline scans, and Stage 6
-administration/attachments/audit are covered by DB-backed integration tests; automated
-browser E2E and page-performance gates are still missing. Release hardening is next. The
-MVP is not complete.**
+**Stages 0–7 are implemented. Stage 7 hardening is locally verified: component tests,
+seeded Playwright smoke, accessibility scan, performance budgets, stress seed, coverage
+gate, and CI workflow are in place. The only outstanding release check is observing CI
+green on a pushed commit; the MVP is otherwise ready for demo/review. The optional
+public portal (Stage 8) is not built.**
 
 Last verified: 2026-10-29.
 
@@ -23,12 +23,12 @@ Last verified: 2026-10-29.
 |---|---|
 | Stage 0 — foundation | Complete |
 | Stage 1 — identity, organization, access | Complete |
-| Stage 2 — registry and case operations | Complete (implementation); browser E2E pending |
-| Stage 3 — overlap intelligence and coordination | Complete (implementation); browser E2E pending |
-| Stage 4 — monitoring, search, reports | Complete (implementation); browser E2E pending |
-| Stage 5 — SLA, deadlines, alerts | Complete (implementation); browser E2E pending |
-| Stage 6 — admin, attachments, audit | Complete (implementation); browser E2E pending |
-| Stage 7 — hardening and release | Not started |
+| Stage 2 — registry and case operations | Complete; browser smoke present |
+| Stage 3 — overlap intelligence and coordination | Complete; browser smoke present |
+| Stage 4 — monitoring, search, reports | Complete; browser smoke present |
+| Stage 5 — SLA, deadlines, alerts | Complete |
+| Stage 6 — admin, attachments, audit | Complete |
+| Stage 7 — hardening and release | Complete locally; remote CI and independent runbook walkthrough pending |
 | Stage 8 — public portal | Optional; not started |
 
 ### Working
@@ -60,32 +60,38 @@ Last verified: 2026-10-29.
 - Paginated case, institution, and overlap lists with totals; officer, actor, bureau, and
   region names resolved server-side.
 - Region/category/bureau masters, admin user management and password reset, admin audit
-  log, institution aliases/merge, scoped attachments, and a deterministic demo seed
-  (`seed:demo`) plus guarded demo-only reset (`seed:reset`).
+  log, institution aliases/merge, scoped attachments, and deterministic demo/stress
+  seeds plus guarded resets.
 - Admin web screens for users, organization masters, and audit; attachment upload/download
   on the case detail **Documents** tab.
 - SLA rules with admin UI, automatic deadlines, daily pending/approaching/overdue scans,
   deduped scoped notifications, and shared dashboard/report overdue metrics.
-- 67 API unit tests, 3 web URL-filter tests, and 43 opt-in database integration tests;
-  Jev is always mocked and a fetch guard blocks real Jev calls.
+- Search input is bounded and regex-escaped; abuse-prone auth/search/assessment/upload
+  routes are rate-limited with `429`/retry metadata.
+- **71 API unit tests, 10 web component/URL tests, 45 opt-in database integration tests,
+  3 seeded browser smoke journeys, 1 accessibility scan, and 1 stress-data performance
+  test.** Jev is always mocked and a fetch guard blocks real Jev calls.
+- CI workflow covers lint/typecheck, unit/component, Mongo-backed integration/coverage,
+  builds, seeded browser smoke/accessibility, and dependency audit.
 
-### Stage 2 completion and remaining gaps
+### Stage 7 evidence
 
-Stage 2's core workflow is implemented: an authorized officer can register a case,
-assign it, move it through valid transitions, hand it over, dispose, reopen, and review
-the append-only history without manual API calls.
+- `bun run verify`: Biome, API/web typechecks, API unit + web component tests, both builds.
+- `bun run test:integration`: 45 DB-backed tests.
+- `bun run test:coverage`: 89.4% lines / 90.0% functions; 85% floor.
+- `bun run test:e2e`: three seeded smoke journeys + axe scan of nine core pages.
+- `bun run test:perf`: 5,000 stress cases within documented budgets; auto-reset.
+- `bun audit --audit-level=high`: no vulnerabilities.
+- GitHub Actions has not yet been observed green on a pushed commit because changes are
+  uncommitted unless explicitly requested.
 
-Remaining, non-blocking gaps:
+### Remaining non-blocking gaps
 
-- No automated browser/component E2E yet; Stage 2–3 flows are verified by API
-  integration tests and manual runtime smoke checks.
+- Observing the new CI workflow green on GitHub.
+- Optional periodic overlap sweep/background batch for production scale.
+- Optional shared integration factories, distributed rate limiting, malware scanning,
+  and manual screen-reader/mobile accessibility passes.
 - Mutations use pending/disabled states rather than optimistic UI.
-
-### Not built yet
-
-- Stage 3 follow-ups: periodic overlap sweep/background batch and browser E2E for
-  confirm/dismiss/link/unlink.
-- Browser/component E2E tests, CI, Docker, the full runbook, and the stress seed helper.
 
 ## Documentation map
 
@@ -98,8 +104,11 @@ Remaining, non-blocking gaps:
 | [`requirements/requirements-traceability.md`](requirements/requirements-traceability.md) | Living requirement matrix with evidence and remaining work. |
 | [`architecture/stack-and-architecture.md`](architecture/stack-and-architecture.md) | Stack, architecture, data model, conventions, API, jobs, testing. |
 | [`quality/qa-and-review.md`](quality/qa-and-review.md) | Test pyramid, integration/E2E/security/performance, CI, review, release gate. |
+| [`quality/security-checklist.md`](quality/security-checklist.md) | Security controls, abuse cases, rate limits, and residual risks. |
+| [`quality/accessibility-audit.md`](quality/accessibility-audit.md) | Automated axe scope/results and remaining manual checks. |
 | [`operations/mock-data.md`](operations/mock-data.md) | Current demo seed/reset commands, fixtures, and safety guards. |
-| [`operations/demo-script.md`](operations/demo-script.md) | Target 10-minute demo runbook and current demoable slice. |
+| [`operations/demo-script.md`](operations/demo-script.md) | Current 10-minute demo runbook and demoable slice. |
+| [`operations/runbook.md`](operations/runbook.md) | Setup, seed, verification, deploy, backup/restore, troubleshooting. |
 | [`operations/backup-and-retention.md`](operations/backup-and-retention.md) | Backup targets, retention, restore procedure, and known gaps. |
 | [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
 | [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
@@ -243,19 +252,26 @@ bun run seed:reset  # guarded demo-only reset, then reseed
   actions/assignments/notifications, and 5 SLA configs.
 
 `seed:reset` removes only demo-owned records and never truncates collections.
-`seed:stress` remains Stage 7 work. See
+`seed:stress` creates 60 institutions and 5,000 deterministic cases by default
+(`STRESS_CASES` overrides); `seed:stress:reset` removes only stress-owned records. See
 [`operations/mock-data.md`](operations/mock-data.md) for the exact dataset and guards.
 
 ### Testing and quality
 
 ```bash
 bun run check          # Biome (writes formatting locally)
-bun run test           # unit tests; integration tests skip by default
+bun run verify         # lint, typechecks, unit/component tests, builds
+bun run test:unit      # API unit + web component tests
 bun run build          # API + web builds
+bun run test:integration
+bun run test:coverage  # 85% lines/functions floor
+bun run test:e2e       # demo seed + Playwright smoke/accessibility
+bun run test:perf      # stress seed + performance budgets + reset
+bun audit --audit-level=high
 ```
 
 Database-backed integration tests are opt-in and use run-scoped records in the dev
-database (Atlas credentials cannot create or drop databases):
+database locally; CI uses a disposable `mongo:7` service:
 
 ```bash
 cd apps/api && RUN_INTEGRATION=1 bun test tests/integration
@@ -269,11 +285,10 @@ bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json
 cd apps/web && ./node_modules/.bin/tsc -b --noEmit
 ```
 
-API and web typechecks, Biome, 67 API unit tests, 3 web tests, 43 DB-backed integration
-tests, both production builds, and demo seed/reset pass against the current tree at the
-verification date above. See
-[`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and review
-gates.
+Stage 7 gates pass locally against the current tree at the verification date above. See
+[`quality/qa-and-review.md`](quality/qa-and-review.md),
+[`quality/security-checklist.md`](quality/security-checklist.md), and
+[`quality/accessibility-audit.md`](quality/accessibility-audit.md).
 
 ## Git rule
 

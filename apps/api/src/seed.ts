@@ -4,6 +4,7 @@ import { connectDb } from '#/db/connection'
 import { seedDemoData } from '#/seed/demo-seed'
 import { SEED_PASSWORD, seedMasters } from '#/seed/masters'
 import { resetDemoData } from '#/seed/reset'
+import { resetStressData, seedStressData } from '#/seed/stress'
 
 function hasFlag(name: string) {
   return process.argv.slice(2).includes(name)
@@ -44,6 +45,8 @@ async function confirmReset() {
 
 async function main() {
   assertSeedAllowed()
+  const stress = hasFlag('--stress')
+  const stressReset = hasFlag('--stress-reset')
   const demo = hasFlag('--demo') || hasFlag('--reset')
   const reset = hasFlag('--reset')
   if (reset) await confirmReset()
@@ -51,6 +54,18 @@ async function main() {
   await connectDb()
   console.log(`Seeding ${targetLabel(env.MONGODB_URI)}`)
   const masters = await seedMasters(SEED_PASSWORD)
+  if (stressReset) {
+    const removed = await resetStressData()
+    console.log(
+      `Stress reset complete. Removed ${removed.cases} cases from ${removed.institutions} institutions.`,
+    )
+  }
+  if (stress) {
+    const counts = await seedStressData(masters)
+    console.log(
+      `Stress seed complete. Institutions: ${counts.institutions}, cases: ${counts.cases}.`,
+    )
+  }
   if (reset) {
     const removed = await resetDemoData(masters)
     console.log(

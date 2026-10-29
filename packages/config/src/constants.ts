@@ -40,6 +40,10 @@ export const CASE_TRANSITIONS: Record<string, readonly string[]> = {
   [CASE_STATUS.REOPENED]: [CASE_STATUS.ASSIGNED, CASE_STATUS.UNDER_PROCESS, CASE_STATUS.DISPOSED],
 }
 
+export const SEARCH = {
+  MAX_QUERY_LENGTH: 100,
+} as const
+
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PAGE_SIZE: 20,

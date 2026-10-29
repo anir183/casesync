@@ -1,3 +1,4 @@
+import { SEARCH } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { resolveScope } from '#/lib/scope'
 import { listDirectoryUsers } from '#/lib/user-directory'
@@ -17,7 +18,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' }).use(requireAuth).get
   },
   {
     query: t.Object({
-      q: t.Optional(t.String()),
+      q: t.Optional(t.String({ maxLength: SEARCH.MAX_QUERY_LENGTH })),
       role: t.Optional(t.String()),
       bureauId: t.Optional(t.String()),
       regionId: t.Optional(t.String()),

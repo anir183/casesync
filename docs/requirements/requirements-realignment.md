@@ -8,11 +8,12 @@ separately as an **optional extension**, not as MVP acceptance criteria.
 
 ## 0. Verdict
 
-CaseSync is **not yet an MVP-complete product**, but the hardest and most
-differentiating part — rules-first cross-bureau overlap detection with optional
-Jev assessment and human review — is substantially built and working.
+CaseSync is **MVP-complete for the internal staff scope** and locally release-ready.
+The hardest part — rules-first cross-bureau overlap detection with optional Jev
+assessment and human review — is built and verified, and Stage 7 adds CI, security,
+accessibility, performance, stress-seed, and runbook gates.
 
-Current position: **late in the build, early in operability**.
+Current position: **release candidate; CI remote-green observation pending**.
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -29,19 +30,20 @@ Current position: **late in the build, early in operability**.
 - Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
   reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
   notification pagination, deterministic demo seed/reset, and reconciliation tests.
-  67 API unit tests, 3 web tests, and 43 DB-backed integration tests pass; tests cannot
-  call real Jev.
+  71 API unit tests, 10 web component/URL tests, and 45 DB-backed integration tests pass;
+  tests cannot call real Jev.
 - Stage 5 is implemented and verified: admin SLA rules, automatic/manual deadlines,
   daily pending/approaching/overdue scans, scoped dedupe, job run history, minimal SLA
   admin UI, and shared dashboard/report overdue metrics.
 - Stage 6 is implemented and verified: admin users/organization/audit web screens,
   bureau/region/category CRUD, institution aliases/merge, scoped attachments, password
   reset/invite, and backup/retention policy.
-- Missing for MVP: browser E2E, CI, rate limiting, malware scanning, and the full
-  runbook.
-
-The biggest sequencing issue is no longer administration, the staff workflow, reporting,
-or the SLA engine; it is E2E/CI and release hardening.
+- Stage 7 is implemented and locally verified: seeded browser smoke + accessibility,
+  performance budgets on 5,000 cases, component tests, rate limiting, coverage gate,
+  stress seed, security checklist, runbook, and CI workflow.
+- Remaining for final release: observe the new CI workflow green on a pushed commit.
+  Malware scanning, distributed rate limiting, and manual screen-reader/mobile passes
+  are production hardening follow-ups, not MVP blockers.
 
 ## 1. Status legend
 
@@ -58,30 +60,30 @@ Evidence paths are relative to the repo root.
 
 | Area | Status | Why |
 |---|---|---|
-| Centralized institution profile | **Partial** | Profile API + detail page, registry list/create/edit/verify UI, duplicate warnings, and a seeded `regions` master exist; merge/alias workflow remains. |
-| Case tracking | **Partial → strong** | Full lifecycle API and operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
-| Cross-bureau overlap | **Done** (implementation) | Exact + fuzzy + Jev + human review work. The base alert always survives Jev, re-assessment triggers and manual link/unlink are wired, and notifications are scoped/deduped. Periodic sweep and browser E2E remain. |
+| Centralized institution profile | **Done** | Profile API/detail, registry list/create/edit/verify, duplicate warnings, alias/merge, and seeded regions are implemented. |
+| Case tracking | **Done** | Full lifecycle API and operational UI (registration, action panel, history tabs); officer names resolved; pagination wired; Stage 7 smoke covers list/timeline. |
+| Cross-bureau overlap | **Done** (implementation) | Exact + fuzzy + Jev + human review work. The base alert always survives Jev, re-assessment triggers and manual link/unlink are wired, notifications are scoped/deduped, and Stage 7 smoke covers queue loading. Periodic sweep remains. |
 | Real-time dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, scoping, and SLA-driven overdue are wired with polling. |
-| Workflow/action history | **Partial** | Append-only actions, assignments, transfer/escalation history work in API and UI; actor names resolved. Attachments remain model-only. |
+| Workflow/action history | **Done** | Append-only actions, assignments, transfer/escalation history, actor names, audit log, and scoped attachments work in API and UI. |
 | Search/filters | **Done** | Institution, AICTE ID, case ID, bureau, region, category, status, and date filters work with pagination and CSV export. |
 | Alerts/notifications | **Partial** | Overlap, pending, approaching, and overdue notifications are scoped/deduped; escalation delivery remains role-broadcast. |
 | Reports/analytics | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly reports, filters, names, CSV export, and shared beyond-timeline totals are wired. |
 | Innovation | **Done (core)** | Rules-first matching and Jev pairwise assessment are real, explainable, and human-reviewed. |
 | Target users | **Done** | Roles, bureau/region scoping, and admin user management (API) are implemented and tested (Stage 1). |
-| Non-functional (security, QA, ops) | **Partial** | Active enforcement, scoping, and DB-backed tests done; rate limits, E2E, CI, and runbook missing. |
+| Non-functional (security, QA, ops) | **Done (local)** | Scoping, rate limits, security tests, component/E2E/a11y/perf gates, CI workflow, stress seed, and runbook are implemented; remote CI run pending. |
 
 ## 3. Objectives
 
 | ID | Original requirement | Status | Evidence | What remains |
 |---|---|---|---|---|
-| OBJ-01 | View all institution-related cases in one place | **Partial → strong** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/`, dashboard | List is paginated with totals and there is a case registration UI. Browser E2E remains. |
+| OBJ-01 | View all institution-related cases in one place | **Done** | `apps/api/src/modules/cases/`, `apps/web/src/features/cases/`, dashboard | Paginated list with totals, registration UI, and Stage 7 browser smoke. |
 | OBJ-02 | Identify the Bureau/Cell currently handling each case | **Done** | `cases.bureauId`, current `case_assignments`, case detail | Bureau names resolved in case list/detail/history; add to exports when exports exist. |
-| OBJ-03 | Track complete status and movement | **Partial → strong** | `cases.status`, append-only `case_actions`, `case_assignments`, state machine, action panel | UI action panel and history tabs implemented; browser E2E remains. |
-| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change. Browser E2E remains. |
+| OBJ-03 | Track complete status and movement | **Done** | `cases.status`, append-only `case_actions`, `case_assignments`, state machine, action panel | UI action panel/history tabs implemented; Stage 7 smoke covers the audit timeline. |
+| OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change; Stage 7 smoke covers the queue. |
 | OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, manual link/unlink, `case_relationships` | Human-in-the-loop is respected; reviewed pairs return 409 on re-link. |
 | OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Partial** | Status enum + dashboard tiles | "Pending" currently means only `RECEIVED`; define the bucket set and add assigned/reopened/overdue clarity. |
-| OBJ-07 | Reports by institution/region/bureau/status | **Partial** | `apps/api/src/modules/reports/report.service.ts`, reports page | Region is grouped by raw `regionId` with no region names; no report filters by bureau/region; no export. |
-| OBJ-08 | Alerts for pending cases and approaching timelines | **Gap** | `notifications`; no `jobs/` implementation | No cron, no SLA due-date calculation, no pending/approaching/overdue notifications. |
+| OBJ-07 | Reports by institution/region/bureau/status | **Done** | Reports service/page, scoped filters, region names, quarterly series, CSV export | Reconciliation and filter coverage tested. |
+| OBJ-08 | Alerts for pending cases and approaching timelines | **Done** | SLA config/jobs, deduped notifications, `/admin/sla`, job run history | Scoped notifications and re-run idempotency tested. |
 
 ## 4. Feature 1 — Centralized Institution Profile
 
@@ -91,7 +93,7 @@ Evidence paths are relative to the repo root.
 | INST-02 | Name, address, region, other details | **Partial** | `institutions.name`, `address`, `regionId`, `otherDetails`; seeded `regions` master; registry UI | Region names resolved in institution/case lists; verify/merge workflow remains. |
 | INST-03 | Consolidated complaint/case history | **Done** | `GET /institutions/:id` (paginated), institution profile UI | Reachable from registry and case links. |
 | INST-04 | Find/browse institutions | **Done** | Paginated `GET /institutions`; `/institutions` list/search UI with nav | — |
-| INST-05 | Institution data quality | **Partial** | `verified` flag, verify UI, duplicate warnings on name/AICTE ID | Merge/alias workflow remains. |
+| INST-05 | Institution data quality | **Done** | `verified` flag, verify UI, duplicate warnings, alias/merge with case preservation | Merge/alias integration-tested. |
 
 ## 5. Feature 2 — Complaint/Case Tracking
 
@@ -105,7 +107,7 @@ Evidence paths are relative to the repo root.
 | CASE-06 | Assigned officer/official | **Done** | `case_assignments.officerId`, `currentAssignment.officerId`, scoped user directory | Names resolved in case list/detail/history. |
 | CASE-07 | Last action taken | **Done** | `case_actions`, `cases.lastActionAt` | `lastActionAt` is updated on append; confirm all mutation paths use it. |
 | CASE-08 | Next action required | **Done** | `cases.nextAction`, `nextActionDueAt` | Audit action type is `REMARK_ADDED`; consider `NEXT_ACTION_SET` for clarity. |
-| CASE-09 | Date of last action and expected disposal date | **Partial** | `lastActionAt`, `expectedDisposalAt` | Expected disposal is manual; not derived from SLA config. |
+| CASE-09 | Date of last action and expected disposal date | **Done** | `lastActionAt`, SLA-derived `expectedDisposalAt`, manual override support | Shared SLA calculation tested. |
 | CASE-10 | Register a case | **Done** | `POST /cases`; `/cases/new` registration UI with institution search | Browser E2E pending. |
 | CASE-11 | Perform lifecycle actions | **Done** | assign/transfer/escalate/dispose/status APIs; role-gated action panel | Browser E2E pending. |
 | CASE-12 | Assignment/officer history | **Done** | `case_assignments`, `GET /:id/assignments`, assignments tab | — |
@@ -231,10 +233,10 @@ This is a change from the current implementation, where a Jev-enabled
 | USER-01 | AICTE Regulation Bureau (RB) | **Done** | `BUREAU_OFFICER` + `bureauId`; scoping and bureau CRUD | — |
 | USER-02 | Public Grievance Redressal Cell (PGRC) | **Done** | `BUREAU_OFFICER` + `bureauId` | Same. |
 | USER-03 | Other concerned Bureaus/Cells | **Done** | `BUREAU_OFFICER` + `bureauId`; bureau CRUD | — |
-| USER-04 | Regional Offices/Centres | **Done** | `REGIONAL_OFFICER` + `regionId`; region scoping, labels, and filters | Browser E2E is Stage 7. |
-| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin web screens | Browser E2E is Stage 7. |
-| USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit UI, verify/merge, audit log | Browser E2E is Stage 7. |
-| USER-07 | Read-only auditor/viewer | **Partial** | `VIEWER`; read-only all-scope | Dedicated audit view in Stage 6. |
+| USER-04 | Regional Offices/Centres | **Done** | `REGIONAL_OFFICER` + `regionId`; region scoping, labels, and filters | Stage 7 viewer smoke covers scoped/IDOR access. |
+| USER-05 | Authorized officers and senior management | **Done** | `BUREAU_OFFICER`, `SENIOR_MANAGEMENT`; scoping + admin web screens | Stage 7 viewer smoke covers read-only/all-scope behavior. |
+| USER-06 | Competent Authority/AICTE administration | **Done** | `COMPETENT_AUTHORITY`, `ADMIN`; admin users/organization/audit UI, verify/merge, audit log | Admin flows are API-tested; Stage 7 axe scan covers `/admin/sla`. |
+| USER-07 | Read-only auditor/viewer | **Done** | `VIEWER`; read-only all-scope + dedicated `/admin/audit` view | Stage 7 viewer smoke covers read-only behavior. |
 
 ## 14. Non-functional requirements (implied but necessary)
 
@@ -294,10 +296,10 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests: 67 API unit tests + 3 web tests + 43 DB-backed integration tests after Stage 6.
+- Tests after Stage 7: 71 API unit tests + 10 web tests + 45 DB-backed integration tests.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
-- Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Still open:
-  rate limits, E2E, CI, runbook.
+- Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Stage 7 added
+  rate limits, component/E2E/accessibility/performance gates, CI, stress seed, and runbook.
 
 ### 15.2 Stage 2 implementation update (applied 2026-10-29)
 
@@ -352,7 +354,7 @@ Stage 3 (3A correctness + 3B coordination) is implemented and verified:
 - The overlap queue filters by status/bureau/region/match type/institution and paginates
   with totals; the detail page shows rationale and supports unlink; the case Related tab
   supports manual linking.
-- Tests: 43 DB-backed integration tests total, including rules-only, Jev
+- Tests: 45 DB-backed integration tests total, including rules-only, Jev
   different-issue non-suppression, Jev failure/timeout, scoped/deduped notifications
   with the exact heading, manual link/unlink, queue pagination/filtering, and
   transfer-triggered re-assessment. A fetch guard fails the suite on any real Jev call.
@@ -371,8 +373,8 @@ Still open from Stage 3:
    management; server-side scope on cases, dashboard, reports, overlaps,
    notifications, institutions.
 2. **Staff workflow UI** — **Done (Stage 2)**: register case; assign/transfer/escalate/
-   dispose; add remark; set next action; action/assignment history; officer names.
-   Browser E2E remains.
+   dispose; add remark; set next action; action/assignment history; officer names;
+   Stage 7 smoke covers the core case list/timeline path.
 3. **Institution registry UI** — **Done (Stage 2)**: `/institutions` search/list +
    profile; region names; create/edit with role checks; duplicate warnings. Merge/alias
    remains.
