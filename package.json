@@ -32,7 +32,5 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4"
   },
-  "overrides": {
-    "zod": "^4.6.7"
-  }
+  "overrides": {}
 }
