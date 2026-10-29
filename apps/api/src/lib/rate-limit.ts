@@ -30,6 +30,37 @@ const RULES: RateLimitRule[] = [
     limit: 20,
     windowMs: WINDOW_MS,
   },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/public\/complainant\/sign-up$/,
+    limit: 5,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/public\/track$/,
+    limit: 10,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'GET',
+    pattern: /^\/api\/v1\/public\/(institutions|categories)$/,
+    limit: 120,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/portal\/(verification|complaints)$/,
+    limit: 5,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
+    pattern:
+      /^\/api\/v1\/portal\/complaints\/[^/]+\/(messages|attachments|accept-resolution|reopen)$/,
+    limit: 20,
+    windowMs: WINDOW_MS,
+  },
 ]
 
 const entries = new Map<string, RateLimitEntry>()

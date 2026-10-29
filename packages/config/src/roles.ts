@@ -5,6 +5,7 @@ export const ROLES = {
   BUREAU_OFFICER: 'BUREAU_OFFICER',
   REGIONAL_OFFICER: 'REGIONAL_OFFICER',
   VIEWER: 'VIEWER',
+  COMPLAINANT: 'COMPLAINANT',
 } as const
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]

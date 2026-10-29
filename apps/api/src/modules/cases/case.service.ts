@@ -11,7 +11,7 @@ import { toCsv } from '#/lib/csv'
 import { parseDateBound } from '#/lib/date-range'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
-import { notifyRoles } from '#/lib/notifications'
+import { notifyRecipients, notifyRoles } from '#/lib/notifications'
 import {
   type Page,
   type PageQueryInput,
@@ -65,6 +65,8 @@ export interface CaseFilters {
   regionId?: string
   status?: string
   category?: string
+  source?: string
+  priority?: string
   q?: string
   dateFrom?: string
   dateTo?: string
@@ -79,7 +81,9 @@ export interface CreateCaseInput {
   bureauId?: string
   caseNumber?: string
   category?: string
+  subject?: string
   description?: string
+  priority?: string
   receivedAt?: string | Date
   expectedDisposalAt?: string | Date
   nextAction?: string
@@ -113,7 +117,20 @@ export interface CaseDto {
   bureauId?: string
   bureauName?: string
   category?: string
+  subject?: string
   description?: string
+  source?: string
+  priority?: string
+  complainantId?: string
+  complainantName?: string
+  complainantEmail?: string
+  complainantPhone?: string
+  contactPreference?: string
+  consentGiven?: boolean
+  incidentDate?: Date
+  desiredResolution?: string
+  resolutionSummary?: string
+  internalFindings?: string
   status: string
   receivedAt: Date
   expectedDisposalAt?: Date
@@ -121,6 +138,12 @@ export interface CaseDto {
   nextAction?: string
   nextActionDueAt?: Date
   lastActionAt?: Date
+  acknowledgedAt?: Date
+  resolvedAt?: Date
+  closedAt?: Date
+  reopenedAt?: Date
+  reopenDeadline?: Date
+  institutionVerifiedAt?: Date
   slaDays?: number
   officerId?: string
   officerName?: string
@@ -135,7 +158,20 @@ interface CaseLike {
   regionId?: unknown
   bureauId?: unknown
   category?: string
+  subject?: string
   description?: string
+  source?: string
+  priority?: string
+  complainantId?: string
+  complainantName?: string
+  complainantEmail?: string
+  complainantPhone?: string
+  contactPreference?: string
+  consentGiven?: boolean
+  incidentDate?: Date
+  desiredResolution?: string
+  resolutionSummary?: string
+  internalFindings?: string
   status: string
   receivedAt: Date
   expectedDisposalAt?: Date
@@ -143,6 +179,12 @@ interface CaseLike {
   nextAction?: string
   nextActionDueAt?: Date
   lastActionAt?: Date
+  acknowledgedAt?: Date
+  resolvedAt?: Date
+  closedAt?: Date
+  reopenedAt?: Date
+  reopenDeadline?: Date
+  institutionVerifiedAt?: Date
   slaDays?: number
   createdAt: Date
   updatedAt: Date
@@ -156,7 +198,20 @@ function toCaseDto(item: CaseLike): CaseDto {
     regionId: item.regionId ? String(item.regionId) : undefined,
     bureauId: item.bureauId ? String(item.bureauId) : undefined,
     category: item.category,
+    subject: item.subject,
     description: item.description,
+    source: item.source ?? 'INTERNAL',
+    priority: item.priority ?? 'NORMAL',
+    complainantId: item.complainantId,
+    complainantName: item.complainantName,
+    complainantEmail: item.complainantEmail,
+    complainantPhone: item.complainantPhone,
+    contactPreference: item.contactPreference,
+    consentGiven: item.consentGiven,
+    incidentDate: item.incidentDate,
+    desiredResolution: item.desiredResolution,
+    resolutionSummary: item.resolutionSummary,
+    internalFindings: item.internalFindings,
     status: item.status,
     receivedAt: item.receivedAt,
     expectedDisposalAt: item.expectedDisposalAt,
@@ -164,6 +219,12 @@ function toCaseDto(item: CaseLike): CaseDto {
     nextAction: item.nextAction,
     nextActionDueAt: item.nextActionDueAt,
     lastActionAt: item.lastActionAt,
+    acknowledgedAt: item.acknowledgedAt,
+    resolvedAt: item.resolvedAt,
+    closedAt: item.closedAt,
+    reopenedAt: item.reopenedAt,
+    reopenDeadline: item.reopenDeadline,
+    institutionVerifiedAt: item.institutionVerifiedAt,
     slaDays: item.slaDays,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
@@ -277,7 +338,7 @@ async function enrichAssignments<
   }))
 }
 
-async function requireCase(caseId: string, user: ScopeUser) {
+export async function requireCase(caseId: string, user: ScopeUser) {
   const scope = resolveScope(user)
   const scopeFilter = await caseScopeFilter(scope)
   const item = await Case.findOne(mergeFilters({ _id: caseId }, scopeFilter))
@@ -463,6 +524,8 @@ async function buildCaseScopedFilter(query: CaseFilters, user: ScopeUser) {
   if (query.bureauId) filter.bureauId = query.bureauId
   if (query.status) filter.status = query.status
   if (query.category) filter.category = query.category
+  if (query.source) filter.source = query.source
+  if (query.priority) filter.priority = query.priority
 
   if (query.q) {
     const pattern = { $regex: escapeRegex(query.q), $options: 'i' }
@@ -474,6 +537,8 @@ async function buildCaseScopedFilter(query: CaseFilters, user: ScopeUser) {
       .lean()
     filter.$or = [
       { caseNumber: pattern },
+      { subject: pattern },
+      { complainantEmail: pattern },
       { institutionId: { $in: institutions.map((item) => item._id) } },
     ]
   }
@@ -799,6 +864,9 @@ export async function transferCase(
 }
 
 function actionTypeForStatus(status: string) {
+  if (status === CASE_STATUS.ACKNOWLEDGED) return ACTION_TYPE.ACKNOWLEDGED
+  if (status === CASE_STATUS.AWAITING_COMPLAINANT) return ACTION_TYPE.AWAITING_COMPLAINANT
+  if (status === CASE_STATUS.CLOSED) return ACTION_TYPE.CLOSED
   if (status === CASE_STATUS.ASSIGNED) return ACTION_TYPE.ASSIGNED
   if (status === CASE_STATUS.TRANSFERRED) return ACTION_TYPE.TRANSFERRED
   if (status === CASE_STATUS.ESCALATED) return ACTION_TYPE.ESCALATED
@@ -818,10 +886,26 @@ export async function changeCaseStatus(
 
   const fromStatus = item.status
   item.status = input.status
+  if (input.status === CASE_STATUS.ACKNOWLEDGED) {
+    item.acknowledgedAt = item.acknowledgedAt ?? new Date()
+  }
+  if (input.status === CASE_STATUS.AWAITING_COMPLAINANT) {
+    item.nextAction = input.remarks ?? item.nextAction
+  }
   if (input.status === CASE_STATUS.DISPOSED) {
     item.nextAction = undefined
     item.nextActionDueAt = undefined
     item.expectedDisposalAt = item.expectedDisposalAt ?? new Date()
+    item.resolvedAt = item.resolvedAt ?? new Date()
+    item.reopenDeadline = item.reopenDeadline ?? addDays(new Date(), env.COMPLAINT_REOPEN_DAYS)
+  }
+  if (input.status === CASE_STATUS.CLOSED) {
+    item.closedAt = new Date()
+  }
+  if (input.status === CASE_STATUS.REOPENED) {
+    item.reopenedAt = new Date()
+    item.closedAt = undefined
+    item.reopenDeadline = undefined
   }
   await item.save()
 
@@ -835,7 +919,48 @@ export async function changeCaseStatus(
     metadata: { statusChange: true },
   })
 
+  await notifyComplainantOfStatus(item, input.status, input.remarks)
+
   return toCaseDto(item.toObject())
+}
+
+function addDays(date: Date, days: number) {
+  const result = new Date(date)
+  result.setUTCDate(result.getUTCDate() + days)
+  return result
+}
+
+async function notifyComplainantOfStatus(
+  item: { _id: unknown; caseNumber: string; complainantId?: string; status: string },
+  status: string,
+  remarks?: string,
+) {
+  if (!item.complainantId) return
+  const type =
+    status === CASE_STATUS.ACKNOWLEDGED
+      ? NOTIFICATION_TYPE.COMPLAINT_ACKNOWLEDGED
+      : status === CASE_STATUS.AWAITING_COMPLAINANT
+        ? NOTIFICATION_TYPE.COMPLAINT_INFO_REQUESTED
+        : status === CASE_STATUS.DISPOSED
+          ? NOTIFICATION_TYPE.COMPLAINT_RESOLVED
+          : status === CASE_STATUS.CLOSED
+            ? NOTIFICATION_TYPE.COMPLAINT_CLOSED
+            : status === CASE_STATUS.REOPENED
+              ? NOTIFICATION_TYPE.COMPLAINT_REOPENED
+              : NOTIFICATION_TYPE.COMPLAINT_STATUS_CHANGED
+  await notifyRecipients([item.complainantId], {
+    type,
+    referenceId: String(item._id),
+    caseId: String(item._id),
+    link: `/portal/complaints/${String(item._id)}`,
+    title: `Complaint ${item.caseNumber} updated`,
+    message: remarks || `Your complaint is now ${status.replace(/_/g, ' ').toLowerCase()}.`,
+  }).catch((error) => {
+    logger.warn('complainant status notification failed', {
+      caseId: String(item._id),
+      message: error instanceof Error ? error.message : String(error),
+    })
+  })
 }
 
 export async function escalateCase(

@@ -1,11 +1,15 @@
 import {
   ACTION_TYPE,
   CASE_STATUS,
+  COMPLAINANT_VERIFICATION_STATUS,
   JEV_ASSESSMENT_STATUS,
   NOTIFICATION_TYPE,
   OVERLAP,
   RELATIONSHIP_MATCH_TYPE,
   RELATIONSHIP_REVIEW_STATUS,
+  ROLES,
+  VERIFICATION_METHOD,
+  VERIFICATION_REQUEST_STATUS,
 } from '@casesync/config'
 import { normalizeInstitutionName, normalizePairKey } from '@casesync/utils'
 import { Bureau } from '#/models/bureau.model'
@@ -14,11 +18,13 @@ import { CaseAssignment } from '#/models/case-assignment.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
+import { ComplainantVerification } from '#/models/complainant-verification.model'
 import { Institution } from '#/models/institution.model'
 import { Notification } from '#/models/notification.model'
 import { Region } from '#/models/region.model'
 import { SlaConfig } from '#/models/sla-config.model'
-import type { SeedMastersResult } from '#/seed/masters'
+import { User } from '#/models/user.model'
+import { DEMO_COMPLAINANT_EMAIL, SEED_PASSWORD, type SeedMastersResult } from '#/seed/masters'
 import { DEMO_CASES, DEMO_INSTITUTIONS, DEMO_OVERLAPS, DEMO_SLA_CONFIGS } from './demo-data'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -27,6 +33,7 @@ const HOUR_MS = 60 * 60 * 1000
 interface DemoInstitutionState {
   id: string
   regionId: string
+  aictePermanentId: string
 }
 
 interface DemoCaseState {
@@ -77,9 +84,65 @@ async function seedInstitutions(
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     )
-    result.set(demo.key, { id: String(item._id), regionId })
+    result.set(demo.key, {
+      id: String(item._id),
+      regionId,
+      aictePermanentId: demo.aictePermanentId,
+    })
   }
   return result
+}
+
+async function seedComplainant(institutions: Map<string, DemoInstitutionState>) {
+  const institution = institutions.get('dit') ?? [...institutions.values()][0]
+  if (!institution) throw new Error('Missing institution for complainant seed')
+  const { auth } = await import('#/lib/auth')
+  const existing = await User.findOne({ email: DEMO_COMPLAINANT_EMAIL }).lean()
+  if (!existing) {
+    try {
+      await auth.api.signUpEmail({
+        body: {
+          email: DEMO_COMPLAINANT_EMAIL,
+          password: SEED_PASSWORD,
+          name: 'Demo Complainant',
+        },
+      })
+    } catch (error) {
+      console.warn(`Could not create ${DEMO_COMPLAINANT_EMAIL}:`, error)
+    }
+  }
+  const user = await User.findOneAndUpdate(
+    { email: DEMO_COMPLAINANT_EMAIL },
+    {
+      $set: {
+        role: ROLES.COMPLAINANT,
+        active: true,
+        phone: '+91 90000 00000',
+        institutionId: institution.id,
+        verificationStatus: COMPLAINANT_VERIFICATION_STATUS.VERIFIED,
+        verificationMethod: VERIFICATION_METHOD.AICTE_ID,
+        verifiedAt: new Date(),
+        rejectionReason: null,
+      },
+    },
+    { new: true },
+  )
+  if (!user) return 0
+  const hasVerification = await ComplainantVerification.exists({ userId: user._id })
+  if (!hasVerification) {
+    await ComplainantVerification.create({
+      userId: String(user._id),
+      institutionId: institution.id,
+      aictePermanentId: institution.aictePermanentId,
+      method: VERIFICATION_METHOD.AICTE_ID,
+      status: VERIFICATION_REQUEST_STATUS.APPROVED,
+      documents: [],
+      submittedAt: new Date(),
+      reviewedAt: new Date(),
+      reviewNotes: 'Demo account verified against the seeded AICTE institution.',
+    })
+  }
+  return 1
 }
 
 async function seedSlaConfigs(masters: SeedMastersResult) {
@@ -662,6 +725,7 @@ async function seedNotifications(
 export async function seedDemoData(masters: SeedMastersResult, now = new Date()) {
   const anchor = startOfUtcDay(now)
   const institutions = await seedInstitutions(masters)
+  await seedComplainant(institutions)
   await seedSlaConfigs(masters)
   const cases = await seedCases(masters, institutions, anchor)
   const relationships = await seedOverlaps(masters, cases)
@@ -671,6 +735,7 @@ export async function seedDemoData(masters: SeedMastersResult, now = new Date())
     cases: DEMO_CASES.length,
     relationships: DEMO_OVERLAPS.length,
     slaConfigs: DEMO_SLA_CONFIGS.length,
+    complainants: 1,
     bureaus: await Bureau.countDocuments({ code: { $in: ['PGRC', 'RB', 'ACAD', 'FIN'] } }),
     regions: await Region.countDocuments({}),
   }

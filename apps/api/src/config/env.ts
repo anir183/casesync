@@ -26,6 +26,8 @@ const envSchema = z.object({
   AI_PROVIDER: z.string().default('jev'),
   OVERLAP_AUTO_ASSESS: booleanFromEnv,
   STAFF_SIGNUP_ENABLED: booleanFromEnv.default(false),
+  COMPLAINANT_SIGNUP_ENABLED: booleanFromEnv.default(true),
+  COMPLAINT_REOPEN_DAYS: z.coerce.number().int().positive().default(30),
   DEFAULT_SLA_DAYS: z.coerce.number().int().positive().default(30),
   SLA_REMINDER_DAYS: z.string().default('7,3,1'),
   PENDING_REMINDER_DAYS: z.coerce.number().int().positive().default(7),

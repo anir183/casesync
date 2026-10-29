@@ -76,6 +76,7 @@ export const USERS: SeedUser[] = [
 ]
 
 export const DEMO_USER_EMAILS = USERS.map((user) => user.email)
+export const DEMO_COMPLAINANT_EMAIL = 'complainant@casesync.test'
 
 export interface SeedMastersResult {
   regionByCode: Map<string, string>

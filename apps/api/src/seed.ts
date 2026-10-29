@@ -78,7 +78,9 @@ async function main() {
       `Demo seed complete. Institutions: ${counts.institutions}, cases: ${counts.cases}, overlaps: ${counts.relationships}, SLA configs: ${counts.slaConfigs}.`,
     )
   }
-  console.log(`Master seed complete. Users: 7. Password: ${SEED_PASSWORD}`)
+  console.log(
+    `Master seed complete. Staff users: 7, complainant users: 1. Password: ${SEED_PASSWORD}`,
+  )
 
   const { default: mongoose } = await import('mongoose')
   await mongoose.disconnect()

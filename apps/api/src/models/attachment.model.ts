@@ -8,6 +8,7 @@ export interface IAttachment extends Document {
   mimeType?: string
   sizeBytes?: number
   checksum?: string
+  messageId?: mongoose.Types.ObjectId
   visibility: string
   createdAt: Date
 }
@@ -21,11 +22,13 @@ const AttachmentSchema = new Schema<IAttachment>(
     mimeType: { type: String },
     sizeBytes: { type: Number },
     checksum: { type: String },
-    visibility: { type: String, default: 'INTERNAL' },
+    messageId: { type: Schema.Types.ObjectId, ref: 'CaseMessage' },
+    visibility: { type: String, enum: ['INTERNAL', 'PUBLIC'], default: 'INTERNAL' },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
 
-AttachmentSchema.index({ caseId: 1 })
+AttachmentSchema.index({ caseId: 1, visibility: 1 })
+AttachmentSchema.index({ messageId: 1 })
 
 export const Attachment = mongoose.model<IAttachment>('Attachment', AttachmentSchema)

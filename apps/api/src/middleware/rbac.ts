@@ -10,10 +10,17 @@ export interface SessionUser {
   bureauId?: string
   regionId?: string
   active?: boolean
+  phone?: string
+  institutionId?: string
+  verificationStatus?: string
+  verificationMethod?: string
+  verifiedAt?: Date
+  verifiedBy?: string
+  rejectionReason?: string
 }
 
 export const requireAuth = new Elysia({ name: 'require-auth' }).derive(
-  { as: 'global' },
+  { as: 'scoped' },
   async ({ request }): Promise<{ user: SessionUser; session: unknown }> => {
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {

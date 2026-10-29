@@ -41,6 +41,42 @@ export const auth = betterAuth({
         defaultValue: true,
         input: false,
       },
+      phone: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      institutionId: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      verificationStatus: {
+        type: 'string',
+        required: false,
+        defaultValue: 'UNVERIFIED',
+        input: false,
+      },
+      verificationMethod: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      verifiedAt: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
+      verifiedBy: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      rejectionReason: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
     },
   },
   session: {

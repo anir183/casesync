@@ -13,6 +13,9 @@ function toNotificationDto(item: {
   _id: unknown
   type: string
   referenceId?: string
+  caseId?: unknown
+  link?: string
+  channel?: string
   title?: string
   message?: string
   readAt?: Date
@@ -22,6 +25,9 @@ function toNotificationDto(item: {
     id: String(item._id),
     type: item.type,
     referenceId: item.referenceId,
+    caseId: item.caseId ? String(item.caseId) : undefined,
+    link: item.link,
+    channel: item.channel,
     title: item.title,
     message: item.message,
     readAt: item.readAt,

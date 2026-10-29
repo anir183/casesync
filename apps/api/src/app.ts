@@ -12,6 +12,9 @@ import { attachmentsRoutes } from '#/modules/attachments/routes'
 import { bureausRoutes } from '#/modules/bureaus/routes'
 import { casesRoutes } from '#/modules/cases/routes'
 import { categoriesRoutes } from '#/modules/categories/routes'
+import { portalComplaintRoutes, publicComplaintRoutes } from '#/modules/complaints/routes'
+import { staffComplaintRoutes } from '#/modules/complaints/staff.routes'
+import { verificationRoutes } from '#/modules/complaints/verification.routes'
 import { dashboardRoutes } from '#/modules/dashboard/routes'
 import { institutionsRoutes } from '#/modules/institutions/routes'
 import { notificationsRoutes } from '#/modules/notifications/routes'
@@ -62,6 +65,10 @@ export const app = new Elysia()
       .use(categoriesRoutes)
       .use(usersRoutes)
       .use(casesRoutes)
+      .use(staffComplaintRoutes)
+      .use(publicComplaintRoutes)
+      .use(portalComplaintRoutes)
+      .use(verificationRoutes)
       .use(attachmentsRoutes)
       .use(overlapsRoutes)
       .use(notificationsRoutes)

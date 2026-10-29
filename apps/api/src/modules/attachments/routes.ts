@@ -1,6 +1,6 @@
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
-import { ROLE_GROUPS } from '@casesync/config'
+import { ATTACHMENT_VISIBILITY, ROLE_GROUPS } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { safeAttachmentPath, validateAttachment } from '#/lib/attachments'
 import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
@@ -69,6 +69,10 @@ export const attachmentsRoutes = new Elysia()
       const bytes = Buffer.from(await file.arrayBuffer())
       await Bun.write(destination, bytes)
       const checksum = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
+      const visibility =
+        body.visibility === ATTACHMENT_VISIBILITY.PUBLIC
+          ? ATTACHMENT_VISIBILITY.PUBLIC
+          : ATTACHMENT_VISIBILITY.INTERNAL
       const item = await Attachment.create({
         caseId: params.id,
         uploadedBy: user.id,
@@ -77,7 +81,7 @@ export const attachmentsRoutes = new Elysia()
         mimeType: validated.mimeType,
         sizeBytes: validated.sizeBytes,
         checksum,
-        visibility: 'INTERNAL',
+        visibility,
       })
       await recordAudit({
         actorId: user.id,
@@ -93,6 +97,7 @@ export const attachmentsRoutes = new Elysia()
     {
       body: t.Object({
         file: t.File(),
+        visibility: t.Optional(t.String({ pattern: '^(INTERNAL|PUBLIC)$' })),
       }),
     },
   )
