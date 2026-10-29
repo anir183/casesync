@@ -1,12 +1,12 @@
 # CaseSync — Demo Script
 
-Status: **target demo runbook**. Location: `docs/operations/demo-script.md`.
+Status: **current demo runbook**. Location: `docs/operations/demo-script.md`.
 Companion: [`mock-data.md`](mock-data.md).
 
-Stages 2 and 3 (institution registry, case registration, staff action UI, assignment
-history, overlap correctness/coordination) are implemented. Stage 5 (SLA jobs) and Stage 6
-(admin screens, attachments) are not built. Use the availability table in
-[Current demoable slice](#current-demoable-slice) before presenting.
+Stages 2–4 (institution registry, case registration, staff action UI, assignment
+history, overlap coordination, scoped dashboard/search/reports) are implemented.
+Stage 5 (SLA jobs) and Stage 6 (admin screens, attachments) are not built. Use the
+availability table in [Current demoable slice](#current-demoable-slice) before presenting.
 
 ## Current demoable slice
 
@@ -17,7 +17,7 @@ history, overlap correctness/coordination) are implemented. Stage 5 (SLA jobs) a
 | Register a case, assign/transfer/escalate/dispose/reopen from UI | Yes |
 | Institution list/search/create/edit/verify, institution profile | Yes |
 | Assignment/action history UI with officer names | Yes |
-| Reports and notification centre (read-only) | Yes |
+| Reports with filters/quarterly/CSV, paginated notification centre | Yes |
 | SLA-driven approaching/overdue notifications | No |
 | Admin users/organization/SLA screens | No |
 | Attachments | No |
@@ -27,9 +27,12 @@ If the demo needs Stage 5–6 steps, finish those stages first. Do not fake them
 ## 1. Pre-demo checks
 
 - API and web running; database reachable; `JEV_ENABLED` set as intended.
-- Run `bun run seed`. It creates regions, categories, bureaus, and users only.
-- Confirm the demo institutions and cases you plan to show already exist. They are not
-  created by the seed; see [`mock-data.md`](mock-data.md).
+- Run `bun run seed:demo`. It idempotently creates masters, users, 8 institutions,
+  13 cases, 6 overlap scenarios, related history, notifications, and 5 SLA configs.
+- To restore the demo after manual changes, run `bun run seed:reset` (it asks for
+  confirmation in a TTY; non-interactive runs need `SEED_RESET_CONFIRM=YES`). Reset is
+  demo-only and reseeds immediately.
+- See [`mock-data.md`](mock-data.md) for the exact dataset and production guards.
 - Browser logged out; clean window; demo users ready.
 - Capture dashboard/report counts for reconciliation.
 - If Jev is enabled, verify the key and one test assessment; otherwise use
@@ -82,10 +85,11 @@ If the demo needs Stage 5–6 steps, finish those stages first. Do not fake them
 ### 2.5 Reports and alerts (2 min) — reports available; SLA alerts are target
 
 1. Open `/reports`; show bureau-wise, region-wise, institution-wise, status, ageing,
-   disposal rate, overlap summary, and monthly.
-2. Region filters/labels, quarterly view, and CSV export are Stage 4 targets.
-3. Show the notification centre: overlap and escalation notifications are available;
-   approaching/overdue SLA notifications are not.
+   disposal rate, overlap summary, monthly, and quarterly.
+2. Filter by date, bureau, region, status, and category; show region names, refreshed
+   `generatedAt`, and CSV export.
+3. Show the notification centre with type/unread filters and pagination. Overlap and
+   escalation notifications are available; approaching/overdue SLA notifications are not.
 4. Dashboard "beyond SLA" uses `expectedDisposalAt`; it does not yet use SLA config or
    cron.
 
@@ -97,24 +101,26 @@ If the demo needs Stage 5–6 steps, finish those stages first. Do not fake them
 
 ## 3. Reset and repeatability
 
-- There is **no reset command today**. `bun run seed:reset` does not exist.
-- Re-running `bun run seed` is idempotent for org masters and users. It does not restore
-  institutions, cases, overlaps, or notifications.
-- After manual case mutations, restore demo data manually or add the Stage 7 reset
-  helper before relying on a repeatable script.
-- For CI/E2E, use a separate test database or run-scoped fixtures; never reset the demo
-  database from tests.
+- `bun run seed:demo` is idempotent and additive; it upserts the demo dataset by stable
+  natural keys and can be run repeatedly.
+- `bun run seed:reset` deletes demo-owned cases, institutions, relationships,
+  assessments, actions, assignments, SLA configs, and related notifications, then reseeds.
+  It never truncates collections.
+- Non-interactive reset requires `SEED_RESET_CONFIRM=YES`; production also requires
+  `ALLOW_SEED_RESET=true` and `ALLOW_SEED=true`.
+- For CI/E2E, use run-scoped fixtures (as the integration suite does) and do not reset the
+  demo database from tests.
 
-## 4. Acceptance checklist for the target seed/demo
+## 4. Acceptance checklist for the demo seed
 
-- [ ] Every role has a working login and correct scope.
-- [ ] Every case status appears at least once.
-- [ ] Exact and fuzzy overlap scenarios appear.
-- [ ] A Jev-disabled run still produces overlap relationships.
-- [ ] A Jev-enabled or failure run is demonstrable without blocking case creation.
-- [ ] Overdue and approaching-SLA cases exist.
-- [ ] Notifications are per-user and deep-link correctly.
-- [ ] Dashboard/report numbers match the seed fixture.
-- [ ] Institution profile shows multi-bureau history.
-- [ ] Reset is one guarded command and idempotent.
-- [ ] No real PII, secrets, or real AICTE documents in the repo.
+- [x] Every role has a working login and correct scope.
+- [x] Every case status appears at least once.
+- [x] Exact and fuzzy overlap scenarios appear.
+- [x] A Jev-disabled run still produces overlap relationships.
+- [x] A Jev failure scenario is demonstrable without blocking case creation.
+- [x] Overdue and approaching-SLA cases exist (dashboard uses `expectedDisposalAt`; SLA jobs remain Stage 5).
+- [x] Notifications are per-user and deep-link correctly.
+- [x] Dashboard/report/institution numbers share metric helpers and are reconciliation-tested.
+- [x] Institution profile shows multi-bureau history and a server-scoped summary.
+- [x] Reset is one guarded command and reseeds idempotently.
+- [x] No real PII, secrets, or real AICTE documents in the repo.

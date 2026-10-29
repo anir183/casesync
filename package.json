@@ -7,13 +7,15 @@
     "dev:api": "bun run --filter @casesync/api dev",
     "dev:web": "bun run --filter @casesync/web dev",
     "seed": "bun run --filter @casesync/api seed",
+    "seed:demo": "bun run --filter @casesync/api seed:demo",
+    "seed:reset": "bun run --filter @casesync/api seed:reset",
     "build": "bun run --filter @casesync/api build && bun run --filter @casesync/web build",
     "lint": "biome check .",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "test": "bun test",
+    "test": "bun run --filter @casesync/api test && bun test apps/web/tests",
     "test:watch": "bun test --watch",
-    "test:api": "bun test apps/api/tests",
+    "test:api": "bun run --filter @casesync/api test",
     "test:web": "bun test apps/web/tests"
   },
   "devDependencies": {

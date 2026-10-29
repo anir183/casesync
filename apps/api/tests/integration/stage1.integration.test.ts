@@ -1090,6 +1090,15 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
 
   test('Jev failure and timeout keep the relationship with fallback evidence', async () => {
     const failedPair = await createCasePair('JEV-FAIL')
+    const caseProjection =
+      'caseNumber institutionId regionId bureauId category description status receivedAt expectedDisposalAt nextAction nextActionDueAt slaDays createdAt'
+    const beforeCases = await runtime.Case.find(
+      { _id: { $in: [failedPair.caseAId, failedPair.caseBId] } },
+      caseProjection,
+    )
+      .sort({ _id: 1 })
+      .lean()
+    const beforeInstitution = await runtime.Institution.findById(failedPair.institutionId).lean()
     configureJev(true)
     mockJevStatus(401)
 
@@ -1102,7 +1111,23 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
     expect((await findRelationship(failedPair.caseAId, failedPair.caseBId))?.reviewStatus).toBe(
       RELATIONSHIP_REVIEW_STATUS.PENDING,
     )
-    expect((await findAssessment(failedPair.caseAId, failedPair.caseBId))?.status).toBe('FAILED')
+    const failedAssessment = await findAssessment(failedPair.caseAId, failedPair.caseBId)
+    expect(failedAssessment?.status).toBe('FAILED')
+    expect(failedAssessment?.relationshipChoice).toBeUndefined()
+    expect(failedAssessment?.coordinationReviewNoul).toBeUndefined()
+    expect(failedAssessment?.rationale).toBeUndefined()
+    expect(failedAssessment?.assessedAt).toBeUndefined()
+
+    const afterCases = await runtime.Case.find(
+      { _id: { $in: [failedPair.caseAId, failedPair.caseBId] } },
+      caseProjection,
+    )
+      .sort({ _id: 1 })
+      .lean()
+    expect(afterCases).toEqual(beforeCases)
+    expect(await runtime.Institution.findById(failedPair.institutionId).lean()).toEqual(
+      beforeInstitution,
+    )
 
     const timeoutPair = await createCasePair('JEV-TIMEOUT')
     configureJev(true)
@@ -1118,6 +1143,66 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
       RELATIONSHIP_REVIEW_STATUS.PENDING,
     )
     expect((await findAssessment(timeoutPair.caseAId, timeoutPair.caseBId))?.status).toBe('TIMEOUT')
+  })
+
+  test('Jev incomplete responses fail without persisting partial assessment data', async () => {
+    const pair = await createCasePair('JEV-INCOMPLETE')
+    configureJev(true)
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          model: 'jev-integration-test',
+          answers: { relationship: { type: 'choice', choice: 'likely_same_issue' } },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      )) as unknown as typeof fetch
+
+    const summary = await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+
+    expect(summary.created).toBe(1)
+    expect(summary.failed).toBe(1)
+    const assessment = await findAssessment(pair.caseAId, pair.caseBId)
+    expect(assessment?.status).toBe('FAILED')
+    expect(assessment?.relationshipChoice).toBeUndefined()
+    expect(assessment?.coordinationReviewNoul).toBeUndefined()
+    expect(assessment?.rationale).toBeUndefined()
+    expect(assessment?.rawResponse).toBeUndefined()
+    expect((await findRelationship(pair.caseAId, pair.caseBId))?.reviewStatus).toBe(
+      RELATIONSHIP_REVIEW_STATUS.PENDING,
+    )
+  })
+
+  test('failed forced re-assessment preserves the last successful Jev result', async () => {
+    const pair = await createCasePair('JEV-RECOVERY')
+    const actorId = userIds.get(email('admin')) as string
+    configureJev(true)
+    mockJevResponse('likely_same_issue', 0.9)
+
+    await assessCaseOverlaps(pair.caseAId, actorId)
+    const successful = await findAssessment(pair.caseAId, pair.caseBId)
+    expect(successful?.status).toBe('ASSESSED')
+
+    mockJevStatus(401)
+    const failedSummary = await assessCaseOverlaps(pair.caseAId, actorId, { force: true })
+    expect(failedSummary.failed).toBe(1)
+
+    const preserved = await findAssessment(pair.caseAId, pair.caseBId)
+    expect(preserved?.status).toBe('ASSESSED')
+    expect(preserved?.relationshipChoice).toBe('likely_same_issue')
+    expect(preserved?.coordinationReviewNoul).toBe(0.9)
+    expect(preserved?.rationale).toBe(successful?.rationale)
+    expect(preserved?.assessedAt?.toISOString()).toBe(successful?.assessedAt?.toISOString())
+    expect(preserved?.errorMessage).toContain('401')
+
+    mockJevResponse('same_institution_different_issue', 0.2)
+    const recoveredSummary = await assessCaseOverlaps(pair.caseAId, actorId, { force: true })
+    expect(recoveredSummary.assessed).toBe(1)
+
+    const recovered = await findAssessment(pair.caseAId, pair.caseBId)
+    expect(recovered?.status).toBe('ASSESSED')
+    expect(recovered?.relationshipChoice).toBe('same_institution_different_issue')
+    expect(recovered?.coordinationReviewNoul).toBe(0.2)
+    expect(recovered?.errorMessage).toBeUndefined()
   })
 
   test('manual link and unlink record confirmed and dismissed audit actions', async () => {
@@ -1220,5 +1305,128 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
     expect(relationships[0]?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.PENDING)
     expect(String(relationships[0]?._id)).toBe(String(first?._id))
     expect(String(relationships[0]?.assessmentId)).toBe(String(assessment._id))
+  })
+})
+
+suite('Stage 4 monitoring, reporting and exports', () => {
+  test('dashboard applies date filters, scope and region grouping', async () => {
+    const future = await api(
+      email('admin'),
+      '/dashboard/summary?dateFrom=2099-01-01&dateTo=2099-01-02',
+    )
+    expect(future.status).toBe(200)
+    const empty = await json<{ generatedAt: string; total: number }>(future)
+    expect(empty.generatedAt).toBeString()
+    expect(empty.total).toBe(0)
+
+    const response = await api(email('admin'), '/dashboard/summary')
+    expect(response.status).toBe(200)
+    const body = await json<{
+      regionWise: Array<{ regionId: string }>
+      recentOverlaps: Array<{ id: string }>
+      recentEscalations: Array<{ id: string }>
+    }>(response)
+    expect(body.regionWise.some((item) => item.regionId === String(NORTH_REGION))).toBe(true)
+    expect(Array.isArray(body.recentOverlaps)).toBe(true)
+    expect(Array.isArray(body.recentEscalations)).toBe(true)
+
+    const scoped = await api(email('pgrc'), '/dashboard/summary')
+    expect(scoped.status).toBe(200)
+    const scopedBody = await json<{
+      bureauWise: Array<{ bureauId: string; total: number }>
+    }>(scoped)
+    expect(
+      scopedBody.bureauWise.every(
+        (item) => item.bureauId === String(PGRC_BUREAU) || item.total === 0,
+      ),
+    ).toBe(true)
+  })
+
+  test('invalid status filters are rejected instead of silently returning nothing', async () => {
+    for (const path of ['/cases?status=NOT_A_STATUS', '/reports/summary?status=NOT_A_STATUS']) {
+      expect((await api(email('admin'), path)).status).toBe(400)
+    }
+  })
+
+  test('reports apply filters and expose region names plus quarterly trends', async () => {
+    const response = await api(
+      email('admin'),
+      `/reports/summary?bureauId=${PGRC_BUREAU}&dateFrom=2000-01-01&dateTo=2099-12-31`,
+    )
+    expect(response.status).toBe(200)
+    const body = await json<{
+      totals: { total: number; disposalRate: number }
+      byBureau: Array<{ bureauId: string; name: string }>
+      byRegion: Array<{ regionId: string; name: string }>
+      monthly: Array<{ month: string; received: number; disposed: number }>
+      quarterly: Array<{ quarter: string; received: number; disposed: number }>
+    }>(response)
+    expect(body.totals.total).toBeGreaterThanOrEqual(1)
+    expect(body.totals.disposalRate).toBeNumber()
+    expect(body.byBureau.every((item) => item.bureauId === String(PGRC_BUREAU))).toBe(true)
+    expect(body.byRegion.every((item) => item.name.length > 0)).toBe(true)
+    expect(body.monthly.length).toBeGreaterThan(0)
+    expect(body.quarterly.length).toBeGreaterThan(0)
+
+    const invalid = await api(
+      email('admin'),
+      '/reports/summary?dateFrom=2026-10-02&dateTo=2026-10-01',
+    )
+    expect(invalid.status).toBe(400)
+  })
+
+  test('report and case CSV exports return downloadable files', async () => {
+    const report = await api(email('admin'), '/reports/export?dateFrom=2099-01-01')
+    expect(report.status).toBe(200)
+    expect(report.headers.get('content-type')).toContain('text/csv')
+    expect(report.headers.get('content-disposition')).toContain('attachment')
+    expect(await report.text()).toStartWith('section,label,metric,value')
+
+    const cases = await api(email('admin'), `/cases/export?q=${RUN_ID}&sort=caseNumber:asc`)
+    expect(cases.status).toBe(200)
+    expect(cases.headers.get('content-type')).toContain('text/csv')
+    expect(cases.headers.get('x-export-count')).toBeString()
+    const csv = await cases.text()
+    expect(csv).toStartWith('Case ID,Institution')
+    expect(csv).toContain(CASES.pgrcNorth)
+  })
+
+  test('institution profile summary covers all cases rather than one page', async () => {
+    const pair = await createCasePair('SUMMARY')
+    const response = await api(
+      email('admin'),
+      `/institutions/${pair.institutionId}?page=1&pageSize=1`,
+    )
+    expect(response.status).toBe(200)
+    const body = await json<{
+      summary: { total: number; open: number; disposed: number }
+      cases: Array<{ id: string }>
+    }>(response)
+    expect(body.summary).toMatchObject({ total: 2, open: 2, disposed: 0 })
+    expect(body.cases).toHaveLength(1)
+  })
+
+  test('notifications paginate and filter by type', async () => {
+    const page = await api(email('admin'), '/notifications?page=1&pageSize=1')
+    expect(page.status).toBe(200)
+    const pageBody = await json<{
+      items: Array<{ type: string }>
+      total: number
+      page: number
+      pageSize: number
+      unreadCount: number
+    }>(page)
+    expect(pageBody.page).toBe(1)
+    expect(pageBody.pageSize).toBe(1)
+    expect(pageBody.items.length).toBeLessThanOrEqual(1)
+    expect(pageBody.unreadCount).toBeNumber()
+
+    const filtered = await api(
+      email('admin'),
+      '/notifications?type=OVERLAP_ALERT&page=1&pageSize=2',
+    )
+    expect(filtered.status).toBe(200)
+    const filteredBody = await json<{ items: Array<{ type: string }> }>(filtered)
+    expect(filteredBody.items.every((item) => item.type === 'OVERLAP_ALERT')).toBe(true)
   })
 })

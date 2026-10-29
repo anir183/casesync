@@ -1,10 +1,24 @@
-import { NOTIFICATION_TYPE } from '@casesync/config'
+import { NOTIFICATION_TYPE, PAGINATION } from '@casesync/config'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent } from '#/components/ui/card'
+import { Select } from '#/components/ui/select'
 import { formatDate } from '#/lib/utils'
-import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from '../api'
+import {
+  type NotificationFilters,
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from '../api'
+
+const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
+const DEFAULT_FILTERS: NotificationFilters = {
+  page: PAGINATION.DEFAULT_PAGE,
+  pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+}
 
 function referenceLink(type: string, referenceId?: string) {
   if (!referenceId) return undefined
@@ -18,10 +32,19 @@ function typeLabel(type: string) {
 }
 
 export function NotificationsPage() {
-  const { data, isLoading, isError, error } = useNotifications()
+  const [filters, setFilters] = useState<NotificationFilters>(DEFAULT_FILTERS)
+  const { data, isLoading, isError, error } = useNotifications(filters)
   const markRead = useMarkNotificationRead()
   const markAllRead = useMarkAllNotificationsRead()
   const items = data?.items ?? []
+
+  function updateFilter(key: keyof NotificationFilters, value: string | undefined) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value || undefined,
+      page: PAGINATION.DEFAULT_PAGE,
+    }))
+  }
 
   return (
     <div className="space-y-6">
@@ -46,6 +69,33 @@ export function NotificationsPage() {
           </Button>
         </div>
       </div>
+
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-3 pt-6">
+          <Select
+            aria-label="Notification type"
+            value={filters.type ?? ''}
+            onChange={(event) => updateFilter('type', event.target.value)}
+          >
+            <option value="">All types</option>
+            {TYPE_OPTIONS.map((type) => (
+              <option key={type} value={type}>
+                {typeLabel(type)}
+              </option>
+            ))}
+          </Select>
+          <Button
+            variant={filters.unread === 'true' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => updateFilter('unread', filters.unread === 'true' ? undefined : 'true')}
+          >
+            Unread only
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {data?.total ?? 0} matching notification{data?.total === 1 ? '' : 's'}
+          </span>
+        </CardContent>
+      </Card>
 
       {isError && (
         <p className="text-sm text-red-600">
@@ -101,6 +151,22 @@ export function NotificationsPage() {
           )
         })}
       </div>
+
+      {data && data.total > 0 && (
+        <Pagination
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) =>
+            setFilters((current) => ({
+              ...current,
+              pageSize,
+              page: PAGINATION.DEFAULT_PAGE,
+            }))
+          }
+        />
+      )}
     </div>
   )
 }

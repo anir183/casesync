@@ -1,13 +1,24 @@
+import { CASE_STATUS } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { Select } from '#/components/ui/select'
+import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { matchTypeLabel } from '#/features/overlaps/labels'
-import type { ReportFilters, ReportGroupRow, ReportsSummary } from '../api'
-import { useReports } from '../api'
+import { formatDate } from '#/lib/utils'
+import type { ReportFilters, ReportGroupRow } from '../api'
+import { downloadReports, useReports } from '../api'
 
 const CELL = 'px-3 py-2 text-sm'
 const HEAD_CELL = `${CELL} text-xs uppercase tracking-wide text-muted-foreground`
+const STATUS_OPTIONS = Object.values(CASE_STATUS)
+
+function cleanFilters(input: ReportFilters): ReportFilters {
+  return Object.fromEntries(
+    Object.entries(input).filter(([, value]) => Boolean(value)),
+  ) as ReportFilters
+}
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -96,20 +107,27 @@ function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) 
   )
 }
 
-function MonthlyChart({ data }: { data: ReportsSummary['monthly'] }) {
+interface TrendPoint {
+  label: string
+  received: number
+  disposed: number
+}
+
+function TrendChart({ title, data }: { title: string; data: TrendPoint[] }) {
   const max = Math.max(...data.flatMap((item) => [item.received, item.disposed]), 1)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Monthly received vs disposed</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {data.length === 0 && <p className="text-sm text-muted-foreground">No data.</p>}
         {data.map((item) => (
-          <div key={item.month} className="space-y-1">
+          <div key={item.label} className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{item.month}</span>
+              <span>{item.label}</span>
               <span>
-                {item.received} received · {item.disposed} disposed
+                {item.received} received · {item.disposed} disposal actions
               </span>
             </div>
             <div className="space-y-1">
@@ -136,33 +154,64 @@ function MonthlyChart({ data }: { data: ReportsSummary['monthly'] }) {
 export function ReportsPage() {
   const [draft, setDraft] = useState<ReportFilters>({})
   const [filters, setFilters] = useState<ReportFilters>({})
+  const [exportError, setExportError] = useState<string>()
+  const [isExporting, setIsExporting] = useState(false)
   const { data, isLoading, isError, error } = useReports(filters)
+  const { data: bureaus } = useBureaus()
+  const { data: regions } = useRegions()
+  const { data: categories } = useCategories()
+
+  function update(key: keyof ReportFilters, value: string) {
+    setDraft((current) => ({ ...current, [key]: value || undefined }))
+  }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setFilters({
-      dateFrom: draft.dateFrom || undefined,
-      dateTo: draft.dateTo || undefined,
-    })
+    setFilters(cleanFilters(draft))
   }
 
   function handleReset() {
     setDraft({})
     setFilters({})
+    setExportError(undefined)
+  }
+
+  async function handleExport() {
+    setIsExporting(true)
+    setExportError(undefined)
+    try {
+      await downloadReports(filters)
+    } catch (exportFailure) {
+      setExportError(
+        exportFailure instanceof Error ? exportFailure.message : 'Unable to export reports',
+      )
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Reports</h1>
-        <p className="text-sm text-muted-foreground">
-          Bureau, institution, ageing and overlap analytics.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Reports</h1>
+          <p className="text-sm text-muted-foreground">
+            Bureau, institution, region, ageing and overlap analytics.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void handleExport()}
+          disabled={isExporting}
+        >
+          {isExporting ? 'Exporting…' : 'Export CSV'}
+        </Button>
       </div>
 
       <Card>
-        <CardContent>
-          <form className="flex flex-wrap items-end gap-3" onSubmit={handleSubmit}>
+        <CardContent className="pt-6">
+          <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" htmlFor="report-from">
                 Received from
@@ -171,12 +220,7 @@ export function ReportsPage() {
                 id="report-from"
                 type="date"
                 value={draft.dateFrom ?? ''}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    dateFrom: event.target.value,
-                  }))
-                }
+                onChange={(event) => update('dateFrom', event.target.value)}
               />
             </div>
             <div className="space-y-1">
@@ -187,24 +231,70 @@ export function ReportsPage() {
                 id="report-to"
                 type="date"
                 value={draft.dateTo ?? ''}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    dateTo: event.target.value,
-                  }))
-                }
+                onChange={(event) => update('dateTo', event.target.value)}
               />
             </div>
-            <Button type="submit" size="sm">
-              Apply
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={handleReset}>
-              Reset
-            </Button>
+            <Select
+              aria-label="Bureau"
+              value={draft.bureauId ?? ''}
+              onChange={(event) => update('bureauId', event.target.value)}
+            >
+              <option value="">All bureaus/cells</option>
+              {bureaus?.map((bureau) => (
+                <option key={bureau.id} value={bureau.id}>
+                  {bureau.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Region"
+              value={draft.regionId ?? ''}
+              onChange={(event) => update('regionId', event.target.value)}
+            >
+              <option value="">All regions</option>
+              {regions?.map((region) => (
+                <option key={region.id} value={region.id}>
+                  {region.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Status"
+              value={draft.status ?? ''}
+              onChange={(event) => update('status', event.target.value)}
+            >
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status.replace(/_/g, ' ')}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Category"
+              value={draft.category ?? ''}
+              onChange={(event) => update('category', event.target.value)}
+            >
+              <option value="">All categories</option>
+              {categories?.map((category) => (
+                <option key={category.id} value={category.code}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+            <div className="flex gap-2 md:col-span-3">
+              <Button type="submit" size="sm">
+                Apply
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handleReset}>
+                Reset
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
+      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
       {isError && (
         <p className="text-sm text-red-600">
           {error instanceof Error ? error.message : 'Unable to load reports'}
@@ -214,12 +304,22 @@ export function ReportsPage() {
 
       {data && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <StatCard label="Total cases" value={data.totals.total} />
             <StatCard label="Open cases" value={data.totals.open} />
             <StatCard label="Disposed" value={data.totals.disposed} />
+            <StatCard label="Reopened" value={data.totals.reopened} />
             <StatCard label="Disposal rate" value={`${data.totals.disposalRate}%`} />
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            Generated {formatDate(data.generatedAt)}
+            {data.range.from || data.range.to
+              ? ` · ${data.range.from ? formatDate(data.range.from) : 'start'} to ${
+                  data.range.to ? formatDate(data.range.to) : 'now'
+                }`
+              : ''}
+          </p>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <GroupTable title="Bureau/Cell-wise" rows={data.byBureau} />
@@ -297,8 +397,24 @@ export function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
-            <MonthlyChart data={data.monthly} />
+            <TrendChart
+              title="Monthly received vs disposal actions"
+              data={data.monthly.map((item) => ({
+                label: item.month,
+                received: item.received,
+                disposed: item.disposed,
+              }))}
+            />
           </div>
+
+          <TrendChart
+            title="Quarterly received vs disposal actions"
+            data={data.quarterly.map((item) => ({
+              label: item.quarter,
+              received: item.received,
+              disposed: item.disposed,
+            }))}
+          />
         </>
       )}
     </div>

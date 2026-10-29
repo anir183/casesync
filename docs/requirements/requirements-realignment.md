@@ -25,13 +25,17 @@ Current position: **late in the build, early in operability**.
   still missing.
 - Stage 3 is implemented and verified: base overlap relationships always survive Jev,
   re-assessment runs on movement/identity changes, notifications are scoped/deduped,
-  the queue filters/paginates, and manual link/unlink is audited. 41 unit tests and 27
-  DB-backed integration tests pass; tests cannot call real Jev.
+  the queue filters/paginates, and manual link/unlink is audited.
+- Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
+  reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
+  notification pagination, deterministic demo seed/reset, and reconciliation tests.
+  57 API unit tests, 3 web tests, and 35 DB-backed integration tests pass; tests cannot
+  call real Jev.
 - Missing for MVP: admin web screens, SLA jobs and reminders, attachments, browser E2E,
   CI, and runbook.
 
-The biggest sequencing issue is no longer the staff workflow; it is operational depth
-(SLA jobs, admin screens, E2E/CI) and Stage 3 overlap correctness.
+The biggest sequencing issue is no longer the staff workflow or reporting; it is
+operational depth (SLA jobs, admin screens, E2E/CI).
 
 ## 1. Status legend
 
@@ -267,7 +271,7 @@ These were deliberate corrections to `docs/requirements/requirements-traceabilit
 10. **USER-01..04** (at audit time): scoping was not implemented. Stage 1 implemented
     central bureau/region scope.
 11. Baseline counts at audit time: 26 unit tests, no integration/E2E/UI tests.
-    *(Superseded by §15.3: 41 unit + 27 DB-backed integration tests.)*
+    *(Superseded by §15.3: 57 API unit + 3 web tests + 35 DB-backed integration tests.)*
 12. Infrastructure at audit time: no seed script, CI, Docker, or deployment runbook.
     *(Superseded by §15.1: an idempotent seed script exists; CI/Docker/runbook do not.)*
 
@@ -284,7 +288,7 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests: 41 unit tests + 13 DB-backed integration tests at Stage 1 (27 after Stage 3).
+- Tests: 57 API unit tests + 3 web tests + 35 DB-backed integration tests after Stage 4.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
 - Still open: admin web screens (Stage 6), bureau CRUD and `audit_log` (Stage 6),
   rate limits, E2E, CI, runbook.
@@ -342,7 +346,7 @@ Stage 3 (3A correctness + 3B coordination) is implemented and verified:
 - The overlap queue filters by status/bureau/region/match type/institution and paginates
   with totals; the detail page shows rationale and supports unlink; the case Related tab
   supports manual linking.
-- Tests: 27 DB-backed integration tests total, including rules-only, Jev
+- Tests: 35 DB-backed integration tests total, including rules-only, Jev
   different-issue non-suppression, Jev failure/timeout, scoped/deduped notifications
   with the exact heading, manual link/unlink, queue pagination/filtering, and
   transfer-triggered re-assessment. A fetch guard fails the suite on any real Jev call.

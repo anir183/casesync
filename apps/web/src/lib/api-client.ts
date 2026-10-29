@@ -41,8 +41,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
+async function download(path: string, fallbackFilename: string) {
+  const response = await fetch(`${API_BASE}/api/v1${path}`, { credentials: 'include' })
+  if (!response.ok) throw await parseError(response)
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const filename =
+    disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i)?.[1] ?? fallbackFilename
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.append(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
+  download,
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: 'POST',

@@ -88,6 +88,12 @@ export async function caseScopeFilter(scope: Scope): Promise<Record<string, unkn
   return caseScopeFilterFor(scope, institutionIds)
 }
 
+export async function caseRegionFilter(regionId: string): Promise<Record<string, unknown>> {
+  const institutionIds = await Institution.distinct('_id', { regionId })
+  if (institutionIds.length === 0) return { regionId }
+  return { $or: [{ regionId }, { institutionId: { $in: institutionIds } }] }
+}
+
 export function institutionScopeFilterFor(scope: Scope): Record<string, unknown> {
   if (scope.kind === 'all') return {}
   if (scope.kind === 'bureau') return {}

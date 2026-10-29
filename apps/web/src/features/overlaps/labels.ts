@@ -11,6 +11,12 @@ const MATCH_TYPE_LABELS: Record<string, string> = {
   MANUAL: 'Manual link',
 }
 
+const REVIEW_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pending review',
+  CONFIRMED: 'Confirmed',
+  DISMISSED: 'Dismissed',
+}
+
 const ASSESSMENT_STATUS_LABELS: Record<string, string> = {
   PENDING: 'Assessment queued',
   ASSESSED: 'AI assessed',
@@ -31,6 +37,11 @@ export function choiceLabel(choice?: string) {
 
 export function matchTypeLabel(matchType: string) {
   return MATCH_TYPE_LABELS[matchType] ?? matchType
+}
+
+export function reviewStatusLabel(status?: string) {
+  if (!status) return 'Pending review'
+  return REVIEW_STATUS_LABELS[status] ?? status.replace(/_/g, ' ').toLowerCase()
 }
 
 export function assessmentStatusLabel(status?: string) {

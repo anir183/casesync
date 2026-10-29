@@ -1,49 +1,79 @@
 import { CASE_STATUS, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
-import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { type FormEvent, useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Pagination } from '#/components/shared/pagination'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
-import { useBureaus, useCategories } from '#/features/organization/api'
+import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
-import { type CaseFilters, useCases } from '../api'
+import { type CaseFilters, downloadCases, useCases } from '../api'
 import { CaseTable } from '../components/case-table'
+import { caseFiltersToSearchParams, cleanCaseFilters, readCaseFilters } from '../filters'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
-const DEFAULT_FILTERS: CaseFilters = {
-  page: PAGINATION.DEFAULT_PAGE,
-  pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
-}
-
-function cleanFilters(input: CaseFilters): CaseFilters {
-  return Object.fromEntries(
-    Object.entries(input).filter(([, value]) => Boolean(value)),
-  ) as CaseFilters
-}
+const SORT_OPTIONS = [
+  { value: '', label: 'Newest first' },
+  { value: 'receivedAt:desc', label: 'Received (newest)' },
+  { value: 'receivedAt:asc', label: 'Received (oldest)' },
+  { value: 'expectedDisposalAt:asc', label: 'Deadline (soonest)' },
+  { value: 'lastActionAt:desc', label: 'Last action (newest)' },
+  { value: 'caseNumber:asc', label: 'Case ID (A-Z)' },
+]
 
 export function CasesPage() {
-  const [draft, setDraft] = useState<CaseFilters>({})
-  const [filters, setFilters] = useState<CaseFilters>(DEFAULT_FILTERS)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filters = readCaseFilters(searchParams)
+  const [draft, setDraft] = useState<CaseFilters>(() => readCaseFilters(searchParams))
+  const [exportError, setExportError] = useState<string>()
+  const [isExporting, setIsExporting] = useState(false)
   const { data: cases, isLoading, isError, error } = useCases(filters)
   const { data: bureaus } = useBureaus()
+  const { data: regions } = useRegions()
   const { data: categories } = useCategories()
   const { user } = useCurrentUser()
   const canRegister = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
 
+  useEffect(() => {
+    setDraft(readCaseFilters(searchParams))
+  }, [searchParams])
+
   function update(key: keyof CaseFilters, value: string) {
-    setDraft((current) => ({ ...current, [key]: value }))
+    setDraft((current) => ({ ...current, [key]: value || undefined }))
   }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setFilters({ ...cleanFilters(draft), page: 1, pageSize: filters.pageSize })
+    setSearchParams(
+      caseFiltersToSearchParams({
+        ...cleanCaseFilters(draft),
+        page: PAGINATION.DEFAULT_PAGE,
+        pageSize: filters.pageSize,
+      }),
+    )
   }
 
   function handleReset() {
     setDraft({})
-    setFilters({ ...DEFAULT_FILTERS, pageSize: filters.pageSize })
+    setSearchParams(
+      caseFiltersToSearchParams({ page: PAGINATION.DEFAULT_PAGE, pageSize: filters.pageSize }),
+    )
+    setExportError(undefined)
+  }
+
+  async function handleExport() {
+    setIsExporting(true)
+    setExportError(undefined)
+    try {
+      await downloadCases(filters)
+    } catch (exportFailure) {
+      setExportError(
+        exportFailure instanceof Error ? exportFailure.message : 'Unable to export cases',
+      )
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -55,11 +85,21 @@ export function CasesPage() {
             Every institution-related complaint across Bureaus and Cells.
           </p>
         </div>
-        {canRegister && (
-          <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
-            Register case
-          </Link>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+            disabled={isExporting}
+          >
+            {isExporting ? 'Exporting…' : 'Export CSV'}
+          </Button>
+          {canRegister && (
+            <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
+              Register case
+            </Link>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -99,6 +139,18 @@ export function CasesPage() {
               ))}
             </Select>
             <Select
+              aria-label="Region"
+              value={draft.regionId ?? ''}
+              onChange={(event) => update('regionId', event.target.value)}
+            >
+              <option value="">All regions</option>
+              {regions?.map((region) => (
+                <option key={region.id} value={region.id}>
+                  {region.name}
+                </option>
+              ))}
+            </Select>
+            <Select
               aria-label="Category"
               value={draft.category ?? ''}
               onChange={(event) => update('category', event.target.value)}
@@ -107,6 +159,17 @@ export function CasesPage() {
               {categories?.map((category) => (
                 <option key={category.id} value={category.code}>
                   {category.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Sort"
+              value={draft.sort ?? ''}
+              onChange={(event) => update('sort', event.target.value)}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </Select>
@@ -134,6 +197,8 @@ export function CasesPage() {
         </CardContent>
       </Card>
 
+      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle>Cases</CardTitle>
@@ -154,9 +219,17 @@ export function CasesPage() {
               page={cases.page}
               pageSize={cases.pageSize}
               total={cases.total}
-              onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+              onPageChange={(page) =>
+                setSearchParams(caseFiltersToSearchParams({ ...filters, page }))
+              }
               onPageSizeChange={(pageSize) =>
-                setFilters((current) => ({ ...current, page: 1, pageSize }))
+                setSearchParams(
+                  caseFiltersToSearchParams({
+                    ...filters,
+                    page: PAGINATION.DEFAULT_PAGE,
+                    pageSize,
+                  }),
+                )
               }
             />
           )}

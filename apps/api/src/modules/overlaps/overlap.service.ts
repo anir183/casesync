@@ -2,6 +2,7 @@ import {
   ACTION_TYPE,
   CASE_STATUS,
   JEV_ASSESSMENT_STATUS,
+  JEV_RELATIONSHIP_CHOICE,
   type JevAssessmentStatus,
   NOTIFICATION_TYPE,
   OVERLAP,
@@ -63,6 +64,22 @@ interface PairOutcome {
   relationshipCreated: boolean
   assessment: AssessmentOutcome
 }
+
+const RELATIONSHIP_CHOICES = new Set<string>(Object.values(JEV_RELATIONSHIP_CHOICE))
+
+const ASSESSMENT_RESULT_FIELDS = {
+  modelVersion: 1,
+  relationshipChoice: 1,
+  coordinationReviewNoul: 1,
+  confidence: 1,
+  probabilities: 1,
+  rationale: 1,
+  tokensIn: 1,
+  tokensOut: 1,
+  latencyMs: 1,
+  rawResponse: 1,
+  assessedAt: 1,
+} as const
 
 const OVERLAP_OVERSIGHT_ROLES = [
   ROLES.ADMIN,
@@ -319,32 +336,63 @@ async function runJevAssessment(
       `${pair.caseAId}:${pair.caseBId}`,
     )
     const interpreted = interpretAssessment(data)
+    if (
+      !interpreted.relationshipChoice ||
+      !RELATIONSHIP_CHOICES.has(interpreted.relationshipChoice) ||
+      typeof interpreted.coordinationReviewNoul !== 'number' ||
+      !Number.isFinite(interpreted.coordinationReviewNoul) ||
+      interpreted.coordinationReviewNoul < 0 ||
+      interpreted.coordinationReviewNoul > 1
+    ) {
+      throw new JevError('Jev returned an incomplete assessment', 'PARSE', false)
+    }
+
     await CaseOverlapAssessment.updateOne(
       { _id: assessmentId },
       {
-        status: JEV_ASSESSMENT_STATUS.ASSESSED,
-        modelVersion: interpreted.modelVersion,
-        relationshipChoice: interpreted.relationshipChoice,
-        coordinationReviewNoul: interpreted.coordinationReviewNoul,
-        confidence: interpreted.confidence,
-        probabilities: interpreted.probabilities,
-        rationale: interpreted.rationale,
-        tokensIn: interpreted.tokensIn,
-        tokensOut: interpreted.tokensOut,
-        latencyMs,
-        rawResponse: data as unknown as Record<string, unknown>,
-        assessedAt: new Date(),
+        $set: {
+          status: JEV_ASSESSMENT_STATUS.ASSESSED,
+          modelVersion: interpreted.modelVersion,
+          relationshipChoice: interpreted.relationshipChoice,
+          coordinationReviewNoul: interpreted.coordinationReviewNoul,
+          confidence: interpreted.confidence,
+          probabilities: interpreted.probabilities,
+          rationale: interpreted.rationale,
+          tokensIn: interpreted.tokensIn,
+          tokensOut: interpreted.tokensOut,
+          latencyMs,
+          rawResponse: data as unknown as Record<string, unknown>,
+          assessedAt: new Date(),
+        },
+        $unset: { errorMessage: 1 },
       },
     )
     return 'assessed'
   } catch (error) {
     const status = toStatusForError(error)
     const message = error instanceof Error ? error.message : 'Unknown Jev failure'
-    await CaseOverlapAssessment.updateOne({ _id: assessmentId }, { status, errorMessage: message })
+    const current = await CaseOverlapAssessment.findById(assessmentId).select('status').lean()
+
+    if (current?.status === JEV_ASSESSMENT_STATUS.ASSESSED) {
+      await CaseOverlapAssessment.updateOne(
+        { _id: assessmentId },
+        { $set: { errorMessage: message } },
+      )
+    } else {
+      await CaseOverlapAssessment.updateOne(
+        { _id: assessmentId },
+        {
+          $set: { status, errorMessage: message },
+          $unset: ASSESSMENT_RESULT_FIELDS,
+        },
+      )
+    }
+
     logger.warn('overlap assessment failed, keeping rule-based relationship', {
       pair: `${pair.caseAId}:${pair.caseBId}`,
       status,
       message,
+      preservedLastAssessment: current?.status === JEV_ASSESSMENT_STATUS.ASSESSED,
     })
     return 'failed'
   }

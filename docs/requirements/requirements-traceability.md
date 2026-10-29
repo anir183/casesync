@@ -19,15 +19,15 @@ Status legend:
 
 | Area | Status | Summary |
 |---|---|---|
-| Objectives | Partial | Core monitoring/overlap and the case workflow work; SLA alerts, region reporting, and admin UI incomplete. |
+| Objectives | Partial | Core monitoring/overlap/reporting and the case workflow work; SLA alerts and admin UI remain. |
 | Institution profile | Partial | Registry list/create/edit/verify + profile/history work; merge/alias remains. |
 | Case tracking | Partial → strong | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired. Browser E2E remains. |
 | Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Browser E2E remains. |
-| Dashboard | Partial | Required tiles + institution/bureau workload; no region/SLA-driven overdue. Scoping is done. |
+| Dashboard | **Done** (SLA overdue remains Stage 5) | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, and 30s refresh. |
 | Workflow/audit | Partial | Append-only API + staff action/history UI; attachments model-only; admin audit missing. |
-| Search/filters | Partial | Most filters work; no case region filter; case/institution lists paginate; overlap queue paginates, notifications do not. |
+| Search/filters | **Done** | Case region/date/category/status/bureau filters, sorting, pagination, exports, and paginated/filterable notifications. |
 | Alerts | Partial | Overlap notifications are scoped and deduped, and escalation notifications work; no pending/SLA jobs. |
-| Reports | Partial | Many reports work and are scoped; region labels, quarterly, export, and bureau/region/status filters missing. |
+| Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
 | Target users | Done | Roles, bureau/region scoping, and admin user management (API) implemented in Stage 1. |
 | Non-functional | Partial | `active` enforcement, scoping, 409/404 mapping, and DB-backed tests done; rate limits, component/E2E tests, CI, and runbook remain. |
@@ -40,8 +40,8 @@ Status legend:
 | Staff accounts | Admin-invite-only; public staff signup disabled | Stage 1 admin user management |
 | Complainant signup | Auto-verify with AICTE institution ID; fallback ID + documents + admin approval | Stage 8; public-only access until verified |
 | Overlap policy | Always create base PENDING relationship for same-institution cross-bureau pairs; Jev enriches, never suppresses | Stage 3 correctness fix |
-| Regions | Official AICTE regional offices as a `regions` master | Stage 1 model/seed; Stage 4 labels/filters |
-| "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports |
+| Regions | Official AICTE regional offices as a `regions` master | Stage 1 model/seed; Stage 4 labels/filters complete |
+| "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports complete |
 | SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs |
 | Target users | Authorized AICTE officials = MVP | Role/scope matrix |
 
@@ -54,8 +54,8 @@ Status legend:
 | OBJ-03 | Track complete status and movement | **Partial → strong** | `cases.status`, `case_actions`, `case_assignments`, state machine | API complete; UI action panel and history tabs implemented. Browser E2E remains. |
 | OBJ-04 | Identify RB/PGRC/other overlaps for the same institution | **Done** | `apps/api/src/modules/overlaps/overlap.service.ts` | Base relationship always created; re-assessment runs on create/assign/transfer/institution change. Browser E2E remains. |
 | OBJ-05 | Avoid duplication and ensure coordination | **Done** | Overlap queue/detail, confirm/dismiss, manual link/unlink, `case_relationships` | Review and link decisions are append-only; re-linking a reviewed pair returns 409. |
-| OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Partial** | Status enum + dashboard tiles | "Pending" means only `RECEIVED`; define bucket semantics and include assigned/reopened/overdue clearly. |
-| OBJ-07 | Reports by institution/region/bureau/status | **Partial** | `apps/api/src/modules/reports/report.service.ts` | Region is raw IDs; no region names or report filters/export. |
+| OBJ-06 | Monitor pending/under-process/disposed/transferred/escalated | **Done** | Shared `case-metrics` helpers, dashboard tiles, unassigned bucket, reports | SLA-driven overdue remains Stage 5. |
+| OBJ-07 | Reports by institution/region/bureau/status | **Done** | `report.service.ts`, `report.export.ts` | Filtered reports with names, series, overlap summary, and CSV export. |
 | OBJ-08 | Alerts for pending cases and approaching timelines | **Gap** | `notifications`; no `jobs/` implementation | No cron, SLA due-date calculation, pending/approaching/overdue notifications. |
 
 ## 2. Feature 1 — Centralized Institution Profile
@@ -102,18 +102,18 @@ Status legend:
 
 | ID | Requirement | Status | Evidence | Remaining work |
 |---|---|---|---|---|
-| DASH-01 | Total cases received | **Done** | `dashboard.service.ts` | Add date range/scope. |
-| DASH-02 | Pending cases | **Partial** | `pending` counts only `RECEIVED` | Define and display pending/unassigned/assigned separately. |
+| DASH-01 | Total cases received | **Done** | `dashboard.service.ts` | Date range + central scope applied. |
+| DASH-02 | Pending cases | **Done** | `statusCounts` + `unassigned` + `assigned` | Pending means `RECEIVED`; unassigned is no active assignment. |
 | DASH-03 | Under process | **Done** | `UNDER_PROCESS` tile | — |
 | DASH-04 | Disposed | **Done** | `DISPOSED` tile | — |
 | DASH-05 | Transferred | **Done** | `TRANSFERRED` tile | — |
 | DASH-06 | Pending beyond prescribed timelines | **Partial** | `expectedDisposalAt < now` | `slaConfig` not used; cases without a date never count. |
-| DASH-07 | Institution-wise case status | **Done** | `institutionWise` top 10 | Add full view/export and scope. |
-| DASH-08 | Bureau/Cell-wise workload | **Done** | `bureauWise`, scoped | Add region/status breakdown. |
-| DASH-09 | Region-wise view | **Gap** | `regions` master exists; no region aggregation | Add region tiles/table with names. |
-| DASH-10 | Real-time/current | **Partial** | TanStack Query fetch; no polling/last-updated | Define MVP "real-time" as fresh-on-load + 30s polling. |
+| DASH-07 | Institution-wise case status | **Done** | `institutionWise` top 10, scoped | Profile provides full institution history. |
+| DASH-08 | Bureau/Cell-wise workload | **Done** | `bureauWise` with status counts and unassigned row | — |
+| DASH-09 | Region-wise view | **Done** | `regionWise` with names and legacy institution fallback | — |
+| DASH-10 | Real-time/current | **Done** | 30s TanStack Query polling + `generatedAt` | — |
 | DASH-11 | Scoped dashboard | **Done** | `dashboard.service.ts` applies central scope | Bureau officer sees own bureau; regional officer own region; senior/admin all. |
-| DASH-12 | Escalated/reopened visibility | **Done** | Tiles exist | Include in scope/date filters. |
+| DASH-12 | Escalated/reopened visibility | **Done** | Tiles + recent escalations + scope/date filters | — |
 
 ## 6. Feature 5 — Workflow and Action History
 
@@ -136,11 +136,11 @@ Status legend:
 | SRCH-02 | AICTE Permanent ID | **Done** | `q` + institution query; duplicate check | Escape regex in institution search (review). |
 | SRCH-03 | Complaint/Case ID | **Done** | `caseNumber` regex (escaped) | — |
 | SRCH-04 | Bureau/Cell | **Done** | `bureauId` filter | Add bureau code display/filter. |
-| SRCH-05 | Region | **Partial** | `GET /institutions?regionId=`; case list exposes `regionName` | **Case registry has no region filter.** Add via institution lookup or denormalized `cases.regionId`. |
+| SRCH-05 | Region | **Done** | Case and report `regionId` filters; legacy fallback via institution region | — |
 | SRCH-06 | Complaint category | **Done** | `category` filter; seeded category master | — |
-| SRCH-07 | Status | **Done** | `status` filter | Validate enum, not free string. |
-| SRCH-08 | Date range | **Done** | `receivedAt` from/to | Validate from ≤ to; define inclusive end-of-day. |
-| SRCH-09 | Pagination/limits | **Done** | `lib/pagination.ts`; case/institution lists and overlap queue return `Page<T>` with `total` | Notification list still caps at 100 without pagination. |
+| SRCH-07 | Status | **Done** | `status` enum filter | — |
+| SRCH-08 | Date range | **Done** | Shared UTC `date-range` helper | Inclusive end-of-day; `dateFrom <= dateTo` enforced. |
+| SRCH-09 | Pagination/limits | **Done** | `lib/pagination.ts`; case/institution/overlap/notification lists return `Page<T>` | Case export capped at 10,000. |
 | SRCH-10 | Search safety | **Partial** | Case, institution, and duplicate-check regex inputs are escaped | Add length limits and tests. |
 
 ## 8. Feature 7 — Alerts and Notifications
@@ -152,23 +152,23 @@ Status legend:
 | ALRT-03 | Escalation alerts | **Partial** | `notifyRoles` on escalate | Notify concerned bureau/senior; still role broadcast rather than case-scoped. |
 | ALRT-04 | Timeline/SLA alerts | **Gap** | Enums only | Add SLA calculation + cron + notifications. |
 | ALRT-05 | Notification dedupe/scoping | **Partial** | `caseId`, `link`, `periodKey`, dedupe index; overlap notifications scoped/deduped | SLA/job-level dedupe and escalation scoping remain (Stage 5). |
-| ALRT-06 | Read/unread UX | **Done** | Notification centre + badge | Add type filter and pagination. |
+| ALRT-06 | Read/unread UX | **Done** | Notification centre + badge + type/unread filters + pagination | — |
 | ALRT-07 | Email/SMS | **Extension** | In-app only | Optional adapter later. |
 
 ## 9. Feature 8 — Reports and Analytics
 
 | ID | Requirement | Status | Evidence | Remaining work |
 |---|---|---|---|---|
-| RPT-01 | Bureau-wise | **Done** | `byBureau` | Add bureau/region/status filters and export. |
-| RPT-02 | Region-wise | **Partial** | `byRegion` groups raw `regionId`; `regions` master exists | Resolve region names in the report. |
-| RPT-03 | Institution-wise history | **Done** | `byInstitution` + institution profile | Add full institution report, not only top 10. |
+| RPT-01 | Bureau-wise | **Done** | `byBureau` + filters + CSV export | — |
+| RPT-02 | Region-wise | **Done** | `byRegion` with names + legacy institution fallback | — |
+| RPT-03 | Institution-wise history | **Done** | `byInstitution` top 10 + full institution profile summary/history | — |
 | RPT-04 | Pending ageing | **Done** | `ageBuckets` from `receivedAt` | Consider ageing by status/SLA. |
-| RPT-05 | Disposal rate | **Partial** | `disposed / total` by current status | Reopened/historical disposals distort it; define metric. |
+| RPT-05 | Disposal rate | **Done** | `currently disposed / cases received in range`; `REOPENED` separate | Documented + boundary tests. |
 | RPT-06 | Overlapping/duplicate cases | **Done** | `overlaps` summary | Add trend/time-to-review and bureau pair breakdown. |
-| RPT-07 | Monthly/quarterly performance | **Partial** | `monthly` last 6 months only | Add quarterly grouping and selectable period. |
-| RPT-08 | Export | **Gap** | No CSV/PDF | Add CSV for tables; PDF optional. |
-| RPT-09 | Report filters/scope | **Partial** | Date range + server-side scope; no bureau/region/status filters or export | Add filters and CSV export. |
-| RPT-10 | Metric correctness | **Partial** | Monthly disposed query has no upper date bound | Add `$lte: to` and boundary tests. |
+| RPT-07 | Monthly/quarterly performance | **Done** | `monthly` + `quarterly` over selected range | UTC quarter boundaries tested. |
+| RPT-08 | Export | **Done** | `/reports/export`, `/cases/export` CSV | PDF remains optional. |
+| RPT-09 | Report filters/scope | **Done** | Date/bureau/region/status/category + central scope + export | — |
+| RPT-10 | Metric correctness | **Done** | Inclusive UTC bounds + shared metrics + integration reconciliation | — |
 
 ## 10. Innovation
 
@@ -212,25 +212,29 @@ Status legend:
 
 ## 13. Test and ops baseline (verified)
 
-- 41 unit tests across 9 files; Jev is mocked.
-- 27 database-backed integration tests in `apps/api/tests/integration/` covering
+- 57 API unit tests and 3 web URL-filter tests; Jev is mocked.
+- 35 database-backed integration tests in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
   guards, session revocation, institution writes, case-registration scope, pagination
   contracts, duplicate checks, officer directory scoping, auto numbering + initial
   assignment, rejected transitions writing no audit action, the ordered lifecycle
   audit trail, and Stage 3 overlap correctness/coordination: rules-only base
   relationship, Jev different-issue non-suppression, Jev failure/timeout fallback,
-  scoped/deduped notifications with the exact heading, manual link/unlink, queue
+  incomplete-response rejection, failed re-assessment preserving the last successful
+  result, scoped/deduped notifications with the exact heading, manual link/unlink, queue
   filters/pagination, and transfer-triggered re-assessment. Run with `RUN_INTEGRATION=1`;
   tests use run-scoped records and clean up by ID/email, including actions, assignments,
   relationships, assessments, and notifications. A fetch guard fails the suite on any
   real `jevmodel.org` request.
-- `src/seed.ts` is idempotent and creates 9 regions, 10 categories, 2 bureaus, and 7
-  users. It does not create institutions, cases, overlaps, notifications, or SLA
-  configs; it only backfills regions on two known demo institutions.
+- `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
+  7 users. `seed:demo` additionally creates 8 institutions, 13 cases, 6 overlap
+  scenarios, notifications, and 5 SLA configs. `seed:reset` removes only demo-owned
+  records and reseeds.
 - No component tests, no browser E2E, no coverage gate, no CI workflow, no Dockerfile.
-- API/web `tsc --noEmit`, Biome, and production builds pass. 41 unit tests and 27
-  DB-backed integration tests pass against the current tree.
+- API/web typechecks, Biome (143 files), and production builds pass. The full API unit
+  suite passes 57 tests with 35 integration tests skipped by default; web tests pass 3;
+  all 35 DB-backed integration tests pass with `RUN_INTEGRATION=1`. Demo seed is
+  idempotent and reset/reseed succeeds against Atlas.
 
 ## 14. Documentation corrections applied
 
@@ -263,7 +267,7 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
 3. ~~Overlap correctness: always surface base relationship; Jev enriches; re-assess
    on create/assign/transfer/institution change; manual link/unlink; notification
    scoping/dedupe; exact heading test.~~ Done in Stage 3 (periodic sweep remains).
-4. Scoped dashboard/search/reports, region names, pagination, export.
+4. ~~Scoped dashboard/search/reports, region names, pagination, export.~~ Done in Stage 4.
 5. SLA config + cron + pending/approaching/overdue alerts + dedupe.
 6. Attachments, admin audit, institution verification/merge.
 7. Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.

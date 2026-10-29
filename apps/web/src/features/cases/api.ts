@@ -33,6 +33,7 @@ export interface CaseFilters {
   q?: string
   status?: string
   bureauId?: string
+  regionId?: string
   category?: string
   dateFrom?: string
   dateTo?: string
@@ -159,6 +160,10 @@ export function buildQuery(filters: object) {
 
 export function fetchCases(filters: CaseFilters): Promise<Page<CaseListItem>> {
   return apiClient.get<Page<CaseListItem>>(`/cases${buildQuery(filters)}`)
+}
+
+export function downloadCases(filters: CaseFilters) {
+  return apiClient.download(`/cases/export${buildQuery(filters)}`, 'casesync-cases.csv')
 }
 
 export function fetchCaseDetail(id: string): Promise<CaseDetail> {

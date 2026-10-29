@@ -1,6 +1,7 @@
-import { ROLE_GROUPS } from '@casesync/config'
+import { CASE_STATUS, ROLE_GROUPS } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { env } from '#/config/env'
+import { csvFilename, setCsvHeaders } from '#/lib/csv'
 import { logger } from '#/lib/logger'
 import { requireAuth, requireRole } from '#/middleware/rbac'
 import { assessCaseOverlaps } from '#/modules/overlaps/overlap.service'
@@ -11,6 +12,7 @@ import {
   createCase,
   disposeCase,
   escalateCase,
+  exportCasesCsv,
   getCaseDetail,
   listCaseActions,
   listCaseAssignments,
@@ -25,6 +27,23 @@ const CASE_SENSITIVE_ROLES: string[] = [...ROLE_GROUPS.CASE_SENSITIVE]
 const CASE_DISPOSAL_ROLES: string[] = [...ROLE_GROUPS.CASE_DISPOSAL]
 
 const dateString = t.Optional(t.String({ minLength: 1 }))
+const statusString = t.Optional(
+  t.String({ pattern: `^(${Object.values(CASE_STATUS).join('|')})$` }),
+)
+
+const caseListQuery = t.Object({
+  institutionId: t.Optional(t.String()),
+  bureauId: t.Optional(t.String()),
+  regionId: t.Optional(t.String()),
+  status: statusString,
+  category: t.Optional(t.String()),
+  q: t.Optional(t.String()),
+  dateFrom: dateString,
+  dateTo: dateString,
+  page: t.Optional(t.String()),
+  pageSize: t.Optional(t.String()),
+  sort: t.Optional(t.String()),
+})
 
 const assignmentBody = t.Object({
   bureauId: t.String({ minLength: 1 }),
@@ -49,21 +68,18 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
     async ({ query, user }) => {
       return listCases(query, user)
     },
-    {
-      query: t.Object({
-        institutionId: t.Optional(t.String()),
-        bureauId: t.Optional(t.String()),
-        regionId: t.Optional(t.String()),
-        status: t.Optional(t.String()),
-        category: t.Optional(t.String()),
-        q: t.Optional(t.String()),
-        dateFrom: dateString,
-        dateTo: dateString,
-        page: t.Optional(t.String()),
-        pageSize: t.Optional(t.String()),
-        sort: t.Optional(t.String()),
-      }),
+    { query: caseListQuery },
+  )
+  .get(
+    '/export',
+    async ({ query, user, set }) => {
+      const result = await exportCasesCsv(query, user)
+      setCsvHeaders(set, csvFilename('casesync-cases'))
+      set.headers['x-export-count'] = String(result.count)
+      set.headers['x-export-truncated'] = String(result.truncated)
+      return result.csv
     },
+    { query: caseListQuery },
   )
   .post(
     '/',

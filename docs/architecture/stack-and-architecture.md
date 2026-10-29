@@ -2,11 +2,11 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stages 1–3 are complete. Case/institution APIs, the corresponding web workflows, and
-> overlap correctness/coordination are wired, typecheck, and are covered by API
-> integration tests. Browser/component E2E is still a Stage 7 item, and periodic overlap
-> sweeps plus Stage 4 reporting are next. Sections that describe the target contract are
-> still the target; they are not a claim that every part is wired today.
+> Stages 1–4 are complete. Case/institution APIs, web workflows, overlap
+> correctness/coordination, and scoped monitoring/search/reporting are wired, typecheck,
+> and are covered by API integration tests. Browser/component E2E is still a Stage 7 item,
+> and periodic overlap sweeps plus SLA jobs are next. Sections that describe the target
+> contract are still the target; they are not a claim that every part is wired today.
 
 ## 1) Final Tech Stack
 

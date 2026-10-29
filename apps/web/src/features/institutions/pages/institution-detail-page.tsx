@@ -1,4 +1,4 @@
-import { CASE_STATUS, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Pagination } from '#/components/shared/pagination'
@@ -46,8 +46,7 @@ export function InstitutionDetailPage() {
     )
   }
 
-  const { institution, cases, total } = data
-  const disposedOnPage = cases.filter((item) => item.status === CASE_STATUS.DISPOSED).length
+  const { institution, summary, cases, total } = data
 
   function toggleVerified() {
     setFeedback(null)
@@ -143,10 +142,12 @@ export function InstitutionDetailPage() {
             <CardTitle>Case summary</CardTitle>
           </CardHeader>
           <CardContent className="divide-y divide-border">
-            <DetailRow label="Total cases" value={total} />
-            <DetailRow label="On this page" value={cases.length} />
-            <DetailRow label="Disposed on this page" value={disposedOnPage} />
-            <DetailRow label="Open on this page" value={cases.length - disposedOnPage} />
+            <DetailRow label="Total cases" value={summary.total} />
+            <DetailRow label="Open" value={summary.open} />
+            <DetailRow label="Disposed" value={summary.disposed} />
+            <DetailRow label="Beyond timeline" value={summary.beyondTimelines} />
+            <DetailRow label="Reopened" value={summary.reopened} />
+            <DetailRow label="Unassigned" value={summary.unassigned} />
           </CardContent>
         </Card>
       </div>

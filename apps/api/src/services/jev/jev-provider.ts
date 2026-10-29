@@ -55,8 +55,13 @@ async function callOnce(request: JevRequest, idempotencyKey?: string): Promise<J
     }
 
     try {
-      return (await res.json()) as JevResponse
-    } catch {
+      const data: unknown = await res.json()
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new JevError('Jev returned an invalid response', 'PARSE', false)
+      }
+      return data as JevResponse
+    } catch (error) {
+      if (error instanceof JevError) throw error
       throw new JevError('Jev returned an unparseable response', 'PARSE', false)
     }
   } catch (error) {

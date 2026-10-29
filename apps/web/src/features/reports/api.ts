@@ -9,11 +9,13 @@ export interface ReportGroupRow {
 }
 
 export interface ReportsSummary {
+  generatedAt: string
   range: { from?: string; to?: string }
   totals: {
     total: number
     open: number
     disposed: number
+    reopened: number
     disposalRate: number
   }
   byStatus: Array<{ status: string; count: number }>
@@ -31,11 +33,16 @@ export interface ReportsSummary {
     byMatchType: Array<{ matchType: string; count: number }>
   }
   monthly: Array<{ month: string; received: number; disposed: number }>
+  quarterly: Array<{ quarter: string; received: number; disposed: number }>
 }
 
 export interface ReportFilters {
   dateFrom?: string
   dateTo?: string
+  bureauId?: string
+  regionId?: string
+  status?: string
+  category?: string
 }
 
 function buildQuery(filters: ReportFilters) {
@@ -52,4 +59,8 @@ export function useReports(filters: ReportFilters) {
     queryKey: ['reports', 'summary', filters],
     queryFn: () => apiClient.get<ReportsSummary>(`/reports/summary${buildQuery(filters)}`),
   })
+}
+
+export function downloadReports(filters: ReportFilters) {
+  return apiClient.download(`/reports/export${buildQuery(filters)}`, 'casesync-reports.csv')
 }

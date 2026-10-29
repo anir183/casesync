@@ -1,16 +1,19 @@
 import { normalizeInstitutionName } from '@casesync/utils'
 import { Elysia, t } from 'elysia'
 import { env } from '#/config/env'
+import { addToStatusCounts, emptyStatusCounts, withOpen } from '#/lib/case-metrics'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
 import { buildPage, resolvePageQuery } from '#/lib/pagination'
 import {
   assertInstitutionWrite,
+  caseScopeFilter,
   institutionScopeFilterFor,
   mergeFilters,
   resolveScope,
 } from '#/lib/scope'
 import { requireAuth } from '#/middleware/rbac'
+import { CaseAssignment } from '#/models/case-assignment.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
 import { Region } from '#/models/region.model'
@@ -86,7 +89,11 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
       if (query.verified === 'false') filter.verified = false
       const scoped = mergeFilters(filter, institutionScopeFilterFor(scope))
       const [items, total] = await Promise.all([
-        Institution.find(scoped).sort({ name: 1 }).skip(paging.skip).limit(paging.limit).lean(),
+        Institution.find(scoped)
+          .sort({ name: 1, _id: 1 })
+          .skip(paging.skip)
+          .limit(paging.limit)
+          .lean(),
         Institution.countDocuments(scoped),
       ])
       const regionNames = await loadRegionNames(items)
@@ -231,9 +238,37 @@ export const institutionsRoutes = new Elysia({ prefix: '/institutions' })
         { institutionId: params.id, page: query.page, pageSize: query.pageSize },
         user,
       )
+      const rawCases = (await Case.find(
+        mergeFilters({ institutionId: params.id }, await caseScopeFilter(scope)),
+        { status: 1, expectedDisposalAt: 1 },
+      ).lean()) as unknown as Array<{
+        _id: unknown
+        status: string
+        expectedDisposalAt?: Date
+      }>
+      const activeAssignments = new Set(
+        rawCases.length
+          ? (
+              await CaseAssignment.distinct('caseId', {
+                caseId: { $in: rawCases.map((item) => item._id) },
+                endedAt: { $exists: false },
+              })
+            ).map(String)
+          : [],
+      )
+      const counts = emptyStatusCounts()
+      const summaryNow = new Date()
+      for (const item of rawCases) {
+        addToStatusCounts(
+          counts,
+          { ...item, isUnassigned: !activeAssignments.has(String(item._id)) },
+          summaryNow,
+        )
+      }
       const regionNames = await loadRegionNames([institution])
       return {
         institution: toInstitutionDto(institution, regionNames),
+        summary: withOpen(counts),
         cases: cases.items,
         total: cases.total,
         page: cases.page,

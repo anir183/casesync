@@ -83,6 +83,29 @@ describe('JevProvider', () => {
     expect((caught as InstanceType<typeof JevErrorClass>).retryable).toBe(false)
   })
 
+  test('rejects non-object JSON responses without retrying', async () => {
+    let calls = 0
+    globalThis.fetch = (async () => {
+      calls += 1
+      return new Response('[]', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }) as unknown as typeof fetch
+
+    let caught: unknown
+    try {
+      await provider.assessPair(request, 'pair-key')
+    } catch (error) {
+      caught = error
+    }
+
+    expect(calls).toBe(1)
+    expect(caught).toBeInstanceOf(JevErrorClass)
+    expect((caught as InstanceType<typeof JevErrorClass>).kind).toBe('PARSE')
+    expect((caught as InstanceType<typeof JevErrorClass>).retryable).toBe(false)
+  })
+
   test('sends an idempotency key', async () => {
     let headers: HeadersInit | undefined
     globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {

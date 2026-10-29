@@ -11,17 +11,36 @@ export interface AppNotification {
   createdAt: string
 }
 
+export interface NotificationFilters {
+  unread?: string
+  type?: string
+  page?: number
+  pageSize?: number
+}
+
 interface NotificationListResponse {
   items: AppNotification[]
+  total: number
+  page: number
+  pageSize: number
   unreadCount: number
 }
 
-const NOTIFICATION_QUERY_KEY = ['notifications', 'list'] as const
+export const NOTIFICATION_QUERY_KEY = ['notifications', 'list'] as const
 
-export function useNotifications() {
+function buildQuery(filters: NotificationFilters) {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) params.set(key, String(value))
+  }
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
+
+export function useNotifications(filters: NotificationFilters = {}) {
   return useQuery({
-    queryKey: NOTIFICATION_QUERY_KEY,
-    queryFn: () => apiClient.get<NotificationListResponse>('/notifications'),
+    queryKey: [...NOTIFICATION_QUERY_KEY, filters],
+    queryFn: () => apiClient.get<NotificationListResponse>(`/notifications${buildQuery(filters)}`),
   })
 }
 

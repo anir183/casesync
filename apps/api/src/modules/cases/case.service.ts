@@ -6,6 +6,8 @@ import {
   ROLES,
 } from '@casesync/config'
 import mongoose from 'mongoose'
+import { toCsv } from '#/lib/csv'
+import { parseDateBound } from '#/lib/date-range'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { logger } from '#/lib/logger'
 import { notifyRoles } from '#/lib/notifications'
@@ -19,6 +21,7 @@ import {
 import {
   type ScopeUser,
   assertBureauAssignment,
+  caseRegionFilter,
   caseScopeFilter,
   mergeFilters,
   resolveScope,
@@ -35,6 +38,7 @@ import { User } from '#/models/user.model'
 import { assertTransition } from './state-machine'
 
 const INTERNAL_LIST_LIMIT = 200
+const CASE_EXPORT_LIMIT = 10_000
 const REMARK_MAX_LENGTH = 2000
 const CASE_NUMBER_SUFFIX_LENGTH = 6
 const CASE_NUMBER_ATTEMPTS = 3
@@ -439,12 +443,10 @@ export async function createCase(
   return withNames(plain, await loadCaseNameMaps([plain]))
 }
 
-export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<Page<CaseDto>> {
-  const paging = resolvePageQuery(query)
+async function buildCaseScopedFilter(query: CaseFilters, user: ScopeUser) {
   const filter: Record<string, unknown> = {}
   if (query.institutionId) filter.institutionId = query.institutionId
   if (query.bureauId) filter.bureauId = query.bureauId
-  if (query.regionId) filter.regionId = query.regionId
   if (query.status) filter.status = query.status
   if (query.category) filter.category = query.category
 
@@ -462,8 +464,8 @@ export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<
     ]
   }
 
-  const dateFrom = parseDate(query.dateFrom)
-  const dateTo = parseDate(query.dateTo)
+  const dateFrom = parseDateBound(query.dateFrom)
+  const dateTo = parseDateBound(query.dateTo, true)
   if (dateFrom || dateTo) {
     filter.receivedAt = {
       ...(dateFrom ? { $gte: dateFrom } : {}),
@@ -472,7 +474,13 @@ export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<
   }
 
   const scope = resolveScope(user)
-  const scoped = mergeFilters(filter, await caseScopeFilter(scope))
+  const regionFilter = query.regionId ? await caseRegionFilter(query.regionId) : {}
+  return mergeFilters(mergeFilters(filter, regionFilter), await caseScopeFilter(scope))
+}
+
+export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<Page<CaseDto>> {
+  const paging = resolvePageQuery(query)
+  const scoped = await buildCaseScopedFilter(query, user)
   const sort = parseSort(query.sort, CASE_SORT_FIELDS, 'createdAt')
   const [items, total] = await Promise.all([
     Case.find(scoped).sort(sort).skip(paging.skip).limit(paging.limit).lean(),
@@ -484,6 +492,52 @@ export async function listCases(query: CaseListQuery, user: ScopeUser): Promise<
     total,
     paging,
   )
+}
+
+export async function exportCasesCsv(query: CaseListQuery, user: ScopeUser) {
+  const scoped = await buildCaseScopedFilter(query, user)
+  const sort = parseSort(query.sort, CASE_SORT_FIELDS, 'createdAt')
+  const items = await Case.find(scoped)
+    .sort(sort)
+    .limit(CASE_EXPORT_LIMIT + 1)
+    .lean()
+  const truncated = items.length > CASE_EXPORT_LIMIT
+  const limited = truncated ? items.slice(0, CASE_EXPORT_LIMIT) : items
+  const maps = await loadCaseNameMaps(limited)
+  const rows: Array<Array<string | number>> = [
+    [
+      'Case ID',
+      'Institution',
+      'Region',
+      'Bureau/Cell',
+      'Category',
+      'Status',
+      'Received at',
+      'Expected disposal at',
+      'Next action',
+      'Next action due at',
+      'Officer',
+      'Last action at',
+    ],
+  ]
+  for (const item of limited) {
+    const dto = withNames(item, maps)
+    rows.push([
+      dto.caseNumber,
+      dto.institutionName ?? '',
+      dto.regionName ?? '',
+      dto.bureauName ?? '',
+      dto.category ?? '',
+      dto.status,
+      dto.receivedAt.toISOString(),
+      dto.expectedDisposalAt?.toISOString() ?? '',
+      dto.nextAction ?? '',
+      dto.nextActionDueAt?.toISOString() ?? '',
+      dto.officerName ?? '',
+      dto.lastActionAt?.toISOString() ?? '',
+    ])
+  }
+  return { csv: toCsv(rows), count: limited.length, truncated }
 }
 
 export async function getCase(caseId: string, user: ScopeUser): Promise<CaseDto> {

@@ -1,7 +1,13 @@
 import { AppError, HTTP_STATUS } from '#/lib/errors'
+import { buildPage, resolvePageQuery } from '#/lib/pagination'
 import { Notification } from '#/models/notification.model'
 
-const LIST_LIMIT = 100
+export interface NotificationListQuery {
+  unread?: string
+  type?: string
+  page?: string
+  pageSize?: string
+}
 
 function toNotificationDto(item: {
   _id: unknown
@@ -23,16 +29,26 @@ function toNotificationDto(item: {
   }
 }
 
-export async function listNotifications(recipientId: string, unreadOnly = false) {
+export async function listNotifications(recipientId: string, query: NotificationListQuery = {}) {
+  const paging = resolvePageQuery(query)
   const filter: Record<string, unknown> = { recipientId }
-  if (unreadOnly) filter.readAt = { $exists: false }
+  if (query.unread === 'true') filter.readAt = { $exists: false }
+  if (query.type) filter.type = query.type
 
-  const [items, unreadCount] = await Promise.all([
-    Notification.find(filter).sort({ createdAt: -1 }).limit(LIST_LIMIT).lean(),
+  const [items, total, unreadCount] = await Promise.all([
+    Notification.find(filter)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(paging.skip)
+      .limit(paging.limit)
+      .lean(),
+    Notification.countDocuments(filter),
     Notification.countDocuments({ recipientId, readAt: { $exists: false } }),
   ])
 
-  return { items: items.map(toNotificationDto), unreadCount }
+  return {
+    ...buildPage(items.map(toNotificationDto), total, paging),
+    unreadCount,
+  }
 }
 
 export async function markNotificationRead(id: string, recipientId: string) {

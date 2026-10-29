@@ -25,23 +25,28 @@ exit criteria.
 
 ## 2. Current test baseline (verified 2026-10-29)
 
-- 41 unit tests across 9 files: pair, normalize, similarity, interpret, Jev provider,
-  overlap-Jev, reports, state machine, and scope/permission helpers.
-- 27 database-backed integration tests in `apps/api/tests/integration/` covering
+- 57 API unit tests across 15 files plus 3 web URL-filter tests: pair, normalize,
+  similarity, interpret, Jev provider, overlap-Jev, reports, state machine,
+  scope/permission, dates, CSV, metrics, demo fixtures, report export, and case filters.
+- 35 database-backed integration tests in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user
   guards, deactivation/session revocation, institution writes, case-registration
   scope, pagination contracts, duplicate checks, officer directory scoping, auto
   numbering + initial assignment, rejected transitions writing no audit action, the
   ordered lifecycle audit trail, and Stage 3 overlap behavior: rules-only base
   relationship, Jev different-issue non-suppression, Jev failure/timeout fallback,
-  scoped/deduped notifications with the exact heading, manual link/unlink, queue
-  filters/pagination, and transfer-triggered re-assessment. They are opt-in via
-  `RUN_INTEGRATION=1` and use run-scoped records in the dev database (Atlas
-  credentials cannot create/drop databases).
+  incomplete-response rejection, failed re-assessment preserving the last successful
+  result, no case/institution content mutation on failure, scoped/deduped notifications
+  with the exact heading, manual link/unlink, queue filters/pagination,
+  transfer-triggered re-assessment, and Stage 4 dashboard/report filters, exports,
+  region names, quarterly boundaries, and reconciliation. They are opt-in via
+  `RUN_INTEGRATION=1` and use run-scoped records in the dev database (Atlas credentials
+  cannot create/drop databases).
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
-- No frontend component tests, no browser E2E tests, no coverage gate, no CI.
-- API and web typecheck; Biome is clean; API and web production builds pass. Stage 3
+- Minimal web URL-filter tests exist; no component or browser E2E tests, no coverage
+  gate, no CI.
+- API and web typecheck; Biome is clean; API and web production builds pass. Stages 3–4
   behavior is verified through the API integration suite; browser E2E remains.
 
 ## 3. Test pyramid and ownership
@@ -100,7 +105,8 @@ tests at the lowest layer that can prove the rule, and one E2E per critical jour
 - Unassigned source/candidate behavior documented and tested.
 - Fuzzy match above/below threshold; exact wins over fuzzy; dedupe by pair.
 - Jev disabled → SKIPPED assessment + rule-based relationship.
-- Jev failure/timeout → FAILED/TIMEOUT + rule-based relationship.
+- Jev failure/timeout/incomplete response → FAILED/TIMEOUT + rule-based relationship;
+  a failed forced re-assessment keeps the last successful result and records the error.
 - Jev `likely_same_issue` → assessment + relationship.
 - Jev `same_institution_different_issue` → **base relationship still exists**
   (new policy), assessment attached for context.

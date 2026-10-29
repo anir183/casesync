@@ -11,9 +11,10 @@ This directory is the documentation entry point. Start here, then follow the map
 
 ## Current status
 
-**Stages 0–3 implemented. Stage 3 overlap correctness and coordination are covered by
-DB-backed integration tests; automated browser E2E is still missing. Stage 4 reporting
-work is the next target. The MVP is not complete.**
+**Stages 0–4 implemented. Stage 3 overlap correctness/coordination and Stage 4
+monitoring/search/reporting are covered by DB-backed integration tests; automated browser
+E2E and page-performance gates are still missing. Stage 5 SLA jobs are the next target.
+The MVP is not complete.**
 
 Last verified: 2026-10-29.
 
@@ -23,7 +24,7 @@ Last verified: 2026-10-29.
 | Stage 1 — identity, organization, access | Complete (backend/admin API) |
 | Stage 2 — registry and case operations | Complete (implementation); browser E2E pending |
 | Stage 3 — overlap intelligence and coordination | Complete (implementation); browser E2E pending |
-| Stage 4 — monitoring, search, reports | Partial read-only slice |
+| Stage 4 — monitoring, search, reports | Complete (implementation); browser E2E pending |
 | Stages 5–7 — SLA, admin, release | Not started / partial |
 | Stage 8 — public portal | Optional; not started |
 
@@ -40,7 +41,13 @@ Last verified: 2026-10-29.
   probabilities, coordination score, and rationale.
 - Review notifications are scoped to involved bureaus/regions plus oversight roles and
   deduped per relationship.
-- Dashboard, case registry filters, institution profile, reports, and notifications.
+- Scoped dashboard with date/region/bureau filters, 30s refresh, region names, recent
+  overlaps/escalations, and shared status/unassigned/overdue metrics.
+- Case registry with URL-backed filters, region filter, sorting, CSV export, and
+  inclusive UTC date bounds; reports with bureau/region/status/category filters,
+  monthly/quarterly series, overlap summary, reconciliation, and CSV export.
+- Institution profile summary, paginated/filterable notification centre, and 30s
+  dashboard polling.
 - Institution registry UI (`/institutions` list, create, edit, verify) with duplicate
   warnings and a paginated institution case history.
 - Case registration UI (`/cases/new`) with institution search, bureau/category routing,
@@ -49,10 +56,10 @@ Last verified: 2026-10-29.
   panel for assign, transfer, escalate, dispose, reopen, remark, and next action.
 - Paginated case, institution, and overlap lists with totals; officer, actor, bureau, and
   region names resolved server-side.
-- Region/category masters, admin user management (API), and an idempotent seed for
-  organization and demo users.
-- 41 unit tests plus 27 opt-in database integration tests; Jev is always mocked and a
-  fetch guard blocks real Jev calls.
+- Region/category masters, admin user management (API), and a deterministic demo seed
+  (`seed:demo`) plus guarded demo-only reset (`seed:reset`).
+- 57 API unit tests, 3 web URL-filter tests, and 35 opt-in database integration tests;
+  Jev is always mocked and a fetch guard blocks real Jev calls.
 
 ### Stage 2 completion and remaining gaps
 
@@ -66,17 +73,14 @@ Remaining, non-blocking gaps:
   integration tests and manual runtime smoke checks.
 - Mutations use pending/disabled states rather than optimistic UI.
 - Admin user/organization web screens remain Stage 6 work.
-- Notification pagination remains Stage 4 work.
 
 ### Not built yet
 
 - Stage 3 follow-ups: periodic overlap sweep/background batch and browser E2E for
   confirm/dismiss/link/unlink.
-- Stage 4 region labels/filters, quarterly reports, CSV export, refreshed metric
-  definitions; pagination for notifications and report lists.
 - Stage 5 SLA config, cron jobs, reminders, and dedupe.
 - Stage 6 attachments, admin web screens, institution merge/alias, `audit_log`.
-- Browser/component E2E tests, CI, Docker, runbook, and reset/stress seed helpers.
+- Browser/component E2E tests, CI, Docker, runbook, and the stress seed helper.
 
 ## Documentation map
 
@@ -89,7 +93,7 @@ Remaining, non-blocking gaps:
 | [`requirements/requirements-traceability.md`](requirements/requirements-traceability.md) | Living requirement matrix with evidence and remaining work. |
 | [`architecture/stack-and-architecture.md`](architecture/stack-and-architecture.md) | Stack, architecture, data model, conventions, API, jobs, testing. |
 | [`quality/qa-and-review.md`](quality/qa-and-review.md) | Test pyramid, integration/E2E/security/performance, CI, review, release gate. |
-| [`operations/mock-data.md`](operations/mock-data.md) | What the seed creates today and the target demo dataset. |
+| [`operations/mock-data.md`](operations/mock-data.md) | Current demo seed/reset commands, fixtures, and safety guards. |
 | [`operations/demo-script.md`](operations/demo-script.md) | Target 10-minute demo runbook and current demoable slice. |
 | [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
 | [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
@@ -218,22 +222,23 @@ casesync/
 ### Seed data
 
 ```bash
-bun run seed
+bun run seed        # masters + users
+bun run seed:demo   # masters + users + full demo dataset (idempotent)
+bun run seed:reset  # guarded demo-only reset, then reseed
 ```
 
 `apps/api/src/seed.ts` is idempotent and creates:
 
 - 9 AICTE regional offices;
 - 10 categories;
-- 2 bureaus (`PGRC`, `RB`);
-- 7 users, one per role, with the dev password from `SEED_PASSWORD`.
+- 4 bureaus (`PGRC`, `RB`, `ACAD`, `FIN`);
+- 7 users, one per role, with the dev password from `SEED_PASSWORD`;
+- with `seed:demo`: 8 institutions, 13 cases, 6 overlap scenarios, related
+  actions/assignments/notifications, and 5 SLA configs.
 
-It does **not** create institutions, cases, overlaps, notifications, or SLA configs. It
-backfills `regionId` on the two known demo institutions if they already exist. See
-[`operations/mock-data.md`](operations/mock-data.md) for the exact dataset and the
-target demo dataset.
-
-Reset and stress-seed helpers do not exist yet; they are Stage 7 work.
+`seed:reset` removes only demo-owned records and never truncates collections.
+`seed:stress` remains Stage 7 work. See
+[`operations/mock-data.md`](operations/mock-data.md) for the exact dataset and guards.
 
 ### Testing and quality
 
@@ -258,8 +263,9 @@ paths:
 cd apps/web && ./node_modules/.bin/tsc -b --noEmit
 ```
 
-API and web typechecks, Biome, 41 unit tests, 27 DB-backed integration tests, and both
-production builds pass against the current tree at the verification date above. See
+API and web typechecks, Biome (143 files), 57 API unit tests, 3 web tests, 35 DB-backed
+integration tests, both production builds, and demo seed/reset pass against the current
+tree at the verification date above. See
 [`quality/qa-and-review.md`](quality/qa-and-review.md) for the full test, CI, and review
 gates.
 

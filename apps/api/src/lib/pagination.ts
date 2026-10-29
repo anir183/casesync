@@ -48,5 +48,5 @@ export function parseSort(
   const [rawField, rawDirection] = (value ?? '').split(':')
   const field = allowedFields.includes(rawField) ? rawField : fallbackField
   const direction = rawDirection === 'asc' ? 1 : -1
-  return { [field]: direction }
+  return field === '_id' ? { _id: direction } : { [field]: direction, _id: direction }
 }

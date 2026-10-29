@@ -45,8 +45,8 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Notifications are scoped to the recipient; overlap alerts target involved
   bureaus/regions plus oversight roles.
 - Institution write endpoints are role-gated and region-bound, with duplicate warnings.
-- 41 unit tests + 27 opt-in DB-backed integration tests; no component or browser E2E
-  tests yet. Integration tests cannot call real Jev.
+- 57 API unit tests + 3 web tests + 35 opt-in DB-backed integration tests; no
+  component or browser E2E tests yet. Integration tests cannot call real Jev.
 
 ### What is missing for a real grievance portal
 - `COMPLAINANT` role and public self-registration.

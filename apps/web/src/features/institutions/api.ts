@@ -25,8 +25,23 @@ export interface InstitutionFilters {
   pageSize?: number
 }
 
+export interface InstitutionCaseSummary {
+  total: number
+  open: number
+  pending: number
+  unassigned: number
+  assigned: number
+  underProcess: number
+  disposed: number
+  transferred: number
+  escalated: number
+  reopened: number
+  beyondTimelines: number
+}
+
 export interface InstitutionProfile {
   institution: Institution
+  summary: InstitutionCaseSummary
   cases: CaseListItem[]
   total: number
   page: number
@@ -57,6 +72,7 @@ interface RawInstitution {
 
 interface InstitutionProfileResponse {
   institution: RawInstitution
+  summary: InstitutionCaseSummary
   cases: CaseListItem[]
   total: number
   page: number
@@ -94,6 +110,7 @@ export function fetchInstitution(
     .get<InstitutionProfileResponse>(`/institutions/${id}${buildQuery({ page, pageSize })}`)
     .then((data) => ({
       institution: toInstitution(data.institution),
+      summary: data.summary,
       cases: data.cases,
       total: data.total,
       page: data.page,

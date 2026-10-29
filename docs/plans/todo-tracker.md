@@ -1,16 +1,18 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-29  
-**Status:** Stages 0–3 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3A overlap correctness; Stage 3B coordination UX/notifications). Automated browser E2E, SLA jobs, admin web screens, and release hardening remain, so the MVP is not complete.  
+**Status:** Stages 0–4 complete (Stage 1 backend/admin API; Stage 2 API + web; Stage 3 overlap correctness + coordination; Stage 4 monitoring/search/reporting and demo seed/reset). Automated browser E2E, SLA jobs, admin web screens, and release hardening remain, so the MVP is not complete.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
-> **Verification note.** API and web typechecks pass, Biome is clean, 41 unit tests and
-> 27 opt-in DB-backed integration tests pass, and both production builds succeed.
-> Integration tests install a fetch guard that fails on any real `jevmodel.org` call, so
-> Jev is only ever exercised through mocks. Stage 3 flows are verified through the API;
-> there is no automated browser/component E2E yet.
+> **Verification note.** API and web typechecks pass, Biome is clean (143 files), the API
+> unit suite passes 57 tests with 35 DB-backed integration tests skipped by default, and
+> the web URL-filter tests pass 3 tests. With `RUN_INTEGRATION=1`, all 35 DB-backed
+> integration tests pass. Both production builds succeed. Demo seed was run twice
+> idempotently and reset + reseed succeeded. Integration tests install a fetch guard that
+> fails on any real `jevmodel.org` call, so Jev is only ever exercised through mocks.
+> Browser/component E2E remains a Stage 7 item.
 
 ## Rules
 
@@ -25,11 +27,10 @@
 
 ## Cross-cutting follow-ups (found during the 2026-10-29 docs pass)
 
-- [ ] Align seeded bureau names with product names: seed uses `PGRC — PG Review
-      Committee`, `RB — Regional Bureau`; product copy uses `Public Grievance Redressal
-      Cell` and `Regulation Bureau`.
-- [ ] Expand the seed beyond org masters and users: institutions, cases, actions,
-      assignments, overlaps, notifications, and SLA configs (P0 demo-data gap).
+- [x] Align seeded bureau names with product names (`Public Grievance Redressal Cell`,
+      `Regulation Bureau`, plus `Academic Bureau` and `Finance Bureau`).
+- [x] Expand the seed beyond org masters and users: institutions, cases, actions,
+      assignments, overlaps, notifications, and SLA configs.
 - [ ] Keep `docs/` links and status current as each stage resumes; no doc may claim a
       stage is done before its exit criteria pass.
 
@@ -56,7 +57,7 @@
 - [x] Scope cases, actions, assignments, related, overlaps, institutions
 - [x] Scope dashboard, reports, notifications
 - [x] Institution write role checks + region validation/backfill
-- [x] Role/scope/IDOR tests (27 DB-backed integration tests total after Stage 3, opt-in `RUN_INTEGRATION=1`)
+- [x] Role/scope/IDOR tests (included in the 35 DB-backed integration tests after Stage 4, opt-in `RUN_INTEGRATION=1`)
 - [x] Seed users for every role (`src/seed.ts`, idempotent)
 - [x] Update docs/role matrix
 
@@ -124,7 +125,7 @@ web screens → Stage 6.
 - [x] Scope + dedupe overlap notifications to involved bureaus/regions plus oversight roles
 - [x] Queue filters (`status`, bureau, region, match type, institution) + pagination
 - [x] Fuzzy scan cap (`OVERLAP.FUZZY_INSTITUTION_LIMIT = 500`)
-- [x] Exact-heading + enabled/disabled/failure/timeout tests
+- [x] Exact-heading + enabled/disabled/failure/timeout/incomplete-response tests; failed forced re-assessment preserves last success
 - [x] Re-assessment test after transfer
 - [x] Integration fetch guard proves tests never call real Jev
 - [ ] Periodic overlap sweep / background batch for fuzzy scans at production scale
@@ -137,23 +138,26 @@ web screens → Stage 6.
 - [x] Dashboard totals + status tiles
 - [x] Institution-wise status
 - [x] Bureau/Cell workload
-- [x] Case registry filters (q, status, bureau, category, date)
-- [x] Institution profile history
-- [x] Notifications API/UI
-- [x] Reports: bureau/institution/status/category/ageing/overlap/monthly
+- [x] Case registry filters (q, status, bureau, region, category, date, sort)
+- [x] Institution profile history + server-scoped summary
+- [x] Notifications API/UI with pagination + type/unread filters
+- [x] Reports: bureau/institution/status/category/ageing/overlap/monthly/quarterly
 - [x] Scope dashboard/reports (completed in Stage 1)
-- [ ] Region-wise dashboard/report with names
-- [ ] Region filter on case registry
-- [ ] Pagination/sorting on all lists
-- [ ] Date/bureau/region/status report filters
-- [ ] Quarterly report
-- [ ] CSV export
-- [ ] Correct disposal-rate definition + reopened handling
-- [ ] Fix monthly disposed upper date bound
-- [ ] Last-updated/refresh indicator (30s polling or manual)
-- [ ] Reconcile dashboard/report/job numbers
+- [x] Region-wise dashboard/report with names and legacy institution fallback
+- [x] Region filter on case registry and reports
+- [x] Pagination/sorting on all lists, including notifications
+- [x] Date/bureau/region/status/category report filters
+- [x] Quarterly report
+- [x] CSV export for cases and reports
+- [x] Correct disposal-rate definition + reopened handling
+- [x] Fix monthly/quarterly action upper date bound
+- [x] Last-updated/refresh indicator (30s polling + `generatedAt`)
+- [x] Reconcile dashboard/report/institution numbers through shared metrics
+- [x] Deterministic demo seed and guarded demo-only reset
+- [x] Unit tests for date bounds, CSV, metrics, demo fixtures, and report export
+- [x] Integration tests for dashboard scope, filters, overlap report, exports, and reconciliation
 
-**Exit:** scoped numbers reconcile with fixture; region names; quarter boundaries tested; export works.
+**Exit:** met through DB-backed API tests; browser E2E and page-performance gates remain Stage 7 work.
 
 ## Stage 5 — SLA, alerts & scheduled jobs
 
@@ -195,7 +199,7 @@ web screens → Stage 6.
 - [ ] Accessibility audit
 - [ ] Performance budgets/pagination load test
 - [ ] CI: lint, typecheck, unit, integration, build, E2E smoke, coverage
-- [ ] Seed/reset/seed:stress scripts
+- [ ] Seed:stress script (demo seed/reset done in Stage 4)
 - [ ] Runbook: setup, seed, demo, deploy, backup/restore, troubleshooting
 - [ ] Docs reconciliation + demo rehearsal
 - [ ] No P0/P1 open bugs
@@ -228,7 +232,7 @@ web screens → Stage 6.
 - [x] Case lifecycle + append-only audit integration tested
 - [x] Stage 2 pagination/name/route/duplicate/directory integration tests
 - [x] Auth/RBAC/scoping/IDOR tested
-- [ ] Dashboard/report reconciliation tested
+- [x] Dashboard/report reconciliation tested
 - [x] Notification dedupe tested (overlap `INITIAL` period + reference ID)
 - [ ] SLA clock/boundaries tested
 - [ ] Frontend critical flows tested
