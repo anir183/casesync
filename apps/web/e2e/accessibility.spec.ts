@@ -16,10 +16,18 @@ async function seriousViolations(page: Parameters<typeof AxeBuilder>[0]['page'])
     }))
 }
 
-test('core staff pages have no serious or critical accessibility violations', async ({ page }) => {
+test('core staff and public pages have no serious or critical accessibility violations', async ({
+  page,
+}) => {
   await page.goto('/login')
   await expect(page.getByRole('heading', { name: 'CaseSync' })).toBeVisible()
   expect(await seriousViolations(page)).toEqual([])
+
+  for (const path of ['/portal', '/portal/login', '/portal/signup', '/portal/track']) {
+    await page.goto(path)
+    await page.waitForLoadState('networkidle')
+    expect(await seriousViolations(page), `${path} accessibility`).toEqual([])
+  }
 
   await signIn(page, 'admin@casesync.test')
   for (const path of [
@@ -31,6 +39,7 @@ test('core staff pages have no serious or critical accessibility violations', as
     '/reports',
     '/notifications',
     '/admin/sla',
+    '/admin/verifications',
   ]) {
     await page.goto(path)
     await page.waitForLoadState('networkidle')

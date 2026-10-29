@@ -16,6 +16,7 @@ mock.module('#/features/attachments/api', () => ({
         filename: 'evidence.pdf',
         mimeType: 'application/pdf',
         sizeBytes: 2048,
+        visibility: 'INTERNAL',
         createdAt: '2026-01-05T00:00:00.000Z',
       },
     ],

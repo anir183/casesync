@@ -25,8 +25,8 @@
     "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
     "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
     "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
-    "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test tests/integration",
-    "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
+    "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration",
+    "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
     "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run test:unit && bun run build"
   },
   "devDependencies": {
