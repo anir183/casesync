@@ -20,10 +20,11 @@ const DEFAULT_FILTERS: NotificationFilters = {
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
 }
 
-function referenceLink(type: string, referenceId?: string) {
-  if (!referenceId) return undefined
-  if (type === NOTIFICATION_TYPE.OVERLAP_ALERT) return `/overlaps/${referenceId}`
-  return `/cases/${referenceId}`
+function referenceLink(item: { type: string; referenceId?: string; link?: string }) {
+  if (item.link) return item.link
+  if (!item.referenceId) return undefined
+  if (item.type === NOTIFICATION_TYPE.OVERLAP_ALERT) return `/overlaps/${item.referenceId}`
+  return `/cases/${item.referenceId}`
 }
 
 function typeLabel(type: string) {
@@ -51,7 +52,7 @@ export function NotificationsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Notifications</h1>
           <p className="text-sm text-muted-foreground">
-            Overlap alerts and escalation notices for your role.
+            Overlap alerts, complaint updates, verification decisions, and escalation notices.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -112,7 +113,7 @@ export function NotificationsPage() {
 
       <div className="space-y-3">
         {items.map((item) => {
-          const link = referenceLink(item.type, item.referenceId)
+          const link = referenceLink(item)
           const unread = !item.readAt
           return (
             <Card key={item.id} className={unread ? 'border-foreground/30' : undefined}>

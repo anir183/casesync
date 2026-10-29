@@ -18,6 +18,7 @@ const NAV_ITEMS: Array<{
   { to: '/reports', label: 'Reports' },
   { to: '/notifications', label: 'Notifications', showUnread: true },
   { to: '/admin/users', label: 'Users', roles: ['ADMIN'] },
+  { to: '/admin/verifications', label: 'Verifications', roles: ['ADMIN'] },
   { to: '/admin/organization', label: 'Organization', roles: ['ADMIN'] },
   { to: '/admin/sla', label: 'SLA rules', roles: ['ADMIN'] },
   {

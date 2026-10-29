@@ -18,7 +18,26 @@ export interface CaseListItem {
   bureauId?: string
   bureauName?: string
   category?: string
+  subject?: string
   description?: string
+  source?: string
+  priority?: string
+  complainantId?: string
+  complainantName?: string
+  complainantEmail?: string
+  complainantPhone?: string
+  contactPreference?: string
+  consentGiven?: boolean
+  incidentDate?: string
+  desiredResolution?: string
+  resolutionSummary?: string
+  internalFindings?: string
+  acknowledgedAt?: string
+  resolvedAt?: string
+  closedAt?: string
+  reopenedAt?: string
+  reopenDeadline?: string
+  institutionVerifiedAt?: string
   status: string
   receivedAt: string
   expectedDisposalAt?: string
@@ -35,6 +54,8 @@ export interface CaseFilters {
   bureauId?: string
   regionId?: string
   category?: string
+  source?: string
+  priority?: string
   dateFrom?: string
   dateTo?: string
   page?: number

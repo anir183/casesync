@@ -8,13 +8,15 @@ import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { cn, formatDate, formatDateOnly } from '#/lib/utils'
 import { type CaseDetail, useCaseDetail } from '../api'
 import { CaseActionPanel } from '../components/case-action-panel'
+import { CaseConversationPanel } from '../components/case-conversation-panel'
 
-type Tab = 'overview' | 'actions' | 'assignments' | 'documents' | 'related'
+type Tab = 'overview' | 'actions' | 'assignments' | 'conversation' | 'documents' | 'related'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'actions', label: 'Actions' },
   { id: 'assignments', label: 'Assignments' },
+  { id: 'conversation', label: 'Conversation' },
   { id: 'documents', label: 'Documents' },
   { id: 'related', label: 'Related' },
 ]
@@ -140,6 +142,7 @@ export function CaseDetailPage() {
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold">{item.caseNumber}</h1>
+          {item.subject && <p className="text-sm text-muted-foreground">{item.subject}</p>}
           <CaseStatusBadge status={item.status} />
           <Badge variant="muted">
             {item.officerName ? `Officer: ${item.officerName}` : 'Unassigned'}
@@ -181,6 +184,9 @@ export function CaseDetailPage() {
                 <CardTitle>Case overview</CardTitle>
               </CardHeader>
               <CardContent className="divide-y divide-border">
+                <DetailRow label="Subject" value={item.subject} />
+                <DetailRow label="Source" value={item.source ?? 'INTERNAL'} />
+                <DetailRow label="Priority" value={item.priority ?? 'NORMAL'} />
                 <DetailRow label="Category" value={item.category} />
                 <DetailRow label="Bureau/Cell" value={item.bureauName ?? 'Unassigned'} />
                 <DetailRow label="Region" value={item.regionName} />
@@ -201,13 +207,71 @@ export function CaseDetailPage() {
               <CardHeader>
                 <CardTitle>Complaint</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap text-sm">
+              <CardContent className="space-y-3 text-sm">
+                <p className="whitespace-pre-wrap">
                   {item.description || 'No description recorded.'}
                 </p>
+                {item.desiredResolution && (
+                  <div>
+                    <p className="font-medium">Desired resolution</p>
+                    <p className="whitespace-pre-wrap text-muted-foreground">
+                      {item.desiredResolution}
+                    </p>
+                  </div>
+                )}
+                {item.resolutionSummary && (
+                  <div>
+                    <p className="font-medium">Resolution summary</p>
+                    <p className="whitespace-pre-wrap text-muted-foreground">
+                      {item.resolutionSummary}
+                    </p>
+                  </div>
+                )}
+                {item.internalFindings && (
+                  <div>
+                    <p className="font-medium">Internal findings</p>
+                    <p className="whitespace-pre-wrap text-muted-foreground">
+                      {item.internalFindings}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
+
+          {item.complainantId && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Complainant</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <p className="text-muted-foreground">Name</p>
+                  <p>{item.complainantName ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Email</p>
+                  <p>{item.complainantEmail ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Phone</p>
+                  <p>{item.complainantPhone ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Preferred contact</p>
+                  <p>{item.contactPreference ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Incident date</p>
+                  <p>{item.incidentDate ? formatDateOnly(item.incidentDate) : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Verified at</p>
+                  <p>{item.institutionVerifiedAt ? formatDate(item.institutionVerifiedAt) : '—'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <CaseActionPanel item={item} />
         </div>
@@ -234,6 +298,8 @@ export function CaseDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {tab === 'conversation' && <CaseConversationPanel item={item} />}
 
       {tab === 'documents' && (
         <Card>

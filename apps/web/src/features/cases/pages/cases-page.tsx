@@ -1,4 +1,11 @@
-import { CASE_STATUS, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import {
+  CASE_STATUS,
+  COMPLAINT_PRIORITY,
+  COMPLAINT_SOURCE,
+  PAGINATION,
+  ROLE_GROUPS,
+  hasAnyRole,
+} from '@casesync/config'
 import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Pagination } from '#/components/shared/pagination'
@@ -109,7 +116,7 @@ export function CasesPage() {
         <CardContent>
           <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
             <Input
-              placeholder="Case ID, institution name or AICTE ID"
+              placeholder="Case ID, subject, complainant email, institution or AICTE ID"
               aria-label="Search cases"
               value={draft.q ?? ''}
               onChange={(event) => update('q', event.target.value)}
@@ -135,6 +142,30 @@ export function CasesPage() {
               {bureaus?.map((bureau) => (
                 <option key={bureau.id} value={bureau.id}>
                   {bureau.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Source"
+              value={draft.source ?? ''}
+              onChange={(event) => update('source', event.target.value)}
+            >
+              <option value="">All sources</option>
+              {Object.values(COMPLAINT_SOURCE).map((source) => (
+                <option key={source} value={source}>
+                  {source.replace(/_/g, ' ')}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Priority"
+              value={draft.priority ?? ''}
+              onChange={(event) => update('priority', event.target.value)}
+            >
+              <option value="">All priorities</option>
+              {Object.values(COMPLAINT_PRIORITY).map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
                 </option>
               ))}
             </Select>

@@ -12,5 +12,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
+  if ((session.user as { role?: string }).role === 'COMPLAINANT') {
+    return <Navigate to="/portal/dashboard" replace />
+  }
+
   return <>{children}</>
 }

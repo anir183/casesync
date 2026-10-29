@@ -1,6 +1,8 @@
-import { ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { ATTACHMENT_VISIBILITY, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { type ChangeEvent, useRef, useState } from 'react'
+import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { Select } from '#/components/ui/select'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate } from '#/lib/utils'
 import { downloadAttachment, useAttachments, useUploadAttachment } from '../api'
@@ -27,20 +29,24 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
   const { user } = useCurrentUser()
   const inputRef = useRef<HTMLInputElement>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [visibility, setVisibility] = useState<string>(ATTACHMENT_VISIBILITY.INTERNAL)
   const canWrite = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
 
   function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
     setFeedback(null)
-    upload.mutate(file, {
-      onSuccess: () => {
-        setFeedback(`${file.name} uploaded.`)
-        if (inputRef.current) inputRef.current.value = ''
+    upload.mutate(
+      { file, visibility },
+      {
+        onSuccess: () => {
+          setFeedback(`${file.name} uploaded.`)
+          if (inputRef.current) inputRef.current.value = ''
+        },
+        onError: (uploadError) =>
+          setFeedback(uploadError instanceof Error ? uploadError.message : 'Upload failed'),
       },
-      onError: (uploadError) =>
-        setFeedback(uploadError instanceof Error ? uploadError.message : 'Upload failed'),
-    })
+    )
   }
 
   return (
@@ -55,6 +61,14 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
             disabled={upload.isPending}
             className="max-w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm"
           />
+          <Select
+            aria-label="Attachment visibility"
+            value={visibility}
+            onChange={(event) => setVisibility(event.target.value)}
+          >
+            <option value={ATTACHMENT_VISIBILITY.INTERNAL}>Internal only</option>
+            <option value={ATTACHMENT_VISIBILITY.PUBLIC}>Public to complainant</option>
+          </Select>
           <span className="text-xs text-muted-foreground">
             PDF, image, text, Word, or spreadsheet · max 10 MB
           </span>
@@ -92,6 +106,15 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
                   <td className="px-3 py-2.5 text-sm">{item.filename}</td>
                   <td className="px-3 py-2.5 text-sm">{item.mimeType ?? '—'}</td>
                   <td className="px-3 py-2.5 text-sm">{formatBytes(item.sizeBytes)}</td>
+                  <td className="px-3 py-2.5 text-sm">
+                    <Badge
+                      variant={
+                        item.visibility === ATTACHMENT_VISIBILITY.PUBLIC ? 'muted' : 'warning'
+                      }
+                    >
+                      {item.visibility.toLowerCase()}
+                    </Badge>
+                  </td>
                   <td className="px-3 py-2.5 text-sm">{formatDate(item.createdAt)}</td>
                   <td className="px-3 py-2.5 text-right">
                     <Button

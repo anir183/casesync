@@ -5,6 +5,9 @@ export interface AppNotification {
   id: string
   type: string
   referenceId?: string
+  caseId?: string
+  link?: string
+  channel?: string
   title?: string
   message?: string
   readAt?: string

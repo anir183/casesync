@@ -7,6 +7,8 @@ const FILTER_KEYS = [
   'bureauId',
   'regionId',
   'category',
+  'source',
+  'priority',
   'dateFrom',
   'dateTo',
   'sort',

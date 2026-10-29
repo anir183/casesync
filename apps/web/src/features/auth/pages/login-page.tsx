@@ -19,7 +19,8 @@ export function LoginPage() {
         setError(res.error.message || 'Login failed')
         return
       }
-      navigate('/')
+      const role = (res.data?.user as { role?: string } | undefined)?.role
+      navigate(role === 'COMPLAINANT' ? '/portal/dashboard' : '/')
     } catch (err) {
       setError('Login failed')
     } finally {

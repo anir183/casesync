@@ -33,9 +33,10 @@ export function useAttachments(caseId: string) {
 export function useUploadAttachment(caseId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (file: File) => {
+    mutationFn: ({ file, visibility }: { file: File; visibility: string }) => {
       const body = new FormData()
       body.set('file', file)
+      body.set('visibility', visibility)
       return apiClient.upload<Attachment>(`/cases/${caseId}/attachments`, body)
     },
     onSuccess: () => {

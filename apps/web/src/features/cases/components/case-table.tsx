@@ -13,13 +13,15 @@ export function CaseTable({ cases }: { cases: CaseListItem[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[960px] border-collapse text-left">
+      <table className="w-full min-w-[1100px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
             <th className={CELL_CLASS}>Case</th>
+            <th className={CELL_CLASS}>Subject</th>
             <th className={CELL_CLASS}>Institution</th>
             <th className={CELL_CLASS}>Bureau/Cell</th>
             <th className={CELL_CLASS}>Region</th>
+            <th className={CELL_CLASS}>Source</th>
             <th className={CELL_CLASS}>Category</th>
             <th className={CELL_CLASS}>Status</th>
             <th className={CELL_CLASS}>Officer</th>
@@ -35,6 +37,7 @@ export function CaseTable({ cases }: { cases: CaseListItem[] }) {
                   {item.caseNumber}
                 </Link>
               </td>
+              <td className={CELL_CLASS}>{item.subject ?? '—'}</td>
               <td className={CELL_CLASS}>
                 <Link
                   to={`/institutions/${item.institutionId}`}
@@ -45,6 +48,7 @@ export function CaseTable({ cases }: { cases: CaseListItem[] }) {
               </td>
               <td className={CELL_CLASS}>{item.bureauName ?? 'Unassigned'}</td>
               <td className={CELL_CLASS}>{item.regionName ?? '—'}</td>
+              <td className={CELL_CLASS}>{item.source ?? 'INTERNAL'}</td>
               <td className={CELL_CLASS}>{item.category ?? '—'}</td>
               <td className={CELL_CLASS}>
                 <CaseStatusBadge status={item.status} />
