@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { FieldLabel } from '#/components/ui/textarea'
@@ -10,7 +10,6 @@ export function PortalLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -23,7 +22,7 @@ export function PortalLoginPage() {
         return
       }
       const role = (result.data?.user as { role?: string } | undefined)?.role
-      navigate(role === 'COMPLAINANT' ? '/portal/dashboard' : '/dashboard')
+      window.location.assign(role === 'COMPLAINANT' ? '/portal/dashboard' : '/dashboard')
     } catch {
       setError('Sign in failed. Please try again.')
     } finally {

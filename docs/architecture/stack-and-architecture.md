@@ -266,8 +266,8 @@ committed; `.env.example` lists names with empty/placeholder values.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
 - **Exports** (Stage 4): CSV from the same scoped filter set; PDF optional.
 - **Docs**: Elysia route schemas remain the API contract source; keep auth/pagination/
-  scope documented. The Swagger UI plugin was removed in Stage 7 because its transitive
-  Scalar/Zod 3 dependency carried a high-severity advisory.
+  scope documented. Swagger UI is served at `/docs` via `@elysiajs/swagger`, with the
+  Scalar theme dependency overridden to avoid a vulnerable transitive Zod 3 copy.
 
 ## 10) Jobs (node-cron)
 

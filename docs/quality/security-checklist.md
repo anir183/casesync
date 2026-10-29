@@ -83,11 +83,11 @@ Rate-limited responses use HTTP `429` with `error: "RATE_LIMITED"`,
 
 ## 5. Dependency notes
 
-- Workspace Zod is pinned to `^4.6.7`; the vulnerable transitive Zod 3 copy was removed.
-- `@hookform/resolvers` was upgraded to v5 for Zod 4 compatibility.
-- The Elysia Swagger UI plugin was removed because its Scalar transitive dependency
-  pinned a vulnerable Zod 3 copy. Elysia route schemas remain the API contract source;
-  there is currently no generated Swagger page.
+- Workspace Zod is pinned to `^4.6.7`; `@hookform/resolvers` v5 keeps the web app on Zod 4.
+- The Elysia Swagger UI is available at `/docs`. Its Scalar theme dependency is overridden
+  to a current release so no transitive Zod 3 copy is installed.
+- `bun audit --audit-level=high` reports no high-severity vulnerabilities on the merged
+  dependency graph.
 
 ## 6. Residual risks / follow-ups
 

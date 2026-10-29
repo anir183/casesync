@@ -47,7 +47,8 @@ test.describe('public complainant portal', () => {
 
     await page.getByLabel('Add a message').fill('Please confirm receipt and share next steps.')
     await page.getByRole('button', { name: 'Send message' }).click()
-    await expect(page.getByText('Please confirm receipt and share next steps.')).toBeVisible()
+    await expect(page.getByLabel('Add a message')).toHaveValue('')
+    await expect(page.locator('p').getByText('Please confirm receipt and share next steps.')).toBeVisible()
 
     await page.getByRole('button', { name: 'Sign out' }).click()
     await page.goto('/portal/track')
@@ -55,7 +56,9 @@ test.describe('public complainant portal', () => {
     await page.getByLabel('Email address').fill(COMPLAINANT_EMAIL)
     await page.getByRole('button', { name: 'Track complaint' }).click()
     await expect(page.getByText(subject)).toBeVisible()
-    await expect(page.getByText('Please confirm receipt and share next steps.')).toBeVisible()
+    await expect(
+      page.locator('p').getByText('Please confirm receipt and share next steps.'),
+    ).toBeVisible()
 
     await signIn(page, 'admin@casesync.test')
     await page.goto(`/cases/${complaintId}`)

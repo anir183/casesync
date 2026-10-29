@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { signIn } from '#/lib/auth-client'
 
 export function LoginPage() {
@@ -7,7 +6,6 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -20,7 +18,7 @@ export function LoginPage() {
         return
       }
       const role = (res.data?.user as { role?: string } | undefined)?.role
-      navigate(role === 'COMPLAINANT' ? '/portal/dashboard' : '/')
+      window.location.assign(role === 'COMPLAINANT' ? '/portal/dashboard' : '/')
     } catch (err) {
       setError('Login failed')
     } finally {
