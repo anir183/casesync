@@ -1,7 +1,7 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-10-29  
-**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local typecheck, unit tests, Biome, and build pass; DB-backed Stage 8 integration and seeded portal E2E tests are wired for CI. The remaining release check is observing the full CI run green on the pushed commit.
+**Last verified:** 2026-10-30  
+**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. The remaining release check is observing the full CI run green on the pushed commit.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -12,8 +12,9 @@
 > lifecycle, public projections, ownership isolation, and reopen; seeded Playwright adds
 > two portal journeys plus public accessibility pages. `bun run verify` covers lint,
 > typecheck, unit tests, and build; DB-backed integration, coverage, seeded E2E, and
-> performance run in CI or with a local MongoDB. Integration tests install a fetch guard
-> that fails on any real `jevmodel.org` call.
+> performance run in CI or with a local MongoDB. All six seeded Playwright tests pass
+> locally (three staff smoke journeys, two portal journeys, and the accessibility scan).
+> Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
 
 ## Rules
 
@@ -255,3 +256,5 @@ portal remains an extension outside MVP acceptance.
 - [x] Jev never hit in tests (integration fetch guard + mocked provider)
 - [x] Stage 7 CI green on clean checkout (`4abd2f3`)
 - [ ] Stage 8 CI green on clean checkout
+  - Local Stage 8 gates pass (2026-10-30): 50 integration tests, 6 seeded browser
+    tests, API coverage 87.1% lines / 89.6% functions. Pushed CI run pending.

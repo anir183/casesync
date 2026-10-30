@@ -23,7 +23,7 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-10-29)
+## 2. Current test baseline (verified 2026-10-30)
 
 - **71 API unit tests across 17 files** plus **10 web component/URL tests across 4
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
@@ -47,7 +47,7 @@ exit criteria.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
-- **Coverage gate**: 89.4% lines and 90.0% functions from the full API suite; CI floor is
+- **Coverage gate**: 87.1% lines and 89.6% functions from the full API suite; CI floor is
   85% lines/functions.
 - **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks, unit/component
   tests, Mongo-backed integration/coverage, builds, seeded E2E/accessibility, and a
@@ -58,8 +58,8 @@ exit criteria.
 - `verify` passes locally and in a clean source copy after `bun install
   --frozen-lockfile`. API unit tests preload inert test env defaults
   (`apps/api/tests/setup.ts`), so they do not require a personal `apps/api/.env`;
-  integration/seed/E2E still require real DB/auth env. GitHub Actions itself has not
-  yet been observed green on a pushed commit.
+  integration/seed/E2E still require real DB/auth env. Stage 7 CI is green on
+  `4abd2f3`; the Stage 8 CI run is pending on the pushed commit.
 
 ## 3. Test pyramid and ownership
 
@@ -370,8 +370,8 @@ Actual root scripts:
   "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
   "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
   "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
-  "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test tests/integration",
-  "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
+  "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration",
+  "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
   "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
   "test:perf": "./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run test:unit && bun run build"
@@ -383,7 +383,7 @@ CI must never rewrite files. Keep `check` (write mode) for local use.
 ### Coverage thresholds
 
 The CI gate currently enforces **85% lines and 85% functions** for the API suite. The
-full suite is at 89.4% lines / 90.0% functions. Coverage is a floor, not a goal; a critical
+full suite is at 87.1% lines / 89.6% functions. Coverage is a floor, not a goal; a critical
 rule with no test blocks the stage even if coverage is high.
 
 ## 11. Manual QA checklist (per stage)

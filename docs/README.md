@@ -14,11 +14,12 @@ This directory is the documentation entry point. Start here, then follow the map
 **Stages 0–8 are implemented. The internal MVP is hardened and the optional public
 complainant portal is built: self-registration, exact-AICTE verification with document
 review fallback, filing/tracking, public/internal conversation and documents, ownership
-checks, and admin verification review. Local lint, typechecks, unit tests, and builds
-pass; Mongo-backed integration, coverage, seeded browser, and performance suites run in
-CI. The remaining release check is observing the full pushed CI run green.**
+checks, and admin verification review. Local lint, typechecks, unit tests, builds,
+Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
+performance suite runs in CI. The remaining release check is observing the full pushed
+CI run green.**
 
-Last verified: 2026-10-29.
+Last verified: 2026-10-30.
 
 | Area | State |
 |---|---|
@@ -102,6 +103,9 @@ Last verified: 2026-10-29.
   isolation, public/internal messages and attachment visibility, accept/reopen.
 - `apps/web/e2e/portal.spec.ts`: complainant filing/conversation/tracking, admin
   acknowledge/request-information/resolve, and closure acceptance.
+- Local Stage 8 gate: all 50 integration tests pass, all 6 seeded browser tests pass
+  (including the portal journey and axe scan), and API coverage is 87.1% lines /
+  89.6% functions.
 - Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
 
 ### Remaining non-blocking gaps

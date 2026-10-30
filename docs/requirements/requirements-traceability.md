@@ -1,6 +1,6 @@
 # CaseSync — Requirements Traceability Matrix
 
-**Last verified:** 2026-10-29  
+**Last verified:** 2026-10-30  
 **Source of truth:** original AICTE problem statement + `docs/product/end-product-and-stages.md` + this matrix  
 **Detailed audit:** `docs/requirements/requirements-realignment.md`
 
@@ -236,14 +236,15 @@ Status legend:
   attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, and Stage 8
   verification/ownership/public-visibility/reopen flows. `RUN_INTEGRATION=1` runs
   locally against run-scoped records; CI uses `mongo:7`.
-- Coverage is 89.4% lines / 90.0% functions with an 85% floor.
+- Coverage is 87.1% lines / 89.6% functions with an 85% floor.
 - 3 seeded staff smoke journeys, 2 portal E2E journeys, an axe accessibility scan, and a
   tagged 5,000-case performance test.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
 - API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
-  reports no vulnerabilities. CI is green on Stage 7 (`4abd2f3`); Stage 8 CI is pending.
+  reports no vulnerabilities. Stage 8 local gates pass (50 integration tests, 6 seeded
+  browser tests). CI is green on Stage 7 (`4abd2f3`); Stage 8 CI is pending.
 
 ## 14. Documentation corrections applied
 

@@ -48,7 +48,9 @@ test.describe('public complainant portal', () => {
     await page.getByLabel('Add a message').fill('Please confirm receipt and share next steps.')
     await page.getByRole('button', { name: 'Send message' }).click()
     await expect(page.getByLabel('Add a message')).toHaveValue('')
-    await expect(page.locator('p').getByText('Please confirm receipt and share next steps.')).toBeVisible()
+    await expect(
+      page.locator('p').getByText('Please confirm receipt and share next steps.'),
+    ).toBeVisible()
 
     await page.getByRole('button', { name: 'Sign out' }).click()
     await page.goto('/portal/track')
@@ -82,9 +84,9 @@ test.describe('public complainant portal', () => {
     await signInPortal(page, COMPLAINANT_EMAIL)
     await page.goto(complaintPath)
     await expect(page.getByText('The excess fee was refunded.')).toBeVisible()
-    await expect(page.getByText('disposed', { exact: true })).toBeVisible()
+    await expect(page.getByText('Resolved', { exact: true }).first()).toBeVisible()
     await page.getByRole('button', { name: 'Accept resolution and close' }).click()
-    await expect(page.getByText('closed', { exact: true })).toBeVisible()
+    await expect(page.getByText('Closed', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('This complaint is closed.')).toBeVisible()
   })
 

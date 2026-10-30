@@ -25,6 +25,7 @@ const INSTITUTION_ID = new mongoose.Types.ObjectId()
 const OTHER_INSTITUTION_ID = new mongoose.Types.ObjectId()
 const INSTITUTION_AICTE = `AICTE-${RUN_ID}-ONE`
 const OTHER_INSTITUTION_AICTE = `AICTE-${RUN_ID}-TWO`
+const CATEGORY_CODE = `S8_${RUN_ID.toUpperCase()}`
 
 const EMAILS = {
   admin: `admin.stage8.${RUN_ID}@test.local`,
@@ -44,6 +45,7 @@ interface Runtime {
   Institution: typeof import('#/models/institution.model').Institution
   Case: typeof import('#/models/case.model').Case
   CaseMessage: typeof import('#/models/case-message.model').CaseMessage
+  Category: typeof import('#/models/category.model').Category
   ComplainantVerification: VerificationModule['ComplainantVerification']
   Attachment: typeof import('#/models/attachment.model').Attachment
   Notification: typeof import('#/models/notification.model').Notification
@@ -149,7 +151,7 @@ async function submitComplaint(
     method: 'POST',
     body: {
       institutionId,
-      category: 'FEES',
+      category: CATEGORY_CODE,
       subject,
       description: `Description for ${subject}`,
       desiredResolution: 'A written explanation and corrective action',
@@ -186,6 +188,7 @@ beforeAll(async () => {
     regionModule,
     bureauModule,
     institutionModule,
+    categoryModule,
     caseModule,
     caseMessageModule,
     verificationModule,
@@ -199,6 +202,7 @@ beforeAll(async () => {
     import('#/models/region.model'),
     import('#/models/bureau.model'),
     import('#/models/institution.model'),
+    import('#/models/category.model'),
     import('#/models/case.model'),
     import('#/models/case-message.model'),
     import('#/models/complainant-verification.model'),
@@ -213,6 +217,7 @@ beforeAll(async () => {
     Region: regionModule.Region,
     Bureau: bureauModule.Bureau,
     Institution: institutionModule.Institution,
+    Category: categoryModule.Category,
     Case: caseModule.Case,
     CaseMessage: caseMessageModule.CaseMessage,
     ComplainantVerification: verificationModule.ComplainantVerification,
@@ -247,6 +252,12 @@ beforeAll(async () => {
     },
   ])
 
+  await runtime.Category.create({
+    code: CATEGORY_CODE,
+    name: `Stage8 Category ${RUN_ID}`,
+    active: true,
+  })
+
   const admin = await runtime.auth.api.signUpEmail({
     body: { email: email('admin'), password: PASSWORD, name: 'Stage8 Admin' },
   })
@@ -277,6 +288,7 @@ afterAll(async () => {
     }),
     runtime.AuditLog.deleteMany({ actorId: { $in: ids } }),
     runtime.ComplainantVerification.deleteMany({ userId: { $in: ids } }),
+    runtime.Category.deleteMany({ code: CATEGORY_CODE }),
     db.collection('session').deleteMany({ userId: { $in: [...ids, ...objectIds] } }),
   ])
   await runtime.Case.deleteMany({ _id: { $in: caseIds } })
