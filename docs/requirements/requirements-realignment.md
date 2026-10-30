@@ -15,7 +15,8 @@ optional Jev assessment and human review — is built and verified. Stage 7 adds
 security, accessibility, performance, stress-seed, and runbook gates; Stage 8 adds the
 external intake surface with separate ownership and public-projection controls.
 
-Current position: **release candidate; Stage 7 CI green, Stage 8 CI pending**.
+Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
+(`5666cad`)**.
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -47,9 +48,9 @@ Current position: **release candidate; Stage 7 CI green, Stage 8 CI pending**.
   document-review approval, filing/tracking, public/internal conversation and documents,
   ownership checks, portal rate limits, staff complaint workflow, and admin verification
   queue. Institution representative accounts are deferred.
-- Remaining for final release: observe the pushed Stage 8 CI run green. Malware scanning,
-  distributed rate limiting, and manual screen-reader/mobile passes are production
-  hardening follow-ups, not MVP blockers.
+- Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
+  limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
+  not MVP blockers.
 
 ## 1. Status legend
 
@@ -76,7 +77,7 @@ Evidence paths are relative to the repo root.
 | Reports/analytics | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly reports, filters, names, CSV export, and shared beyond-timeline totals are wired. |
 | Innovation | **Done (core)** | Rules-first matching and Jev pairwise assessment are real, explainable, and human-reviewed. |
 | Target users | **Done** | Roles, bureau/region scoping, and admin user management (API) are implemented and tested (Stage 1). |
-| Non-functional (security, QA, ops) | **Done (local)** | Scoping, rate limits, security tests, component/E2E/a11y/perf gates, CI workflow, stress seed, and runbook are implemented; remote CI run pending. |
+| Non-functional (security, QA, ops) | **Done** | Scoping, rate limits, security tests, component/E2E/a11y/perf gates, CI workflow, stress seed, and runbook are implemented; remote CI green on `5666cad`. |
 
 ## 3. Objectives
 

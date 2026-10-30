@@ -1,7 +1,7 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-30  
-**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. The remaining release check is observing the full CI run green on the pushed commit.
+**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. CI is green on `5666cad`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -255,6 +255,8 @@ portal remains an extension outside MVP acceptance.
 - [x] Portal E2E + public accessibility pages
 - [x] Jev never hit in tests (integration fetch guard + mocked provider)
 - [x] Stage 7 CI green on clean checkout (`4abd2f3`)
-- [ ] Stage 8 CI green on clean checkout
-  - Local Stage 8 gates pass (2026-10-30): 50 integration tests, 6 seeded browser
-    tests, API coverage 87.1% lines / 89.6% functions. Pushed CI run pending.
+- [x] Stage 8 CI green on clean checkout
+  - CI run `5666cad` is green (2026-10-30): static checks, unit/component, integration
+    and coverage, builds, seeded browser smoke, and dependency audit.
+  - Local Stage 8 gates pass: 50 integration tests, 6 seeded browser tests, API coverage
+    87.1% lines / 89.6% functions.

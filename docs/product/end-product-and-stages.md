@@ -184,7 +184,7 @@ layout.
 | 5 | SLA, alerts & scheduled jobs | **Done** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
-| 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage |
+| 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
 
 ### Current position (honest)
 
@@ -213,7 +213,7 @@ layout.
   messages and attachments, staff conversation/actions, and dedicated security/E2E
   coverage. Institution representative accounts are explicitly deferred.
 - The internal MVP and optional public portal are functionally complete and release-ready
-  pending the full pushed Stage 8 CI run.
+  with CI green on `5666cad`.
 
 ## 6. Stage details and expectations
 

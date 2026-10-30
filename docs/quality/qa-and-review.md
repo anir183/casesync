@@ -59,7 +59,7 @@ exit criteria.
   --frozen-lockfile`. API unit tests preload inert test env defaults
   (`apps/api/tests/setup.ts`), so they do not require a personal `apps/api/.env`;
   integration/seed/E2E still require real DB/auth env. Stage 7 CI is green on
-  `4abd2f3`; the Stage 8 CI run is pending on the pushed commit.
+  `4abd2f3`; Stage 8 CI is green on `5666cad`.
 
 ## 3. Test pyramid and ownership
 

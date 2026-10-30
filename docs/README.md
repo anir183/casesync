@@ -16,8 +16,7 @@ complainant portal is built: self-registration, exact-AICTE verification with do
 review fallback, filing/tracking, public/internal conversation and documents, ownership
 checks, and admin verification review. Local lint, typechecks, unit tests, builds,
 Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
-performance suite runs in CI. The remaining release check is observing the full pushed
-CI run green.**
+performance suite runs in CI. The pushed CI run is green on `5666cad`.**
 
 Last verified: 2026-10-30.
 
@@ -31,7 +30,7 @@ Last verified: 2026-10-30.
 | Stage 5 — SLA, deadlines, alerts | Complete |
 | Stage 6 — admin, attachments, audit | Complete |
 | Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
-| Stage 8 — public portal | Complete (optional extension); institution representatives deferred |
+| Stage 8 — public portal | Complete; CI green on `5666cad`; institution representatives deferred |
 
 ### Working
 
@@ -106,11 +105,12 @@ Last verified: 2026-10-30.
 - Local Stage 8 gate: all 50 integration tests pass, all 6 seeded browser tests pass
   (including the portal journey and axe scan), and API coverage is 87.1% lines /
   89.6% functions.
+- Pushed CI run `5666cad` is green across static checks, unit/component, integration and
+  coverage, builds, seeded browser smoke, and dependency audit.
 - Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
 
 ### Remaining non-blocking gaps
 
-- Observing the Stage 8 CI run green on GitHub.
 - Institution representative accounts are deferred; they require a separate external
   role, institution-side scoping, and approval model.
 - Optional periodic overlap sweep/background batch for production scale.

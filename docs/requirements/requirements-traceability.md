@@ -244,7 +244,7 @@ Status legend:
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
 - API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
   reports no vulnerabilities. Stage 8 local gates pass (50 integration tests, 6 seeded
-  browser tests). CI is green on Stage 7 (`4abd2f3`); Stage 8 CI is pending.
+  browser tests). CI is green on Stage 7 (`4abd2f3`) and Stage 8 (`5666cad`).
 
 ## 14. Documentation corrections applied
 
