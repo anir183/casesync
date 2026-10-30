@@ -11,6 +11,8 @@ Status legend:
   usable end-to-end or is materially incomplete.
 - **Gap** — not implemented, or only a placeholder/model exists.
 - **Extension** — beyond the original requirement set (optional public portal).
+- **Planned** — Stage 9 scope is agreed and documented but **not implemented**; do not
+  treat it as delivered evidence.
 
 > This matrix is intentionally conservative. Do not mark an item Done until its
 > acceptance path works in the UI/API and has test evidence.
@@ -22,7 +24,7 @@ Status legend:
 | Objectives | Partial | Core monitoring/overlap/reporting, case workflow, SLA alerts, and administration/attachments work; OBJ-06 pending-bucket definition remains. |
 | Institution profile | **Done** | Registry list/create/edit/verify + profile/history, aliases, duplicate checks, and admin merge. |
 | Case tracking | **Done** | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired; Stage 7 smoke covers case list/timeline. |
-| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired; Stage 7 smoke covers queue/report loading. |
+| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Stage 9 plans the bounded exact-institution auto-merge exception. |
 | Dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, SLA-derived beyond-timeline count, and 30s refresh. |
 | Workflow/audit | **Done** | Append-only case history, scoped attachments, staff action UI, and admin `audit_log`. |
 | Search/filters | **Done** | Case region/date/category/status/bureau filters, sorting, pagination, exports, and paginated/filterable notifications. |
@@ -30,8 +32,9 @@ Status legend:
 | Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
-| Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Institution representatives deferred. |
-| Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 7 CI green on `4abd2f3`. |
+| Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
+| Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
+| Stage 9 next phase | **Planned** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. See §11.2. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -44,6 +47,9 @@ Status legend:
 | Regions | Official AICTE regional offices as a `regions` master | Stage 1 model/seed; Stage 4 labels/filters complete |
 | "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports complete |
 | SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs implemented; manual escalation only |
+| Stage 9 auto-merge | Exact AICTE ID, cross-bureau, both non-disposed, combined `0.85`, text `0.75`, no JEV veto; flat reversible group; revert suppresses re-merge | **Planned**; fuzzy/manual paths unchanged |
+| Stage 9 representatives | Separate `INSTITUTION_REPRESENTATIVE`, admin approval/revocation, institution scope, public projection only; domain suggestion never grants access | **Planned** Phase 2 |
+| Stage 9 GIS/charts | Local SVG primitives + bundled India outline; no external chart/tile/geo service | **Planned** Phase 4 |
 | Target users | Authorized AICTE officials = MVP | Role/scope matrix |
 
 ## 1. Objectives
@@ -96,7 +102,7 @@ Status legend:
 | OVR-04 | Re-evaluate after case movement | **Done** | Re-assessment on create/assign/transfer/institution name/AICTE/region change; manual `POST /overlaps/assess` | Periodic sweep/background batch remains. |
 | OVR-05 | Explain why cases are related | **Done** | match type, confidence, reason, probabilities, Jev rationale, compare view | Institution/region names resolved in DTOs. |
 | OVR-06 | Notify only concerned officials | **Done** | `lib/notifications.ts` scoped recipients | Involved bureau officers + regional officers + `ADMIN`/`SENIOR_MANAGEMENT`/`COMPETENT_AUTHORITY`; deduped per relationship. |
-| OVR-07 | Human decision only | **Done** | PENDING relationships; confirm/dismiss; no auto-merge | Preserve invariant. |
+| OVR-07 | Human decision by default | **Done**; Stage 9 exception **Planned** | PENDING relationships; confirm/dismiss; no auto-merge today | Stage 9 adds only exact-institution high-confidence reversible auto-merge; every other pair stays manual. |
 | OVR-08 | Scale | **Partial** | Fuzzy scan capped at 500 institutions; sequential Jev calls | Acceptable for demo; indexed blocking/background batch needed for production. |
 
 ## 5. Feature 4 — Real-Time Dashboard
@@ -177,7 +183,7 @@ Status legend:
 |---|---|---|---|---|
 | INV-01 | Data matching + rules + AI even when descriptions/references differ | **Done** | exact institution + normalized/fuzzy + Jev | Keep rules-first. |
 | INV-02 | Exact heading | **Done** | `OVERLAP.HEADING` | Exact-string (Unicode en dash) assertion added in integration tests. |
-| INV-03 | Human decides coordination | **Done** | review workflow; assessments separate | No auto-merge/confirm. |
+| INV-03 | Human decides coordination by default | **Done**; Stage 9 exception **Planned** | review workflow; assessments separate | Stage 9 adds bounded reversible exact-institution auto-merge; AI/Jev never auto-confirms. |
 | INV-04 | Explainability | **Done** | match type, confidence, reason, probabilities, Jev rationale | Add plain-language evidence panel refinements later. |
 | INV-05 | Robustness at scale | **Partial** | Fuzzy scan capped at 500 institutions; sequential Jev calls | Batch/queue, indexed blocking, concurrency limits. |
 

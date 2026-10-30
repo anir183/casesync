@@ -62,15 +62,18 @@ The internal dashboard remains the source of truth.
 | `/cases/:id` | Case workspace | Overview; action panel (assign, transfer, escalate, dispose, remark, next action); timeline; assignment history; related/overlap cases; attachments; SLA indicator. |
 | `/institutions` | Institution registry | Search by name/AICTE ID/region; case counts; verification status. |
 | `/institutions/:id` | Institution profile | Identity, region, address, verified flag; consolidated case history across bureaus; open/overdue counts; related overlaps. |
-| `/overlaps` | Coordination queue | Pending/confirmed/dismissed; filters bureau, region, match type; confidence/AI signal; age; pagination. |
-| `/overlaps/:id` | Compare & review | Side-by-side cases; institution; match evidence; Jev assessment; confirm/dismiss with notes; audit. |
-| `/reports` | Reports | Date range, bureau, region, status, category filters; bureau/region/institution/status/ageing/disposal/overlap/monthly/quarterly; CSV export. |
-| `/notifications` | Notification centre | Unread/all, type filter, deep links, mark read/all; pagination. |
+| `/overlaps` | Coordination queue | Current review states; Stage 9 planned tabs for auto-merged, needs-review, and reverted; filters bureau, region, match type; confidence/AI signal; age; pagination. |
+| `/overlaps/:id` | Compare & review | Side-by-side cases; institution; match evidence; Jev assessment; confirm/dismiss with notes; Stage 9 planned score breakdown, merge/revert controls, audit. |
+| `/merge-groups/:id` | Merge-group detail (planned Stage 9) | Canonical case, member case numbers/statuses, merge/revert audit, neutral duplicate-determination notice. |
+| `/reports` | Reports | Date range, bureau, region, status, category filters; bureau/region/institution/status/ageing/disposal/overlap/monthly/quarterly; CSV export. Stage 9 plans chart-first views and a local GIS region map. |
+| `/notifications` | Notification centre | Unread/all, type filter, deep links, mark read/all; pagination. Stage 9 plans a persistent bell with a five-item preview. |
 | `/admin/users` | User administration | Create/deactivate users; assign role, bureau, region; reset password/invite. |
 | `/admin/organization` | Org configuration | Bureaus, regions, categories. |
 | `/admin/sla` | SLA rules | Defaults + bureau/category/region overrides; reminder offsets; active flag. |
 | `/admin/institutions` | Institution data quality | Create/edit/verify/merge/alias; duplicate warnings. |
-| `/admin/audit` | Admin audit | User/role/bureau/SLA changes. |
+| `/admin/institution-domains` | Email-domain allowlist (planned Stage 9) | Add/verify/activate institution email domains; suggestions only. |
+| `/admin/institution-representatives` | Representative approvals (planned Stage 9) | Approve/reject/revoke institution representative access. |
+| `/admin/audit` | Admin audit | User/role/bureau/SLA changes; Stage 9 adds merge/revert and representative audit actions. |
 
 #### Role-aware behavior
 
@@ -80,15 +83,21 @@ The internal dashboard remains the source of truth.
 | `REGIONAL_OFFICER` | Own region queue | Own region cases/institutions/reports | Regional case actions per policy |
 | `SENIOR_MANAGEMENT` | Cross-bureau dashboard | All cases/reports/overlaps | Transfer, escalate, dispose, confirm/dismiss overlaps |
 | `COMPETENT_AUTHORITY` | Cross-bureau dashboard | All | Sensitive disposal, reopen, overlap decisions |
-| `INSTITUTION_REPRESENTATIVE` (Stage 9) | Institution queue | Only their institution's complaints, public data | Public responses and evidence only; no information requests, status changes, internal notes, or complainant PII |
-| `ADMIN` | Dashboard + admin | All | All case actions + admin configuration |
+| `COMPLAINANT` (Stage 8, optional) | Portal dashboard | Own complaints and public data | File/track, respond, accept/reopen; no internal data |
+| `INSTITUTION_REPRESENTATIVE` (planned Stage 9) | Institution dashboard | Only their institution's complaints and public data | Public responses and evidence only; no information requests, status changes, internal notes, or complainant PII |
+| `ADMIN` | Dashboard + admin | All | All case actions + admin configuration + representative/domain approval |
 | `VIEWER` | Dashboard | Read-only scoped/all per policy | Nothing |
 
-#### Optional extension shell (later)
+#### Optional extension shells
 
-`/signup`, `/track`, `/my/complaints`, `/my/complaints/new`,
-`/my/complaints/:id`, `/my/notifications`, `/my/profile`, plus institution
-representative views. These are not part of MVP acceptance.
+The Stage 8 complainant portal is implemented at `/portal` and related routes
+(`/portal/login`, `/portal/signup`, `/portal/dashboard`, `/portal/verification`,
+`/portal/complaints/new`, `/portal/complaints/:id`, `/portal/notifications`,
+`/portal/track`). These are not part of MVP acceptance.
+
+Stage 9 plans a separate representative shell at `/institution` with dashboard, scoped
+cases, notifications, profile, and a public response/evidence-only case view. It remains
+outside MVP acceptance.
 
 ## 3. End-state data model
 
@@ -158,8 +167,14 @@ Optional extension adds `ACKNOWLEDGED`, `AWAITING_COMPLAINANT`, `CLOSED`.
 4. System creates PENDING relationship, notifies concerned officials.
 5. Queue shows exact heading and side-by-side comparison.
 6. Jev (if enabled) adds likely-same-issue/coordination evidence.
-7. Senior/officer confirms or dismisses with notes; decision audited.
-8. Institution profile shows both cases and the confirmed relationship.
+7. Stage 3 baseline: senior/officer confirms or dismisses with notes; decision audited.
+8. Planned Stage 9: an exact-institution pair that passes the combined `0.85` score and
+   `0.75` text gate, with both cases non-disposed and no JEV veto, auto-merges into a
+   reversible flat merge group. Every other pair, including fuzzy-name matches, stays in
+   human review.
+9. A revert returns the pair to manual review, suppresses automatic re-merge, and
+   preserves both original complaint histories.
+10. Institution profile shows both cases and the confirmed/merged relationship.
 
 ### J3 — Monitor deadlines (senior/regional)
 
@@ -180,7 +195,21 @@ Optional extension adds `ACKNOWLEDGED`, `AWAITING_COMPLAINANT`, `CLOSED`.
 1. Create/deactivate a user; assign role, bureau, region.
 2. Create a bureau/region/category; configure SLA.
 3. Verify/merge an institution; resolve duplicates.
-4. Audit log records every admin change.
+4. Planned Stage 9: approve/reject/revoke institution representative access and manage
+   institution email-domain suggestions.
+5. Audit log records every admin change, including planned merge/revert and
+   representative approval actions.
+
+### J6 — Institution representative responds (planned Stage 9)
+
+1. A representative requests access with institution selection; an email-domain match
+   may prefill a suggestion but never verifies the account.
+2. The account can sign in to a pending/rejected state until an admin approves it.
+3. Approval binds the server-side institution scope; revocation invalidates sessions.
+4. The representative sees only that institution's complaints in the public projection.
+5. They can post public responses and attach public evidence.
+6. They cannot request information, change status, read internal notes, see complainant
+   PII, or access another institution's case by ID.
 
 ## 5. Stage map
 
@@ -215,7 +244,7 @@ layout.
   enriches, re-assessment runs on create/assign/transfer/institution change, review
   notifications are scoped and deduped, the queue is filtered/paginated, and manual
   link/unlink is available. API and web typecheck; 71 API unit tests, 10 web tests, and
-  45 DB-backed integration tests pass; integration tests cannot call real Jev.
+  50 DB-backed integration tests pass; integration tests cannot call real Jev.
 - Stage 4 implementation is complete: scoped dashboard/search/reports, region names and
   filters, quarterly grouping, CSV exports, shared disposal/reopened metrics, inclusive
   UTC bounds, notification pagination, deterministic demo seed/reset, and reconciliation
@@ -226,7 +255,8 @@ layout.
 - Stage 8 is implemented: complainant signup/login, exact-AICTE verification, document
   review fallback with admin approval, filing/tracking, ownership checks, public/internal
   messages and attachments, staff conversation/actions, and dedicated security/E2E
-  coverage. Institution representative accounts are now planned for Stage 9.
+  coverage. Institution representative accounts are planned for Stage 9; they were not
+  required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
 - Stage 9 is planned, not implemented: baseline/tooling fixes, reversible high-confidence
@@ -300,7 +330,7 @@ officials without cross-bureau data leakage.
 **Current gaps:** none blocking the internal MVP; manual screen-reader/mobile checks and
 hosting remain operational follow-ups. Bureau/region/category CRUD, admin `audit_log`,
 and admin users/organization web screens are delivered in Stage 6. The backend is
-verified by 45 DB-backed integration tests covering signup blocking, scoping,
+verified by 50 DB-backed integration tests covering signup blocking, scoping,
 IDOR, dashboard totals, admin guards, deactivation/session revocation, institution
 writes, case registration scope, pagination, duplicate checks, officer directory, the
 full lifecycle audit trail, Stage 3 overlap correctness/coordination, and Stage 6
@@ -387,8 +417,8 @@ coordinate it.
 - Hardened `overlap.service.ts`; manual link/unlink routes; queue pagination/filters.
 - `overlap.scan.ts` for periodic sweeps (still pending).
 - Relationship creation policy module with tests.
-- Tests: enabled/disabled/failure/timeout; exact heading; no auto-confirm;
-  re-assessment after transfer.
+- Tests: enabled/disabled/failure/timeout; exact heading; human review by default;
+  re-assessment after transfer. Stage 9 will add the bounded auto-merge exception.
 
 **Exit criteria**
 - With `JEV_ENABLED=false`, two seeded same-institution cross-bureau cases produce
@@ -450,7 +480,7 @@ confirm, dismiss, manually link, or unlink with notes and append-only audit acti
 **Contribution:** converts operational data into oversight and data-driven
 decision-making, one of the stated outcomes.
 
-**Current gaps:** no blocking gaps; Stage 7 stress-data performance budgets cover the documented page budget. SLA-driven overdue remains Stage 5.
+**Current gaps:** no blocking gaps; Stage 7 stress-data performance budgets cover the documented page budget, and SLA-driven overdue is implemented in Stage 5. Stage 9 plans chart-first reports and a local GIS region map.
 
 ---
 
@@ -556,7 +586,8 @@ edit DB" from operations.
 - Complaint filing/tracking, public status mapping, public messages.
 - Public vs internal visibility enforced server-side.
 - Attachments with visibility.
-- Institution representative accounts (deferred; not required for this stage).
+- Institution representative accounts were not required for Stage 8; they are planned for
+  Stage 9 with a separate role, approval lifecycle, and institution scope.
 - Rate limits, abuse controls, PII redaction, public projections.
 - Separate E2E/security suite.
 
@@ -582,6 +613,44 @@ edit DB" from operations.
 - Staff workflow remains unchanged.
 
 **Contribution:** extends reach and transparency; explicitly separate from MVP.
+
+---
+
+### Stage 9 — Next phase (planned, not implemented)
+
+**Goal:** close the remaining product, usability, and operational gaps without reopening
+Stages 0–8. The decision-complete plan is
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
+
+**Planned phases**
+
+| Phase | Scope |
+|---|---|
+| 0 | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
+| 1 | Reversible auto-merge for exact-institution high-confidence pairs; explainable score, flat merge group, revert/suppression, audit, queue/detail UI, neutral banner. |
+| 2 | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
+| 3 | Information architecture: primary links + More, persistent notification bell, role landings, consolidated case tabs, explicit resolution loop. |
+| 4 | Visual redesign with local SVG charts, chart-first dashboard/reports, region coordinates, `/reports/geo`, bundled India outline, accessible table fallback. |
+| 5 | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. |
+| 6 | Documentation/ADR/polish pass and final QA matrix without a deployment step. |
+
+**Planned contracts**
+
+- Auto-merge thresholds: combined `0.85`, text gate `0.75`; exact AICTE institution-ID
+  match, cross-bureau, both non-disposed, no active group, no suppression, no JEV veto.
+- Relationship `mergeStatus`: `candidate`, `manual_review`, `auto_merged`,
+  `manual_merged`, `reverted`. Revert returns the pair to manual review and suppresses
+  automatic re-merge until human clearance.
+- `case_merge_groups` is flat with one canonical case and an immutable member snapshot;
+  member complaints are never rewritten.
+- Representative access comes from the authenticated user and public projections only;
+  domain suggestions never verify or grant access.
+- GIS is region-bubble over a bundled local outline; no external tile or geo service.
+- Deployment remains out of scope.
+
+**Exit criteria:** every Phase 0–6 gate and the Stage 9 definition of done in
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. This section stays
+**planned** until then.
 
 ## 7. Definition of Done (applies to every stage)
 
@@ -622,16 +691,20 @@ Stage 6 (done — admin + attachments + data quality)
    ↓
 Stage 7 (done — QA + CI + release)
    ↓
-Stage 8 (done — optional public portal; institution representatives deferred)
+Stage 8 (done — optional public portal)
+   ↓
+Stage 9 (planned — baseline, auto-merge, representatives, flows/UI/GIS, hardening, docs)
 ```
 
-Parallelizable now:
-- Stage 7 browser E2E can be added for Stages 2–4 while Stage 5 starts.
-- Stage 5 job scaffolding can start once SLA semantics are decided.
-- Stage 7 CI can start early (lint/typecheck/unit) and grow per stage.
+Parallelizable in Stage 9:
+- Phase 1 (auto-merge) and Phase 2 (representatives/domains) can run in parallel after
+  Phase 0.
+- Phase 3 needs the Phase 2 role model and routes.
+- Phase 4 needs the Phase 3 navigation and screen inventory.
+- Phases 5–6 run continuously and close the stage.
 
 Stage 8 followed Stage 7 so the public portal could reuse the hardened security, test,
-and CI foundation instead of delaying the MVP.
+and CI foundation instead of delaying the MVP. Stage 9 keeps deployment out of scope.
 
 ## 9. Risks and mitigations
 

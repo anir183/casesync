@@ -1,12 +1,18 @@
 # CaseSync - UI/UX Design Plan
 
-Status: active design reference (implemented shell + remaining targets). Location: `docs/product/ui-ux-design-plan.md`.
+Status: active design reference (implemented shell + planned Stage 9 targets). Location:
+`docs/product/ui-ux-design-plan.md`.
 
-The implemented shell has login, dashboard, case registry and detail, case registration,
-institution registry (list/create/edit/verify) and profile, overlap queue and detail with
-filters/pagination and manual link/unlink, reports, notifications, and paginated tables.
-Remaining design targets are the admin user/organization screens, notification
-pagination, and optimistic mutation states (Stages 4–6).
+The implemented shell has login, scoped dashboard, case registry and detail, case
+registration, institution registry (list/create/edit/verify) and profile, overlap queue
+and detail with filters/pagination and manual link/unlink, reports, notifications, the
+admin user/organization/SLA/audit/verification screens, the public complainant portal,
+and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
+
+**Stage 9 targets are planned, not implemented:** baseline navigation/flow refresh,
+notification bell, representative shell, auto-merge queue/controls, chart-first
+dashboard/reports, and a local GIS region map. The decision-complete plan is
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
 - **Simple, minimal, modern** - Clean layout, no visual clutter
@@ -71,6 +77,19 @@ Use CSS variables for theming.
 **Radius:** sm/md/lg consistent via `--radius`
 **Shadows:** subtle only (sm/md) - avoid heavy drop shadows
 
+### Stage 9 visual target (planned)
+
+- Deep indigo primary with a teal accent, semantic success/warning/danger/info, and
+  neutral surfaces; validate WCAG AA contrast in light and dark.
+- Add spacing, radius, elevation, typography, focus, and chart tokens.
+- Add shared `Card`, `StatCard`, `Badge`, `Button`, responsive table-to-card, skeleton,
+  empty-state, and local SVG chart primitives.
+- Status never relies on colour alone; focus rings stay visible; respect
+  `prefers-reduced-motion`.
+- Charts and the GIS map use local primitives and a bundled India outline. No chart or
+  map service, external tile provider, or runtime geo API is added.
+- Lazy-load chart/map routes and keep the main bundle within a documented budget.
+
 ## Layout
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -81,21 +100,27 @@ Use CSS variables for theming.
 └──────────┴──────────────────────────────────────────────┘
 ```
 
-**Sidebar nav (single source of truth):**
-- Dashboard
-- Cases
-- Institutions
-- Overlaps (Review Queue) - badge for pending count
-- Reports
-- Notifications
-- Admin (visible only to `ADMIN`; Users, Organization, SLA, Audit)
-- Settings (minimal if needed)
+**Current sidebar nav:** Dashboard · Cases · Institutions · Overlaps (Review Queue) ·
+Reports · Notifications · Admin (visible only to `ADMIN`) · Settings. This is a flat
+staff list and is the baseline Stage 9 replaces.
 
-**No duplicate nav entries.** Every feature accessible via exactly one primary route.
+**Stage 9 target staff nav (planned):**
+- Primary: **Dashboard**, **Cases**, **Institutions**, **Overlaps**, **Reports**.
+- **More** overflow: Notifications, Admin users, Admin verification, Organization, SLA,
+  Audit (role-filtered).
+- Persistent **notification bell** with unread count and a five-item preview; “View all”
+  links to `/notifications`. The bell is the only unread indicator.
+- Mobile drawer/sheet uses the same grouping; admin items stay grouped.
 
-**Portal nav (separate shell):** Dashboard · Verification · File complaint ·
+**No duplicate nav entries.** Every feature is reachable from exactly one primary route or
+the More group.
+
+**Portal nav (separate shell):** Dashboard · My complaints · File complaint ·
 Notifications · Track complaint · Sign out. Staff navigation is not shown to
 complainants, and portal routes are not shown to staff.
+
+**Representative shell (planned Stage 9):** Dashboard · Cases · Notifications · Profile.
+No staff/admin links and no internal case tabs.
 
 ## Core Screens
 
@@ -107,10 +132,11 @@ complainants, and portal routes are not shown to staff.
 | **Case Details** | Single case view | Tabs: Overview, Actions/History (append-only timeline), Assignments, Related/Overlaps, Attachments. Actions consolidated in relevant tab |
 | **Institutions** | List/search institutions | Clean table, click → institution profile |
 | **Institution Profile** | Full history | Institution info + all cases across bureaus, statuses, quick access to case details |
-| **Overlaps (Review Queue)** | Priority queue | List of pending assessments. Card/list view with institution, both cases, bureaus, AI assessment summary |
-| **Overlap Compare View** | Side-by-side review | Two panels (Case A/B), evidence panel (same institution, different bureaus), Jev assessment (structured), actions: Confirm/Dismiss with notes. **No auto-confirm** |
-| **Reports** | Analytics | Simple tables/charts minimal. Filterable by date/bureau/region/status/category; scoped to role |
-| **Notifications** | Alerts | List with read/unread, type filter, link to canonical destination |
+| **Overlaps (Review Queue)** | Priority queue | Current review queue plus Stage 9 planned tabs for Auto-merged, Needs review, and Reverted; institution, both cases, bureaus, score/assessment summary |
+| **Overlap Compare View** | Side-by-side review | Two panels (Case A/B), evidence panel (same institution, different bureaus), Jev assessment, confirm/dismiss with notes. Stage 9 plans score breakdown, group members, merge/revert controls, and mandatory revert reason. |
+| **Merge Group (planned Stage 9)** | Reversible merge detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral “not a duplicate determination” notice; no other complainant's PII |
+| **Reports** | Analytics | Stage 9 target is chart-first with table drill-down, current-filter CSV export, and a local GIS region bubble map. Filterable by date/bureau/region/status/category; scoped to role |
+| **Notifications** | Alerts | List with read/unread, type filter, link to canonical destination. Stage 9 plans a persistent bell with unread count and five-item preview. |
 | **Case Registration** | Create a case | Single form (institution resolution, bureau, category, received date, description, next action). Duplicate-institution warning before submit |
 | **Institutions (Registry)** | Manage institutions | Search by name/AICTE ID/region; create/edit/verify (role-gated); duplicate warning; row → profile |
 | **Admin — Users** | Staff management | Invite/create, role/bureau/region assign, deactivate/reactivate; no public sign-up |
@@ -123,6 +149,11 @@ complainants, and portal routes are not shown to staff.
 | **Portal Complaint Detail** | Track/respond | Public status stepper, conversation, public documents, accept resolution, reopen |
 | **Portal Track** | Anonymous lookup | Case number + email; generic not-found state; no attachments |
 | **Portal Notifications** | Complainant updates | Public deep links only, no internal references |
+| **Representative Signup (planned Stage 9)** | Institution access request | Institution selection, role, optional evidence; email-domain suggestion is labelled “suggested, not verified” |
+| **Representative Shell (planned Stage 9)** | Institution queue | Dashboard, scoped cases, public thread/documents, public reply/evidence only, notifications, profile; pending/rejected/revoked landing states |
+| **GIS Region Map (planned Stage 9)** | Regional overview | Region bubbles over a bundled local India outline; tooltip, keyboard focus, table fallback; no external tiles |
+| **Admin — Institution Domains (planned Stage 9)** | Email allowlist | Add/verify/activate domains; suggestion-only explanation |
+| **Admin — Representatives (planned Stage 9)** | Access approvals | Pending/approved/rejected/revoked queue; approve/reject/revoke with reason |
 
 ## Staff Workflow Screens
 
@@ -130,11 +161,19 @@ complainants, and portal routes are not shown to staff.
   Reopen, Add remark, Set next action. Each opens a `ConfirmDialog`/form with
   remarks + optional due date; destructive actions (dispose/transfer) require
   confirmation and show exactly what will change.
-- **History tabs**: Overview · Actions (append-only timeline) · Assignments (current +
-  history with officer names and date ranges) · Related/Overlaps · Attachments.
+- **History tabs**: current Overview · Actions (append-only timeline) · Assignments
+  (current + history with officer names and date ranges) · Related/Overlaps ·
+  Attachments. Stage 9 plans consolidation to **Overview · Conversation · Documents ·
+  Timeline · Related**, with rare actions in an overflow menu.
 - **Overlap compare view**: per-case panels, evidence (institution, bureaus, region,
   match type, confidence), Jev assessment (probabilities/confidence/status), and
-  Confirm/Dismiss with mandatory notes. No auto-confirm.
+  Confirm/Dismiss with mandatory notes.
+- **Auto-merge (planned Stage 9)**: AI/Jev never auto-confirms or merges. A rules-based,
+  reversible auto-merge applies only to exact-institution high-confidence pairs; every
+  other pair stays in human review. Revert requires a reason and returns the pair to
+  manual review with suppression.
+- **Merge banner (planned Stage 9)**: neutral “linked to a merge group” banner on case
+  Overview/Related, linking to the group; never another complainant's PII.
 - **Officer/actor names** are resolved server-side and shown everywhere an ID exists;
   never render raw Better Auth IDs to staff.
 - **Optimistic feedback**: disable submit while pending, show toast on success, show
@@ -150,7 +189,11 @@ complainants, and portal routes are not shown to staff.
 - SLA: default + overrides, acknowledge/resolve days, reminder windows; preview the
   computed deadline before saving.
 - Institutions: verify, edit, merge/alias with duplicate warnings (Stage 6).
-- Audit: read-only list; no edit/delete affordance.
+- Institution domains (planned Stage 9): admin-managed allowlist; suggestion-only.
+- Institution representatives (planned Stage 9): pending/approved/rejected/revoked queue;
+  approve/reject/revoke with reason and session invalidation on revoke.
+- Audit: read-only list; no edit/delete affordance; Stage 9 adds merge/revert and
+  representative actions.
 
 ## Scope, SLA and table patterns
 
@@ -186,10 +229,13 @@ Every data screen defines four states:
 - Tables have caption/scope headers; icon-only buttons have accessible names.
 - Keyboard-only path for login, filters, registration, and overlap confirm/dismiss.
 - Respect `prefers-reduced-motion`.
+- Planned Stage 9: every chart has accessible labels and a data-table fallback; each
+  region bubble is keyboard-focusable and has a text summary; the notification bell has
+  an accessible unread count and preview; mobile drawer/sheet parity.
 
-## Optional extension — public complainant portal (NOT MVP)
+## Optional extension — public complainant portal (Stage 8 implemented; representative shell planned)
 
-Design these only after Stages 0–7 are accepted. Never mix them into internal MVP
+The public complainant portal is implemented as Stage 8. It remains outside MVP
 acceptance:
 
 - Public landing/status lookup, complainant sign-up/login, file complaint, my
@@ -199,6 +245,9 @@ acceptance:
 - Ownership/IDOR checks, rate limits, CAPTCHA/abuse controls, and a separate security
   suite.
 
+Stage 9 plans the separate institution representative shell and admin approval/domain
+screens described above. Do not present them as implemented before their gates pass.
+
 
 ## Components (shadcn/ui based)
 Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Textarea`, `Tabs`, `Sheet`, `Dialog`, `Tooltip`, `DropdownMenu`, `Sonner` (toasts), `Skeleton`
@@ -206,11 +255,13 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 **Shared:**
 - `PageHeader` - title, description, actions
 - `DataTable` - generic wrapper around TanStack Table
-- `StatusBadge` - status colors consistent
+- `StatusBadge` - status colors consistent, never colour-only
 - `Timeline` - append-only action history
 - `EmptyState` - helpful message + action
-- `ConfirmDialog` - for destructive/important actions (transfer/dispose/confirm)
+- `ConfirmDialog` - for destructive/important actions (transfer/dispose/confirm/revert)
 - `ThemeToggle` - light/dark/system
+- Planned Stage 9: `Card`, `StatCard`, `NotificationBell`, `MergeBanner`, chart
+  primitives, region map, and responsive table-to-card primitives.
 
 ## UX Rules
 - **One action path** - Don't put "view case" in 5 places; use row click + canonical link
@@ -248,10 +299,18 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 8. **Polish** - Spacing, empty/loading/error/permission states, responsive tables
 9. **Test UX** - Keyboard nav, focus trapping, contrast, theme switch
 
+### Stage 9 planned implementation order
+
+1. Primary/More navigation, notification bell, role landings, and case-tab consolidation.
+2. Merge queue/detail/group controls and neutral banner.
+3. Representative shell plus admin representative/domain screens.
+4. Design tokens/primitives, chart-first dashboard/reports, and the local GIS map.
+5. Accessibility re-scan, keyboard/zoom/reduced-motion checks, and bundle budget.
+
 ## DoD
 - [ ] Dark/light mode works, no flash of wrong theme
 - [ ] Single nav, no duplicated functionality; admin nav hidden from non-admins
-- [ ] All features accessible in ≤2 clicks from nav
+- [ ] All features accessible in ≤2 clicks from nav (or primary + More on mobile)
 - [ ] Overlap compare view is clear and unambiguous
 - [ ] Case can be registered and driven through its lifecycle entirely in the UI
 - [ ] Scope indicator reflects server-side scope; non-admins cannot widen it
@@ -263,3 +322,15 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 - [ ] Consistent components used
 - [ ] Keyboard-only pass and AA contrast verified
 - [ ] Public portal designs live only in the optional-extension section
+
+Stage 9 planned additions to this DoD:
+
+- [ ] Notification bell is the only unread indicator and reaches `/notifications`.
+- [ ] Every role, including `INSTITUTION_REPRESENTATIVE`, has a clear landing and empty
+      state.
+- [ ] Merge/revert controls are explainable, reversible, and never expose another
+      complainant's PII.
+- [ ] Dashboard/report charts reconcile with API/table numbers and have table fallbacks.
+- [ ] The GIS map works offline from a bundled outline and is keyboard/screen-reader
+      accessible.
+- [ ] No external chart/map/tile dependency is introduced.

@@ -37,7 +37,7 @@ Last verified: 2026-10-30.
 | Stage 6 — admin, attachments, audit | Complete |
 | Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
 | Stage 8 — public portal | Complete; CI green on `5666cad` |
-| Stage 9 — next phase | **Planned**; reversible auto-merge, institution representatives, flow/UI redesign, GIS, hardening, polish |
+| Stage 9 — next phase | **Planned**; exact-institution reversible auto-merge, institution representatives, flow/UI redesign, local GIS, hardening, polish |
 
 ### Working
 
@@ -122,8 +122,9 @@ Stage 9 is the planned closure path for the product gaps:
 
 - Institution representative accounts are planned, not deferred: a separate external
   role, institution-side scoping, an approval model, and an email-domain allowlist.
-- Reversible high-confidence overlap auto-merge is planned; Stage 3's human-review
-  workflow remains the default for unresolved or low-confidence pairs.
+- Reversible high-confidence auto-merge is planned only for exact-institution pairs that
+  pass the confidence/text gates and have no JEV veto; Stage 3's human-review workflow
+  remains the default for every other pair.
 - The navigation, dashboard, reports, and case-detail surfaces are due for the Stage 9
   flow/visual refresh, including charts and a local GIS region map.
 - Baseline debt remains: `actions/checkout@v4` Node 20 deprecation, `ubuntu-latest`

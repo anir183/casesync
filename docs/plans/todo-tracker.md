@@ -25,8 +25,8 @@
 - [x] Jev backend-only, pairwise decision model
 - [x] DB narrows, Jev evaluates; rules-first; human-in-the-loop
 - [x] Human review by default; AI assessments separate from human relationships
-- [ ] Stage 9: bounded, reversible auto-merge for high-confidence pairs (decision locked
-      2026-10-30; not yet implemented)
+- [ ] Stage 9: bounded, reversible auto-merge for exact-institution high-confidence pairs
+      (decision locked 2026-10-30; not yet implemented)
 - [x] Append-only `case_actions`
 - [x] No magic strings/numbers; extract when reused; composition over inheritance
 - [x] No git commit/push unless explicitly asked
@@ -247,10 +247,13 @@ The portal remains an extension outside MVP acceptance.
 
 ## Stage 9 — Next phase (PLANNED — not started)
 
-Full plan: `docs/plans/next-phase-plan.md`. Locked decisions: auto-merge enabled
-immediately; revert returns a pair to manual review; neutral merge banner; representatives
-may post public responses/evidence only; GIS uses local region bubbles; email-domain
-matching is suggestion-only; deployment is out of scope.
+Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `planned`). Locked
+decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
+that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
+review and suppresses automatic re-merge; the merge group is flat with one canonical case;
+the merge banner is neutral; representatives may post public responses/evidence only; GIS
+uses local region bubbles over a bundled India outline with no external tile/geo service;
+email-domain matching is suggestion-only; deployment is out of scope.
 
 ### Phase 0 — Baseline fixes and audit
 
@@ -265,11 +268,13 @@ matching is suggestion-only; deployment is out of scope.
 
 ### Phase 1 — Reversible overlap auto-merge
 
-- [ ] Add shared confidence scoring (combined default `0.85`, text gate `0.75`, JEV veto).
+- [ ] Add shared confidence scoring (combined default `0.85`, text gate `0.75`, JEV veto)
+      with exact-institution-only, cross-bureau, non-disposed eligibility.
 - [ ] Extend `case_relationships` with score/signals/merge status/group/revert fields.
-- [ ] Add `case_merge_groups` with canonical case, members, immutable snapshot, active
-      unique index, and revert metadata.
-- [ ] Auto-merge after overlap assessment; idempotent and non-blocking on failure.
+- [ ] Add flat `case_merge_groups` with one canonical case, members, immutable snapshot,
+      partial unique active indexes, and revert metadata.
+- [ ] Auto-merge after overlap assessment; idempotent, atomically claimed, and
+      non-blocking on failure; honor `OVERLAP_AUTO_MERGE_ENABLED` as a kill switch.
 - [ ] Manual merge and revert APIs with mandatory reasons and audit actions.
 - [ ] Queue/detail tabs for auto-merged, needs-review, and reverted; score breakdown;
       revert control; neutral case banner.
@@ -307,8 +312,8 @@ matching is suggestion-only; deployment is out of scope.
 - [ ] Chart-first dashboard (KPI trends, status donut, volume trend, category bars, SLA
       gauge, recent activity, map preview) that reconciles with the API.
 - [ ] Chart-first reports with table drill-down and current-filter export.
-- [ ] Add region coordinates, `/reports/geo`, local India GeoJSON, region bubbles, tooltip,
-      keyboard focus, and table fallback.
+- [ ] Add region coordinates, `/reports/geo`, a bundled local India outline, region
+      bubbles, tooltip, keyboard focus, and table fallback.
 - [ ] Lazy-load charts/map; keep the main bundle under budget.
 - [ ] Axe, keyboard, zoom/reflow, reduced-motion, and manual screen-reader checks.
 

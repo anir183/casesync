@@ -1,15 +1,20 @@
 # CaseSync — User Flow & Portal Plan
 
-Status: implemented design. Internal-official MVP is the committed scope; the public
-complainant experience is an **optional Stage 8 extension** and remains outside MVP
-acceptance. See `docs/requirements/requirements-realignment.md` for the gap list and
+Status: implemented design plus planned Stage 9 targets. Internal-official MVP is the
+committed scope; the public complainant experience is an **optional Stage 8 extension**
+and remains outside MVP acceptance. Stage 9 is **planned, not implemented**: baseline
+fixes, exact-institution reversible auto-merge, institution representatives, flow/UI
+refresh, charts/GIS, hardening, and docs. See
+`docs/plans/next-phase-plan.md` for the decision-complete plan,
+`docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
 
 > **Scope banner.** CaseSync MVP is an **internal, authorized-official dashboard**
 > (RB, PGRC, other bureaus/cells, regional offices, senior management, competent
 > authority, admin). **Stage 8 is implemented** as a separate public complainant portal,
 > with self-signup verified by AICTE institution ID and a document-review/admin-approval
-> fallback. Public-portal sections below describe that extension; do not use them as MVP
+> fallback. Stage 9 plans institution representative accounts as a separate external
+> shell. Public/representative sections describe extensions; do not use them as MVP
 > acceptance criteria.
 
 ## 1. Purpose
@@ -19,7 +24,7 @@ portal also needs a **public complainant experience** and a clear split between
 public updates and internal notes. This document defines personas, permissions,
 screens, journeys, data changes, APIs, and a phased delivery plan.
 
-## 2. Current state (verified 2026-10-29)
+## 2. Current state (verified 2026-10-30)
 
 ### What exists
 - Staff accounts are admin-invite-only (`STAFF_SIGNUP_ENABLED=false`) and the API
@@ -60,7 +65,9 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Public/internal note and attachment separation enforced server-side.
 - Public notifications, complainant ownership/IDOR checks, dedicated rate limits, and
   public projections with no internal notes, findings, actor IDs, or Jev data.
-- Institution representative accounts are deferred.
+- Institution representative accounts are **planned for Stage 9**, not deferred: a
+  separate role, approval lifecycle, institution scope, and suggestion-only email-domain
+  allowlist. They are not implemented today.
 
 ## 3. Personas and roles
 
@@ -69,7 +76,7 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 | Role | Who | Primary job |
 |---|---|---|
 | `COMPLAINANT` (Stage 8, optional) | Student, faculty, institution staff, public | File/track complaints, respond, upload evidence, accept/reopen. Self-signup verified by AICTE institution ID; otherwise document review + admin approval |
-| `INSTITUTION_REPRESENTATIVE` (optional) | Authorised institution contact | See and respond to complaints against their institution |
+| `INSTITUTION_REPRESENTATIVE` (planned Stage 9) | Authorised institution contact | See institution-scoped complaints, post public replies, attach public evidence; no internal data or status changes |
 | `BUREAU_OFFICER` | PGRC/RB/other cell officer | Triage, assign, work, reply, escalate, recommend disposal |
 | `REGIONAL_OFFICER` | Regional office | Regional queue, escalate, monitor SLAs |
 | `SENIOR_MANAGEMENT` | Senior AICTE management | Cross-bureau oversight, dispose, confirm overlaps, reports |
@@ -77,8 +84,9 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 | `ADMIN` | System administrator | Users, roles, bureaus, SLA, categories, audit |
 | `VIEWER` | Auditor/read-only internal user | Read-only reports and audit |
 
-Mapping: keep existing internal roles; add `COMPLAINANT`; repurpose `VIEWER` as a
-read-only internal/auditor role, not as the default public role.
+Mapping: keep existing internal roles; `COMPLAINANT` is the public role; `VIEWER`
+remains a read-only internal/auditor role. Stage 9 plans a separate
+`INSTITUTION_REPRESENTATIVE` role with institution scope.
 
 ### Sign-up rules
 Staff accounts are **admin-invite-only**; the public staff sign-up path is disabled.
@@ -89,13 +97,18 @@ approves. Unverified accounts can sign in but cannot file. Public staff sign-up 
 blocked (`STAFF_SIGNUP_ENABLED=false`, HTTP 403 `SIGNUP_DISABLED`); the complainant flow
 never grants a staff role and does not reuse the `VIEWER` default.
 
+Planned Stage 9 representative signup is separate: an email-domain allowlist may suggest
+an institution, but a suggestion never verifies the user or grants access. The account
+stays pending until an admin approves it, and a client cannot self-assign the
+representative role or institution.
+
 ## 4. Permission matrix
 
-| Action | Complainant | Institution rep | Bureau officer | Regional officer | Senior mgmt | Competent authority | Admin | Viewer |
+| Action | Complainant | Institution rep (planned) | Bureau officer | Regional officer | Senior mgmt | Competent authority | Admin | Viewer |
 |---|---|---|---|---|---|---|---|---|
-| File complaint | own | own institution | on behalf | on behalf | on behalf | on behalf | on behalf | — |
+| File complaint | own | — | on behalf | on behalf | on behalf | on behalf | on behalf | — |
 | View own complaints | yes | — | — | — | — | — | — | — |
-| View complaint queue | — | own institution | own bureau | own region | all | all | all | read-only |
+| View complaint queue | — | own institution, public projection | own bureau | own region | all | all | all | read-only |
 | Public reply | own thread | own institution | scoped | scoped | all | all | all | — |
 | Internal note | — | — | scoped | scoped | all | all | all | read-only |
 | Assign officer | — | — | own bureau | own region | all | all | all | — |
@@ -103,15 +116,20 @@ never grants a staff role and does not reuse the `VIEWER` default.
 | Escalate | — | — | yes | yes | yes | yes | yes | — |
 | Dispose/resolve | — | — | recommend | recommend | yes | yes | yes | — |
 | Reopen | own, within window | — | yes | yes | yes | yes | yes | — |
-| Confirm/dismiss overlap | — | — | scoped | scoped | yes | yes | yes | — |
+| Confirm/dismiss/merge overlap | — | — | scoped | scoped | yes | yes | yes | — |
 | Reports | — | own institution | own scope | own region | all | all | all | read-only |
 | Manage users/roles | — | — | — | — | — | — | yes | — |
-| Configure SLA/bureaus | — | — | — | — | — | — | yes | — |
+| Configure SLA/bureaus/domains | — | — | — | — | — | — | yes | — |
+| Approve/revoke representatives | — | — | — | — | — | — | yes | — |
 | View audit log | — | — | own actions | own region | all | all | all | read-only |
 
 Notes:
 - "Scoped" means server-side filtering, not just hidden UI.
 - Ownership checks are mandatory for every complainant endpoint.
+- Planned Stage 9 representative access comes from the authenticated user's institution;
+  a query parameter cannot widen it. Out-of-scope detail returns 404.
+- Representatives cannot request information, change status/assignment, read internal
+  notes/findings/Jev data, or see complainant PII beyond the public projection.
 
 ## 5. Core user journeys
 
@@ -158,51 +176,75 @@ Edge cases:
 - Audit user and case actions; export reports.
 - Configure feature flags and notification channels.
 
-### 5.5 Institution representative (optional, later)
-- Verify institution ownership, see complaints against the institution, upload
-  compliance documents, reply publicly. Never see internal notes.
+### 5.5 Institution representative (planned Stage 9)
+- Request access with institution selection; an email-domain match may suggest the
+  institution but never verifies or grants access.
+- An admin approves, rejects, or revokes the request. Pending/rejected/revoked users see
+  only status guidance; revocation invalidates sessions.
+- Approved representatives see institution-scoped complaints in the public projection,
+  post public responses, and attach public evidence.
+- They cannot request information, change status/assignment, read internal notes,
+  findings, actor IDs, Jev data, or complainant PII, or access another institution.
 
 ## 6. Information architecture / UI inventory
 
-### Public shell
-- `/` landing / track complaint
-- `/login`
-- `/signup`
-- `/forgot-password`, `/reset-password`
-- `/track` (case number + email/OTP)
-- `/help`
+### Public shell (Stage 8 implemented)
+- `/portal` — public landing / track entry
+- `/portal/login`
+- `/portal/signup`
+- `/portal/track` — case number + email; generic not-found
+- `/portal/forgot-password`, `/portal/reset-password`
 
-### Complainant shell
-- `/my/complaints`
-- `/my/complaints/new`
-- `/my/complaints/:id` (status stepper, public timeline, conversation, documents)
-- `/my/notifications`
-- `/my/profile`
+### Complainant shell (Stage 8 implemented)
+- `/portal/dashboard`
+- `/portal/verification`
+- `/portal/complaints/new`
+- `/portal/complaints/:id` — public status timeline, conversation, documents
+- `/portal/notifications`
 
-### Staff shell
-- `/dashboard` (role-aware tiles and queues)
-- `/cases` (scoped registry)
-- `/cases/:id` with tabs:
-  - Overview
-  - Conversation (Public thread / Internal notes based on role)
-  - Documents
-  - Timeline
-  - Related cases
-  - Assignment
+### Staff shell (implemented)
+- `/dashboard` — role-aware tiles and queues
+- `/cases` — scoped registry
+- `/cases/new` — registration
+- `/cases/:id` — current tabs: Overview, Actions, Assignments, Related, Conversation,
+  Documents. Stage 9 plans **Overview, Conversation, Documents, Timeline, Related** with
+  secondary actions in an overflow menu.
 - `/institutions`, `/institutions/:id`
 - `/overlaps`, `/overlaps/:id`
 - `/reports`
 - `/notifications`
 
-### Admin shell
+### Admin shell (implemented)
 - `/admin/users`
-- `/admin/bureaus` (and regions)
+- `/admin/organization` (bureaus, regions, categories)
 - `/admin/sla`
 - `/admin/institutions`
-- `/admin/categories`
+- `/admin/verifications`
 - `/admin/audit`
+- Planned Stage 9: `/admin/institution-domains`,
+  `/admin/institution-representatives`
 
-Navigation is role-filtered. Route guards must mirror server permissions.
+### Representative shell (planned Stage 9)
+- `/institution/dashboard`
+- `/institution/cases`
+- `/institution/cases/:id`
+- `/institution/notifications`
+- `/institution/profile`
+- Public request path: `/institution/sign-up` (or a clearly separated
+  `/portal/institution/request`)
+
+### Navigation target (planned Stage 9)
+- Staff primary: Dashboard · Cases · Institutions · Overlaps · Reports.
+- More: Notifications, Admin users, Admin verification, Organization, SLA, Audit
+  (role-filtered).
+- Persistent notification bell with unread count and a five-item preview; “View all” goes
+  to `/notifications`.
+- Mobile uses a drawer/sheet with the same grouping.
+- Planned merge-group route: `/merge-groups/:id`.
+
+Navigation is role-filtered. Route guards must mirror server permissions in both
+directions: staff/complainants cannot enter the representative shell, and representatives
+cannot enter staff/portal shells.
 
 ## 7. Case lifecycle and public status
 
@@ -210,7 +252,7 @@ Navigation is role-filtered. Route guards must mirror server permissions.
 Current: `RECEIVED`, `ASSIGNED`, `UNDER_PROCESS`, `TRANSFERRED`, `ESCALATED`,
 `DISPOSED`, `REOPENED`.
 
-Add:
+Implemented in Stage 8:
 - `ACKNOWLEDGED` — bureau has acknowledged receipt.
 - `AWAITING_COMPLAINANT` — waiting for information/documents.
 - `CLOSED` — complainant accepted resolution or auto-closed after window.
@@ -262,7 +304,10 @@ Additional fields:
 ### `user` (Better Auth)
 - `role` default `COMPLAINANT`
 - `phone`
-- `institutionId` (for institution representatives)
+- `institutionId` (planned Stage 9, for institution representatives)
+- Planned Stage 9 representative fields: `representativeStatus` (`PENDING`, `APPROVED`,
+  `REJECTED`, `REVOKED`), `representativeRequestedAt`, reviewed-by/at, and rejection/
+  revocation reason
 - `active` enforced on every request
 - `createdBy` (admin who invited the account)
 - optional `emailVerified`, `lastLoginAt`
@@ -295,6 +340,21 @@ Additional fields:
 
 ### New `audit_log` (optional)
 - For admin actions not tied to a case (user creation, role change, SLA edit).
+
+### Planned Stage 9 models
+
+- `case_relationships`: add `mergeStatus` (`candidate`, `manual_review`,
+  `auto_merged`, `manual_merged`, `reverted`), `mergeGroupId`, score text/breakdown,
+  auto-merge/revert timestamps and actors, revert reason, and suppression. Partial unique
+  indexes prevent overlapping active relationships without blocking history.
+- New `case_merge_groups`: flat group with one canonical case, immutable member snapshot,
+  status, score snapshot, timestamps, and actor/revert metadata. Never nested.
+- `region`: add required-on-seed `latitude` and `longitude` validated within India
+  bounds; existing regions are backfilled by seed.
+- New `institution_email_domains`: normalized domain, institution, active/verified
+  metadata, unique per domain. Suggestion-only; never proof of affiliation.
+- `user`: add representative status/lifecycle fields and enforce institution scope from
+  the authenticated user, not query input.
 
 ## 10. API changes
 
@@ -331,6 +391,21 @@ Additional fields:
 - Category CRUD
 - Audit log query
 - Institution verification
+- Planned Stage 9: institution email-domain CRUD and representative
+  approval/rejection/revocation
+- Planned Stage 9: merge-group detail and revert
+
+### Planned Stage 9 API changes
+- Overlap queue filters for auto-merged, needs-review, and reverted; group detail,
+  score breakdown, and revert with mandatory reason.
+- `INSTITUTION_REPRESENTATIVE` creates a pending request; admin approval binds
+  institution scope and revocation invalidates sessions.
+- Representative lists/detail use the public projection only, always filtered by the
+  authenticated user's institution. A tampered ID/institution returns 404.
+- `/reports/geo` returns region aggregates; the client renders bubbles over a bundled
+  outline. No external geo/tile call.
+- `case_merge_groups` is read/detail only; all writes go through audited merge/revert
+  services.
 
 ### Public projection rules
 Never expose:
@@ -355,6 +430,12 @@ Expose:
 - Generic auth errors to avoid account enumeration.
 - Better Auth cookie cache is disabled; role changes and deactivation are re-read so
   permissions update promptly.
+- Planned Stage 9: representative requests are rate-limited and cannot self-approve or
+  self-assign an institution; domain matches are suggestions only; approval/revocation
+  is audited; revoked sessions are invalidated.
+- Planned Stage 9: auto-merge runs through one atomic audited path, respects the kill
+  switch, never auto-merges fuzzy-name/JEV-vetoed/disposed pairs, and revert suppression
+  survives re-assessment.
 
 ## 12. UX states and behavior
 
@@ -367,8 +448,11 @@ Expose:
 - Unread notification badges in nav.
 - Accessible forms: labels, keyboard focus, error summaries, mobile layout.
 - File upload progress and failure recovery.
-- Pagination/infinite scrolling for queues; case and institution registries now use
-  server-side pagination, while the overlap queue and notifications still need it.
+- Pagination/infinite scrolling for queues; case, institution, overlap, and notification
+  registries use server-side pagination.
+- Planned Stage 9: primary/More navigation, persistent notification bell, clear role
+  landings, consolidated case tabs, responsive tables, chart/table parity, and a
+  keyboard-accessible region map with a bundled India outline.
 
 ## 13. Delivery phases
 
@@ -410,6 +494,22 @@ Expose:
 - Audit export remains a follow-up.
 - Acceptance: critical journeys run in CI; ownership/IDOR and public-leakage tests pass.
 
+### Phase G — Stage 9 next phase (planned)
+- Phase 0: pin CI/Bun/runner, clear warnings, enable unused-symbol checks, typecheck web
+  tests/e2e, shared fixtures, docs truth pass.
+- Phase 1: reversible exact-institution auto-merge, queue/detail/group controls, revert
+  and suppression, audit.
+- Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
+- Phase 3: primary/More navigation, notification bell, role landings, case tabs,
+  resolution loop.
+- Phase 4: visual refresh, local SVG charts, region coordinates, `/reports/geo`, bundled
+  India outline, table fallback.
+- Phase 5: CSP/headers, distributed rate-limit path, request IDs, readiness,
+  idempotency, index/pagination audit, dependency/secret scanning.
+- Phase 6: docs/ADR/polish and final QA; no deployment step.
+- Acceptance: `docs/plans/next-phase-plan.md` §18 gates pass and all new claims switch
+  from planned to implemented.
+
 ## 14. Testing strategy
 
 ### Unit
@@ -430,6 +530,12 @@ Expose:
 - Overlap orchestration enabled, disabled, Jev failure.
 - Notification dedupe.
 - Attachment access control.
+- Planned Stage 9: auto-merge enabled/disabled, exact vs fuzzy names, disposed cases,
+  JEV veto, concurrency/idempotency, partial-index races, revert/suppression, and audit.
+- Planned Stage 9: representative pending/approved/rejected/revoked states, institution
+  isolation, IDOR/404 behavior, domain suggestion-only, and public projection limits.
+- Planned Stage 9: region bounds/backfill, geo aggregation, notification bell count, and
+  chart/table reconciliation.
 
 Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 `casesync_test` URI) and `app.handle()` route tests. Jev must remain mocked.
@@ -441,6 +547,9 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - Admin creates an officer and assigns a bureau.
 - Overlap alert → human confirm.
 - Role guard checks for each role.
+- Planned Stage 9: exact pair auto-merges, merge group is visible, revert restores manual
+  review; representative approval/revocation and institution isolation; notification
+  bell; chart/table parity and keyboard-accessible GIS map.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,
@@ -463,13 +572,24 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
    ID + supporting-document upload reviewed and approved by an admin. Unverified
    accounts cannot file or see non-public data.
 4. **Overlap policy**: always create the base PENDING relationship for same-institution
-   cross-bureau pairs; Jev enriches/ranks and never suppresses it.
+   cross-bureau pairs; Jev enriches/ranks and never suppresses it. Planned Stage 9 adds
+   one bounded exception: exact-institution high-confidence pairs may auto-merge.
 5. **Region master**: seed the official AICTE regional offices (code/name/active);
-   `regionId` references that master.
+   `regionId` references that master. Stage 9 adds required-on-seed coordinates for the
+   local GIS map.
 6. **"Pending"**: dashboard shows pending/unassigned, assigned-not-started, under
    process, and overdue separately; "pending" is not a single opaque bucket.
 7. **SLA defaults**: 30-day resolution; approaching-deadline reminders at 7, 3, and
    1 days; overdue daily, deduped per case/period.
+8. **Stage 9 auto-merge**: exact AICTE institution ID, cross-bureau, both non-disposed,
+   combined `0.85`, text `0.75`, no JEV veto, no active group/suppression; flat reversible
+   group; revert returns to manual review and suppresses re-merge.
+9. **Representatives**: separate planned `INSTITUTION_REPRESENTATIVE` role, admin
+   approval/revocation, institution scope, public projection only; domain suggestions
+   never verify or grant access.
+10. **Stage 9 GIS/charts**: local SVG primitives and bundled India outline, no external
+    tile/chart service.
+11. **Deployment**: still out of scope.
 
 ### Still open
 
@@ -480,5 +600,4 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 4. Email/SMS provider, or in-app notifications only?
 5. Attachment storage: local disk for demo vs S3-compatible from the start?
 6. Should complainants see the bureau name and AICTE ID publicly?
-7. Reopen window length and auto-close policy.
-8. Do institution representatives get accounts in this prototype?
+7. Reopen window length and auto-close policy?
