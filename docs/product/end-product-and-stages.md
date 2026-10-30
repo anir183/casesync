@@ -32,7 +32,10 @@ The internal dashboard remains the source of truth.
    before any AI call.
 2. **Rules-first.** Exact ID + normalized/fuzzy matching must work with
    `JEV_ENABLED=false`.
-3. **No auto-confirm/merge.** AI assessments are advisory; humans decide.
+3. **Human review by default; bounded automation by exception.** AI assessments are
+   advisory and never auto-confirm an overlap. Stage 9 adds a high-confidence,
+   reversible auto-merge with an audit trail and a neutral merge banner; every other
+   pair remains in human review.
 4. **Append-only audit.** `case_actions` is never edited or deleted.
 5. **AI history is separate from human decisions.** `case_overlap_assessments`
    vs `case_relationships`.
@@ -77,6 +80,7 @@ The internal dashboard remains the source of truth.
 | `REGIONAL_OFFICER` | Own region queue | Own region cases/institutions/reports | Regional case actions per policy |
 | `SENIOR_MANAGEMENT` | Cross-bureau dashboard | All cases/reports/overlaps | Transfer, escalate, dispose, confirm/dismiss overlaps |
 | `COMPETENT_AUTHORITY` | Cross-bureau dashboard | All | Sensitive disposal, reopen, overlap decisions |
+| `INSTITUTION_REPRESENTATIVE` (Stage 9) | Institution queue | Only their institution's complaints, public data | Public responses and evidence only; no information requests, status changes, internal notes, or complainant PII |
 | `ADMIN` | Dashboard + admin | All | All case actions + admin configuration |
 | `VIEWER` | Dashboard | Read-only scoped/all per policy | Nothing |
 
@@ -106,6 +110,16 @@ representative views. These are not part of MVP acceptance.
 | `cases` additions: `regionId` (denormalized for filtering), `priority?`, `acknowledgedAt?`, `closedAt?`, `disposalOutcome?` | Region filter performance, SLA/ageing, explicit lifecycle. (Complainant fields are extension-only.) |
 | `case_relationships` additions: `manual` flag, `linkedBy`, `unlinkedAt` | Manual link/unlink and audit clarity. |
 | `attachments` additions: `visibility`, `messageId?`, `storageProvider`, `checksum` | Access control and future message threading. |
+
+### Stage 9 additions (planned)
+
+| Collection / change | Why |
+|---|---|
+| `case_relationships` additions: `confidenceScore`, `matchSignals`, `mergeStatus`, `mergeGroupId`, `decidedBy/At`, revert metadata | Explainable auto-merge, manual review, revert audit. |
+| New `case_merge_groups`: `canonicalCaseId`, `memberCaseIds`, `snapshot`, `status`, merge/revert actor and reason | Flat, reversible merge group without rewriting member complaints. |
+| `user.institutionId` + representative approval fields | Institution-scoped representative access. |
+| New `institution_email_domains`: domain, institution ID, verified, added-by/at | Admin-managed signup suggestions; never auto-verification. |
+| `regions` additions: `latitude`, `longitude` (optional institution coordinates) | GIS region bubbles over a local outline. |
 
 ### States
 
@@ -179,12 +193,13 @@ layout.
 | 0 | Foundation & guardrails | **Done** | Reproducible monorepo, stack, models, auth skeleton, conventions | Build/lint/typecheck; env documented; models indexed |
 | 1 | Identity, organization & access | **Done** | Correct users, roles, bureaus, regions, scoping; makes every number and permission meaningful | Role/scope matrix tests pass; each seeded role sees only allowed data |
 | 2 | Institution registry & case operations | **Done** | The daily workflow: register, assign, move, dispose, audit | Officer can run a case end-to-end in UI; audit append-only |
-| 3 | Overlap intelligence & coordination | **Done** | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; no auto-confirm; exact heading |
+| 3 | Overlap intelligence & coordination | **Done** | The innovation/differentiator: cross-bureau coordination | Rules-first E2E; Jev mocked tests; human review; exact heading |
 | 4 | Monitoring, search & reporting | **Done** | Management oversight and decision support | Dashboard/report numbers reconcile; filters/pagination/scope |
 | 5 | SLA, alerts & scheduled jobs | **Done** | Timeliness/accountability; active monitoring instead of passive dashboard | Cron idempotent; notifications once per period; dashboard agrees |
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Planned** | Closes remaining product, usability, and operational gaps | Decision-complete plan in `../plans/next-phase-plan.md`; all Stage 9 gates pass |
 
 ### Current position (honest)
 
@@ -211,9 +226,14 @@ layout.
 - Stage 8 is implemented: complainant signup/login, exact-AICTE verification, document
   review fallback with admin approval, filing/tracking, ownership checks, public/internal
   messages and attachments, staff conversation/actions, and dedicated security/E2E
-  coverage. Institution representative accounts are explicitly deferred.
+  coverage. Institution representative accounts are now planned for Stage 9.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
+- Stage 9 is planned, not implemented: baseline/tooling fixes, reversible high-confidence
+  overlap auto-merge, institution representatives and email-domain suggestion, navigation
+  and user-flow refresh, visual redesign with charts and a local GIS region map,
+  production hardening, and documentation polish. See
+  [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 
 ## 6. Stage details and expectations
 

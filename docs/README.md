@@ -16,7 +16,13 @@ complainant portal is built: self-registration, exact-AICTE verification with do
 review fallback, filing/tracking, public/internal conversation and documents, ownership
 checks, and admin verification review. Local lint, typechecks, unit tests, builds,
 Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
-performance suite runs in CI. The pushed CI run is green on `5666cad`.**
+performance suite runs locally, not in CI. The pushed CI run is green on `5666cad`.**
+
+**Stage 9 is planned, not implemented.** It covers baseline/tooling fixes, reversible
+high-confidence overlap auto-merge, institution representative accounts, a navigation and
+user-flow refresh, a visual redesign with dashboard/report charts and a local GIS region
+map, hardening, and documentation polish. Deployment remains out of scope. See
+[`plans/next-phase-plan.md`](plans/next-phase-plan.md).
 
 Last verified: 2026-10-30.
 
@@ -30,7 +36,8 @@ Last verified: 2026-10-30.
 | Stage 5 — SLA, deadlines, alerts | Complete |
 | Stage 6 — admin, attachments, audit | Complete |
 | Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
-| Stage 8 — public portal | Complete; CI green on `5666cad`; institution representatives deferred |
+| Stage 8 — public portal | Complete; CI green on `5666cad` |
+| Stage 9 — next phase | **Planned**; reversible auto-merge, institution representatives, flow/UI redesign, GIS, hardening, polish |
 
 ### Working
 
@@ -111,12 +118,22 @@ Last verified: 2026-10-30.
 
 ### Remaining non-blocking gaps
 
-- Institution representative accounts are deferred; they require a separate external
-  role, institution-side scoping, and approval model.
+Stage 9 is the planned closure path for the product gaps:
+
+- Institution representative accounts are planned, not deferred: a separate external
+  role, institution-side scoping, an approval model, and an email-domain allowlist.
+- Reversible high-confidence overlap auto-merge is planned; Stage 3's human-review
+  workflow remains the default for unresolved or low-confidence pairs.
+- The navigation, dashboard, reports, and case-detail surfaces are due for the Stage 9
+  flow/visual refresh, including charts and a local GIS region map.
+- Baseline debt remains: `actions/checkout@v4` Node 20 deprecation, `ubuntu-latest`
+  migration, Bun version skew, Zod/Rollup and chunk-size warnings, API unused-symbol
+  checks, and web typechecking that excludes tests/e2e.
 - Optional periodic overlap sweep/background batch for production scale.
 - Optional shared integration factories, distributed rate limiting, malware scanning,
   and manual screen-reader/mobile accessibility passes.
 - Mutations use pending/disabled states rather than optimistic UI.
+- The tagged performance suite is local-only and is not part of CI.
 
 ## Documentation map
 
@@ -136,6 +153,7 @@ Last verified: 2026-10-30.
 | [`operations/runbook.md`](operations/runbook.md) | Setup, seed, verification, deploy, backup/restore, troubleshooting. |
 | [`operations/backup-and-retention.md`](operations/backup-and-retention.md) | Backup targets, retention, restore procedure, and known gaps. |
 | [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
+| [`plans/next-phase-plan.md`](plans/next-phase-plan.md) | Decision-complete Stage 9 plan: fixes, auto-merge, representatives, flows, UI/GIS, hardening, polish. |
 | [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
 
 Source-of-truth order: the original problem statement, then requirements, then
@@ -161,8 +179,8 @@ A single-window dashboard for authorized AICTE officials to:
 A public complainant portal with self-registration, filing/tracking, two-way
 conversation, and document exchange. Signup is verified against an AICTE institution ID,
 with a document-review/admin-approval fallback. It does not delay the internal MVP. See
-[`product/user-flow.md`](product/user-flow.md); the flow is implemented as Stage 8.
-Institution representative accounts remain deferred.
+[`product/user-flow.md`](product/user-flow.md); the complainant flow is implemented as
+Stage 8. Institution representative accounts are planned for Stage 9.
 
 ## Problem statement (summary)
 
@@ -198,7 +216,9 @@ institution-related complaints:
   before any AI call.
 - **Rules over AI** — exact ID and normalized/fuzzy matching work with
   `JEV_ENABLED=false`.
-- **No auto-decisions** — AI never auto-confirms or merges; humans review.
+- **Human review by default, bounded automation by exception** — AI never auto-confirms
+  an overlap. Stage 9 adds a reversible high-confidence auto-merge with an audit trail;
+  every other pair stays in human review.
 - **Audit first** — append-only `case_actions`; AI history separate from human
   decisions.
 - **Backend owns secrets** — `JEVMODEL_API_KEY` is server-only; never `VITE_*`.
@@ -293,10 +313,11 @@ bun run build          # API + web builds
 bun run test:integration
 bun run test:coverage  # 85% lines/functions floor
 bun run test:e2e       # demo seed + Playwright staff/portal/accessibility
-bun run test:perf      # stress seed + performance budgets + reset
+bun run test:perf      # stress seed + performance budgets + reset (local only)
 bun audit --audit-level=high
 ```
 
+The tagged performance suite is not part of CI; run it locally before a demo or release.
 Database-backed integration tests are opt-in and use run-scoped records in the dev
 database locally; CI uses a disposable `mongo:7` service:
 

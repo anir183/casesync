@@ -1,7 +1,8 @@
 # CaseSync — Todo Tracker
 
 **Last verified:** 2026-10-30  
-**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. CI is green on `5666cad`.
+**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. CI is green on `5666cad`.  
+**Stage 9:** planned, not implemented. See `docs/plans/next-phase-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -12,8 +13,9 @@
 > lifecycle, public projections, ownership isolation, and reopen; seeded Playwright adds
 > two portal journeys plus public accessibility pages. `bun run verify` covers lint,
 > typecheck, unit tests, and build; DB-backed integration, coverage, seeded E2E, and
-> performance run in CI or with a local MongoDB. All six seeded Playwright tests pass
-> locally (three staff smoke journeys, two portal journeys, and the accessibility scan).
+> performance run in CI or with a local MongoDB; the tagged performance suite is local
+> only. All six seeded Playwright tests pass locally (three staff smoke journeys, two
+> portal journeys, and the accessibility scan).
 > Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
 
 ## Rules
@@ -22,7 +24,9 @@
 - [x] Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui + TanStack + RHF + Zod
 - [x] Jev backend-only, pairwise decision model
 - [x] DB narrows, Jev evaluates; rules-first; human-in-the-loop
-- [x] No auto-merge/confirm; assessments separate from relationships
+- [x] Human review by default; AI assessments separate from human relationships
+- [ ] Stage 9: bounded, reversible auto-merge for high-confidence pairs (decision locked
+      2026-10-30; not yet implemented)
 - [x] Append-only `case_actions`
 - [x] No magic strings/numbers; extract when reused; composition over inheritance
 - [x] No git commit/push unless explicitly asked
@@ -33,6 +37,8 @@
       `Regulation Bureau`, plus `Academic Bureau` and `Finance Bureau`).
 - [x] Expand the seed beyond org masters and users: institutions, cases, actions,
       assignments, overlaps, notifications, and SLA configs.
+- [x] Record the decision-complete Stage 9 plan in
+      `docs/plans/next-phase-plan.md` and realign the docs to it (2026-10-30).
 - [ ] Keep `docs/` links and status current as each stage resumes; no doc may claim a
       stage is done before its exit criteria pass.
 
@@ -133,7 +139,9 @@ users/organization web screens.
 - [ ] Periodic overlap sweep / background batch for fuzzy scans at production scale
 - [ ] Browser E2E for confirm, dismiss, manual link, and unlink flows
 
-**Exit:** rules-first E2E works; Jev mocked; no auto-confirm; no duplicate alerts; exact heading asserted. Met through API integration tests plus Stage 7 browser smoke for the queue.
+**Exit:** rules-first E2E works; Jev mocked; no duplicate alerts; exact heading asserted.
+Stage 3 remains human-review only; Stage 9 adds the bounded, reversible auto-merge
+exception. Met through API integration tests plus Stage 7 browser smoke for the queue.
 
 ## Stage 4 — Monitoring, search & reporting
 
@@ -224,17 +232,103 @@ Demo script smoke journeys and security/a11y/performance gates pass.
 - [x] File/track complaint, public status timeline, accept/reopen
 - [x] Public/internal message separation
 - [x] Attachments with public/internal visibility
-- [ ] Institution representative accounts (deferred; not required for Stage 8 exit)
+- [ ] Institution representative accounts (planned for Stage 9; not required for Stage 8
+      exit)
 - [x] Ownership/IDOR checks + public rate limits
 - [x] Public projection rules (no internal notes/Jev/actor IDs)
 - [x] Separate integration, E2E, and accessibility coverage
 - [x] Admin verification queue + staff complaint conversation/actions
 - [x] Demo complainant seed and portal runbook
 
-**Exit:** met in implementation and test coverage. Institution representative accounts are
-intentionally deferred because they add a second external role, institution-side scoping,
-and a separate approval model that is not needed to prove the complainant flow. The
-portal remains an extension outside MVP acceptance.
+**Exit:** met in implementation and test coverage. Institution representative accounts were
+not needed to prove the complainant flow and are now planned for Stage 9 with a dedicated
+external role, institution-side scoping, an approval model, and an email-domain allowlist.
+The portal remains an extension outside MVP acceptance.
+
+## Stage 9 — Next phase (PLANNED — not started)
+
+Full plan: `docs/plans/next-phase-plan.md`. Locked decisions: auto-merge enabled
+immediately; revert returns a pair to manual review; neutral merge banner; representatives
+may post public responses/evidence only; GIS uses local region bubbles; email-domain
+matching is suggestion-only; deployment is out of scope.
+
+### Phase 0 — Baseline fixes and audit
+
+- [ ] Bump `actions/checkout` past the Node 20 deprecation; review other action majors.
+- [ ] Decide/document the runner image and update every CI job consistently.
+- [ ] Pin one Bun version across CI, `mise.toml`, runbook, and local docs.
+- [ ] Resolve Zod/Rollup annotations and the >500 kB chunk warning.
+- [ ] Enable API unused-symbol checks and add a web tests/e2e typecheck gate.
+- [ ] Add shared integration factories and remove duplicated fixtures.
+- [ ] Documentation truth pass (CI scope, performance-suite location, counts, statuses).
+- [ ] CI green with no deprecation/build annotations.
+
+### Phase 1 — Reversible overlap auto-merge
+
+- [ ] Add shared confidence scoring (combined default `0.85`, text gate `0.75`, JEV veto).
+- [ ] Extend `case_relationships` with score/signals/merge status/group/revert fields.
+- [ ] Add `case_merge_groups` with canonical case, members, immutable snapshot, active
+      unique index, and revert metadata.
+- [ ] Auto-merge after overlap assessment; idempotent and non-blocking on failure.
+- [ ] Manual merge and revert APIs with mandatory reasons and audit actions.
+- [ ] Queue/detail tabs for auto-merged, needs-review, and reverted; score breakdown;
+      revert control; neutral case banner.
+- [ ] Notify affected complainants/authorities without exposing other complainant PII.
+- [ ] Suppress reverted pairs from automatic re-merge until human clearance.
+- [ ] Unit/integration/E2E coverage for thresholds, veto, idempotency, revert, audit,
+      record preservation, and authorization.
+- [ ] Update OVR-07/INV-03 and every “no auto-merge” statement.
+
+### Phase 2 — Institution representatives and email domains
+
+- [ ] Add `INSTITUTION_REPRESENTATIVE` role, seeds, role groups, and route guards.
+- [ ] Add institution scope to the central scope helper and apply it everywhere.
+- [ ] Approval workflow (request → admin approve/reject → active/deactivate).
+- [ ] `institution_email_domains` allowlist plus admin UI.
+- [ ] Signup domain inference as a suggestion only; no auto-verification.
+- [ ] Representative dashboard, institution queue, public reply/evidence only.
+- [ ] Deny information requests, status changes, internal notes, and complainant PII.
+- [ ] Integration/E2E isolation and denied-action tests.
+
+### Phase 3 — Information architecture and user flows
+
+- [ ] Replace the flat 11-link navbar with primary links + “More”.
+- [ ] Add notification bell/unread preview + “View all” → `/notifications` on staff and
+      portal shells.
+- [ ] Consolidate tabs and move secondary actions into overflow menus.
+- [ ] Define role-specific landing pages and empty states.
+- [ ] Make the authority ↔ complainant loop explicit (request, respond, acknowledge,
+      escalate, resolve, reopen, close) with next-action ownership and SLA context.
+- [ ] Mobile navigation parity and keyboard checks.
+
+### Phase 4 — Visual redesign, dashboard/reports, and GIS
+
+- [ ] Add restrained-but-vibrant design tokens and shared visual primitives.
+- [ ] Chart-first dashboard (KPI trends, status donut, volume trend, category bars, SLA
+      gauge, recent activity, map preview) that reconciles with the API.
+- [ ] Chart-first reports with table drill-down and current-filter export.
+- [ ] Add region coordinates, `/reports/geo`, local India GeoJSON, region bubbles, tooltip,
+      keyboard focus, and table fallback.
+- [ ] Lazy-load charts/map; keep the main bundle under budget.
+- [ ] Axe, keyboard, zoom/reflow, reduced-motion, and manual screen-reader checks.
+
+### Phase 5 — Production hardening (no deployment)
+
+- [ ] Security headers/CSP baseline, stricter CORS, cookie flags, request-size limits.
+- [ ] Shared/distributed rate-limit path or documented edge/WAF requirement.
+- [ ] Index audit, pagination review, and query-cost checks for new endpoints.
+- [ ] Request IDs, structured logs, readiness checks, and merge/job failure logging.
+- [ ] Idempotency keys and broader audit metadata.
+- [ ] Dependency/secret scanning.
+- [ ] Backup/retention coverage for merge groups, domains, and representative approvals.
+
+### Phase 6 — Polish and documentation
+
+- [ ] Update README, stage plan, tracker, traceability, audit, UI/UX, user flow,
+      architecture, QA, security, accessibility, runbook, demo script, mock data, retention.
+- [ ] Add ADRs for reversible auto-merge, representatives/domain allowlists, and GIS.
+- [ ] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
+- [ ] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment).
 
 ## Testing Definition of Done
 
@@ -260,3 +354,8 @@ portal remains an extension outside MVP acceptance.
     and coverage, builds, seeded browser smoke, and dependency audit.
   - Local Stage 8 gates pass: 50 integration tests, 6 seeded browser tests, API coverage
     87.1% lines / 89.6% functions.
+- [ ] Stage 9: merge threshold/veto/idempotency/revert/audit tests.
+- [ ] Stage 9: representative institution isolation and denied-action tests.
+- [ ] Stage 9: domain suggestion-only tests and admin allowlist tests.
+- [ ] Stage 9: dashboard/report/map reconciliation, accessible fallback, and bundle gate.
+- [ ] Stage 9: merge/revert and representative E2E journeys.
