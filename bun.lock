@@ -77,6 +77,9 @@
     "packages/utils": {
       "name": "@casesync/utils",
       "version": "0.0.0",
+      "dependencies": {
+        "@casesync/config": "workspace:*",
+      },
     },
   },
   "overrides": {

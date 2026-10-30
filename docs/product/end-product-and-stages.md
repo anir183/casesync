@@ -62,9 +62,9 @@ The internal dashboard remains the source of truth.
 | `/cases/:id` | Case workspace | Overview; action panel (assign, transfer, escalate, dispose, remark, next action); timeline; assignment history; related/overlap cases; attachments; SLA indicator. |
 | `/institutions` | Institution registry | Search by name/AICTE ID/region; case counts; verification status. |
 | `/institutions/:id` | Institution profile | Identity, region, address, verified flag; consolidated case history across bureaus; open/overdue counts; related overlaps. |
-| `/overlaps` | Coordination queue | Current review states; Stage 9 planned tabs for auto-merged, needs-review, and reverted; filters bureau, region, match type; confidence/AI signal; age; pagination. |
-| `/overlaps/:id` | Compare & review | Side-by-side cases; institution; match evidence; Jev assessment; confirm/dismiss with notes; Stage 9 planned score breakdown, merge/revert controls, audit. |
-| `/merge-groups/:id` | Merge-group detail (planned Stage 9) | Canonical case, member case numbers/statuses, merge/revert audit, neutral duplicate-determination notice. |
+| `/overlaps` | Coordination queue | Awaiting review, auto-merged, manually merged, reverted, and dismissed tabs; filters bureau, region, match type; confidence/merge score; age; pagination. |
+| `/overlaps/:id` | Compare & review | Side-by-side cases; institution; match evidence; Jev assessment; score breakdown, merge/revert controls, audit; legacy confirm/dismiss for unmerged pairs. |
+| `/merge-groups/:id` | Merge-group detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral duplicate-determination notice. |
 | `/reports` | Reports | Date range, bureau, region, status, category filters; bureau/region/institution/status/ageing/disposal/overlap/monthly/quarterly; CSV export. Stage 9 plans chart-first views and a local GIS region map. |
 | `/notifications` | Notification centre | Unread/all, type filter, deep links, mark read/all; pagination. Stage 9 plans a persistent bell with a five-item preview. |
 | `/admin/users` | User administration | Create/deactivate users; assign role, bureau, region; reset password/invite. |
@@ -228,7 +228,7 @@ layout.
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
-| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Planned** | Closes remaining product, usability, and operational gaps | Decision-complete plan in `../plans/next-phase-plan.md`; all Stage 9 gates pass |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
 
 ### Current position (honest)
 
@@ -693,7 +693,7 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (planned — baseline, auto-merge, representatives, flows/UI/GIS, hardening, docs)
+Stage 9 (partial — Phase 1 auto-merge and Phase 4 UI/GIS done; baseline, representatives, hardening, docs remain)
 ```
 
 Parallelizable in Stage 9:

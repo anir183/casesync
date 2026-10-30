@@ -157,6 +157,29 @@ export function CaseDetailPage() {
         </p>
       </div>
 
+      {item.mergeGroup && (
+        <Card className="border-emerald-200 bg-emerald-50/60">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6 text-sm">
+            <div>
+              <p className="font-medium">
+                Linked for coordinated handling
+                {item.mergeGroup.canonicalCaseId === item.id ? ' · canonical case' : ''}
+              </p>
+              <p className="text-muted-foreground">
+                This case is part of a merge group with {item.mergeGroup.memberCaseIds.length}{' '}
+                records. The merge does not mark it as a duplicate or change its history.
+              </p>
+            </div>
+            <Link
+              to={`/merge-groups/${item.mergeGroup.id}`}
+              className="underline underline-offset-4"
+            >
+              Open merge group
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex flex-wrap gap-1 border-b border-border">
         {TABS.map((entry) => (
           <button
@@ -334,6 +357,10 @@ export function CaseDetailPage() {
                     </Link>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {related.reason ?? related.matchType}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {related.mergeStatus?.replace(/_/g, ' ') ?? 'Not merged'}
+                      {related.mergeGroupId ? ' · part of a merge group' : ''}
                     </p>
                   </div>
                 ))

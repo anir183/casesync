@@ -1,27 +1,176 @@
 @import "tailwindcss";
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --border: 214.3 31.8% 91.4%;
-  --radius: 0.5rem;
+  --background: 220 33% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --muted: 220 27% 95%;
+  --muted-foreground: 220 9% 42%;
+  --border: 220 20% 88%;
+  --input: 220 20% 88%;
+  --primary: 243 60% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 27% 95%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 174 72% 28%;
+  --accent-foreground: 0 0% 100%;
+  --success: 152 58% 30%;
+  --success-foreground: 0 0% 100%;
+  --success-soft: 152 55% 94%;
+  --success-soft-foreground: 152 60% 22%;
+  --warning: 35 92% 38%;
+  --warning-foreground: 35 92% 10%;
+  --warning-soft: 42 96% 92%;
+  --warning-soft-foreground: 32 90% 24%;
+  --danger: 0 72% 44%;
+  --danger-foreground: 0 0% 100%;
+  --danger-soft: 0 86% 96%;
+  --danger-soft-foreground: 0 72% 34%;
+  --info: 205 80% 38%;
+  --info-foreground: 0 0% 100%;
+  --info-soft: 205 90% 95%;
+  --info-soft-foreground: 205 80% 28%;
+  --ring: 243 60% 42%;
+  --radius: 0.75rem;
+  --chart-1: 243 60% 52%;
+  --chart-2: 174 60% 36%;
+  --chart-3: 35 92% 48%;
+  --chart-4: 205 80% 46%;
+  --chart-5: 0 72% 52%;
+  --chart-6: 280 52% 52%;
+  --shadow-card-base: 0 1px 2px hsl(222 47% 11% / 0.04), 0 8px 24px hsl(222 47% 11% / 0.04);
+  --shadow-elevated-base: 0 12px 36px hsl(222 47% 11% / 0.1);
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
+  --background: 224 32% 8%;
   --foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --border: 217.2 32.6% 17.5%;
+  --card: 224 30% 11%;
+  --card-foreground: 210 40% 98%;
+  --popover: 224 30% 11%;
+  --popover-foreground: 210 40% 98%;
+  --muted: 223 24% 17%;
+  --muted-foreground: 218 14% 68%;
+  --border: 223 22% 22%;
+  --input: 223 22% 22%;
+  --primary: 243 78% 72%;
+  --primary-foreground: 243 60% 16%;
+  --secondary: 223 24% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 174 58% 55%;
+  --accent-foreground: 174 72% 10%;
+  --success: 152 55% 52%;
+  --success-foreground: 152 60% 10%;
+  --success-soft: 152 40% 18%;
+  --success-soft-foreground: 152 65% 78%;
+  --warning: 42 92% 58%;
+  --warning-foreground: 35 92% 10%;
+  --warning-soft: 35 45% 18%;
+  --warning-soft-foreground: 42 92% 78%;
+  --danger: 0 74% 62%;
+  --danger-foreground: 0 72% 10%;
+  --danger-soft: 0 40% 18%;
+  --danger-soft-foreground: 0 86% 82%;
+  --info: 205 82% 62%;
+  --info-foreground: 205 80% 10%;
+  --info-soft: 205 40% 18%;
+  --info-soft-foreground: 205 90% 80%;
+  --ring: 243 78% 72%;
+  --chart-1: 243 70% 72%;
+  --chart-2: 174 58% 58%;
+  --chart-3: 42 92% 62%;
+  --chart-4: 205 82% 64%;
+  --chart-5: 0 74% 66%;
+  --chart-6: 280 58% 68%;
+  --shadow-card-base: 0 1px 2px hsl(0 0% 0% / 0.2), 0 10px 28px hsl(0 0% 0% / 0.16);
+  --shadow-elevated-base: 0 16px 44px hsl(0 0% 0% / 0.32);
 }
 
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-soft: hsl(var(--success-soft));
+  --color-success-soft-foreground: hsl(var(--success-soft-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-soft: hsl(var(--warning-soft));
+  --color-warning-soft-foreground: hsl(var(--warning-soft-foreground));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-danger-soft: hsl(var(--danger-soft));
+  --color-danger-soft-foreground: hsl(var(--danger-soft-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-soft: hsl(var(--info-soft));
+  --color-info-soft-foreground: hsl(var(--info-soft-foreground));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
   --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+  --shadow-card: var(--shadow-card-base);
+  --shadow-elevated: var(--shadow-elevated-base);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 10% -10%, hsl(var(--primary) / 0.08), transparent 34rem),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.2);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

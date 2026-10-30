@@ -19,7 +19,7 @@ import { verificationRoutes } from '#/modules/complaints/verification.routes'
 import { dashboardRoutes } from '#/modules/dashboard/routes'
 import { institutionsRoutes } from '#/modules/institutions/routes'
 import { notificationsRoutes } from '#/modules/notifications/routes'
-import { overlapsRoutes } from '#/modules/overlaps/routes'
+import { mergeGroupsRoutes, overlapsRoutes } from '#/modules/overlaps/routes'
 import { regionsRoutes } from '#/modules/regions/routes'
 import { reportsRoutes } from '#/modules/reports/routes'
 import { slaRoutes } from '#/modules/sla/routes'
@@ -84,6 +84,7 @@ export const app = new Elysia()
       .use(verificationRoutes)
       .use(attachmentsRoutes)
       .use(overlapsRoutes)
+      .use(mergeGroupsRoutes)
       .use(notificationsRoutes)
       .use(reportsRoutes)
       .use(dashboardRoutes)

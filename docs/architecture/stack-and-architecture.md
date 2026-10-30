@@ -51,7 +51,7 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 - **Backend owns all external calls** - Jev + any future providers
 - **DB narrows, Jev evaluates** - institution resolution + cross-bureau candidates first
 - **Rules-first** - exact ID + normalized+fuzzy must work if Jev disabled
-- **Human-in-the-loop** - AI never auto-confirms/merges; review required
+- **Human-in-the-loop** - AI never auto-confirms/merges; a bounded rules-based exact-institution auto-merge is reversible and every other pair requires review
 - **Audit-first** - append-only history, separate AI assessment history from human decisions
 
 ## 3) Project Structure (Monorepo)
@@ -108,7 +108,7 @@ casesync/
 | Collection | Purpose | Notes |
 |---|---|---|
 | `institutions` | Canonical institutions | `aictePermanentId` (sparse unique), `nameNormalized`, `aliases`/`aliasesNormalized`, `verified`, `regionId` |
-| `regions` | AICTE regional offices | `code` (unique), `name`, `officeCity`, `active`; seeded |
+| `regions` | AICTE regional offices | `code` (unique), `name`, `officeCity`, optional bounded `latitude`/`longitude`, `active`; seeded with coordinates |
 | `bureaus` | PGRC/RB/others | `code` (unique), `name`, `active`; seeded |
 | `categories` | Complaint categories | `code` (unique), `name`, `active`; seeded |
 | `user` | Better Auth user collection | `role`, `bureauId`, `regionId`, `active`; admin-managed. The collection name is singular `user` and is owned by Better Auth. |
@@ -264,6 +264,9 @@ committed; `.env.example` lists names with empty/placeholder values.
 - **SLA** (Stage 5): `/sla-configs` admin CRUD, computed `expectedDisposalAt`,
   `/admin/jobs/runs`, and manual `POST /admin/jobs/sla/run`.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
+- **Reports geo** (Stage 9 Phase 4): `GET /reports/geo` reuses the scoped report filters,
+  returns zero-count regions in scope, and reads seeded region coordinates for the local
+  India bubble map. No external tile/geo service.
 - **Exports** (Stage 4): CSV from the same scoped filter set; PDF optional.
 - **Docs**: Elysia route schemas remain the API contract source; keep auth/pagination/
   scope documented. Swagger UI is served at `/docs` via `@elysiajs/swagger`, with the

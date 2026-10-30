@@ -13,6 +13,8 @@ const regionBody = t.Object({
   code: t.String({ minLength: 2, maxLength: 32 }),
   name: t.String({ minLength: 1, maxLength: 200 }),
   officeCity: t.Optional(t.String({ maxLength: 120 })),
+  latitude: t.Optional(t.Number({ minimum: -90, maximum: 90 })),
+  longitude: t.Optional(t.Number({ minimum: -180, maximum: 180 })),
   active: t.Optional(t.Boolean()),
 })
 
@@ -20,6 +22,8 @@ const updateBody = t.Object({
   code: t.Optional(t.String({ minLength: 2, maxLength: 32 })),
   name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   officeCity: t.Optional(t.String({ maxLength: 120 })),
+  latitude: t.Optional(t.Number({ minimum: -90, maximum: 90 })),
+  longitude: t.Optional(t.Number({ minimum: -180, maximum: 180 })),
   active: t.Optional(t.Boolean()),
 })
 
@@ -46,6 +50,8 @@ function auditSnapshot(item: {
   code: string
   name: string
   officeCity?: string
+  latitude?: number
+  longitude?: number
   active?: boolean
 }) {
   return {
@@ -53,6 +59,8 @@ function auditSnapshot(item: {
     code: item.code,
     name: item.name,
     officeCity: item.officeCity,
+    latitude: item.latitude,
+    longitude: item.longitude,
     active: item.active !== false,
   }
 }

@@ -1,6 +1,8 @@
 import {
   ACTION_TYPE,
+  MERGE_GROUP_STATUS,
   OVERLAP,
+  OVERLAP_MERGE_STATUS,
   RELATIONSHIP_MATCH_TYPE,
   RELATIONSHIP_REVIEW_STATUS,
   REVIEW_ACTION,
@@ -13,10 +15,19 @@ import { requireAuth, requireRole } from '#/middleware/rbac'
 import { CaseAction } from '#/models/case-action.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { getCase } from '#/modules/cases/case.service'
+import { getMergeGroup, listMergeGroups } from './overlap.group.query'
 import { getOverlap, listOverlaps, requireScopedRelationship } from './overlap.query'
-import { assessCaseOverlaps, linkCasePair, unlinkRelationship } from './overlap.service'
+import {
+  assessCaseOverlaps,
+  clearReMergeSuppression,
+  linkCasePair,
+  mergeRelationship,
+  revertMerge,
+  unlinkRelationship,
+} from './overlap.service'
 
 const REVIEW_ROLES = [...ROLE_GROUPS.OVERLAP_REVIEW]
+const CLEAR_SUPPRESSION_ROLES = [...ROLE_GROUPS.MERGE_SUPPRESSION_CLEAR]
 
 function toReviewStatus(action: ReviewAction): string {
   return action === REVIEW_ACTION.CONFIRM
@@ -62,6 +73,7 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
         regionId: query.regionId,
         matchType: query.matchType,
         institutionId: query.institutionId,
+        mergeStatus: query.mergeStatus,
         page: query.page,
         pageSize: query.pageSize,
       })
@@ -86,11 +98,27 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
           ]),
         ),
         institutionId: t.Optional(t.String()),
+        mergeStatus: t.Optional(t.String()),
         page: t.Optional(t.String()),
         pageSize: t.Optional(t.String()),
       }),
     },
   )
+  .get(
+    '/groups',
+    async ({ query, user }) => {
+      return listMergeGroups(user, query.status, query.page)
+    },
+    {
+      query: t.Object({
+        status: t.Optional(
+          t.Union([t.Literal(MERGE_GROUP_STATUS.ACTIVE), t.Literal(MERGE_GROUP_STATUS.REVERTED)]),
+        ),
+        page: t.Optional(t.String()),
+      }),
+    },
+  )
+  .get('/groups/:id', async ({ params, user }) => getMergeGroup(params.id, user))
   .get('/:id', async ({ params, user }) => getOverlap(params.id, user))
   .post(
     '/assess',
@@ -123,6 +151,16 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
     async ({ params, body, user }) => {
       requireRole(user, REVIEW_ROLES)
       const relationship = await requireScopedRelationship(params.id, user)
+      if (
+        relationship.mergeStatus === OVERLAP_MERGE_STATUS.AUTO_MERGED ||
+        relationship.mergeStatus === OVERLAP_MERGE_STATUS.MANUAL_MERGED
+      ) {
+        throw new AppError(
+          HTTP_STATUS.CONFLICT,
+          'Merged overlaps must be reverted instead of unlinked',
+          'OVERLAP_ALREADY_MERGED',
+        )
+      }
       await unlinkRelationship(relationship, body.notes, user.id)
       return getOverlap(params.id, user)
     },
@@ -137,6 +175,16 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
     async ({ params, body, user }) => {
       requireRole(user, REVIEW_ROLES)
       const relationship = await requireScopedRelationship(params.id, user)
+      if (
+        relationship.mergeStatus === OVERLAP_MERGE_STATUS.AUTO_MERGED ||
+        relationship.mergeStatus === OVERLAP_MERGE_STATUS.MANUAL_MERGED
+      ) {
+        throw new AppError(
+          HTTP_STATUS.CONFLICT,
+          'Merged overlaps must be reverted instead of reviewed',
+          'OVERLAP_ALREADY_MERGED',
+        )
+      }
       if (relationship.reviewStatus !== RELATIONSHIP_REVIEW_STATUS.PENDING) {
         throw new AppError(HTTP_STATUS.CONFLICT, 'Overlap already reviewed', 'OVERLAP_REVIEWED')
       }
@@ -164,3 +212,65 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
       }),
     },
   )
+
+  .post(
+    '/:id/merge',
+    async ({ params, body, user }) => {
+      requireRole(user, REVIEW_ROLES)
+      const relationship = await requireScopedRelationship(params.id, user)
+      await mergeRelationship(relationship, body, user.id)
+      return getOverlap(params.id, user)
+    },
+    {
+      body: t.Object({
+        reason: t.Optional(t.String({ maxLength: OVERLAP.MAX_NOTES_LENGTH })),
+        canonicalCaseId: t.Optional(t.String({ minLength: 1 })),
+      }),
+    },
+  )
+  .post(
+    '/:id/revert',
+    async ({ params, body, user }) => {
+      requireRole(user, REVIEW_ROLES)
+      const relationship = await requireScopedRelationship(params.id, user)
+      await revertMerge(relationship, body, user.id)
+      return getOverlap(params.id, user)
+    },
+    {
+      body: t.Object({
+        reason: t.String({ minLength: 1, maxLength: OVERLAP.MAX_NOTES_LENGTH }),
+      }),
+    },
+  )
+  .post(
+    '/:id/clear-suppression',
+    async ({ params, body, user }) => {
+      requireRole(user, CLEAR_SUPPRESSION_ROLES)
+      const relationship = await requireScopedRelationship(params.id, user)
+      await clearReMergeSuppression(relationship, body, user.id)
+      return getOverlap(params.id, user)
+    },
+    {
+      body: t.Object({
+        reason: t.String({ minLength: 1, maxLength: OVERLAP.MAX_NOTES_LENGTH }),
+      }),
+    },
+  )
+
+export const mergeGroupsRoutes = new Elysia({ prefix: '/merge-groups' })
+  .use(requireAuth)
+  .get(
+    '/',
+    async ({ query, user }) => {
+      return listMergeGroups(user, query.status, query.page)
+    },
+    {
+      query: t.Object({
+        status: t.Optional(
+          t.Union([t.Literal(MERGE_GROUP_STATUS.ACTIVE), t.Literal(MERGE_GROUP_STATUS.REVERTED)]),
+        ),
+        page: t.Optional(t.String()),
+      }),
+    },
+  )
+  .get('/:id', async ({ params, user }) => getMergeGroup(params.id, user))

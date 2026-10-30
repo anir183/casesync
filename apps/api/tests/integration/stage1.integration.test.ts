@@ -70,6 +70,7 @@ interface Runtime {
   CaseAction: typeof import('#/models/case-action.model').CaseAction
   CaseAssignment: typeof import('#/models/case-assignment.model').CaseAssignment
   CaseRelationship: typeof import('#/models/case-relationship.model').CaseRelationship
+  CaseMergeGroup: typeof import('#/models/case-merge-group.model').CaseMergeGroup
   OverlapAssessment: typeof CaseOverlapAssessment
   Notification: typeof import('#/models/notification.model').Notification
   SlaConfig: typeof import('#/models/sla-config.model').SlaConfig
@@ -213,6 +214,7 @@ function pairToken() {
 async function createCasePair(
   label: string,
   bureaus: { caseA?: mongoose.Types.ObjectId; caseB?: mongoose.Types.ObjectId } = {},
+  evidence: { description?: string; category?: string } = {},
 ) {
   const institutionId = new mongoose.Types.ObjectId()
   const institutionName = `${label} ${pairToken()}`
@@ -232,6 +234,8 @@ async function createCasePair(
       regionId: NORTH_REGION,
       bureauId: bureaus.caseA ?? PGRC_BUREAU,
       status: 'RECEIVED',
+      category: evidence.category,
+      description: evidence.description,
       receivedAt: new Date(),
       lastActionAt: new Date(),
     },
@@ -241,6 +245,8 @@ async function createCasePair(
       regionId: NORTH_REGION,
       bureauId: bureaus.caseB ?? RB_BUREAU,
       status: 'UNDER_PROCESS',
+      category: evidence.category,
+      description: evidence.description,
       receivedAt: new Date(),
       lastActionAt: new Date(),
     },
@@ -327,19 +333,29 @@ async function cleanup() {
     { _id: 1 },
   ).lean()
   const relationshipIds = runRelationships.map((item) => String(item._id))
+  const runGroups = await runtime.CaseMergeGroup.find(
+    { memberCaseIds: { $in: caseIds } },
+    { _id: 1 },
+  ).lean()
+  const mergeGroupIds = runGroups.map((item) => String(item._id))
   await Promise.all([
     runtime.CaseAction.deleteMany({ caseId: { $in: caseIds } }),
     runtime.CaseAssignment.deleteMany({ caseId: { $in: caseIds } }),
     runtime.CaseRelationship.deleteMany({
       $or: [{ caseAId: { $in: caseIds } }, { caseBId: { $in: caseIds } }],
     }),
+    runtime.CaseMergeGroup.deleteMany({ _id: { $in: runGroups.map((item) => item._id) } }),
     runtime.OverlapAssessment.deleteMany({
       $or: [{ caseAId: { $in: caseIds } }, { caseBId: { $in: caseIds } }],
     }),
     runtime.Notification.deleteMany({
       $or: [
         { caseId: { $in: caseIds } },
-        { referenceId: { $in: [...caseIds.map(String), ...relationshipIds] } },
+        {
+          referenceId: {
+            $in: [...caseIds.map(String), ...relationshipIds, ...mergeGroupIds],
+          },
+        },
       ],
     }),
   ])
@@ -390,6 +406,7 @@ beforeAll(async () => {
     caseActionModule,
     caseAssignmentModule,
     caseRelationshipModule,
+    caseMergeGroupModule,
     caseOverlapAssessmentModule,
     notificationModule,
     slaConfigModule,
@@ -407,6 +424,7 @@ beforeAll(async () => {
     import('#/models/case-action.model'),
     import('#/models/case-assignment.model'),
     import('#/models/case-relationship.model'),
+    import('#/models/case-merge-group.model'),
     import('#/models/case-overlap-assessment.model'),
     import('#/models/notification.model'),
     import('#/models/sla-config.model'),
@@ -426,6 +444,7 @@ beforeAll(async () => {
     CaseAction: caseActionModule.CaseAction,
     CaseAssignment: caseAssignmentModule.CaseAssignment,
     CaseRelationship: caseRelationshipModule.CaseRelationship,
+    CaseMergeGroup: caseMergeGroupModule.CaseMergeGroup,
     OverlapAssessment: caseOverlapAssessmentModule.CaseOverlapAssessment,
     Notification: notificationModule.Notification,
     SlaConfig: slaConfigModule.SlaConfig,
@@ -435,8 +454,22 @@ beforeAll(async () => {
   }
 
   await runtime.Region.create([
-    { _id: NORTH_REGION, code: code('NORTH'), name: `North ${RUN_ID}`, active: true },
-    { _id: SOUTH_REGION, code: code('SOUTH'), name: `South ${RUN_ID}`, active: true },
+    {
+      _id: NORTH_REGION,
+      code: code('NORTH'),
+      name: `North ${RUN_ID}`,
+      latitude: 26.4499,
+      longitude: 80.3319,
+      active: true,
+    },
+    {
+      _id: SOUTH_REGION,
+      code: code('SOUTH'),
+      name: `South ${RUN_ID}`,
+      latitude: 13.0827,
+      longitude: 80.2707,
+      active: true,
+    },
   ])
   await runtime.Bureau.create([
     { _id: PGRC_BUREAU, code: code('PGRC'), name: `PG Review ${RUN_ID}` },
@@ -1382,6 +1415,216 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
   })
 })
 
+suite('Stage 9 reversible overlap auto-merge', () => {
+  const sharedDescription =
+    'Student admission fee refund scholarship records were withheld by the institution office'
+  const mergeEvidence = { category: 'FEES', description: sharedDescription }
+
+  afterEach(() => {
+    env.OVERLAP_AUTO_MERGE_ENABLED = true
+  })
+
+  test('auto-merges an eligible exact institution pair without changing case records', async () => {
+    const pair = await createCasePair('AUTO-MERGE', {}, mergeEvidence)
+    configureJev(false)
+    env.OVERLAP_AUTO_MERGE_ENABLED = true
+    const beforeCases = await runtime.Case.find(
+      { _id: { $in: [pair.caseAId, pair.caseBId] } },
+      { caseNumber: 1, status: 1, description: 1, category: 1, institutionId: 1 },
+    )
+      .sort({ _id: 1 })
+      .lean()
+
+    const summary = await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+    expect(summary.created).toBe(1)
+
+    const relationship = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(relationship?.mergeStatus).toBe('auto_merged')
+    expect(relationship?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.CONFIRMED)
+    expect(relationship?.confidenceScore).toBeGreaterThanOrEqual(0.85)
+    expect(relationship?.matchSignals?.textSimilarity).toBe(1)
+    expect(relationship?.decidedBy).toBe(OVERLAP.AUTO_MERGE_ACTOR)
+
+    const group = await runtime.CaseMergeGroup.findOne({
+      memberCaseIds: { $in: [pair.caseAId, pair.caseBId] },
+    }).lean()
+    expect(group?.status).toBe('active')
+    expect(group?.memberCaseIds.map(String).sort()).toEqual([pair.caseAId, pair.caseBId].sort())
+    expect(group?.snapshot.members).toHaveLength(2)
+    expect(String(relationship?.mergeGroupId)).toBe(String(group?._id))
+
+    const afterCases = await runtime.Case.find(
+      { _id: { $in: [pair.caseAId, pair.caseBId] } },
+      { caseNumber: 1, status: 1, description: 1, category: 1, institutionId: 1 },
+    )
+      .sort({ _id: 1 })
+      .lean()
+    expect(afterCases).toEqual(beforeCases)
+
+    const actions = await runtime.CaseAction.find({
+      caseId: { $in: [pair.caseAId, pair.caseBId] },
+      actionType: ACTION_TYPE.OVERLAP_AUTO_MERGED,
+    }).lean()
+    expect(actions).toHaveLength(2)
+
+    const notification = await runtime.Notification.findOne({
+      type: NOTIFICATION_TYPE.OVERLAP_MERGED,
+      referenceId: String(group?._id),
+    }).lean()
+    expect(notification?.message).toContain('not a duplicate determination')
+
+    const detailResponse = await api(email('admin'), `/overlaps/${relationship?._id}`)
+    expect(detailResponse.status).toBe(200)
+    const detail = await json<{
+      mergeStatus: string
+      mergeGroupId: string
+      mergeGroupStatus: string
+      memberCount: number
+      confidenceScore: number
+    }>(detailResponse)
+    expect(detail.mergeStatus).toBe('auto_merged')
+    expect(detail.mergeGroupId).toBe(String(group?._id))
+    expect(detail.mergeGroupStatus).toBe('active')
+    expect(detail.memberCount).toBe(2)
+
+    const queueResponse = await api(
+      email('admin'),
+      '/overlaps?status=CONFIRMED&mergeStatus=auto_merged',
+    )
+    expect(queueResponse.status).toBe(200)
+    const queue = await json<PageBody<{ id: string }>>(queueResponse)
+    expect(queue.items.map((item) => item.id)).toContain(String(relationship?._id))
+
+    const groupResponse = await api(email('admin'), `/merge-groups/${group?._id}`)
+    expect(groupResponse.status).toBe(200)
+    const groupBody = await json<{ status: string; memberCaseIds: string[] }>(groupResponse)
+    expect(groupBody.status).toBe('active')
+    expect(groupBody.memberCaseIds.sort()).toEqual([pair.caseAId, pair.caseBId].sort())
+  })
+
+  test('reverts to manual review, suppresses re-merge, and requires explicit clearance', async () => {
+    const pair = await createCasePair('AUTO-REVERT', {}, mergeEvidence)
+    configureJev(false)
+    env.OVERLAP_AUTO_MERGE_ENABLED = true
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+    const relationship = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(relationship?.mergeStatus).toBe('auto_merged')
+
+    const revertResponse = await api(email('admin'), `/overlaps/${relationship?._id}/revert`, {
+      method: 'POST',
+      body: { reason: 'Reviewer found the complaints concern different issues' },
+    })
+    expect(revertResponse.status).toBe(200)
+
+    const reverted = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(reverted?.mergeStatus).toBe('reverted')
+    expect(reverted?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.PENDING)
+    expect(reverted?.reMergeSuppressed).toBe(true)
+    expect(reverted?.revertReason).toContain('different issues')
+    const revertedGroup = await runtime.CaseMergeGroup.findById(relationship?.mergeGroupId).lean()
+    expect(revertedGroup?.status).toBe('reverted')
+
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string, {
+      force: true,
+    })
+    const suppressed = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(suppressed?.mergeStatus).toBe('reverted')
+    expect(suppressed?.reMergeSuppressed).toBe(true)
+
+    const clearResponse = await api(
+      email('admin'),
+      `/overlaps/${relationship?._id}/clear-suppression`,
+      {
+        method: 'POST',
+        body: { reason: 'Human reviewer confirmed it is safe to review again' },
+      },
+    )
+    expect(clearResponse.status).toBe(200)
+    const cleared = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(cleared?.mergeStatus).toBe('manual_review')
+    expect(cleared?.reMergeSuppressed).toBe(false)
+
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string, {
+      force: true,
+    })
+    expect((await findRelationship(pair.caseAId, pair.caseBId))?.mergeStatus).toBe('manual_review')
+  })
+
+  test('manual merge creates a group and blocks legacy review', async () => {
+    const pair = await createCasePair(
+      'MANUAL-MERGE',
+      {},
+      {
+        category: 'FEES',
+        description: 'Admission fee refund complaint from a student',
+      },
+    )
+    configureJev(false)
+    env.OVERLAP_AUTO_MERGE_ENABLED = false
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+    const relationship = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(relationship?.mergeStatus).toBe('manual_review')
+    expect(relationship?.mergeVetoReason).toBe('auto_merge_disabled')
+
+    const mergeResponse = await api(email('admin'), `/overlaps/${relationship?._id}/merge`, {
+      method: 'POST',
+      body: {
+        reason: 'Reviewer linked these cases for coordinated handling',
+        canonicalCaseId: pair.caseBId,
+      },
+    })
+    expect(mergeResponse.status).toBe(200)
+    const mergedBody = await json<{ mergeStatus: string; mergeGroupId: string }>(mergeResponse)
+    expect(mergedBody.mergeStatus).toBe('manual_merged')
+    expect(mergedBody.mergeGroupId).toBeTruthy()
+
+    const merged = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(merged?.mergeStatus).toBe('manual_merged')
+    expect(merged?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.CONFIRMED)
+    const group = await runtime.CaseMergeGroup.findById(merged?.mergeGroupId).lean()
+    expect(String(group?.canonicalCaseId)).toBe(pair.caseBId)
+    expect(group?.mergedBy).toBe(userIds.get(email('admin')) as string)
+
+    const action = await runtime.CaseAction.findOne({
+      caseId: pair.caseAId,
+      actionType: ACTION_TYPE.OVERLAP_MANUALLY_MERGED,
+    }).lean()
+    expect(action).toBeTruthy()
+
+    const reviewResponse = await api(email('admin'), `/overlaps/${relationship?._id}/review`, {
+      method: 'POST',
+      body: { action: 'dismiss' },
+    })
+    expect(reviewResponse.status).toBe(409)
+
+    const unlinkResponse = await api(email('admin'), `/overlaps/${relationship?._id}/unlink`, {
+      method: 'POST',
+      body: { notes: 'Should be rejected' },
+    })
+    expect(unlinkResponse.status).toBe(409)
+  })
+
+  test('JEV different-issue veto keeps a high-scoring pair in manual review', async () => {
+    const pair = await createCasePair('AUTO-VETO', {}, mergeEvidence)
+    configureJev(true)
+    mockJevResponse('same_institution_different_issue', 0.1)
+    env.OVERLAP_AUTO_MERGE_ENABLED = true
+
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+
+    const assessment = await findAssessment(pair.caseAId, pair.caseBId)
+    expect(assessment?.status).toBe('ASSESSED')
+    expect(assessment?.relationshipChoice).toBe('same_institution_different_issue')
+
+    const relationship = await findRelationship(pair.caseAId, pair.caseBId)
+    expect(relationship?.mergeStatus).toBe('manual_review')
+    expect(relationship?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.PENDING)
+    expect(relationship?.mergeVetoReason).toBe('jev_different_issue')
+    expect(relationship?.confidenceScore).toBeGreaterThanOrEqual(0.85)
+    expect(await runtime.CaseMergeGroup.countDocuments({ memberCaseIds: pair.caseAId })).toBe(0)
+  })
+})
+
 suite('Stage 4 monitoring, reporting and exports', () => {
   test('dashboard applies date filters, scope and region grouping', async () => {
     const future = await api(
@@ -1446,6 +1689,64 @@ suite('Stage 4 monitoring, reporting and exports', () => {
       email('admin'),
       '/reports/summary?dateFrom=2026-10-02&dateTo=2026-10-01',
     )
+    expect(invalid.status).toBe(400)
+  })
+
+  test('geo reports preserve scope, date filters and region totals', async () => {
+    const range = 'dateFrom=2000-01-01&dateTo=2099-12-31'
+    const [summaryResponse, geoResponse] = await Promise.all([
+      api(email('admin'), `/reports/summary?${range}`),
+      api(email('admin'), `/reports/geo?${range}`),
+    ])
+    expect(summaryResponse.status).toBe(200)
+    expect(geoResponse.status).toBe(200)
+    const summary = await json<{
+      byRegion: Array<{
+        regionId: string
+        total: number
+        open: number
+        disposed: number
+      }>
+    }>(summaryResponse)
+    const geo = await json<{
+      regions: Array<{
+        regionId: string
+        code: string
+        name: string
+        latitude: number
+        longitude: number
+        total: number
+        open: number
+        disposed: number
+        overdue: number
+        resolutionRate: number
+        overdueRate: number
+      }>
+    }>(geoResponse)
+    const summaryNorth = summary.byRegion.find((item) => item.regionId === String(NORTH_REGION))
+    const geoNorth = geo.regions.find((item) => item.regionId === String(NORTH_REGION))
+    expect(summaryNorth).toBeDefined()
+    expect(geoNorth).toBeDefined()
+    expect(geoNorth?.total).toBe(summaryNorth?.total ?? -1)
+    expect(geoNorth?.open).toBe(summaryNorth?.open ?? -1)
+    expect(geoNorth?.disposed).toBe(summaryNorth?.disposed ?? -1)
+    expect(geoNorth?.latitude).toBeNumber()
+    expect(geoNorth?.longitude).toBeNumber()
+    expect(geoNorth?.resolutionRate).toBeNumber()
+    expect(geoNorth?.overdueRate).toBeNumber()
+
+    const scoped = await api(email('north'), `/reports/geo?${range}`)
+    expect(scoped.status).toBe(200)
+    const scopedBody = await json<{ regions: Array<{ regionId: string }> }>(scoped)
+    expect(scopedBody.regions.map((item) => item.regionId)).toEqual([String(NORTH_REGION)])
+
+    const empty = await api(email('admin'), '/reports/geo?dateFrom=2099-01-01&dateTo=2099-01-02')
+    expect(empty.status).toBe(200)
+    const emptyBody = await json<{ regions: Array<{ total: number; overdue: number }> }>(empty)
+    expect(emptyBody.regions.length).toBeGreaterThan(0)
+    expect(emptyBody.regions.every((item) => item.total === 0 && item.overdue === 0)).toBe(true)
+
+    const invalid = await api(email('admin'), '/reports/geo?dateFrom=2026-10-02&dateTo=2026-10-01')
     expect(invalid.status).toBe(400)
   })
 

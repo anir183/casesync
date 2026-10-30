@@ -1,8 +1,9 @@
-import { PAGINATION, RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
+import { OVERLAP_MERGE_STATUS, PAGINATION, RELATIONSHIP_REVIEW_STATUS } from '@casesync/config'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
 import { buildPage, resolvePageQuery } from '#/lib/pagination'
 import { type ScopeUser, caseScopeFilter, mergeFilters, resolveScope } from '#/lib/scope'
 import { Bureau } from '#/models/bureau.model'
+import { CaseMergeGroup } from '#/models/case-merge-group.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
@@ -16,6 +17,20 @@ interface OverlapDto {
   reviewStatus: string
   reviewedAt?: Date
   reviewNotes?: string
+  confidenceScore?: number
+  matchSignals?: Record<string, number>
+  mergeStatus: string
+  mergeGroupId?: string
+  mergeGroupStatus?: string
+  memberCount?: number
+  decidedBy?: string
+  decidedAt?: Date
+  revertReason?: string
+  revertedAt?: Date
+  reMergeSuppressed: boolean
+  mergeThreshold?: number
+  mergeTextThreshold?: number
+  mergeVetoReason?: string
   createdAt: Date
   institution?: {
     id: string
@@ -55,6 +70,7 @@ export interface OverlapFilters {
   regionId?: string
   matchType?: string
   institutionId?: string
+  mergeStatus?: string | string[]
   page?: number | string
   pageSize?: number | string
 }
@@ -70,6 +86,18 @@ interface RelationshipLike {
   reviewStatus: string
   reviewedAt?: Date
   reviewNotes?: string
+  confidenceScore?: number
+  matchSignals?: Record<string, number>
+  mergeStatus?: string
+  mergeGroupId?: unknown
+  decidedBy?: string
+  decidedAt?: Date
+  reMergeSuppressed?: boolean
+  revertReason?: string
+  revertedAt?: Date
+  mergeThreshold?: number
+  mergeTextThreshold?: number
+  mergeVetoReason?: string
   createdAt: Date
 }
 
@@ -112,17 +140,21 @@ interface AssessmentLike {
   assessedAt?: Date
 }
 
-async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<OverlapDto[]> {
+export async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<OverlapDto[]> {
   const caseIds = relationships.flatMap((rel) => [rel.caseAId, rel.caseBId])
   const assessmentIds = relationships
     .map((rel) => rel.assessmentId)
     .filter((id): id is NonNullable<typeof id> => !!id)
+  const groupIds = relationships
+    .map((rel) => rel.mergeGroupId)
+    .filter((id): id is NonNullable<typeof id> => !!id)
 
-  const [cases, assessments] = await Promise.all([
+  const [cases, assessments, groups] = await Promise.all([
     Case.find({ _id: { $in: caseIds } }).lean(),
     assessmentIds.length
       ? CaseOverlapAssessment.find({ _id: { $in: assessmentIds } }).lean()
       : Promise.resolve([]),
+    groupIds.length ? CaseMergeGroup.find({ _id: { $in: groupIds } }).lean() : Promise.resolve([]),
   ])
 
   const institutionIds = [...new Set(cases.map((c) => String(c.institutionId)))]
@@ -140,12 +172,14 @@ async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<Over
   const institutionById = new Map(institutions.map((i) => [String(i._id), i]))
   const bureauById = new Map(bureaus.map((b) => [String(b._id), b]))
   const assessmentById = new Map(assessments.map((a) => [String(a._id), a]))
+  const groupById = new Map(groups.map((g) => [String(g._id), g]))
 
   return relationships.map((rel) => {
     const caseA = caseById.get(String(rel.caseAId))
     const caseB = caseById.get(String(rel.caseBId))
     const institution = caseA ? institutionById.get(String(caseA.institutionId)) : undefined
     const assessment = rel.assessmentId ? assessmentById.get(String(rel.assessmentId)) : undefined
+    const group = rel.mergeGroupId ? groupById.get(String(rel.mergeGroupId)) : undefined
 
     return {
       id: String(rel._id),
@@ -155,6 +189,20 @@ async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<Over
       reviewStatus: rel.reviewStatus,
       reviewedAt: rel.reviewedAt,
       reviewNotes: rel.reviewNotes,
+      confidenceScore: rel.confidenceScore,
+      matchSignals: rel.matchSignals,
+      mergeStatus: rel.mergeStatus ?? OVERLAP_MERGE_STATUS.CANDIDATE,
+      mergeGroupId: rel.mergeGroupId ? String(rel.mergeGroupId) : undefined,
+      mergeGroupStatus: group?.status,
+      memberCount: group?.memberCaseIds.length,
+      decidedBy: rel.decidedBy,
+      decidedAt: rel.decidedAt,
+      revertReason: rel.revertReason,
+      revertedAt: rel.revertedAt,
+      reMergeSuppressed: Boolean(rel.reMergeSuppressed),
+      mergeThreshold: rel.mergeThreshold,
+      mergeTextThreshold: rel.mergeTextThreshold,
+      mergeVetoReason: rel.mergeVetoReason,
       createdAt: rel.createdAt,
       institution: institution
         ? {
@@ -234,6 +282,18 @@ export async function listOverlaps(user: ScopeUser, filters: OverlapFilters = {}
     reviewStatus: filters.status ?? RELATIONSHIP_REVIEW_STATUS.PENDING,
   }
   if (filters.matchType) baseFilter.matchType = filters.matchType
+  const mergeStatuses = (
+    Array.isArray(filters.mergeStatus)
+      ? filters.mergeStatus
+      : (filters.mergeStatus ?? '').split(',')
+  ).filter(Boolean)
+  if (mergeStatuses.length > 0) {
+    const includeMissing = mergeStatuses.includes(OVERLAP_MERGE_STATUS.CANDIDATE)
+    baseFilter.$or = [
+      { mergeStatus: { $in: mergeStatuses } },
+      ...(includeMissing ? [{ mergeStatus: { $exists: false } }] : []),
+    ]
+  }
 
   const filter = mergeFilters(baseFilter, await relationshipScopeFilter(user, filters))
   const [relationships, total] = await Promise.all([

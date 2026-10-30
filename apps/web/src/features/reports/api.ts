@@ -31,6 +31,11 @@ export interface ReportsSummary {
     pending: number
     confirmed: number
     dismissed: number
+    autoMerged: number
+    manuallyMerged: number
+    manualReview: number
+    reverted: number
+    averageReviewHours: number
     byMatchType: Array<{ matchType: string; count: number }>
   }
   monthly: Array<{ month: string; received: number; disposed: number }>
@@ -64,4 +69,30 @@ export function useReports(filters: ReportFilters) {
 
 export function downloadReports(filters: ReportFilters) {
   return apiClient.download(`/reports/export${buildQuery(filters)}`, 'casesync-reports.csv')
+}
+
+export interface GeoRegionRow {
+  regionId: string
+  code: string
+  name: string
+  latitude: number
+  longitude: number
+  total: number
+  open: number
+  disposed: number
+  overdue: number
+  resolutionRate: number
+  overdueRate: number
+}
+
+export interface ReportsGeoSummary {
+  generatedAt: string
+  regions: GeoRegionRow[]
+}
+
+export function useReportsGeo(filters: ReportFilters) {
+  return useQuery({
+    queryKey: ['reports', 'geo', filters],
+    queryFn: () => apiClient.get<ReportsGeoSummary>(`/reports/geo${buildQuery(filters)}`),
+  })
 }

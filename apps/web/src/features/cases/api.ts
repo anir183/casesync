@@ -116,12 +116,34 @@ export interface CaseDetail extends CaseListItem {
   currentAssignment?: CaseAssignment
   assignments: CaseAssignment[]
   actions: CaseAction[]
+  mergeGroup?: {
+    id: string
+    status: string
+    canonicalCaseId: string
+    memberCaseIds: string[]
+    mergedAt: string
+    snapshot?: {
+      members: Array<{
+        caseId: string
+        caseNumber: string
+        status: string
+        category?: string
+        bureauId?: string
+        bureauName?: string
+        regionId?: string
+      }>
+    }
+  }
   relatedCases: Array<{
     relationshipId: string
     caseId: string
     matchType: string
     reason?: string
     reviewStatus: string
+    mergeStatus?: string
+    mergeGroupId?: string
+    mergeGroupStatus?: string
+    reMergeSuppressed?: boolean
   }>
 }
 

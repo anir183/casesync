@@ -1,10 +1,11 @@
 # CaseSync — User Flow & Portal Plan
 
-Status: implemented design plus planned Stage 9 targets. Internal-official MVP is the
+Status: implemented design plus partial Stage 9 delivery. Internal-official MVP is the
 committed scope; the public complainant experience is an **optional Stage 8 extension**
-and remains outside MVP acceptance. Stage 9 is **planned, not implemented**: baseline
-fixes, exact-institution reversible auto-merge, institution representatives, flow/UI
-refresh, charts/GIS, hardening, and docs. See
+and remains outside MVP acceptance. Stage 9 Phase 4 is implemented: visual tokens,
+chart-first dashboard/reports, and the local GIS map. Baseline fixes, exact-institution
+reversible auto-merge, institution representatives, navigation/flow refresh, hardening,
+and docs remain planned. See
 `docs/plans/next-phase-plan.md` for the decision-complete plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
@@ -433,9 +434,9 @@ Expose:
 - Planned Stage 9: representative requests are rate-limited and cannot self-approve or
   self-assign an institution; domain matches are suggestions only; approval/revocation
   is audited; revoked sessions are invalidated.
-- Planned Stage 9: auto-merge runs through one atomic audited path, respects the kill
-  switch, never auto-merges fuzzy-name/JEV-vetoed/disposed pairs, and revert suppression
-  survives re-assessment.
+- Implemented Stage 9 Phase 1: auto-merge runs through one atomic audited path, respects
+  the kill switch, never auto-merges fuzzy-name/JEV-vetoed/disposed pairs, and revert
+  suppression survives re-assessment.
 
 ## 12. UX states and behavior
 
@@ -450,9 +451,10 @@ Expose:
 - File upload progress and failure recovery.
 - Pagination/infinite scrolling for queues; case, institution, overlap, and notification
   registries use server-side pagination.
+- Implemented Phase 4: responsive chart-first dashboard/reports, chart/table parity, and
+  a keyboard-accessible region map with a bundled India outline.
 - Planned Stage 9: primary/More navigation, persistent notification bell, clear role
-  landings, consolidated case tabs, responsive tables, chart/table parity, and a
-  keyboard-accessible region map with a bundled India outline.
+  landings, and consolidated case tabs.
 
 ## 13. Delivery phases
 
@@ -502,8 +504,8 @@ Expose:
 - Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
 - Phase 3: primary/More navigation, notification bell, role landings, case tabs,
   resolution loop.
-- Phase 4: visual refresh, local SVG charts, region coordinates, `/reports/geo`, bundled
-  India outline, table fallback.
+- Phase 4 (done): visual refresh, local SVG charts, region coordinates, `/reports/geo`,
+  bundled India outline, table fallback.
 - Phase 5: CSP/headers, distributed rate-limit path, request IDs, readiness,
   idempotency, index/pagination audit, dependency/secret scanning.
 - Phase 6: docs/ADR/polish and final QA; no deployment step.
@@ -530,12 +532,13 @@ Expose:
 - Overlap orchestration enabled, disabled, Jev failure.
 - Notification dedupe.
 - Attachment access control.
-- Planned Stage 9: auto-merge enabled/disabled, exact vs fuzzy names, disposed cases,
-  JEV veto, concurrency/idempotency, partial-index races, revert/suppression, and audit.
+- Implemented Stage 9 Phase 1: auto-merge enabled/disabled, exact vs fuzzy names,
+  disposed cases, JEV veto, concurrency/idempotency, partial-index races,
+  revert/suppression, and audit.
 - Planned Stage 9: representative pending/approved/rejected/revoked states, institution
   isolation, IDOR/404 behavior, domain suggestion-only, and public projection limits.
-- Planned Stage 9: region bounds/backfill, geo aggregation, notification bell count, and
-  chart/table reconciliation.
+- Implemented Phase 4: region bounds/coordinates, geo aggregation/scope/date filters, and
+  chart/table reconciliation. Planned Stage 9: notification bell count.
 
 Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 `casesync_test` URI) and `app.handle()` route tests. Jev must remain mocked.
@@ -547,9 +550,11 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - Admin creates an officer and assigns a bureau.
 - Overlap alert → human confirm.
 - Role guard checks for each role.
-- Planned Stage 9: exact pair auto-merges, merge group is visible, revert restores manual
-  review; representative approval/revocation and institution isolation; notification
-  bell; chart/table parity and keyboard-accessible GIS map.
+- Implemented Phase 4: chart/table parity, keyboard-accessible GIS map, mobile reflow,
+  and reduced-motion checks.
+- Implemented Stage 9 Phase 1: exact pair auto-merges, merge group is visible, and revert
+  restores manual review. Planned Stage 9: representative approval/revocation and
+  institution isolation; notification bell.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,

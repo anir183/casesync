@@ -97,6 +97,10 @@ export const ACTION_TYPE = {
   LINKED: 'LINKED',
   UNLINKED: 'UNLINKED',
   REVIEWED: 'REVIEWED',
+  OVERLAP_AUTO_MERGED: 'OVERLAP_AUTO_MERGED',
+  OVERLAP_MANUALLY_MERGED: 'OVERLAP_MANUALLY_MERGED',
+  OVERLAP_MERGE_REVERTED: 'OVERLAP_MERGE_REVERTED',
+  OVERLAP_REMERGE_SUPPRESSION_CLEARED: 'OVERLAP_REMERGE_SUPPRESSION_CLEARED',
 } as const
 
 export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE]
@@ -146,6 +150,32 @@ export const JEV_RELATIONSHIP_CHOICE = {
 export type JevRelationshipChoice =
   (typeof JEV_RELATIONSHIP_CHOICE)[keyof typeof JEV_RELATIONSHIP_CHOICE]
 
+export const OVERLAP_MERGE_STATUS = {
+  CANDIDATE: 'candidate',
+  MANUAL_REVIEW: 'manual_review',
+  AUTO_MERGED: 'auto_merged',
+  MANUAL_MERGED: 'manual_merged',
+  REVERTED: 'reverted',
+} as const
+
+export type OverlapMergeStatus = (typeof OVERLAP_MERGE_STATUS)[keyof typeof OVERLAP_MERGE_STATUS]
+
+export const MERGE_GROUP_STATUS = {
+  ACTIVE: 'active',
+  REVERTED: 'reverted',
+} as const
+
+export type MergeGroupStatus = (typeof MERGE_GROUP_STATUS)[keyof typeof MERGE_GROUP_STATUS]
+
+export const OVERLAP_AUTO_MERGE_WEIGHTS = {
+  textSimilarity: 0.4,
+  institutionMatch: 0.15,
+  categoryMatch: 0.15,
+  regionMatch: 0.1,
+  dateProximity: 0.1,
+  matchType: 0.1,
+} as const
+
 export const OVERLAP = {
   HEADING: 'Potential Overlapping Cases – Coordination Required',
   RULE_BASED_REASON: 'Same verified institution with cases handled by different Bureaus/Cells.',
@@ -158,10 +188,16 @@ export const OVERLAP = {
   FUZZY_INSTITUTION_LIMIT: 500,
   REASSESS_CASE_LIMIT: 200,
   MAX_NOTES_LENGTH: 2000,
+  AUTO_MERGE_ACTOR: 'system:auto',
+  AUTO_MERGE_DATE_WINDOW_DAYS: 90,
+  AUTO_MERGE_DEFAULT_THRESHOLD: 0.85,
+  AUTO_MERGE_DEFAULT_TEXT_THRESHOLD: 0.75,
 } as const
 
 export const NOTIFICATION_TYPE = {
   OVERLAP_ALERT: 'OVERLAP_ALERT',
+  OVERLAP_MERGED: 'OVERLAP_MERGED',
+  OVERLAP_MERGE_REVERTED: 'OVERLAP_MERGE_REVERTED',
   PENDING_REMINDER: 'PENDING_REMINDER',
   APPROACHING_DEADLINE: 'APPROACHING_DEADLINE',
   OVERDUE: 'OVERDUE',

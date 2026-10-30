@@ -23,6 +23,7 @@ import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
 import { JevError, interpretAssessment, jevConfig, jevProvider } from '#/services/jev'
 import { type CaseForAssessment, buildJevRequest } from './overlap.jev'
+import { evaluateAutoMerge } from './overlap.scoring'
 
 export interface AssessSummary {
   caseId: string
@@ -457,6 +458,14 @@ async function assessOnePair(
   }
 
   const assessment = await assessPair(source, candidate, pair, relationship, force)
+  try {
+    await evaluateAutoMerge(String(relationship._id))
+  } catch (error) {
+    logger.warn('overlap auto-merge evaluation failed', {
+      relationshipId: String(relationship._id),
+      message: error instanceof Error ? error.message : String(error),
+    })
+  }
   return { relationshipCreated: created, assessment }
 }
 
@@ -623,3 +632,5 @@ export async function unlinkRelationship(
   )
   return String(relationship._id)
 }
+
+export { clearReMergeSuppression, mergeRelationship, revertMerge } from './overlap.scoring'

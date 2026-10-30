@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { ThemeToggle } from '#/components/theme/theme-toggle'
 import { Button } from '#/components/ui/button'
 import { signOut, useSession } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
@@ -35,6 +36,7 @@ export function PortalLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             {signedIn ? (
               <>
                 <span className="hidden text-sm text-muted-foreground sm:inline">

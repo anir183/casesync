@@ -3,8 +3,10 @@ import {
   CASE_STATUS,
   COMPLAINANT_VERIFICATION_STATUS,
   JEV_ASSESSMENT_STATUS,
+  MERGE_GROUP_STATUS,
   NOTIFICATION_TYPE,
   OVERLAP,
+  OVERLAP_MERGE_STATUS,
   RELATIONSHIP_MATCH_TYPE,
   RELATIONSHIP_REVIEW_STATUS,
   ROLES,
@@ -15,6 +17,7 @@ import { normalizeInstitutionName, normalizePairKey } from '@casesync/utils'
 import { Bureau } from '#/models/bureau.model'
 import { CaseAction } from '#/models/case-action.model'
 import { CaseAssignment } from '#/models/case-assignment.model'
+import { CaseMergeGroup, type IMergeSnapshot } from '#/models/case-merge-group.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
@@ -40,6 +43,7 @@ interface DemoCaseState {
   id: string
   caseNumber: string
   bureauId?: string
+  category?: string
   status: string
   officerEmail?: string
 }
@@ -478,6 +482,7 @@ async function seedCases(
       caseNumber: demo.caseNumber,
       bureauId,
       status: demo.status,
+      category: demo.category,
       officerEmail: demo.officerEmail,
     })
   }
@@ -492,6 +497,71 @@ function overlapReason(matchType: string) {
   return `${OVERLAP.HEADING}. ${basis}`
 }
 
+function mergeSnapshot(cases: DemoCaseState[], canonicalCaseId: string): IMergeSnapshot {
+  const ordered = [...cases].sort((a, b) => {
+    if (a.id === canonicalCaseId) return -1
+    if (b.id === canonicalCaseId) return 1
+    return a.caseNumber.localeCompare(b.caseNumber)
+  })
+  return {
+    members: ordered.map((item) => ({
+      caseId: item.id,
+      caseNumber: item.caseNumber,
+      status: item.status,
+      category: item.category,
+      bureauId: item.bureauId,
+    })),
+  }
+}
+
+async function seedMergeGroup(
+  demo: (typeof DEMO_OVERLAPS)[number],
+  caseA: DemoCaseState,
+  caseB: DemoCaseState,
+  masters: SeedMastersResult,
+) {
+  const config = demo.mergeGroup
+  if (!config) return undefined
+  const canonical = config.canonicalCaseKey === demo.caseAKey ? caseA : caseB
+  const mergedAt = addDays(new Date(), -config.mergedDaysAgo)
+  const mergedBy = config.mergedByEmail
+    ? masters.userIdByEmail.get(config.mergedByEmail)
+    : OVERLAP.AUTO_MERGE_ACTOR
+  if (!mergedBy) throw new Error(`Missing merge actor for ${demo.key}`)
+  const snapshot = mergeSnapshot([caseA, caseB], canonical.id)
+  const revertedAt =
+    config.revertedDaysAgo === undefined ? undefined : addDays(new Date(), -config.revertedDaysAgo)
+  const memberCaseIds = [caseA.id, caseB.id]
+  const groupFields = {
+    canonicalCaseId: canonical.id,
+    memberCaseIds,
+    mergedAt,
+    mergedBy,
+    confidenceScore: config.confidenceScore,
+    matchSignals: config.matchSignals,
+    snapshot,
+    status: config.status,
+    ...(revertedAt
+      ? { revertedAt, revertedBy: masters.userIdByEmail.get('admin@casesync.test') }
+      : {}),
+    ...(config.revertReason ? { revertReason: config.revertReason } : {}),
+  }
+  const existing = await CaseMergeGroup.findOne({
+    memberCaseIds: { $all: memberCaseIds, $size: memberCaseIds.length },
+  }).sort({ mergedAt: -1 })
+  if (existing) {
+    return CaseMergeGroup.findByIdAndUpdate(
+      existing._id,
+      {
+        $set: groupFields,
+        $unset: revertedAt ? {} : { revertedAt: 1, revertedBy: 1, revertReason: 1 },
+      },
+      { new: true },
+    )
+  }
+  return CaseMergeGroup.create(groupFields)
+}
+
 async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoCaseState>) {
   const adminId = masters.userIdByEmail.get('admin@casesync.test')
   const relationships: Array<{
@@ -504,6 +574,8 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
     bureauB?: string
     status: string
     createdAt: Date
+    mergeStatus?: string
+    mergeGroupId?: string
   }> = []
 
   for (const demo of DEMO_OVERLAPS) {
@@ -555,6 +627,11 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
       ? masters.userIdByEmail.get(demo.reviewedByEmail)
       : undefined
     const reviewedAt = reviewedBy ? addDays(new Date(), -1) : undefined
+    const group = await seedMergeGroup(demo, caseA, caseB, masters)
+    const mergeStatus = demo.mergeStatus ?? OVERLAP_MERGE_STATUS.CANDIDATE
+    const decidedAt = demo.mergeGroup
+      ? addDays(new Date(), -demo.mergeGroup.mergedDaysAgo)
+      : undefined
     const relationship = await CaseRelationship.findOneAndUpdate(
       pair,
       {
@@ -567,9 +644,33 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
           reviewedBy,
           reviewedAt,
           reviewNotes: demo.reviewNotes,
+          mergeStatus,
+          confidenceScore: demo.mergeScore,
+          matchSignals: demo.mergeSignals,
+          mergeThreshold: OVERLAP.AUTO_MERGE_DEFAULT_THRESHOLD,
+          mergeTextThreshold: OVERLAP.AUTO_MERGE_DEFAULT_TEXT_THRESHOLD,
+          mergeGroupId: group?._id,
+          decidedBy: group?.mergedBy,
+          decidedAt,
+          mergeVetoReason: demo.mergeVetoReason,
+          reMergeSuppressed: mergeStatus === OVERLAP_MERGE_STATUS.REVERTED,
+          ...(demo.mergeGroup?.revertReason ? { revertReason: demo.mergeGroup.revertReason } : {}),
+          ...(demo.mergeGroup?.revertedDaysAgo === undefined
+            ? {}
+            : { revertedAt: addDays(new Date(), -demo.mergeGroup.revertedDaysAgo) }),
+          ...(demo.mergeGroup?.revertedDaysAgo === undefined
+            ? {}
+            : { revertedBy: masters.userIdByEmail.get('admin@casesync.test') }),
         },
         $unset: {
           ...(reviewedAt ? {} : { reviewedAt: 1, reviewedBy: 1, reviewNotes: 1 }),
+          ...(demo.mergeScore === undefined ? { confidenceScore: 1, matchSignals: 1 } : {}),
+          ...(group ? {} : { mergeGroupId: 1, decidedBy: 1, decidedAt: 1 }),
+          ...(demo.mergeVetoReason ? {} : { mergeVetoReason: 1 }),
+          ...(demo.mergeGroup?.revertReason ? {} : { revertReason: 1 }),
+          ...(demo.mergeGroup?.revertedDaysAgo === undefined
+            ? { revertedAt: 1, revertedBy: 1 }
+            : {}),
         },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
@@ -611,6 +712,31 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
         })
       }
     }
+    if (group) {
+      const mergeAction =
+        group.status === MERGE_GROUP_STATUS.REVERTED
+          ? ACTION_TYPE.OVERLAP_MERGE_REVERTED
+          : group.mergedBy === OVERLAP.AUTO_MERGE_ACTOR
+            ? ACTION_TYPE.OVERLAP_AUTO_MERGED
+            : ACTION_TYPE.OVERLAP_MANUALLY_MERGED
+      for (const item of [caseA, caseB]) {
+        const action = await CaseAction.findOne({
+          caseId: item.id,
+          actionType: mergeAction,
+          'metadata.mergeGroupId': group._id,
+        }).lean()
+        if (!action) {
+          await CaseAction.create({
+            caseId: item.id,
+            actorId: group.mergedBy,
+            actionType: mergeAction,
+            remarks: group.revertReason ?? 'Overlap merged for coordinated handling',
+            metadata: { demo: true, relationshipId, mergeGroupId: group._id },
+            createdAt: group.revertedAt ?? group.mergedAt,
+          })
+        }
+      }
+    }
 
     relationships.push({
       id: relationshipId,
@@ -622,6 +748,8 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
       bureauB: caseB.bureauId,
       status: demo.reviewStatus,
       createdAt: relationship.createdAt,
+      mergeStatus,
+      mergeGroupId: group ? String(group._id) : undefined,
     })
   }
   return relationships
@@ -688,15 +816,38 @@ async function seedNotifications(
     if (officerA) recipients.add(officerA)
     if (officerB) recipients.add(officerB)
     const readOn = index === 0 ? 1 : index + 1
+    const mergeType =
+      relationship.mergeStatus === OVERLAP_MERGE_STATUS.AUTO_MERGED ||
+      relationship.mergeStatus === OVERLAP_MERGE_STATUS.MANUAL_MERGED
+        ? 'merged'
+        : relationship.mergeStatus === OVERLAP_MERGE_STATUS.REVERTED
+          ? 'reverted'
+          : undefined
+    const referenceId = mergeType ? (relationship.mergeGroupId ?? relationship.id) : relationship.id
     for (const [recipientIndex, recipientId] of [...recipients].entries()) {
       await upsertNotification({
         recipientId,
-        type: NOTIFICATION_TYPE.OVERLAP_ALERT,
-        referenceId: relationship.id,
-        periodKey: OVERLAP.NOTIFICATION_PERIOD_KEY,
-        link: `/overlaps/${relationship.id}`,
-        title: OVERLAP.HEADING,
-        message: `${relationship.caseANumber} and ${relationship.caseBNumber} concern the same institution but are handled by different Bureaus/Cells. Human review is required.`,
+        type:
+          mergeType === 'merged'
+            ? NOTIFICATION_TYPE.OVERLAP_MERGED
+            : mergeType === 'reverted'
+              ? NOTIFICATION_TYPE.OVERLAP_MERGE_REVERTED
+              : NOTIFICATION_TYPE.OVERLAP_ALERT,
+        referenceId,
+        periodKey: mergeType ? mergeType.toUpperCase() : OVERLAP.NOTIFICATION_PERIOD_KEY,
+        link: mergeType ? `/merge-groups/${referenceId}` : `/overlaps/${relationship.id}`,
+        title:
+          mergeType === 'merged'
+            ? 'Overlap merge group updated'
+            : mergeType === 'reverted'
+              ? 'Overlap merge reverted'
+              : OVERLAP.HEADING,
+        message:
+          mergeType === 'merged'
+            ? `${relationship.caseANumber} and ${relationship.caseBNumber} are linked for coordinated handling. This is not a duplicate determination.`
+            : mergeType === 'reverted'
+              ? `${relationship.caseANumber} and ${relationship.caseBNumber} returned to human review. Original records are unchanged.`
+              : `${relationship.caseANumber} and ${relationship.caseBNumber} concern the same institution but are handled by different Bureaus/Cells. Human review is required.`,
         ...(recipientIndex >= readOn ? { readAt: addDays(new Date(), -1) } : {}),
       })
     }

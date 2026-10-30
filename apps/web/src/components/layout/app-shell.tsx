@@ -1,6 +1,9 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { ThemeToggle } from '#/components/theme/theme-toggle'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useNotifications } from '#/features/notifications/api'
 import { signOut, useSession } from '#/lib/auth-client'
 import { cn } from '#/lib/utils'
@@ -68,7 +71,8 @@ export function AppShell() {
             </nav>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
+            <ThemeToggle className="hidden sm:inline-flex" />
+            <span className="hidden text-sm text-muted-foreground md:inline">
               {session?.user?.name || session?.user?.email}
             </span>
             <Button variant="outline" size="sm" onClick={() => void handleSignOut()}>
@@ -78,7 +82,21 @@ export function AppShell() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="space-y-4" aria-busy="true" aria-label="Loading page">
+              <Skeleton className="h-10 w-64" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+              </div>
+              <Skeleton className="h-72" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

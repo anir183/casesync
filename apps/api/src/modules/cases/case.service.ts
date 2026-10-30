@@ -32,6 +32,7 @@ import { type DirectoryUser, loadUserMap } from '#/lib/user-directory'
 import { Bureau } from '#/models/bureau.model'
 import { CaseAction } from '#/models/case-action.model'
 import { CaseAssignment } from '#/models/case-assignment.model'
+import { CaseMergeGroup } from '#/models/case-merge-group.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
@@ -639,6 +640,17 @@ export async function getCaseDetail(caseId: string, user: ScopeUser) {
         reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
       }).lean(),
     ])
+  const mergeGroupIds = [
+    ...new Set(
+      relationships
+        .map((rel) => (rel.mergeGroupId ? String(rel.mergeGroupId) : null))
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ]
+  const mergeGroups = mergeGroupIds.length
+    ? await CaseMergeGroup.find({ _id: { $in: mergeGroupIds } }).lean()
+    : []
+  const mergeGroupById = new Map(mergeGroups.map((group) => [String(group._id), group]))
   const [assignments, actions] = await Promise.all([
     enrichAssignments(rawAssignments),
     enrichActions(rawActions),
@@ -665,13 +677,31 @@ export async function getCaseDetail(caseId: string, user: ScopeUser) {
     currentAssignment,
     assignments,
     actions,
-    relatedCases: relationships.map((rel) => ({
-      relationshipId: String(rel._id),
-      caseId: String(rel.caseAId) === String(item._id) ? String(rel.caseBId) : String(rel.caseAId),
-      matchType: rel.matchType,
-      reason: rel.reason,
-      reviewStatus: rel.reviewStatus,
-    })),
+    mergeGroup: mergeGroups[0]
+      ? {
+          id: String(mergeGroups[0]._id),
+          status: mergeGroups[0].status,
+          canonicalCaseId: String(mergeGroups[0].canonicalCaseId),
+          memberCaseIds: mergeGroups[0].memberCaseIds.map(String),
+          mergedAt: mergeGroups[0].mergedAt,
+          snapshot: mergeGroups[0].snapshot,
+        }
+      : undefined,
+    relatedCases: relationships.map((rel) => {
+      const group = rel.mergeGroupId ? mergeGroupById.get(String(rel.mergeGroupId)) : undefined
+      return {
+        relationshipId: String(rel._id),
+        caseId:
+          String(rel.caseAId) === String(item._id) ? String(rel.caseBId) : String(rel.caseAId),
+        matchType: rel.matchType,
+        reason: rel.reason,
+        reviewStatus: rel.reviewStatus,
+        mergeStatus: rel.mergeStatus,
+        mergeGroupId: rel.mergeGroupId ? String(rel.mergeGroupId) : undefined,
+        mergeGroupStatus: group?.status,
+        reMergeSuppressed: Boolean(rel.reMergeSuppressed),
+      }
+    }),
   }
 }
 

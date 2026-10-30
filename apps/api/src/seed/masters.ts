@@ -7,15 +7,69 @@ import { User } from '#/models/user.model'
 export const SEED_PASSWORD = process.env.SEED_PASSWORD ?? 'Passw0rd!123'
 
 export const REGIONS = [
-  { code: 'NORTH', name: 'Northern Region', officeCity: 'Kanpur' },
-  { code: 'NORTH_WEST', name: 'North-West Region', officeCity: 'Chandigarh' },
-  { code: 'WEST', name: 'Western Region', officeCity: 'Mumbai' },
-  { code: 'CENTRAL', name: 'Central Region', officeCity: 'Bhopal' },
-  { code: 'EAST', name: 'Eastern Region', officeCity: 'Kolkata' },
-  { code: 'NORTH_EAST', name: 'North-East Region', officeCity: 'Guwahati' },
-  { code: 'SOUTH_WEST', name: 'South-West Region', officeCity: 'Bengaluru' },
-  { code: 'SOUTH_CENTRAL', name: 'South-Central Region', officeCity: 'Hyderabad' },
-  { code: 'SOUTH', name: 'Southern Region', officeCity: 'Chennai' },
+  {
+    code: 'NORTH',
+    name: 'Northern Region',
+    officeCity: 'Kanpur',
+    latitude: 26.4499,
+    longitude: 80.3319,
+  },
+  {
+    code: 'NORTH_WEST',
+    name: 'North-West Region',
+    officeCity: 'Chandigarh',
+    latitude: 30.7333,
+    longitude: 76.7794,
+  },
+  {
+    code: 'WEST',
+    name: 'Western Region',
+    officeCity: 'Mumbai',
+    latitude: 19.076,
+    longitude: 72.8777,
+  },
+  {
+    code: 'CENTRAL',
+    name: 'Central Region',
+    officeCity: 'Bhopal',
+    latitude: 23.2599,
+    longitude: 77.4126,
+  },
+  {
+    code: 'EAST',
+    name: 'Eastern Region',
+    officeCity: 'Kolkata',
+    latitude: 22.5726,
+    longitude: 88.3639,
+  },
+  {
+    code: 'NORTH_EAST',
+    name: 'North-East Region',
+    officeCity: 'Guwahati',
+    latitude: 26.1445,
+    longitude: 91.7362,
+  },
+  {
+    code: 'SOUTH_WEST',
+    name: 'South-West Region',
+    officeCity: 'Bengaluru',
+    latitude: 12.9716,
+    longitude: 77.5946,
+  },
+  {
+    code: 'SOUTH_CENTRAL',
+    name: 'South-Central Region',
+    officeCity: 'Hyderabad',
+    latitude: 17.385,
+    longitude: 78.4867,
+  },
+  {
+    code: 'SOUTH',
+    name: 'Southern Region',
+    officeCity: 'Chennai',
+    latitude: 13.0827,
+    longitude: 80.2707,
+  },
 ] as const
 
 export const CATEGORIES = [

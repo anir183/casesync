@@ -2,6 +2,8 @@ import {
   CASE_STATUS,
   JEV_ASSESSMENT_STATUS,
   JEV_RELATIONSHIP_CHOICE,
+  MERGE_GROUP_STATUS,
+  OVERLAP_MERGE_STATUS,
   RELATIONSHIP_MATCH_TYPE,
   RELATIONSHIP_REVIEW_STATUS,
 } from '@casesync/config'
@@ -276,7 +278,32 @@ export const DEMO_CASES: DemoCase[] = [
     nextAction: 'Align with PGRC review',
     nextActionDueInDays: -2,
   },
+  {
+    key: 'rb-007',
+    caseNumber: 'RB-2026-007',
+    institutionKey: 'dit',
+    bureauCode: 'RB',
+    category: 'ACADEMIC',
+    status: CASE_STATUS.UNDER_PROCESS,
+    ageDays: 16,
+    slaDays: 30,
+    description: 'Academic records verification linked to a previous merged review.',
+    officerEmail: 'rb.officer@casesync.test',
+    nextAction: 'Confirm record linkage',
+    nextActionDueInDays: 4,
+  },
 ]
+
+interface DemoMergeGroupSeed {
+  canonicalCaseKey: string
+  status: string
+  mergedByEmail?: string
+  mergedDaysAgo: number
+  confidenceScore?: number
+  matchSignals?: Record<string, number>
+  revertReason?: string
+  revertedDaysAgo?: number
+}
 
 export interface DemoOverlap {
   key: string
@@ -292,6 +319,11 @@ export interface DemoOverlap {
   reviewNotes?: string
   rationale: string
   errorMessage?: string
+  mergeStatus?: string
+  mergeScore?: number
+  mergeSignals?: Record<string, number>
+  mergeVetoReason?: string
+  mergeGroup?: DemoMergeGroupSeed
 }
 
 export const DEMO_OVERLAPS: DemoOverlap[] = [
@@ -306,6 +338,16 @@ export const DEMO_OVERLAPS: DemoOverlap[] = [
     coordinationReviewNoul: 0.86,
     reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
     rationale: 'Both cases identify the same institution and describe connected academic records.',
+    mergeStatus: OVERLAP_MERGE_STATUS.MANUAL_REVIEW,
+    mergeScore: 0.666,
+    mergeSignals: {
+      textSimilarity: 0.65,
+      institutionMatch: 1,
+      categoryMatch: 0,
+      regionMatch: 1,
+      dateProximity: 0.56,
+      matchType: 1,
+    },
   },
   {
     key: 'exact-different-issue',
@@ -319,6 +361,17 @@ export const DEMO_OVERLAPS: DemoOverlap[] = [
     reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
     rationale:
       'The institution is the same but the complaints concern separate academic and fee issues.',
+    mergeStatus: OVERLAP_MERGE_STATUS.MANUAL_REVIEW,
+    mergeScore: 0.71,
+    mergeSignals: {
+      textSimilarity: 0.7,
+      institutionMatch: 1,
+      categoryMatch: 0,
+      regionMatch: 1,
+      dateProximity: 0.3,
+      matchType: 1,
+    },
+    mergeVetoReason: 'jev_different_issue',
   },
   {
     key: 'fuzzy-pending',
@@ -366,9 +419,72 @@ export const DEMO_OVERLAPS: DemoOverlap[] = [
     matchType: RELATIONSHIP_MATCH_TYPE.INSTITUTION_EXACT_ID,
     confidence: 1,
     assessmentStatus: JEV_ASSESSMENT_STATUS.FAILED,
-    reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
+    reviewStatus: RELATIONSHIP_REVIEW_STATUS.CONFIRMED,
     rationale: 'Rule-based match remains queued while the AI assessment is unavailable.',
     errorMessage: 'Demo assessment failure: provider unavailable',
+    mergeStatus: OVERLAP_MERGE_STATUS.AUTO_MERGED,
+    mergeScore: 0.94,
+    mergeSignals: {
+      textSimilarity: 0.9,
+      institutionMatch: 1,
+      categoryMatch: 1,
+      regionMatch: 1,
+      dateProximity: 0.5,
+      matchType: 1,
+    },
+    mergeGroup: {
+      canonicalCaseKey: 'pgrc-004',
+      status: MERGE_GROUP_STATUS.ACTIVE,
+      mergedDaysAgo: 2,
+      confidenceScore: 0.94,
+      matchSignals: {
+        textSimilarity: 0.9,
+        institutionMatch: 1,
+        categoryMatch: 1,
+        regionMatch: 1,
+        dateProximity: 0.5,
+        matchType: 1,
+      },
+    },
+  },
+  {
+    key: 'exact-reverted',
+    caseAKey: 'pgrc-001',
+    caseBKey: 'rb-007',
+    matchType: RELATIONSHIP_MATCH_TYPE.INSTITUTION_EXACT_ID,
+    confidence: 1,
+    assessmentStatus: JEV_ASSESSMENT_STATUS.ASSESSED,
+    relationshipChoice: JEV_RELATIONSHIP_CHOICE.LIKELY_SAME_ISSUE,
+    coordinationReviewNoul: 0.81,
+    reviewStatus: RELATIONSHIP_REVIEW_STATUS.PENDING,
+    rationale: 'The institution and academic issue match, but a reviewer reverted the merge.',
+    mergeStatus: OVERLAP_MERGE_STATUS.REVERTED,
+    mergeScore: 0.91,
+    mergeSignals: {
+      textSimilarity: 0.86,
+      institutionMatch: 1,
+      categoryMatch: 1,
+      regionMatch: 1,
+      dateProximity: 0.68,
+      matchType: 1,
+    },
+    mergeGroup: {
+      canonicalCaseKey: 'pgrc-001',
+      status: MERGE_GROUP_STATUS.REVERTED,
+      mergedByEmail: 'admin@casesync.test',
+      mergedDaysAgo: 5,
+      confidenceScore: 0.91,
+      matchSignals: {
+        textSimilarity: 0.86,
+        institutionMatch: 1,
+        categoryMatch: 1,
+        regionMatch: 1,
+        dateProximity: 0.68,
+        matchType: 1,
+      },
+      revertReason: 'Reviewer confirmed the records describe separate academic requests.',
+      revertedDaysAgo: 1,
+    },
   },
 ]
 

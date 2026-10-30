@@ -1,17 +1,26 @@
 import { CASE_STATUS } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
+import { BarChart } from '#/components/charts/bar-chart'
+import { ChartCard } from '#/components/charts/chart-card'
+import { DonutChart } from '#/components/charts/donut-chart'
+import { GaugeChart } from '#/components/charts/gauge-chart'
+import { TrendChart } from '#/components/charts/trend-chart'
+import { PageHeader } from '#/components/shared/page-header'
+import { StatCard } from '#/components/shared/stat-card'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { matchTypeLabel } from '#/features/overlaps/labels'
 import { formatDate } from '#/lib/utils'
-import type { ReportFilters, ReportGroupRow } from '../api'
-import { downloadReports, useReports } from '../api'
+import type { GeoRegionRow, ReportFilters, ReportGroupRow } from '../api'
+import { downloadReports, useReports, useReportsGeo } from '../api'
+import { RegionMap } from '../components/region-map'
 
-const CELL = 'px-3 py-2 text-sm'
-const HEAD_CELL = `${CELL} text-xs uppercase tracking-wide text-muted-foreground`
+const CELL = 'px-3 py-2.5 text-sm'
+const HEAD_CELL = `${CELL} text-xs font-medium uppercase tracking-wide text-muted-foreground`
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
 
 function cleanFilters(input: ReportFilters): ReportFilters {
@@ -20,15 +29,11 @@ function cleanFilters(input: ReportFilters): ReportFilters {
   ) as ReportFilters
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">{value}</p>
-      </CardContent>
-    </Card>
-  )
+function titleCase(value: string) {
+  return value
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
 }
 
 function CountTable({
@@ -49,22 +54,24 @@ function CountTable({
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border">
-                <th className={HEAD_CELL}>Name</th>
-                <th className={HEAD_CELL}>Cases</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={String(row[labelKey])} className="border-b border-border last:border-0">
-                  <td className={CELL}>{String(row[labelKey])}</td>
-                  <td className={CELL}>{row.count}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className={HEAD_CELL}>Name</th>
+                  <th className={HEAD_CELL}>Cases</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={String(row[labelKey])} className="border-b border-border last:border-0">
+                    <td className={CELL}>{String(row[labelKey])}</td>
+                    <td className={CELL}>{row.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -81,71 +88,29 @@ function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) 
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border">
-                <th className={HEAD_CELL}>Name</th>
-                <th className={HEAD_CELL}>Total</th>
-                <th className={HEAD_CELL}>Open</th>
-                <th className={HEAD_CELL}>Disposed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.name} className="border-b border-border last:border-0">
-                  <td className={CELL}>{row.name}</td>
-                  <td className={CELL}>{row.total}</td>
-                  <td className={CELL}>{row.open}</td>
-                  <td className={CELL}>{row.disposed}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[360px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className={HEAD_CELL}>Name</th>
+                  <th className={HEAD_CELL}>Total</th>
+                  <th className={HEAD_CELL}>Open</th>
+                  <th className={HEAD_CELL}>Disposed</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-interface TrendPoint {
-  label: string
-  received: number
-  disposed: number
-}
-
-function TrendChart({ title, data }: { title: string; data: TrendPoint[] }) {
-  const max = Math.max(...data.flatMap((item) => [item.received, item.disposed]), 1)
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {data.length === 0 && <p className="text-sm text-muted-foreground">No data.</p>}
-        {data.map((item) => (
-          <div key={item.label} className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{item.label}</span>
-              <span>
-                {item.received} received · {item.disposed} disposal actions
-              </span>
-            </div>
-            <div className="space-y-1">
-              <div className="h-2 rounded bg-muted">
-                <div
-                  className="h-2 rounded bg-foreground"
-                  style={{ width: `${(item.received / max) * 100}%` }}
-                />
-              </div>
-              <div className="h-2 rounded bg-muted">
-                <div
-                  className="h-2 rounded bg-emerald-500"
-                  style={{ width: `${(item.disposed / max) * 100}%` }}
-                />
-              </div>
-            </div>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.name} className="border-b border-border last:border-0">
+                    <td className={CELL}>{row.name}</td>
+                    <td className={CELL}>{row.total}</td>
+                    <td className={CELL}>{row.open}</td>
+                    <td className={CELL}>{row.disposed}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
   )
@@ -157,6 +122,7 @@ export function ReportsPage() {
   const [exportError, setExportError] = useState<string>()
   const [isExporting, setIsExporting] = useState(false)
   const { data, isLoading, isError, error } = useReports(filters)
+  const geo = useReportsGeo(filters)
   const { data: bureaus } = useBureaus()
   const { data: regions } = useRegions()
   const { data: categories } = useCategories()
@@ -176,6 +142,11 @@ export function ReportsPage() {
     setExportError(undefined)
   }
 
+  function handleRegionSelect(region: GeoRegionRow) {
+    setDraft((current) => ({ ...current, regionId: region.regionId }))
+    setFilters((current) => ({ ...current, regionId: region.regionId }))
+  }
+
   async function handleExport() {
     setIsExporting(true)
     setExportError(undefined)
@@ -190,27 +161,30 @@ export function ReportsPage() {
     }
   }
 
+  const statusData = (data?.byStatus ?? []).map((item) => ({
+    label: titleCase(item.status),
+    value: item.count,
+  }))
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Reports</h1>
-          <p className="text-sm text-muted-foreground">
-            Bureau, institution, region, ageing and overlap analytics.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void handleExport()}
-          disabled={isExporting}
-        >
-          {isExporting ? 'Exporting…' : 'Export CSV'}
-        </Button>
-      </div>
+      <PageHeader
+        title="Reports"
+        description="Bureau, institution, region, ageing and overlap analytics with the current filter set."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleExport()}
+            disabled={isExporting}
+          >
+            {isExporting ? 'Exporting…' : 'Export CSV'}
+          </Button>
+        }
+      />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4">
           <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" htmlFor="report-from">
@@ -266,7 +240,7 @@ export function ReportsPage() {
               <option value="">All statuses</option>
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
-                  {status.replace(/_/g, ' ')}
+                  {titleCase(status)}
                 </option>
               ))}
             </Select>
@@ -294,23 +268,32 @@ export function ReportsPage() {
         </CardContent>
       </Card>
 
-      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="text-sm text-danger-soft-foreground">{exportError}</p>}
       {isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger-soft-foreground">
           {error instanceof Error ? error.message : 'Unable to load reports'}
         </p>
       )}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading reports…</p>}
 
-      {data && (
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {['total', 'open', 'disposed', 'reopened', 'overdue', 'rate'].map((key) => (
+            <Skeleton key={key} className="h-24" />
+          ))}
+        </div>
+      ) : data ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-            <StatCard label="Total cases" value={data.totals.total} />
-            <StatCard label="Open cases" value={data.totals.open} />
-            <StatCard label="Disposed" value={data.totals.disposed} />
-            <StatCard label="Reopened" value={data.totals.reopened} />
-            <StatCard label="Beyond timeline" value={data.totals.beyondTimelines} />
-            <StatCard label="Disposal rate" value={`${data.totals.disposalRate}%`} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <StatCard label="Total cases" value={data.totals.total} tone="primary" />
+            <StatCard label="Open cases" value={data.totals.open} tone="info" />
+            <StatCard label="Disposed" value={data.totals.disposed} tone="success" />
+            <StatCard label="Reopened" value={data.totals.reopened} tone="warning" />
+            <StatCard
+              label="Beyond timeline"
+              value={data.totals.beyondTimelines}
+              tone={data.totals.beyondTimelines ? 'danger' : 'success'}
+            />
+            <StatCard label="Disposal rate" value={`${data.totals.disposalRate}%`} tone="success" />
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -322,102 +305,181 @@ export function ReportsPage() {
               : ''}
           </p>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <GroupTable title="Bureau/Cell-wise" rows={data.byBureau} />
-            <GroupTable title="Institution-wise" rows={data.byInstitution} />
-            <GroupTable title="Region-wise" rows={data.byRegion} />
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Pending case ageing</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {data.ageBuckets.map((bucket) => (
-                  <div key={bucket.label} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{bucket.label}</span>
-                    <span className="font-medium">{bucket.count}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <ChartCard
+              title="Received vs disposal actions"
+              description="Monthly volume over the selected range."
+              className="lg:col-span-2"
+            >
+              <TrendChart
+                data={data.monthly.map((item) => ({
+                  label: item.month,
+                  received: item.received,
+                  disposed: item.disposed,
+                }))}
+                caption="Monthly received versus disposal actions"
+              />
+            </ChartCard>
+            <ChartCard title="Status mix" description="Current status distribution.">
+              <DonutChart data={statusData} caption="Cases by status" centerLabel="Cases" />
+            </ChartCard>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <ChartCard title="Categories" description="Top complaint categories.">
+              <BarChart
+                data={data.byCategory.map((item) => ({
+                  label: titleCase(item.category),
+                  value: item.count,
+                }))}
+                caption="Cases by category"
+              />
+            </ChartCard>
+            <ChartCard title="Pending case ageing" description="Open cases by age band.">
+              <BarChart
+                data={data.ageBuckets.map((item) => ({
+                  label: item.label,
+                  value: item.count,
+                }))}
+                caption="Pending case ageing"
+                color="var(--color-chart-3)"
+              />
+            </ChartCard>
+            <ChartCard title="Disposal rate" description="Disposed cases as a share of the total.">
+              <GaugeChart
+                value={data.totals.disposalRate}
+                label="disposed"
+                caption="Disposal rate"
+                tone={data.totals.disposalRate >= 70 ? 'success' : 'primary'}
+              />
+            </ChartCard>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <CountTable
-              title="Cases by status"
-              rows={data.byStatus.map((item) => ({
-                status: item.status.replace(/_/g, ' '),
-                count: item.count,
-              }))}
-              labelKey="status"
-            />
-            <CountTable
-              title="Cases by category"
-              rows={data.byCategory.map((item) => ({
-                category: item.category,
-                count: item.count,
-              }))}
-              labelKey="category"
-            />
+            <ChartCard title="Bureau comparison" description="Volume by bureau or cell.">
+              <BarChart
+                data={data.byBureau.map((item) => ({ label: item.name, value: item.total }))}
+                caption="Cases by bureau"
+              />
+            </ChartCard>
+            <ChartCard title="Region comparison" description="Volume by region.">
+              <BarChart
+                data={data.byRegion.map((item) => ({ label: item.name, value: item.total }))}
+                caption="Cases by region"
+                color="var(--color-chart-2)"
+              />
+            </ChartCard>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Overlapping cases</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Assessments run</span>
-                  <span>{data.overlaps.assessments}</span>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <ChartCard
+              title="Regional pressure"
+              description="Select a region bubble to apply the region filter."
+              className="lg:col-span-2"
+            >
+              {geo.isLoading ? (
+                <Skeleton className="h-56 w-full" />
+              ) : geo.data?.regions.length ? (
+                <RegionMap
+                  regions={geo.data.regions}
+                  caption="Regional case pressure"
+                  selectedRegionId={filters.regionId}
+                  onSelect={handleRegionSelect}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">No mapped regions are in scope.</p>
+              )}
+            </ChartCard>
+            <ChartCard title="Overlap outcomes" description="Relationships by review state.">
+              <DonutChart
+                data={[
+                  { label: 'Pending review', value: data.overlaps.pending },
+                  { label: 'Confirmed', value: data.overlaps.confirmed },
+                  { label: 'Dismissed', value: data.overlaps.dismissed },
+                ]}
+                caption="Overlap review outcomes"
+                centerLabel="Relationships"
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Assessments</p>
+                  <p className="font-semibold">{data.overlaps.assessments}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total relationships</span>
-                  <span>{data.overlaps.total}</span>
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Relationships</p>
+                  <p className="font-semibold">{data.overlaps.total}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Pending review</span>
-                  <span>{data.overlaps.pending}</span>
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Auto-merged</p>
+                  <p className="font-semibold">{data.overlaps.autoMerged}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Confirmed</span>
-                  <span>{data.overlaps.confirmed}</span>
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Manually merged</p>
+                  <p className="font-semibold">{data.overlaps.manuallyMerged}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dismissed</span>
-                  <span>{data.overlaps.dismissed}</span>
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Manual review</p>
+                  <p className="font-semibold">{data.overlaps.manualReview}</p>
                 </div>
-                <div className="border-t border-border pt-2">
-                  {data.overlaps.byMatchType.map((item) => (
-                    <div key={item.matchType} className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {matchTypeLabel(item.matchType)}
-                      </span>
-                      <span>{item.count}</span>
-                    </div>
-                  ))}
+                <div className="rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Reverted</p>
+                  <p className="font-semibold">{data.overlaps.reverted}</p>
                 </div>
-              </CardContent>
-            </Card>
-            <TrendChart
-              title="Monthly received vs disposal actions"
-              data={data.monthly.map((item) => ({
-                label: item.month,
-                received: item.received,
-                disposed: item.disposed,
-              }))}
-            />
+                <div className="col-span-2 rounded-lg bg-muted/60 p-2">
+                  <p className="text-xs text-muted-foreground">Average time to review</p>
+                  <p className="font-semibold">{data.overlaps.averageReviewHours} hours</p>
+                </div>
+              </div>
+            </ChartCard>
           </div>
 
-          <TrendChart
-            title="Quarterly received vs disposal actions"
-            data={data.quarterly.map((item) => ({
-              label: item.quarter,
-              received: item.received,
-              disposed: item.disposed,
-            }))}
-          />
+          <details className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <summary className="cursor-pointer select-none font-medium">
+              Detailed tables and breakdowns
+            </summary>
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <GroupTable title="Bureau/Cell-wise" rows={data.byBureau} />
+              <GroupTable title="Institution-wise" rows={data.byInstitution} />
+              <GroupTable title="Region-wise" rows={data.byRegion} />
+              <CountTable
+                title="Cases by status"
+                rows={data.byStatus.map((item) => ({
+                  status: titleCase(item.status),
+                  count: item.count,
+                }))}
+                labelKey="status"
+              />
+              <CountTable
+                title="Cases by category"
+                rows={data.byCategory.map((item) => ({
+                  category: titleCase(item.category),
+                  count: item.count,
+                }))}
+                labelKey="category"
+              />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Overlap match types</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {data.overlaps.byMatchType.length === 0 ? (
+                    <p className="text-muted-foreground">No overlap relationships.</p>
+                  ) : (
+                    data.overlaps.byMatchType.map((item) => (
+                      <div key={item.matchType} className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {matchTypeLabel(item.matchType)}
+                        </span>
+                        <span className="font-medium">{item.count}</span>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </details>
         </>
-      )}
+      ) : null}
     </div>
   )
 }

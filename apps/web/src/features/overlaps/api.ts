@@ -3,6 +3,13 @@ import { apiClient } from '#/lib/api-client'
 
 export type ReviewStatus = 'PENDING' | 'CONFIRMED' | 'DISMISSED'
 export type ReviewAction = 'confirm' | 'dismiss'
+export type MergeStatus =
+  | 'candidate'
+  | 'auto_merged'
+  | 'manual_merged'
+  | 'manual_review'
+  | 'reverted'
+export type MergeGroupStatus = 'active' | 'reverted'
 
 export interface Page<T> {
   items: T[]
@@ -45,6 +52,20 @@ export interface Overlap {
   reviewStatus: ReviewStatus
   reviewedAt?: string
   reviewNotes?: string
+  confidenceScore?: number
+  matchSignals?: Record<string, number>
+  mergeStatus: MergeStatus
+  mergeGroupId?: string
+  mergeGroupStatus?: MergeGroupStatus
+  memberCount?: number
+  decidedBy?: string
+  decidedAt?: string
+  revertReason?: string
+  revertedAt?: string
+  reMergeSuppressed: boolean
+  mergeThreshold?: number
+  mergeTextThreshold?: number
+  mergeVetoReason?: string
   createdAt: string
   institution?: {
     id: string
@@ -58,12 +79,39 @@ export interface Overlap {
 
 export interface OverlapFilters {
   status: ReviewStatus
+  mergeStatus?: string
   bureauId?: string
   regionId?: string
   matchType?: string
   institutionId?: string
   page?: number
   pageSize?: number
+}
+
+export interface MergeGroup {
+  id: string
+  status: MergeGroupStatus
+  canonicalCaseId: string
+  memberCaseIds: string[]
+  mergedAt: string
+  mergedBy: string
+  confidenceScore?: number
+  matchSignals?: Record<string, number>
+  snapshot: {
+    members: Array<{
+      caseId: string
+      caseNumber: string
+      status: string
+      category?: string
+      bureauId?: string
+      bureauName?: string
+      regionId?: string
+    }>
+  }
+  revertedAt?: string
+  revertedBy?: string
+  revertReason?: string
+  overlaps: Overlap[]
 }
 
 export interface LinkCasesInput {
@@ -75,6 +123,7 @@ export interface LinkCasesInput {
 export const overlapKeys = {
   list: (filters: OverlapFilters) => ['overlaps', 'list', filters] as const,
   detail: (id: string) => ['overlaps', 'detail', id] as const,
+  group: (id: string) => ['overlaps', 'group', id] as const,
 }
 
 function buildQuery(filters: object) {
@@ -94,6 +143,10 @@ export function fetchOverlap(id: string): Promise<Overlap> {
   return apiClient.get<Overlap>(`/overlaps/${id}`)
 }
 
+export function fetchMergeGroup(id: string): Promise<MergeGroup> {
+  return apiClient.get<MergeGroup>(`/merge-groups/${id}`)
+}
+
 export async function reviewOverlap(id: string, action: ReviewAction, notes?: string) {
   return apiClient.post<Overlap>(`/overlaps/${id}/review`, { action, notes })
 }
@@ -106,10 +159,33 @@ export async function unlinkOverlap(id: string, notes?: string): Promise<Overlap
   return apiClient.post<Overlap>(`/overlaps/${id}/unlink`, { notes })
 }
 
+export async function mergeOverlap(
+  id: string,
+  input: { reason?: string; canonicalCaseId?: string },
+): Promise<Overlap> {
+  return apiClient.post<Overlap>(`/overlaps/${id}/merge`, input)
+}
+
+export async function revertOverlap(id: string, reason: string): Promise<Overlap> {
+  return apiClient.post<Overlap>(`/overlaps/${id}/revert`, { reason })
+}
+
+export async function clearReMergeSuppression(id: string, reason: string): Promise<Overlap> {
+  return apiClient.post<Overlap>(`/overlaps/${id}/clear-suppression`, { reason })
+}
+
 export function useOverlaps(filters: OverlapFilters) {
   return useQuery({
     queryKey: overlapKeys.list(filters),
     queryFn: () => fetchOverlaps(filters),
+  })
+}
+
+export function useMergeGroup(id: string) {
+  return useQuery({
+    queryKey: overlapKeys.group(id),
+    queryFn: () => fetchMergeGroup(id),
+    enabled: Boolean(id),
   })
 }
 
@@ -153,6 +229,30 @@ export function useLinkCases() {
   const invalidate = useInvalidateOverlaps()
   return useMutation({
     mutationFn: linkCases,
+    onSuccess: invalidate,
+  })
+}
+
+export function useMergeOverlap(id: string) {
+  const invalidate = useInvalidateOverlaps()
+  return useMutation({
+    mutationFn: (input: { reason?: string; canonicalCaseId?: string }) => mergeOverlap(id, input),
+    onSuccess: invalidate,
+  })
+}
+
+export function useRevertOverlap(id: string) {
+  const invalidate = useInvalidateOverlaps()
+  return useMutation({
+    mutationFn: (reason: string) => revertOverlap(id, reason),
+    onSuccess: invalidate,
+  })
+}
+
+export function useClearReMergeSuppression(id: string) {
+  const invalidate = useInvalidateOverlaps()
+  return useMutation({
+    mutationFn: (reason: string) => clearReMergeSuppression(id, reason),
     onSuccess: invalidate,
   })
 }

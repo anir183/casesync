@@ -36,6 +36,7 @@ export const ROLE_GROUPS = {
     ROLES.COMPETENT_AUTHORITY,
     ROLES.BUREAU_OFFICER,
   ],
+  MERGE_SUPPRESSION_CLEAR: [ROLES.ADMIN, ROLES.SENIOR_MANAGEMENT, ROLES.COMPETENT_AUTHORITY],
 } as const
 
 export function hasAnyRole(role: string | undefined, allowed: readonly string[]): boolean {

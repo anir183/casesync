@@ -46,6 +46,11 @@ export function buildReportsCsv(summary: ReportsSummary): string {
     ['overlaps', 'all', 'pending', summary.overlaps.pending],
     ['overlaps', 'all', 'confirmed', summary.overlaps.confirmed],
     ['overlaps', 'all', 'dismissed', summary.overlaps.dismissed],
+    ['overlaps', 'all', 'autoMerged', summary.overlaps.autoMerged],
+    ['overlaps', 'all', 'manuallyMerged', summary.overlaps.manuallyMerged],
+    ['overlaps', 'all', 'manualReview', summary.overlaps.manualReview],
+    ['overlaps', 'all', 'reverted', summary.overlaps.reverted],
+    ['overlaps', 'all', 'averageReviewHours', summary.overlaps.averageReviewHours],
   )
   for (const item of summary.overlaps.byMatchType) {
     rows.push(['overlaps', item.matchType, 'relationships', item.count])

@@ -3,6 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { router } from '#/app/router'
+import { ThemeProvider } from '#/components/theme/theme-provider'
 import './index.css'
 
 const queryClient = new QueryClient()
@@ -13,7 +14,9 @@ if (!root) throw new Error('Root element not found')
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 )

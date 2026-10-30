@@ -52,7 +52,8 @@ export function NotificationsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Notifications</h1>
           <p className="text-sm text-muted-foreground">
-            Overlap alerts, complaint updates, verification decisions, and escalation notices.
+            Overlap alerts, merge decisions, complaint updates, verification decisions, and
+            escalation notices.
           </p>
         </div>
         <div className="flex items-center gap-3">

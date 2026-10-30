@@ -20,6 +20,11 @@ const SUMMARY: ReportsSummary = {
     pending: 1,
     confirmed: 0,
     dismissed: 0,
+    autoMerged: 1,
+    manuallyMerged: 0,
+    manualReview: 0,
+    reverted: 0,
+    averageReviewHours: 2.5,
     byMatchType: [{ matchType: 'INSTITUTION_EXACT_ID', count: 1 }],
   },
   monthly: [{ month: '2026-10', received: 2, disposed: 1 }],
@@ -34,6 +39,8 @@ describe('reports CSV export', () => {
     expect(csv).toContain('totals,cases,disposalRate,50\r\n')
     expect(csv).toContain('byRegion,North,total,2\r\n')
     expect(csv).toContain('byInstitution,"Example, Institute",open,1\r\n')
+    expect(csv).toContain('overlaps,all,autoMerged,1\r\n')
+    expect(csv).toContain('overlaps,all,averageReviewHours,2.5\r\n')
     expect(csv).toContain('monthly,2026-10,disposalActions,1\r\n')
     expect(csv).toContain('quarterly,2026-Q4,received,2\r\n')
   })

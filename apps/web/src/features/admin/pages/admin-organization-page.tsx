@@ -25,6 +25,8 @@ interface MasterRow {
   name: string
   active: boolean
   officeCity?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface MasterInput {
@@ -32,6 +34,8 @@ interface MasterInput {
   name: string
   active: boolean
   officeCity?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface MasterMutation {
@@ -55,6 +59,7 @@ function MasterSection({
   description,
   items,
   withOfficeCity,
+  withCoordinates,
   save,
   remove,
 }: {
@@ -62,6 +67,7 @@ function MasterSection({
   description: string
   items: MasterRow[]
   withOfficeCity?: boolean
+  withCoordinates?: boolean
   save: MasterMutation
   remove: DeleteMutation
 }) {
@@ -69,6 +75,8 @@ function MasterSection({
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [officeCity, setOfficeCity] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
   const [active, setActive] = useState(true)
 
   function reset() {
@@ -76,6 +84,8 @@ function MasterSection({
     setCode('')
     setName('')
     setOfficeCity('')
+    setLatitude('')
+    setLongitude('')
     setActive(true)
   }
 
@@ -84,6 +94,8 @@ function MasterSection({
     setCode(item.code)
     setName(item.name)
     setOfficeCity(item.officeCity ?? '')
+    setLatitude(item.latitude === undefined ? '' : String(item.latitude))
+    setLongitude(item.longitude === undefined ? '' : String(item.longitude))
     setActive(item.active)
   }
 
@@ -97,6 +109,12 @@ function MasterSection({
           name: name.trim(),
           active,
           ...(withOfficeCity ? { officeCity: officeCity.trim() || undefined } : {}),
+          ...(withCoordinates
+            ? {
+                latitude: latitude.trim() ? Number(latitude) : undefined,
+                longitude: longitude.trim() ? Number(longitude) : undefined,
+              }
+            : {}),
         },
       })
       .then(reset)
@@ -149,6 +167,34 @@ function MasterSection({
               />
             </div>
           )}
+          {withCoordinates && (
+            <>
+              <div className="space-y-1">
+                <FieldLabel htmlFor={`${title}-latitude`}>Latitude</FieldLabel>
+                <Input
+                  id={`${title}-latitude`}
+                  type="number"
+                  step="any"
+                  min="-90"
+                  max="90"
+                  value={latitude}
+                  onChange={(event) => setLatitude(event.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <FieldLabel htmlFor={`${title}-longitude`}>Longitude</FieldLabel>
+                <Input
+                  id={`${title}-longitude`}
+                  type="number"
+                  step="any"
+                  min="-180"
+                  max="180"
+                  value={longitude}
+                  onChange={(event) => setLongitude(event.target.value)}
+                />
+              </div>
+            </>
+          )}
           <label className="flex items-center gap-2 self-end pb-2 text-sm">
             <input
               type="checkbox"
@@ -184,6 +230,7 @@ function MasterSection({
                 <th className="px-3 py-2.5">Code</th>
                 <th className="px-3 py-2.5">Name</th>
                 {withOfficeCity && <th className="px-3 py-2.5">City</th>}
+                {withCoordinates && <th className="px-3 py-2.5">Coordinates</th>}
                 <th className="px-3 py-2.5">Status</th>
                 <th className="px-3 py-2.5" />
               </tr>
@@ -195,6 +242,13 @@ function MasterSection({
                   <td className="px-3 py-2.5 text-sm">{item.name}</td>
                   {withOfficeCity && (
                     <td className="px-3 py-2.5 text-sm">{item.officeCity ?? '—'}</td>
+                  )}
+                  {withCoordinates && (
+                    <td className="px-3 py-2.5 text-sm">
+                      {item.latitude !== undefined && item.longitude !== undefined
+                        ? `${item.latitude.toFixed(3)}, ${item.longitude.toFixed(3)}`
+                        : '—'}
+                    </td>
                   )}
                   <td className="px-3 py-2.5 text-sm">
                     <Badge variant={item.active ? 'success' : 'muted'}>
@@ -261,6 +315,7 @@ export function AdminOrganizationPage() {
         description="Regional offices used for institution ownership and scoped access."
         items={(regions ?? []) as Region[]}
         withOfficeCity
+        withCoordinates
         save={saveRegion}
         remove={deleteRegion}
       />

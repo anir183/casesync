@@ -12,6 +12,28 @@ export function ReviewStatusBadge({ status }: { status: ReviewStatus | string })
   return <Badge variant={variant}>{LABELS[status] ?? status}</Badge>
 }
 
+export function MergeStatusBadge({ status }: { status?: string }) {
+  const label =
+    status === 'auto_merged'
+      ? 'Auto-merged'
+      : status === 'manual_merged'
+        ? 'Manually merged'
+        : status === 'manual_review'
+          ? 'Human review required'
+          : status === 'reverted'
+            ? 'Merge reverted'
+            : 'Not merged'
+  const variant =
+    status === 'auto_merged' || status === 'manual_merged'
+      ? 'success'
+      : status === 'reverted'
+        ? 'danger'
+        : status === 'manual_review'
+          ? 'warning'
+          : 'muted'
+  return <Badge variant={variant}>{label}</Badge>
+}
+
 export function CaseStatusBadge({ status }: { status: string }) {
   const label = status.replace(/_/g, ' ').toLowerCase()
   const variant =

@@ -1,9 +1,10 @@
 # CaseSync — Stage 9 Next-Phase Plan
 
-Status: **planned, not implemented.** This is the decision-complete execution plan for
-Stage 9. It defines the work, data/API/UI contracts, sequencing, test evidence, and exit
-gates. No Stage 9 source, test, configuration, migration, or seed change is implied by
-this document.
+Status: **Phases 1 and 4 implemented; manual screen-reader sign-off pending. Phases 0,
+2–3, and 5–6 remain planned.** Phase 4 was pulled forward at product-owner request;
+Phase 0 baseline debt still gates the Stage 9 definition of done. This is the decision-complete
+execution plan for Stage 9 and defines the work, data/API/UI contracts, sequencing, test
+evidence, and exit gates.
 
 - **Plan date:** 2026-10-30
 - **Baseline:** Stages 0–8 implemented; pushed CI green on `5666cad`; docs on `fcb73f1`
@@ -663,6 +664,26 @@ UI:
 - No external tile/geo network dependency.
 - Axe remains clean; manual keyboard/zoom checks pass.
 - Route-level splitting prevents one oversized chunk; document the bundle budget.
+
+### 9.5 Implementation evidence (2026-10-30)
+
+- Region coordinates are optional on the API model, bounded by validation, seeded for all
+  9 regional offices, editable in the admin organization screen, and returned by
+  `GET /reports/geo` with scoped zero-count rows.
+- The web app uses local SVG chart primitives and a bundled India outline. The map uses
+  region-volume bubbles, overdue-pressure colour, keyboard selection, a live text summary,
+  and a data-table fallback.
+- Dashboard and reports are chart-first. Reports keeps current-filter CSV export and moves
+  detailed cross-tabs behind an expandable detail section. Dashboard keeps the 30-second
+  refresh contract and sources its status donut from the reports summary so the slices
+  reconcile with the report total.
+- Dashboard and reports routes are lazy-loaded. The production build emits a 437.65 kB
+  main chunk (123.80 kB gzip), 14.31 kB dashboard chunk, 10.36 kB reports chunk, and
+  14.59 kB map chunk; the budget is main chunk ≤ 500 kB and chart/map route chunks ≤ 20 kB.
+- Automated evidence: API/web typechecks, Biome, unit/component tests, production build,
+  46 stage-1 integration tests, all 8 seeded Playwright tests, axe scans on core staff/public
+  routes, map keyboard/mobile-reflow checks, and reduced-motion checks pass locally.
+- Remaining Phase 4 gate: record the manual screen-reader sign-off and 200% zoom review.
 
 ## 10. Phase 5 — Production hardening (no deployment)
 

@@ -13,24 +13,28 @@ import {
   type ReviewStatus,
   useOverlaps,
 } from '#/features/overlaps/api'
-import { ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
+import { MergeStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
   MATCH_TYPE_OPTIONS,
   assessmentStatusLabel,
   choiceLabel,
   matchTypeLabel,
+  mergeStatusLabel,
   percent,
 } from '#/features/overlaps/labels'
 import { formatDate } from '#/lib/utils'
 
-const TABS: Array<{ value: ReviewStatus; label: string }> = [
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'CONFIRMED', label: 'Confirmed' },
+const TABS: Array<{ value: ReviewStatus; mergeStatus?: string; label: string }> = [
+  { value: 'PENDING', mergeStatus: 'candidate,manual_review', label: 'Awaiting review' },
+  { value: 'CONFIRMED', mergeStatus: 'auto_merged', label: 'Auto-merged' },
+  { value: 'CONFIRMED', mergeStatus: 'manual_merged', label: 'Manually merged' },
+  { value: 'PENDING', mergeStatus: 'reverted', label: 'Reverted' },
   { value: 'DISMISSED', label: 'Dismissed' },
 ]
 
 const DEFAULT_FILTERS: OverlapFilters = {
   status: 'PENDING',
+  mergeStatus: TABS[0].mergeStatus,
   page: PAGINATION.DEFAULT_PAGE,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
 }
@@ -43,6 +47,7 @@ function OverlapCard({ overlap }: { overlap: Overlap }) {
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle>{overlap.institution?.name ?? 'Unknown institution'}</CardTitle>
             <ReviewStatusBadge status={overlap.reviewStatus} />
+            <MergeStatusBadge status={overlap.mergeStatus} />
           </div>
           <p className="text-sm text-muted-foreground">
             {overlap.institution?.aictePermanentId
@@ -94,6 +99,16 @@ function OverlapCard({ overlap }: { overlap: Overlap }) {
               {percent(overlap.assessment.coordinationReviewNoul)}
             </span>
           )}
+          {overlap.confidenceScore !== undefined && (
+            <span>
+              <span className="text-muted-foreground">Merge score: </span>
+              {percent(overlap.confidenceScore)}
+            </span>
+          )}
+          <span>
+            <span className="text-muted-foreground">Merge state: </span>
+            {mergeStatusLabel(overlap.mergeStatus)}
+          </span>
           <span>
             <span className="text-muted-foreground">Flagged: </span>
             {formatDate(overlap.createdAt)}
@@ -126,20 +141,26 @@ export function OverlapsPage() {
         <h1 className="text-2xl font-semibold">{OVERLAP.HEADING}</h1>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Cases concerning the same institution but handled by different Bureaus/Cells are surfaced
-          here for a human decision. No overlap is confirmed automatically.
+          here for review. High-confidence exact-institution pairs may be linked automatically under
+          bounded rules; every other overlap needs a human decision.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {TABS.map((tab) => (
           <Button
-            key={tab.value}
+            key={`${tab.value}-${tab.mergeStatus ?? 'all'}`}
             size="sm"
-            variant={filters.status === tab.value ? 'default' : 'outline'}
+            variant={
+              filters.status === tab.value && filters.mergeStatus === tab.mergeStatus
+                ? 'default'
+                : 'outline'
+            }
             onClick={() =>
               setFilters((current) => ({
                 ...current,
                 status: tab.value,
+                mergeStatus: tab.mergeStatus,
                 page: PAGINATION.DEFAULT_PAGE,
               }))
             }
@@ -209,8 +230,8 @@ export function OverlapsPage() {
         <Card>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              No {filters.status.toLowerCase()} overlap alerts match these filters. New alerts
-              appear automatically when a cross-bureau case is registered.
+              No overlap alerts match this queue and filters. New alerts appear automatically when a
+              cross-bureau case is registered.
             </p>
           </CardContent>
         </Card>

@@ -2,20 +2,23 @@
 
 **Last verified:** 2026-10-30  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** planned, not implemented. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phases 1 and 4 implemented; manual screen-reader sign-off pending. Phases 0 and 2–3/5–6 remain planned. See `docs/plans/next-phase-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
 > **Verification note.** API and web typechecks pass; Biome is clean. The API suite has
-> 71 unit tests and 50 DB-backed integration tests (121 total); web has 10 component/URL
-> tests. Stage 8 adds 5 integration tests covering auto/document verification, complaint
-> lifecycle, public projections, ownership isolation, and reopen; seeded Playwright adds
-> two portal journeys plus public accessibility pages. `bun run verify` covers lint,
-> typecheck, unit tests, and build; DB-backed integration, coverage, seeded E2E, and
-> performance run in CI or with a local MongoDB; the tagged performance suite is local
-> only. All six seeded Playwright tests pass locally (three staff smoke journeys, two
-> portal journeys, and the accessibility scan).
+> 80 unit tests and 55 DB-backed integration tests; web has 15 component/URL tests. The
+> Stage 9 Phase 1 browser journey covers merge-group visibility and revert. Coverage
+> figures below predate Phase 1 and will be refreshed in the Phase 0 truth pass.
+> Stage 8 adds 5 integration tests covering auto/document verification, complaint
+> lifecycle, public projections, ownership isolation, and reopen. Stage 9 Phase 4 adds
+> geo aggregation/scope tests, chart/theme/map component tests, and map
+> keyboard/mobile/reduced-motion browser checks. `bun run verify` covers lint, typecheck,
+> unit tests, and build; DB-backed integration, coverage, seeded E2E, and performance run
+> in CI or with a local MongoDB; the tagged performance suite is local only. All eight
+> seeded Playwright tests pass locally (three staff smoke journeys, two portal journeys,
+> accessibility, map/reflow, and reduced-motion).
 > Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
 
 ## Rules
@@ -25,8 +28,8 @@
 - [x] Jev backend-only, pairwise decision model
 - [x] DB narrows, Jev evaluates; rules-first; human-in-the-loop
 - [x] Human review by default; AI assessments separate from human relationships
-- [ ] Stage 9: bounded, reversible auto-merge for exact-institution high-confidence pairs
-      (decision locked 2026-10-30; not yet implemented)
+- [x] Stage 9: bounded, reversible auto-merge for exact-institution high-confidence pairs
+      (Phase 1 implemented 2026-10-30)
 - [x] Append-only `case_actions`
 - [x] No magic strings/numbers; extract when reused; composition over inheritance
 - [x] No git commit/push unless explicitly asked
@@ -245,7 +248,7 @@ not needed to prove the complainant flow and are now planned for Stage 9 with a 
 external role, institution-side scoping, an approval model, and an email-domain allowlist.
 The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PLANNED — not started)
+## Stage 9 — Next phase (PARTIAL — Phases 1 and 4 implemented)
 
 Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `planned`). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
@@ -268,21 +271,23 @@ email-domain matching is suggestion-only; deployment is out of scope.
 
 ### Phase 1 — Reversible overlap auto-merge
 
-- [ ] Add shared confidence scoring (combined default `0.85`, text gate `0.75`, JEV veto)
+- [x] Add shared confidence scoring (combined default `0.85`, text gate `0.75`, JEV veto)
       with exact-institution-only, cross-bureau, non-disposed eligibility.
-- [ ] Extend `case_relationships` with score/signals/merge status/group/revert fields.
-- [ ] Add flat `case_merge_groups` with one canonical case, members, immutable snapshot,
+- [x] Extend `case_relationships` with score/signals/merge status/group/revert fields.
+- [x] Add flat `case_merge_groups` with one canonical case, members, immutable snapshot,
       partial unique active indexes, and revert metadata.
-- [ ] Auto-merge after overlap assessment; idempotent, atomically claimed, and
+- [x] Auto-merge after overlap assessment; idempotent, atomically claimed, and
       non-blocking on failure; honor `OVERLAP_AUTO_MERGE_ENABLED` as a kill switch.
-- [ ] Manual merge and revert APIs with mandatory reasons and audit actions.
-- [ ] Queue/detail tabs for auto-merged, needs-review, and reverted; score breakdown;
-      revert control; neutral case banner.
-- [ ] Notify affected complainants/authorities without exposing other complainant PII.
-- [ ] Suppress reverted pairs from automatic re-merge until human clearance.
-- [ ] Unit/integration/E2E coverage for thresholds, veto, idempotency, revert, audit,
+- [x] Manual merge, revert, and suppression-clear APIs with mandatory reasons and audits.
+- [x] Queue/detail tabs for auto-merged, manually merged, needs-review, and reverted;
+      score breakdown; revert control; neutral case banner and group page.
+- [x] Notify affected complainants/authorities without exposing other complainant PII.
+- [x] Suppress reverted pairs from automatic re-merge until human clearance.
+- [x] Unit/integration/E2E coverage for thresholds, veto, idempotency, revert, audit,
       record preservation, and authorization.
-- [ ] Update OVR-07/INV-03 and every “no auto-merge” statement.
+- [x] Add deterministic demo seed scenarios for auto-merged, manual-review, vetoed, and
+      reverted pairs, plus a reversible merge group.
+- [x] Update OVR-07/INV-03 and the “no auto-merge” statements to the bounded exception.
 
 ### Phase 2 — Institution representatives and email domains
 
@@ -308,14 +313,15 @@ email-domain matching is suggestion-only; deployment is out of scope.
 
 ### Phase 4 — Visual redesign, dashboard/reports, and GIS
 
-- [ ] Add restrained-but-vibrant design tokens and shared visual primitives.
-- [ ] Chart-first dashboard (KPI trends, status donut, volume trend, category bars, SLA
+- [x] Add restrained-but-vibrant design tokens and shared visual primitives.
+- [x] Chart-first dashboard (KPI trends, status donut, volume trend, category bars, SLA
       gauge, recent activity, map preview) that reconciles with the API.
-- [ ] Chart-first reports with table drill-down and current-filter export.
-- [ ] Add region coordinates, `/reports/geo`, a bundled local India outline, region
+- [x] Chart-first reports with table drill-down and current-filter export.
+- [x] Add region coordinates, `/reports/geo`, a bundled local India outline, region
       bubbles, tooltip, keyboard focus, and table fallback.
-- [ ] Lazy-load charts/map; keep the main bundle under budget.
-- [ ] Axe, keyboard, zoom/reflow, reduced-motion, and manual screen-reader checks.
+- [x] Lazy-load charts/map; keep the main bundle under budget.
+- [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
+- [ ] Manual screen-reader pass and 200% zoom review.
 
 ### Phase 5 — Production hardening (no deployment)
 

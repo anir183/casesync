@@ -3,7 +3,7 @@ import { Elysia, t } from 'elysia'
 import { csvFilename, setCsvHeaders } from '#/lib/csv'
 import { requireAuth } from '#/middleware/rbac'
 import { buildReportsCsv } from './report.export'
-import { type ReportFilters, getReportsSummary } from './report.service'
+import { type ReportFilters, getReportsGeo, getReportsSummary } from './report.service'
 
 const optionalString = t.Optional(t.String({ minLength: 1 }))
 const statusString = t.Optional(
@@ -32,6 +32,9 @@ function toFilters(query: typeof reportQuery.static): ReportFilters {
 export const reportsRoutes = new Elysia({ prefix: '/reports' })
   .use(requireAuth)
   .get('/summary', async ({ query, user }) => getReportsSummary(toFilters(query), user), {
+    query: reportQuery,
+  })
+  .get('/geo', async ({ query, user }) => getReportsGeo(toFilters(query), user), {
     query: reportQuery,
   })
   .get(

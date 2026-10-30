@@ -3,16 +3,22 @@ import { cn } from '#/lib/utils'
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('rounded-lg border border-border bg-background', className)} {...props} />
+    <div
+      className={cn(
+        'rounded-xl border border-border bg-card text-card-foreground shadow-card',
+        className,
+      )}
+      {...props}
+    />
   )
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('border-b border-border p-4', className)} {...props} />
+  return <div className={cn('space-y-1.5 p-4', className)} {...props} />
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('font-semibold', className)} {...props} />
+  return <h3 className={cn('font-semibold tracking-tight', className)} {...props} />
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
@@ -20,9 +26,11 @@ export function CardDescription({ className, ...props }: HTMLAttributes<HTMLPara
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('p-4', className)} {...props} />
+  return <div className={cn('p-4 pt-0', className)} {...props} />
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('border-t border-border p-4', className)} {...props} />
+  return (
+    <div className={cn('flex items-center border-t border-border p-4', className)} {...props} />
+  )
 }

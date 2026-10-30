@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import type { OverlapCase, ReviewAction } from '#/features/overlaps/api'
 import { useOverlap, useReviewOverlap, useUnlinkOverlap } from '#/features/overlaps/api'
+import { MergeDecisionPanel } from '#/features/overlaps/components/merge-decision-panel'
 import { CaseStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
   assessmentStatusLabel,
@@ -98,6 +99,7 @@ export function OverlapDetailPage() {
   }
 
   const assessment = overlap.assessment
+  const isMerged = overlap.mergeStatus === 'auto_merged' || overlap.mergeStatus === 'manual_merged'
 
   function submit(action: ReviewAction) {
     setReviewError(null)
@@ -222,80 +224,84 @@ export function OverlapDetailPage() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Human decision</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {overlap.reviewStatus === 'PENDING' && canReview ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Confirming records a human-confirmed link between both cases. Dismissing keeps the
-                cases separate. The AI assessment is evidence only and never changes status by
-                itself.
-              </p>
-              <div className="space-y-2">
-                <FieldLabel htmlFor="review-notes">Review notes (optional)</FieldLabel>
-                <Textarea
-                  id="review-notes"
-                  rows={3}
-                  maxLength={2000}
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Add context for this decision..."
-                />
-              </div>
-              {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setPendingAction('confirm')}>Confirm overlap</Button>
-                <Button variant="outline" onClick={() => setPendingAction('dismiss')}>
-                  Dismiss
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-3 text-sm">
-              {overlap.reviewStatus === 'PENDING' ? (
-                <p className="text-muted-foreground">
-                  This alert is awaiting review. Your role can view it but cannot confirm or dismiss
-                  overlaps.
+      <MergeDecisionPanel overlap={overlap} />
+
+      {!isMerged && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Human decision</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overlap.reviewStatus === 'PENDING' && canReview ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Confirming records a human-confirmed link between both cases. Dismissing keeps the
+                  cases separate. The AI assessment is evidence only and never changes status by
+                  itself.
                 </p>
-              ) : (
-                <p>
-                  This overlap was <strong>{overlap.reviewStatus.toLowerCase()}</strong> by a human
-                  reviewer on {formatDate(overlap.reviewedAt)}.
-                </p>
-              )}
-              {overlap.reviewNotes && (
-                <p className="text-muted-foreground">Notes: {overlap.reviewNotes}</p>
-              )}
-              {overlap.reviewStatus === 'CONFIRMED' && canReview && (
-                <>
-                  <div className="space-y-2">
-                    <FieldLabel htmlFor="unlink-notes">Unlink notes (optional)</FieldLabel>
-                    <Textarea
-                      id="unlink-notes"
-                      rows={2}
-                      maxLength={2000}
-                      value={notes}
-                      onChange={(event) => setNotes(event.target.value)}
-                      placeholder="Explain why the cases should no longer be linked..."
-                    />
-                  </div>
-                  {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
-                  <Button variant="outline" onClick={() => setPendingAction('unlink')}>
-                    Unlink cases
+                <div className="space-y-2">
+                  <FieldLabel htmlFor="review-notes">Review notes (optional)</FieldLabel>
+                  <Textarea
+                    id="review-notes"
+                    rows={3}
+                    maxLength={2000}
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    placeholder="Add context for this decision..."
+                  />
+                </div>
+                {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => setPendingAction('confirm')}>Confirm overlap</Button>
+                  <Button variant="outline" onClick={() => setPendingAction('dismiss')}>
+                    Dismiss
                   </Button>
-                </>
-              )}
-              <p className="text-muted-foreground">
-                The review is recorded on both case histories and is retained for audit.
-              </p>
-            </div>
-          )}
-          {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
-        </CardContent>
-      </Card>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-3 text-sm">
+                {overlap.reviewStatus === 'PENDING' ? (
+                  <p className="text-muted-foreground">
+                    This alert is awaiting review. Your role can view it but cannot confirm or
+                    dismiss overlaps.
+                  </p>
+                ) : (
+                  <p>
+                    This overlap was <strong>{overlap.reviewStatus.toLowerCase()}</strong> by a
+                    human reviewer on {formatDate(overlap.reviewedAt)}.
+                  </p>
+                )}
+                {overlap.reviewNotes && (
+                  <p className="text-muted-foreground">Notes: {overlap.reviewNotes}</p>
+                )}
+                {overlap.reviewStatus === 'CONFIRMED' && canReview && (
+                  <>
+                    <div className="space-y-2">
+                      <FieldLabel htmlFor="unlink-notes">Unlink notes (optional)</FieldLabel>
+                      <Textarea
+                        id="unlink-notes"
+                        rows={2}
+                        maxLength={2000}
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        placeholder="Explain why the cases should no longer be linked..."
+                      />
+                    </div>
+                    {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+                    <Button variant="outline" onClick={() => setPendingAction('unlink')}>
+                      Unlink cases
+                    </Button>
+                  </>
+                )}
+                <p className="text-muted-foreground">
+                  The review is recorded on both case histories and is retained for audit.
+                </p>
+              </div>
+            )}
+            {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
+          </CardContent>
+        </Card>
+      )}
 
       <ConfirmDialog
         open={pendingAction !== null}

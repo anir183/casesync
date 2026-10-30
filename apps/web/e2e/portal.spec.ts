@@ -19,8 +19,10 @@ test.describe('public complainant portal', () => {
     const subject = `E2E fee complaint ${Date.now()}`
     await signInPortal(page, COMPLAINANT_EMAIL)
 
-    await expect(page.getByText('Delhi Institute of Technology').first()).toBeVisible()
-    await page.getByRole('link', { name: 'File a complaint' }).click()
+    await expect(
+      page.getByText(/Verified institution:.*Delhi Institute of Technology/),
+    ).toBeVisible()
+    await page.getByRole('link', { name: 'File a complaint', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'File a complaint' })).toBeVisible()
 
     await page.getByLabel('Subject').fill(subject)

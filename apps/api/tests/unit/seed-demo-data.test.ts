@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { MERGE_GROUP_STATUS, OVERLAP_MERGE_STATUS } from '@casesync/config'
 import { DEMO_CASES, DEMO_INSTITUTIONS, DEMO_OVERLAPS, DEMO_SLA_CONFIGS } from '#/seed/demo-data'
 import { BUREAUS, CATEGORIES, REGIONS } from '#/seed/masters'
 
@@ -40,6 +41,28 @@ describe('demo seed fixture', () => {
       expect(caseKeys.has(item.caseAKey)).toBe(true)
       expect(caseKeys.has(item.caseBKey)).toBe(true)
       expect(item.caseAKey).not.toBe(item.caseBKey)
+    }
+  })
+
+  test('seeds deterministic merge lifecycle scenarios', () => {
+    const autoMerged = DEMO_OVERLAPS.find(
+      (item) => item.mergeStatus === OVERLAP_MERGE_STATUS.AUTO_MERGED,
+    )
+    const reverted = DEMO_OVERLAPS.find(
+      (item) => item.mergeStatus === OVERLAP_MERGE_STATUS.REVERTED,
+    )
+    expect(autoMerged?.mergeGroup?.status).toBe(MERGE_GROUP_STATUS.ACTIVE)
+    expect(reverted?.mergeGroup?.status).toBe(MERGE_GROUP_STATUS.REVERTED)
+    expect(reverted?.mergeGroup?.revertReason).toBeTruthy()
+    for (const item of DEMO_OVERLAPS) {
+      if (!item.mergeGroup) continue
+      expect([item.caseAKey, item.caseBKey]).toContain(item.mergeGroup.canonicalCaseKey)
+      expect(item.mergeScore).toBeGreaterThanOrEqual(0)
+      expect(item.mergeScore).toBeLessThanOrEqual(1)
+      for (const value of Object.values(item.mergeSignals ?? {})) {
+        expect(value).toBeGreaterThanOrEqual(0)
+        expect(value).toBeLessThanOrEqual(1)
+      }
     }
   })
 })

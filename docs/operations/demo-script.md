@@ -86,12 +86,16 @@ All sections below are demoable; do not fake missing behaviour.
    plus oversight roles and deduped per relationship.
 8. Mention: rules work with Jev off; Jev never auto-confirms or suppresses; assessments
    are separate from human decisions; reviews are append-only.
+9. Open the **Auto-merged** tab, inspect the merge score/group, then show **Revert
+   merge** with a mandatory reason and the suppressed re-merge state. Point out that
+   original cases and histories remain intact.
 
 ### 2.4 Institution registry and profile (1 min) — available
 
 1. Open `/institutions`, search for `AICTE-1-999999`, and open the institution.
 2. Show consolidated history across bureaus, open/overdue counts, and overlaps.
-3. Explain fuzzy alias matching and human verification (no auto-merge).
+3. Explain fuzzy alias matching and human verification; only exact-institution pairs are
+   eligible for bounded auto-merge.
 
 ### 2.5 Reports and alerts (2 min) — available
 

@@ -1,6 +1,9 @@
 # CaseSync - UI/UX Design Plan
 
-Status: active design reference (implemented shell + planned Stage 9 targets). Location:
+Status: active design reference. Stage 9 Phases 1 and 4 are implemented on the existing
+screens: reversible overlap auto-merge, merge score/group/revert controls, theme tokens,
+shared primitives, chart-first dashboard/reports, and the local GIS map. Stage 9
+navigation/notification/representative targets remain planned. Location:
 `docs/product/ui-ux-design-plan.md`.
 
 The implemented shell has login, scoped dashboard, case registry and detail, case
@@ -9,10 +12,10 @@ and detail with filters/pagination and manual link/unlink, reports, notification
 admin user/organization/SLA/audit/verification screens, the public complainant portal,
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
-**Stage 9 targets are planned, not implemented:** baseline navigation/flow refresh,
-notification bell, representative shell, auto-merge queue/controls, chart-first
-dashboard/reports, and a local GIS region map. The decision-complete plan is
-[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
+**Stage 9 status:** Phase 1 auto-merge and Phase 4 visual redesign, chart-first
+dashboard/reports, and the local GIS region map are implemented. Baseline navigation/flow
+refresh, notification bell, and representative shell remain planned. The decision-complete
+plan is [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
 - **Simple, minimal, modern** - Clean layout, no visual clutter
@@ -77,7 +80,7 @@ Use CSS variables for theming.
 **Radius:** sm/md/lg consistent via `--radius`
 **Shadows:** subtle only (sm/md) - avoid heavy drop shadows
 
-### Stage 9 visual target (planned)
+### Stage 9 visual target (Phase 4 implemented; remaining targets planned)
 
 - Deep indigo primary with a teal accent, semantic success/warning/danger/info, and
   neutral surfaces; validate WCAG AA contrast in light and dark.
@@ -132,10 +135,10 @@ No staff/admin links and no internal case tabs.
 | **Case Details** | Single case view | Tabs: Overview, Actions/History (append-only timeline), Assignments, Related/Overlaps, Attachments. Actions consolidated in relevant tab |
 | **Institutions** | List/search institutions | Clean table, click → institution profile |
 | **Institution Profile** | Full history | Institution info + all cases across bureaus, statuses, quick access to case details |
-| **Overlaps (Review Queue)** | Priority queue | Current review queue plus Stage 9 planned tabs for Auto-merged, Needs review, and Reverted; institution, both cases, bureaus, score/assessment summary |
-| **Overlap Compare View** | Side-by-side review | Two panels (Case A/B), evidence panel (same institution, different bureaus), Jev assessment, confirm/dismiss with notes. Stage 9 plans score breakdown, group members, merge/revert controls, and mandatory revert reason. |
-| **Merge Group (planned Stage 9)** | Reversible merge detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral “not a duplicate determination” notice; no other complainant's PII |
-| **Reports** | Analytics | Stage 9 target is chart-first with table drill-down, current-filter CSV export, and a local GIS region bubble map. Filterable by date/bureau/region/status/category; scoped to role |
+| **Overlaps (Review Queue)** | Priority queue | Review queue with Awaiting review, Auto-merged, Manually merged, Reverted, and Dismissed tabs; institution, both cases, bureaus, score/assessment summary |
+| **Overlap Compare View** | Side-by-side review | Two panels (Case A/B), evidence panel (same institution, different bureaus), Jev assessment, score breakdown, merge/revert controls, and mandatory reasons. |
+| **Merge Group** | Reversible merge detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral “not a duplicate determination” notice; no other complainant's PII |
+| **Reports** | Analytics | Implemented chart-first with table drill-down, current-filter CSV export, ageing/overlap charts, and a local GIS region bubble map. Filterable by date/bureau/region/status/category; scoped to role |
 | **Notifications** | Alerts | List with read/unread, type filter, link to canonical destination. Stage 9 plans a persistent bell with unread count and five-item preview. |
 | **Case Registration** | Create a case | Single form (institution resolution, bureau, category, received date, description, next action). Duplicate-institution warning before submit |
 | **Institutions (Registry)** | Manage institutions | Search by name/AICTE ID/region; create/edit/verify (role-gated); duplicate warning; row → profile |
@@ -151,7 +154,7 @@ No staff/admin links and no internal case tabs.
 | **Portal Notifications** | Complainant updates | Public deep links only, no internal references |
 | **Representative Signup (planned Stage 9)** | Institution access request | Institution selection, role, optional evidence; email-domain suggestion is labelled “suggested, not verified” |
 | **Representative Shell (planned Stage 9)** | Institution queue | Dashboard, scoped cases, public thread/documents, public reply/evidence only, notifications, profile; pending/rejected/revoked landing states |
-| **GIS Region Map (planned Stage 9)** | Regional overview | Region bubbles over a bundled local India outline; tooltip, keyboard focus, table fallback; no external tiles |
+| **GIS Region Map (Phase 4)** | Regional overview | Region bubbles over a bundled local India outline; tooltip, keyboard focus, live text summary, table fallback; no external tiles |
 | **Admin — Institution Domains (planned Stage 9)** | Email allowlist | Add/verify/activate domains; suggestion-only explanation |
 | **Admin — Representatives (planned Stage 9)** | Access approvals | Pending/approved/rejected/revoked queue; approve/reject/revoke with reason |
 
@@ -168,12 +171,12 @@ No staff/admin links and no internal case tabs.
 - **Overlap compare view**: per-case panels, evidence (institution, bureaus, region,
   match type, confidence), Jev assessment (probabilities/confidence/status), and
   Confirm/Dismiss with mandatory notes.
-- **Auto-merge (planned Stage 9)**: AI/Jev never auto-confirms or merges. A rules-based,
-  reversible auto-merge applies only to exact-institution high-confidence pairs; every
-  other pair stays in human review. Revert requires a reason and returns the pair to
-  manual review with suppression.
-- **Merge banner (planned Stage 9)**: neutral “linked to a merge group” banner on case
-  Overview/Related, linking to the group; never another complainant's PII.
+- **Auto-merge**: AI/Jev never auto-confirms or merges. A rules-based, reversible
+  auto-merge applies only to exact-institution high-confidence pairs; every other pair
+  stays in human review. Revert requires a reason and returns the pair to manual review
+  with suppression.
+- **Merge banner**: neutral “linked for coordinated handling” banner on case Overview,
+  linking to the group; never another complainant's PII.
 - **Officer/actor names** are resolved server-side and shown everywhere an ID exists;
   never render raw Better Auth IDs to staff.
 - **Optimistic feedback**: disable submit while pending, show toast on success, show
@@ -229,7 +232,7 @@ Every data screen defines four states:
 - Tables have caption/scope headers; icon-only buttons have accessible names.
 - Keyboard-only path for login, filters, registration, and overlap confirm/dismiss.
 - Respect `prefers-reduced-motion`.
-- Planned Stage 9: every chart has accessible labels and a data-table fallback; each
+- Implemented Phase 4: every chart has accessible labels and a data-table fallback; each
   region bubble is keyboard-focusable and has a text summary; the notification bell has
   an accessible unread count and preview; mobile drawer/sheet parity.
 
@@ -260,8 +263,9 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 - `EmptyState` - helpful message + action
 - `ConfirmDialog` - for destructive/important actions (transfer/dispose/confirm/revert)
 - `ThemeToggle` - light/dark/system
-- Planned Stage 9: `Card`, `StatCard`, `NotificationBell`, `MergeBanner`, chart
-  primitives, region map, and responsive table-to-card primitives.
+- Implemented Phase 4: `Card`, `StatCard`, chart primitives, region map, theme toggle,
+  skeleton, empty state, and responsive table primitives. `NotificationBell` and
+  `MergeBanner` remain planned.
 
 ## UX Rules
 - **One action path** - Don't put "view case" in 5 places; use row click + canonical link

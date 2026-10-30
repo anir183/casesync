@@ -20,6 +20,8 @@ export interface Region {
   code: string
   name: string
   officeCity?: string
+  latitude?: number
+  longitude?: number
   active: boolean
 }
 
@@ -29,6 +31,8 @@ interface RawOption {
   name: string
   active?: boolean
   officeCity?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface OptionResponse {
@@ -62,6 +66,8 @@ export async function fetchRegions(): Promise<Region[]> {
     code: item.code,
     name: item.name,
     officeCity: item.officeCity,
+    latitude: item.latitude,
+    longitude: item.longitude,
     active: item.active !== false,
   }))
 }
@@ -90,6 +96,8 @@ interface MasterInput {
   name: string
   active?: boolean
   officeCity?: string
+  latitude?: number
+  longitude?: number
 }
 
 async function fetchAllMasters<T>(path: string, map: (item: RawOption) => T): Promise<T[]> {
@@ -120,6 +128,8 @@ export function fetchAllRegions(): Promise<Region[]> {
     code: item.code,
     name: item.name,
     officeCity: item.officeCity,
+    latitude: item.latitude,
+    longitude: item.longitude,
     active: item.active !== false,
   }))
 }

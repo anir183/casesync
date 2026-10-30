@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '#/components/layout/app-shell'
 import { AuthGuard } from '#/components/layout/auth-guard'
@@ -9,11 +10,11 @@ import { LoginPage } from '#/features/auth/pages/login-page'
 import { CaseDetailPage } from '#/features/cases/pages/case-detail-page'
 import { CaseRegistrationPage } from '#/features/cases/pages/case-registration-page'
 import { CasesPage } from '#/features/cases/pages/cases-page'
-import { DashboardPage } from '#/features/dashboard/pages/dashboard-page'
 import { InstitutionDetailPage } from '#/features/institutions/pages/institution-detail-page'
 import { InstitutionFormPage } from '#/features/institutions/pages/institution-form-page'
 import { InstitutionsPage } from '#/features/institutions/pages/institutions-page'
 import { NotificationsPage } from '#/features/notifications/pages/notifications-page'
+import { MergeGroupPage } from '#/features/overlaps/pages/merge-group-page'
 import { OverlapDetailPage } from '#/features/overlaps/pages/overlap-detail-page'
 import { OverlapsPage } from '#/features/overlaps/pages/overlaps-page'
 import { PortalGuard } from '#/features/portal/components/portal-guard'
@@ -26,8 +27,18 @@ import { PortalLoginPage } from '#/features/portal/pages/portal-login-page'
 import { PortalSignupPage } from '#/features/portal/pages/portal-signup-page'
 import { PortalVerificationPage } from '#/features/portal/pages/portal-verification-page'
 import { TrackPage } from '#/features/portal/pages/track-page'
-import { ReportsPage } from '#/features/reports/pages/reports-page'
 import { SlaConfigPage } from '#/features/sla/pages/sla-config-page'
+
+const DashboardPage = lazy(() =>
+  import('#/features/dashboard/pages/dashboard-page').then((module) => ({
+    default: module.DashboardPage,
+  })),
+)
+const ReportsPage = lazy(() =>
+  import('#/features/reports/pages/reports-page').then((module) => ({
+    default: module.ReportsPage,
+  })),
+)
 
 export const router = createBrowserRouter([
   {
@@ -72,6 +83,7 @@ export const router = createBrowserRouter([
       { path: 'institutions/:id', element: <InstitutionDetailPage /> },
       { path: 'institutions/:id/edit', element: <InstitutionFormPage /> },
       { path: 'overlaps', element: <OverlapsPage /> },
+      { path: 'merge-groups/:id', element: <MergeGroupPage /> },
       { path: 'overlaps/:id', element: <OverlapDetailPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'notifications', element: <NotificationsPage /> },

@@ -25,25 +25,28 @@ exit criteria.
 
 ## 2. Current test baseline (verified 2026-10-30)
 
-- **71 API unit tests across 17 files** plus **10 web component/URL tests across 4
+- **74 API unit tests across 18 files** plus **15 web component/URL tests across 6
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
-  state machine, scope/permission, dates, CSV, metrics, demo fixtures, report export,
-  case filters, SLA timezone/rule/alert boundaries, rate limiting, pagination,
-  confirmation dialogs, attachment permissions, and URL filters.
-- **50 database-backed integration tests** in `apps/api/tests/integration/` covering
+  geo aggregation, state machine, scope/permission, dates, CSV, metrics, demo fixtures,
+  report export, case filters, SLA timezone/rule/alert boundaries, rate limiting,
+  pagination, confirmation dialogs, attachment permissions, URL filters, chart math,
+  theme persistence, and regional-map keyboard/fallback behavior.
+- **51 database-backed integration tests** in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user guards,
   deactivation/session revocation, institution writes/merge, case-registration scope,
   pagination contracts, duplicate checks, officer-directory scoping, auto numbering,
   rejected transitions, ordered lifecycle audit, Stage 3 overlap behavior, Stage 4
   dashboard/report reconciliation, Stage 5 SLA rules/jobs, Stage 6 admin/master CRUD,
   attachments, invite/reset, Stage 7 search bounds/regex/operator-notation/rate-limit
-  checks, and Stage 8 verification/ownership/public-visibility/reopen flows. They are
+  checks, Stage 8 verification/ownership/public-visibility/reopen flows, and Stage 9
+  Phase 4 geo scope/date/reconciliation behavior. They are
   opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service, while local
   runs use run-scoped records in the configured dev database.
-- **6 seeded Playwright browser tests**: three staff smoke journeys (officer case
+- **8 seeded Playwright browser tests**: three staff smoke journeys (officer case
   search/timeline, viewer scope/IDOR, overlap queue/reports), two portal journeys
-  (file/converse/track/resolve/accept, invalid tracking), plus an axe serious/critical
-  accessibility scan of staff, portal, and verification pages.
+  (file/converse/track/resolve/accept, invalid tracking), an axe serious/critical
+  accessibility scan of staff, portal, and verification pages, plus Stage 9 Phase 4 map
+  keyboard/mobile-reflow and reduced-motion checks.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.

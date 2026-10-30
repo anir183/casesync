@@ -129,7 +129,7 @@ Evidence paths are relative to the repo root.
 | OVR-04 | Re-evaluate after case movement | **Done** | Re-assessment on create/assign/transfer/institution name/AICTE/region change; manual `POST /overlaps/assess` | Periodic sweep/background batch remains. |
 | OVR-05 | Explain why cases are related | **Done** | `matchType`, `confidence`, `reason`, assessment probabilities/rationale, compare view | Institution/region names resolved in DTOs. |
 | OVR-06 | Notify only concerned officials | **Done** | `lib/notifications.ts` scoped recipients | Involved bureau/regional officers plus `ADMIN`/`SENIOR_MANAGEMENT`/`COMPETENT_AUTHORITY`; deduped per relationship. |
-| OVR-07 | Human decision only | **Done** | PENDING relationships; confirm/dismiss; no auto-merge | Preserve this invariant. |
+| OVR-07 | Human decision by default | **Done** | PENDING relationships; confirm/dismiss; bounded exact-institution auto-merge with revert | Every non-eligible pair remains human-decided. |
 | OVR-08 | Scale | **Partial** | Fuzzy scan capped at 500 institutions; sequential Jev calls | Acceptable for demo; replace with indexed blocking/Atlas Search or a background batch for production. |
 
 ### 6.1 Overlap decision that must be locked
@@ -146,7 +146,8 @@ Recommended rule:
 4. **Never suppress the base coordination alert.** If product wants to reduce
    noise, add a separate filter (`likely same issue only`) rather than dropping
    the relationship.
-5. **Never auto-confirm.** Confirm/dismiss remains human.
+5. **Human decision by default.** Confirm/dismiss remains human, except the bounded
+   reversible exact-institution auto-merge defined by Stage 9 Phase 1.
 
 This is a change from the current implementation, where a Jev-enabled
 `same_institution_different_issue` result can produce no relationship/alert.
@@ -229,7 +230,7 @@ This is a change from the current implementation, where a Jev-enabled
 |---|---|---|---|---|
 | INV-01 | Data matching + rules + AI to identify same institution even when descriptions/references differ | **Done** | exact institution + normalized/fuzzy name + Jev description/metadata assessment | Keep rules-first. |
 | INV-02 | Display exact heading | **Done** | `OVERLAP.HEADING` | Add a test asserting the exact Unicode en dash string. |
-| INV-03 | Human decides coordination | **Done** | review workflow; assessments separate from relationships | No auto-merge/confirm. |
+| INV-03 | Human decides coordination | **Done** | review workflow; assessments separate; bounded reversible exact-institution auto-merge | AI/Jev never auto-confirms; auto-merge is rules-based and auditable. |
 | INV-04 | Explainability | **Done** | match type, confidence, reason, Jev probabilities | Add plain-language evidence panel and model/latency metadata. |
 | INV-05 | Robustness at scale | **Gap** | In-memory fuzzy scan, per-pair sequential Jev calls | Batch/queue, indexed blocking, concurrency limits, circuit breaker. |
 
@@ -452,8 +453,8 @@ The MVP is accepted only when all of these are true:
    Stage 3, integration-tested.)*
 5. Jev enabled: assessment stored and shown; Jev disabled/failing: rule-based
    relationship still created. *(Done — Stage 3, integration-tested.)*
-6. A human can confirm/dismiss; no auto-merge; decisions are audited. *(Done — Stage 3;
-   manual link/unlink also audited.)*
+6. A human can confirm/dismiss; only eligible exact-institution pairs auto-merge and are
+   reversible; decisions are audited. *(Done — Stage 3; Phase 1 auto-merge added.)*
 7. Dashboard and reports show correct totals by status, bureau, region,
    institution, ageing, disposal rate, and overlaps, scoped to the user.
 8. SLA cron creates pending/approaching/overdue notifications once per period;
