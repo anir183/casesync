@@ -53,7 +53,12 @@ export function TrendChart({
       {data.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <section
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable regions must be keyboard focusable
+          tabIndex={0}
+          aria-label={`${caption} chart, scrollable`}
+          className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           <svg
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             role="img"
@@ -118,7 +123,7 @@ export function TrendChart({
               </g>
             ))}
           </svg>
-        </div>
+        </section>
       )}
       <ChartTable
         caption={caption}

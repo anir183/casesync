@@ -96,7 +96,7 @@ function WorkloadTable<T extends StatusCounts>({
   labelKey: keyof T & string
 }) {
   return (
-    <Card>
+    <Card className="min-w-0 overflow-hidden">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -104,7 +104,12 @@ function WorkloadTable<T extends StatusCounts>({
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data for this period.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <section
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable regions must be keyboard focusable
+            tabIndex={0}
+            aria-label={`${title} table`}
+            className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             <table className="w-full min-w-[460px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
@@ -140,7 +145,7 @@ function WorkloadTable<T extends StatusCounts>({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </CardContent>
     </Card>

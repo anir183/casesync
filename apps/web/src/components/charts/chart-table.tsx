@@ -13,7 +13,12 @@ export function ChartTable({
       <summary className="cursor-pointer select-none text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
         View data table
       </summary>
-      <div className="mt-2 overflow-x-auto rounded-lg border border-border">
+      <section
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable regions must be keyboard focusable
+        tabIndex={0}
+        aria-label={`${caption} scrollable table`}
+        className="mt-2 overflow-x-auto rounded-lg border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <table className="w-full border-collapse text-left">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-muted/60">
@@ -44,7 +49,7 @@ export function ChartTable({
             ))}
           </tbody>
         </table>
-      </div>
+      </section>
     </details>
   )
 }
