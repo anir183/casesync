@@ -31,7 +31,10 @@ test.describe('critical staff smoke journeys', () => {
 
     await signIn(page, 'viewer@casesync.test')
     await expect(page.getByRole('link', { name: 'Users', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Audit log', exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'More navigation' }).click()
     await expect(page.getByRole('link', { name: 'Audit log', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Users', exact: true })).toHaveCount(0)
 
     await page.goto('/cases')
     await expect(page.getByRole('heading', { name: 'Case registry' })).toBeVisible()
@@ -51,7 +54,7 @@ test.describe('critical staff smoke journeys', () => {
   test('overlap coordination queue and reports load with seeded data', async ({ page }) => {
     await signIn(page, 'admin@casesync.test')
 
-    await page.getByRole('link', { name: 'Overlap queue', exact: true }).click()
+    await page.getByRole('link', { name: 'Overlaps', exact: true }).click()
     await expect(
       page.getByRole('heading', { name: 'Potential Overlapping Cases – Coordination Required' }),
     ).toBeVisible()

@@ -45,4 +45,9 @@ test('core staff and public pages have no serious or critical accessibility viol
     await page.waitForLoadState('networkidle')
     expect(await seriousViolations(page), `${path} accessibility`).toEqual([])
   }
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/dashboard')
+  await page.getByRole('button', { name: 'Open navigation' }).click()
+  expect(await seriousViolations(page), 'mobile navigation accessibility').toEqual([])
 })

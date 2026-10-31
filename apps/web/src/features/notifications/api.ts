@@ -40,10 +40,14 @@ function buildQuery(filters: NotificationFilters) {
   return query ? `?${query}` : ''
 }
 
-export function useNotifications(filters: NotificationFilters = {}) {
+export function useNotifications(
+  filters: NotificationFilters = {},
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: [...NOTIFICATION_QUERY_KEY, filters],
     queryFn: () => apiClient.get<NotificationListResponse>(`/notifications${buildQuery(filters)}`),
+    enabled: options.enabled ?? true,
   })
 }
 

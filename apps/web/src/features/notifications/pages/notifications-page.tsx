@@ -13,22 +13,12 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from '../api'
+import { notificationHref, notificationTypeLabel } from '../links'
 
 const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
 const DEFAULT_FILTERS: NotificationFilters = {
   page: PAGINATION.DEFAULT_PAGE,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
-}
-
-function referenceLink(item: { type: string; referenceId?: string; link?: string }) {
-  if (item.link) return item.link
-  if (!item.referenceId) return undefined
-  if (item.type === NOTIFICATION_TYPE.OVERLAP_ALERT) return `/overlaps/${item.referenceId}`
-  return `/cases/${item.referenceId}`
-}
-
-function typeLabel(type: string) {
-  return type.replace(/_/g, ' ').toLowerCase()
 }
 
 export function NotificationsPage() {
@@ -81,7 +71,7 @@ export function NotificationsPage() {
             <option value="">All types</option>
             {TYPE_OPTIONS.map((type) => (
               <option key={type} value={type}>
-                {typeLabel(type)}
+                {notificationTypeLabel(type)}
               </option>
             ))}
           </Select>
@@ -114,7 +104,7 @@ export function NotificationsPage() {
 
       <div className="space-y-3">
         {items.map((item) => {
-          const link = referenceLink(item)
+          const link = notificationHref(item)
           const unread = !item.readAt
           return (
             <Card key={item.id} className={unread ? 'border-foreground/30' : undefined}>
@@ -123,7 +113,7 @@ export function NotificationsPage() {
                   <div className="flex items-center gap-2">
                     {unread && <span className="h-2 w-2 rounded-full bg-foreground" />}
                     <span className="font-medium">{item.title ?? 'Notification'}</span>
-                    <Badge variant="muted">{typeLabel(item.type)}</Badge>
+                    <Badge variant="muted">{notificationTypeLabel(item.type)}</Badge>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {formatDate(item.createdAt)}

@@ -12,6 +12,12 @@ async function signInPortal(page: Parameters<typeof signIn>[0], email: string) {
   await expect(page.getByRole('heading', { name: 'My complaints' })).toBeVisible()
 }
 
+async function signOut(page: Parameters<typeof signIn>[0]) {
+  await page.getByRole('button', { name: 'Account menu' }).click()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await expect(page).toHaveURL(/\/(portal|login)$/)
+}
+
 test.describe('public complainant portal', () => {
   test('complainant files, tracks and closes a complaint while staff handle it', async ({
     page,
@@ -54,7 +60,7 @@ test.describe('public complainant portal', () => {
       page.locator('p').getByText('Please confirm receipt and share next steps.'),
     ).toBeVisible()
 
-    await page.getByRole('button', { name: 'Sign out' }).click()
+    await signOut(page)
     await page.goto('/portal/track')
     await page.getByLabel('Complaint number').fill(caseNumber as string)
     await page.getByLabel('Email address').fill(COMPLAINANT_EMAIL)
@@ -82,7 +88,7 @@ test.describe('public complainant portal', () => {
       page.getByText('Complaint resolved and the complainant was notified.'),
     ).toBeVisible()
 
-    await page.getByRole('button', { name: 'Sign out' }).click()
+    await signOut(page)
     await signInPortal(page, COMPLAINANT_EMAIL)
     await page.goto(complaintPath)
     await expect(page.getByText('The excess fee was refunded.')).toBeVisible()
