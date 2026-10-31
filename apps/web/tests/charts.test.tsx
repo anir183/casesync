@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { niceMax, percentage, sumValues } from '../src/components/charts/chart-utils'
 import { DonutChart } from '../src/components/charts/donut-chart'
 import type { GeoRegionRow } from '../src/features/reports/api'
-import { MAP_VIEWBOX, projectCoordinate } from '../src/features/reports/components/india-outline'
+import { bubbleRadius } from '../src/features/reports/components/map-config'
 import { RegionMap } from '../src/features/reports/components/region-map'
 
 const regions: GeoRegionRow[] = [
@@ -67,20 +67,19 @@ describe('chart math', () => {
 })
 
 describe('regional map', () => {
-  test('projects national coordinates inside the viewbox', () => {
-    const delhi = projectCoordinate(77.21, 28.61)
-    expect(delhi.x).toBeGreaterThan(MAP_VIEWBOX.padding)
-    expect(delhi.x).toBeLessThan(MAP_VIEWBOX.width - MAP_VIEWBOX.padding)
-    expect(delhi.y).toBeGreaterThan(MAP_VIEWBOX.padding)
-    expect(delhi.y).toBeLessThan(MAP_VIEWBOX.height - MAP_VIEWBOX.padding)
+  test('scales bubbles between a floor and a bounded maximum', () => {
+    expect(bubbleRadius(0, 100)).toBe(6)
+    expect(bubbleRadius(1, 100)).toBeGreaterThan(8)
+    expect(bubbleRadius(100, 100)).toBe(26)
   })
 
-  test('supports keyboard selection and exposes a data-table fallback', () => {
+  test('exposes an accessible region picker and data-table fallback', () => {
     let selected: GeoRegionRow | undefined
     render(
       <RegionMap
         caption="Regional pressure"
         regions={regions}
+        showMap={false}
         onSelect={(region) => {
           selected = region
         }}
@@ -88,7 +87,7 @@ describe('regional map', () => {
     )
 
     const north = screen.getByRole('button', { name: /NOR, Northern Region/ })
-    fireEvent.keyDown(north, { key: 'Enter' })
+    fireEvent.click(north)
     expect(selected?.regionId).toBe('north')
     expect(screen.getByText('View data table')).toBeDefined()
   })

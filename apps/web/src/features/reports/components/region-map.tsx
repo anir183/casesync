@@ -1,8 +1,10 @@
-import { type KeyboardEvent, useId, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { ChartTable } from '#/components/charts/chart-table'
+import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import type { GeoRegionRow } from '../api'
-import { MAP_VIEWBOX, outlinePath, projectCoordinate } from './india-outline'
+
+const LazyLeafletRegionMap = lazy(() => import('./leaflet-region-map'))
 
 function bubbleColor(region: GeoRegionRow) {
   if (region.total === 0) return 'var(--color-muted-foreground)'
@@ -11,9 +13,8 @@ function bubbleColor(region: GeoRegionRow) {
   return 'var(--color-success)'
 }
 
-function radiusFor(region: GeoRegionRow, maxTotal: number) {
-  if (region.total === 0) return 5
-  return 7 + Math.sqrt(region.total / Math.max(maxTotal, 1)) * 19
+function regionLabel(region: GeoRegionRow) {
+  return `${region.code.slice(0, 3)}, ${region.name}: ${region.total} total, ${region.open} open, ${region.overdue} overdue, ${region.resolutionRate}% resolved`
 }
 
 export function RegionMap({
@@ -22,94 +23,77 @@ export function RegionMap({
   selectedRegionId,
   onSelect,
   className,
+  showMap = true,
 }: {
   regions: GeoRegionRow[]
   caption: string
   selectedRegionId?: string
   onSelect?: (region: GeoRegionRow) => void
   className?: string
+  showMap?: boolean
 }) {
   const [activeId, setActiveId] = useState<string | undefined>(selectedRegionId)
-  const descriptionId = useId()
-  const maxTotal = Math.max(...regions.map((item) => item.total), 1)
   const active = regions.find((item) => item.regionId === activeId)
 
-  function handleKeyDown(event: KeyboardEvent<SVGGElement>, region: GeoRegionRow) {
-    if (event.key !== 'Enter' && event.key !== ' ') return
-    event.preventDefault()
-    onSelect?.(region)
-  }
+  useEffect(() => {
+    if (selectedRegionId) setActiveId(selectedRegionId)
+  }, [selectedRegionId])
 
   return (
     <div className={cn('space-y-3', className)}>
-      <figure className="overflow-hidden rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-accent/5">
-        <figcaption className="sr-only">{caption}</figcaption>
-        <svg
-          viewBox={`0 0 ${MAP_VIEWBOX.width} ${MAP_VIEWBOX.height}`}
-          aria-describedby={descriptionId}
-          className="mx-auto h-auto w-full max-w-[560px]"
-        >
-          <title>{caption}</title>
-          <path
-            d={outlinePath()}
-            fill="var(--color-muted)"
-            stroke="var(--color-border)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          {regions.map((region) => {
-            const point = projectCoordinate(region.longitude, region.latitude)
-            const radius = radiusFor(region, maxTotal)
-            const selected = region.regionId === selectedRegionId
-            const shortCode = region.code.slice(0, 3)
-            return (
-              <g
-                key={region.regionId}
-                role={onSelect ? 'button' : undefined}
-                tabIndex={onSelect ? 0 : undefined}
-                aria-label={`${shortCode}, ${region.name}: ${region.total} total, ${region.open} open, ${region.overdue} overdue, ${region.resolutionRate}% resolved`}
+      {showMap && (
+        <figure>
+          <figcaption className="sr-only">{caption}</figcaption>
+          <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-xl" />}>
+            <LazyLeafletRegionMap
+              regions={regions}
+              caption={caption}
+              selectedRegionId={selectedRegionId}
+              onSelect={onSelect}
+            />
+          </Suspense>
+        </figure>
+      )}
+
+      <ul aria-label="Select a region" className="flex flex-wrap gap-2">
+        {regions.map((region) => {
+          const selected = region.regionId === selectedRegionId
+          return (
+            <li key={region.regionId}>
+              <button
+                type="button"
+                aria-label={regionLabel(region)}
+                aria-pressed={selected}
                 onClick={() => onSelect?.(region)}
-                onKeyDown={(event) => handleKeyDown(event, region)}
                 onMouseEnter={() => setActiveId(region.regionId)}
-                onFocus={() => setActiveId(region.regionId)}
                 onMouseLeave={() => setActiveId(undefined)}
+                onFocus={() => setActiveId(region.regionId)}
                 onBlur={() => setActiveId(undefined)}
                 className={cn(
-                  onSelect &&
-                    'cursor-pointer outline-none focus-visible:opacity-100 [&:focus-visible>circle]:stroke-ring [&:focus-visible>circle]:stroke-[4px]',
+                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  selected
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={radius + (selected ? 4 : 0)}
-                  fill={bubbleColor(region)}
-                  fillOpacity="0.55"
-                  stroke={bubbleColor(region)}
-                  strokeWidth={selected ? 3 : 2}
-                >
-                  <title>{`${region.name}: ${region.total} total, ${region.overdue} overdue`}</title>
-                </circle>
-                {region.total > 0 ? (
-                  <text
-                    x={point.x}
-                    y={point.y + 3}
-                    textAnchor="middle"
-                    className="pointer-events-none fill-foreground text-[10px] font-semibold"
-                  >
-                    {shortCode}
-                  </text>
-                ) : null}
-              </g>
-            )
-          })}
-        </svg>
-      </figure>
-      <p id={descriptionId} className="text-sm text-muted-foreground">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: bubbleColor(region) }}
+                />
+                {region.code.slice(0, 3)}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+
+      <p className="text-sm text-muted-foreground">
         {active
           ? `${active.name}: ${active.total} total, ${active.open} open, ${active.disposed} disposed, ${active.overdue} overdue.`
-          : 'Bubble size shows case volume. Colour shows overdue pressure: green low, amber elevated, red high.'}
+          : 'Bubble size shows case volume. Colour shows overdue pressure: green low, amber elevated, red high. The map is supplementary; every region is selectable below and listed in the data table.'}
       </p>
+
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-success" /> Low overdue
@@ -120,7 +104,9 @@ export function RegionMap({
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-danger" /> High
         </span>
+        <span className="ml-auto text-[11px]">Base map © OpenStreetMap contributors</span>
       </div>
+
       <ChartTable
         caption={`${caption} data table`}
         columns={['Region', 'Total', 'Open', 'Disposed', 'Overdue', 'Resolved']}

@@ -374,7 +374,7 @@ export function ReportsPage() {
           <div className="grid gap-4 lg:grid-cols-3">
             <ChartCard
               title="Regional pressure"
-              description="Select a region bubble to apply the region filter."
+              description="Select a region marker or chip to apply the region filter."
               className="lg:col-span-2"
             >
               {geo.isLoading ? (
