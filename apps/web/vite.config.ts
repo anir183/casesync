@@ -15,6 +15,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Never drift to 5174: CORS_ORIGIN and Better Auth trusted origins are validated
+    // against this exact dev origin.
+    strictPort: true,
   },
   build: {
     rollupOptions: {

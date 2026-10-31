@@ -4,6 +4,7 @@ import { Elysia } from 'elysia'
 import { env } from '#/config/env'
 import { auth } from '#/lib/auth'
 import { HTTP_STATUS } from '#/lib/errors'
+import { parseAllowedOrigins } from '#/lib/origins'
 import { enforceRateLimit } from '#/lib/rate-limit'
 import { toErrorResponse } from '#/middleware/error'
 import { auditRoutes } from '#/modules/admin/audit.routes'
@@ -40,7 +41,7 @@ export const app = new Elysia()
   )
   .use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: parseAllowedOrigins(env.CORS_ORIGIN, env.NODE_ENV),
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     }),

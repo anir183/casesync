@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import mongoose from 'mongoose'
 import { env } from '#/config/env'
+import { parseAllowedOrigins } from '#/lib/origins'
 import { User } from '#/models/user.model'
 
 const db = mongoose.connection.db
@@ -100,5 +101,5 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [env.CORS_ORIGIN],
+  trustedOrigins: parseAllowedOrigins(env.CORS_ORIGIN, env.NODE_ENV),
 })
