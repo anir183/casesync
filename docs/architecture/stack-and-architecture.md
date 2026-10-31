@@ -2,11 +2,14 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stages 1–5 are complete. Case/institution APIs, web workflows, overlap
-> correctness/coordination, scoped monitoring/search/reporting, and SLA configuration,
-> deadline calculation, and scheduled alerts are wired, typecheck, and are covered by
-> API integration tests. Browser/component E2E and periodic overlap sweeps remain. Sections that describe the target
-> contract are still the target; they are not a claim that every part is wired today.
+> Stages 0–8 are complete. Stage 9 is partial: Phase 1 reversible overlap auto-merge,
+> the Phase 3 navigation refresh, and Phase 4 visual redesign/charts/GIS are implemented
+> and tested. Phases 0 (baseline), 2 (representatives/domains), the remaining Phase 3
+> flows, 5 (hardening), and 6 (polish) remain planned. Case/institution APIs, web workflows, overlap correctness/coordination, scoped
+> monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
+> covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
+> describe the target contract are still the target; they are not a claim that every part
+> is wired today.
 
 ## 1) Final Tech Stack
 
@@ -116,7 +119,8 @@ casesync/
 | `case_actions` | **Append-only** audit trail | Never update/delete. `actorId`, `actionType`, `from/to`, `remarks`, `metadata`, timestamps |
 | `case_assignments` | Assignment history | `caseId`, `bureauId`, `officerId`, `assignedAt`, `endedAt`, `assignedBy` |
 | `case_overlap_assessments` | **Jev AI history** | Normalized pair `{caseAId,caseBId}` with `$min/$max`. Unique compound. Store rawResponse, probabilities, modelVersion, tokens, latency, status |
-| `case_relationships` | **Human decisions** | Link to `assessmentId`. `reviewStatus` PENDING/CONFIRMED/DISMISSED, reviewer, notes, manual/link metadata |
+| `case_relationships` | **Human decisions + merge state** | Link to `assessmentId`. `reviewStatus` PENDING/CONFIRMED/DISMISSED, reviewer, notes, manual/link metadata. Stage 9 Phase 1 adds `confidenceScore`, `matchSignals`, `mergeStatus` (candidate/manual_review/auto_merged/manual_merged/reverted), `mergeGroupId`, `decidedBy/At`, and revert metadata |
+| `case_merge_groups` | **Flat merge groups** | `canonicalCaseId`, `memberCaseIds`, immutable `snapshot`, `status` (active/reverted), `mergedAt/By`, `confidenceScore`, `matchSignals`, and revert actor/reason. Member case documents are never rewritten |
 | `notifications` | Alerts | Per-recipient; add `caseId?`, `link?`, `periodKey?`, `channel`; unique dedupe index |
 | `attachments` | Metadata + files | `caseId`, safe relative `storagePath`, original filename, mime/size, SHA-256 `checksum`, uploader, `visibility`, optional `messageId` |
 | `sla_config` | SLA rules | Unique `{bureauId,category,regionId}` scope, `slaDays`, `pendingReminderDays`, `reminderDays[]`, `active` |
@@ -126,7 +130,9 @@ casesync/
 Indexes: `cases.{regionId,status}`, `cases.{bureauId,status}`,
 `notifications.{recipientId,type,referenceId,periodKey}` unique, `regions.code` unique,
 `categories.code` unique, `sla_config.{bureauId,category,regionId}` unique,
-`job_runs.{jobName,startedAt}`, `audit_log.{entityType,entityId,createdAt}`.
+`job_runs.{jobName,startedAt}`, `audit_log.{entityType,entityId,createdAt}`, and a partial
+unique `case_merge_groups.memberCaseIds` index scoped to `status: active` so one case
+cannot belong to two active groups.
 
 
 ## 5) Code Conventions
@@ -179,7 +185,8 @@ Indexes: `cases.{regionId,status}`, `cases.{bureauId,status}`,
 ```env
 NODE_ENV=development
 PORT=3000
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+VITE_MAP_TILE_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 MONGODB_URI=mongodb+srv://...
 BETTER_AUTH_SECRET=...
 BETTER_AUTH_URL=http://localhost:3000
@@ -264,9 +271,18 @@ committed; `.env.example` lists names with empty/placeholder values.
 - **SLA** (Stage 5): `/sla-configs` admin CRUD, computed `expectedDisposalAt`,
   `/admin/jobs/runs`, and manual `POST /admin/jobs/sla/run`.
 - **Audit**: `case_actions` for case mutations; `audit_log` for admin/org changes.
+- **Overlap merge** (Stage 9 Phase 1): `POST /overlaps/:id/merge` requires a reason and an
+  audited actor; `POST /overlaps/:id/revert` requires a reason, moves the pair to
+  `manual_review`, and suppresses automatic re-merge until a human clears suppression;
+  `GET /overlaps?status=…` exposes auto-merged, manual-review, and reverted queues;
+  `GET /merge-groups/:id` reads the flat group. Every transition writes an append-only
+  audit action (`OVERLAP_AUTO_MERGED`, `OVERLAP_MANUALLY_MERGED`,
+  `OVERLAP_MERGE_REVERTED`, `OVERLAP_REMERGE_SUPPRESSION_CLEARED`).
 - **Reports geo** (Stage 9 Phase 4): `GET /reports/geo` reuses the scoped report filters,
-  returns zero-count regions in scope, and reads seeded region coordinates for the local
-  India bubble map. No external tile/geo service.
+  returns zero-count regions in scope, and reads seeded region coordinates for the
+  region-bubble map. The web app lazy-loads `leaflet-region-map`, which renders
+  OpenStreetMap tiles by default (`VITE_MAP_TILE_URL` overrides the tile server); region
+  chips and an expandable table keep the view usable when tiles are unavailable.
 - **Exports** (Stage 4): CSV from the same scoped filter set; PDF optional.
 - **Docs**: Elysia route schemas remain the API contract source; keep auth/pagination/
   scope documented. Swagger UI is served at `/docs` via `@elysiajs/swagger`, with the

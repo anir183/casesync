@@ -37,7 +37,7 @@ Safety guards:
 
 `seed` and `seed:demo` create:
 
-- 9 AICTE regions with office-city coordinates for the local GIS map;
+- 9 AICTE regions with office-city coordinates for the region map;
 - 10 categories;
 - 4 bureaus: `PGRC` Public Grievance Redressal Cell, `RB` Regulation Bureau,
   `ACAD` Academic Bureau, `FIN` Finance Bureau;

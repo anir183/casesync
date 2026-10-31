@@ -1,6 +1,6 @@
 # CaseSync — Security Checklist
 
-Status: Stage 7–8 release evidence. Last verified: 2026-10-29.
+Status: Stage 7–9 release evidence. Last verified: 2026-10-31.
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
 
@@ -29,6 +29,9 @@ formal HTTP security-header review remain production hardening items.
 | Verification integrity | Auto-verify only when submitted AICTE permanent ID exactly matches the selected institution; otherwise document review | Stage 8 integration |
 | Public tracking | Case number + email exact match; generic 404 avoids enumeration; dedicated rate limit | Stage 8 integration; rate-limit config |
 | Append-only case audit | `case_actions` created on mutations; no update/delete route | Integration lifecycle/audit tests |
+| Auto-merge authorization | Merge/revert/suppression-clear require the `OVERLAP_REVIEW` / `MERGE_SUPPRESSION_CLEAR` role groups and a mandatory reason; every transition is audited | Phase 1 unit/integration tests; merge/revert E2E |
+| Auto-merge safety | Exact AICTE institution ID only, cross-bureau, both non-disposed, no active group, no suppression, combined `0.85`, text `0.75`, hard JEV veto; kill switch `OVERLAP_AUTO_MERGE_ENABLED` | Phase 1 scoring/integration tests |
+| Merge data preservation | Member case documents are never rewritten; the group keeps an immutable snapshot and revert metadata | Phase 1 integration tests |
 | Admin audit | `audit_log` for admin/org changes | Integration suite |
 | Search bounds | `SEARCH.MAX_QUERY_LENGTH = 100` on cases, institutions, directory, admin users | Integration Stage 7 security test |
 | Regex handling | User search strings are escaped before Mongo regex use | Integration Stage 7 security test (`[` returns 200) |
@@ -38,7 +41,8 @@ formal HTTP security-header review remain production hardening items.
 | Upload/download access | Scope checked; randomized storage names; no static serving | Integration attachment suite |
 | Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities | CI security job; local run 2026-10-29 |
 | Secret handling | Jev key server-only; `.env` ignored; no client secrets | Code review / env templates |
-| CORS | Configured origin, credentialed methods | App configuration |
+| CORS | Comma-separated origin allowlist with credentialed methods; loopback aliases normalised outside production; five parser regression tests | `apps/api/src/lib/origins.ts`, unit tests |
+| Map tiles | Browser requests go to OpenStreetMap unless `VITE_MAP_TILE_URL` points at a self-hosted/regional provider; no API key or runtime geo API | Map configuration review |
 
 ## 3. Rate limits
 
@@ -95,8 +99,9 @@ Rate-limited responses use HTTP `429` with `error: "RATE_LIMITED"`,
   (for example Redis) or edge/WAF limits.
 - Malware scanning for uploaded documents is not implemented.
 - CSP, HSTS, and a broader HTTP security-header review are deployment follow-ups.
-- Institution representative accounts are deferred; adding them requires a second
-external role, institution scoping, and an approval model.
+- Institution representative accounts are planned for Stage 9 Phase 2; adding them
+  requires a second external role, institution scoping, an approval model, and a
+  suggestion-only email-domain allowlist that never grants access.
 - A third-party penetration test and secret-scanning tool are not part of this pass.
 - Search query-object notation is inert rather than explicitly rejected; schema
   validation should remain the guard if the query parser changes.

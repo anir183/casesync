@@ -3,7 +3,7 @@
 Status: active operating policy. Applies to the MVP stack: MongoDB Atlas plus
 local-disk attachment storage.
 
-**Baseline:** 2026-10-29. Legal/records-retention requirements from AICTE take
+**Baseline:** 2026-10-31. Legal/records-retention requirements from AICTE take
 precedence when they differ; the values below are the engineering defaults until written
 AICTE policy is recorded.
 
@@ -11,7 +11,7 @@ AICTE policy is recorded.
 
 | Data | Location | Contains PII? | Backup owner |
 |---|---|---|---|
-| Cases, actions, assignments, relationships, assessments | MongoDB Atlas | Yes | Platform operator |
+| Cases, actions, assignments, relationships, merge groups, assessments | MongoDB Atlas | Yes | Platform operator |
 | Institutions, regions, bureaus, categories, users, sessions, notifications, SLA configs | MongoDB Atlas | Yes | Platform operator |
 | `audit_log` and `job_runs` | MongoDB Atlas | Yes (actor identities) | Platform operator |
 | Attachments | `ATTACHMENT_STORAGE_DIR` (default `storage/attachments`) | Potentially | Platform operator |
@@ -67,7 +67,8 @@ backup bucket as application data. Restore secrets from the secret manager.
 2. Restore the MongoDB snapshot/PITR point immediately before the incident.
 3. Restore the attachment volume/snapshot to a staging path.
 4. Verify counts and scopes:
-   - `cases`, `case_actions`, `case_assignments`, `case_relationships`, `audit_log`;
+   - `cases`, `case_actions`, `case_assignments`, `case_relationships`,
+     `case_merge_groups`, `audit_log`;
    - users and active sessions (revoke all sessions after a suspected compromise);
    - attachment rows versus files on disk.
 5. Verify a sample of attachment checksums against the restored files.
@@ -85,6 +86,7 @@ database metadata is orphaned and should be quarantined, not served.
 | Record | Default retention | Deletion method |
 |---|---|---|
 | Cases and case actions | 7 years after final disposal, or per AICTE records schedule | Formal records-disposition approval; never ad hoc |
+| `case_merge_groups` | 7 years after the group is reverted or its canonical case is disposed | Same as cases; keep reverted groups for audit and suppression |
 | `audit_log` | 7 years | Same as cases; append-only |
 | Attachments | Same as the parent case | Delete with the approved case disposition only |
 | Notifications | 2 years | Scheduled cleanup after retention review |

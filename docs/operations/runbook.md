@@ -1,6 +1,7 @@
 # CaseSync — Operations Runbook
 
-Status: Stage 7–8 runbook. Last verified: 2026-10-29.
+Status: Stage 7–9 runbook (Stage 9 Phase 1, Phase 3 navigation, and Phase 4 implemented).
+Last verified: 2026-10-31.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
@@ -14,6 +15,10 @@ Companions: [`backup-and-retention.md`](backup-and-retention.md),
   `STAFF_SIGNUP_ENABLED=false`, and `COMPLAINANT_SIGNUP_ENABLED=true` unless explicitly
   testing those paths.
 - `COMPLAINT_REOPEN_DAYS` defaults to 30 and controls the complainant reopen window.
+- Stage 9 auto-merge: `OVERLAP_AUTO_MERGE_ENABLED=true` is the kill switch,
+  `OVERLAP_AUTO_MERGE_THRESHOLD=0.85`, and `OVERLAP_AUTO_MERGE_TEXT_THRESHOLD=0.75`.
+  Disable the first flag to stop new automatic merges without disabling manual
+  merge/revert.
 
 ## 2. Install and run
 
@@ -52,8 +57,9 @@ Production writes require `ALLOW_SEED=true`; production reset also requires
 Stress records use `STRESS-` / `AICTE-STRESS-` prefixes and are safe to remove.
 
 The demo seed includes a verified complainant: `complainant@casesync.test` /
-`Passw0rd!123`, linked to the `dit` institution. It does not create an institution
-representative account (deferred).
+`Passw0rd!123`, linked to the `dit` institution. It also seeds auto-merged,
+manual-review, vetoed, and reverted overlap scenarios for the Phase 1 demo. It does not
+create an institution representative account (planned for Stage 9 Phase 2).
 
 ## 4. Verification gates
 
@@ -65,6 +71,9 @@ bun run test:e2e        # seeded staff + portal smoke/accessibility, excludes pe
 bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
+
+Current local baseline (2026-10-31): 85 API unit + 25 web tests, 55 integration tests, 12
+seeded browser tests, and 87.4% lines / 89.7% functions of API coverage.
 
 API unit/component tests preload inert test defaults, so `verify` does not need a
 personal `.env`; integration, seed, and E2E commands do need real DB/auth env.
@@ -89,12 +98,35 @@ accessibility, and dependency audit.
 6. Accept-resolution closes the complaint; reopen is allowed only for `DISPOSED` cases
    within `COMPLAINT_REOPEN_DAYS`.
 
+## 4.2 Stage 9 merge/revert and reports
+
+1. The **Overlap queue** has Auto-merged, Needs review, Manually merged, and Reverted
+   views. A high-confidence exact-institution pair can auto-merge once; every other pair
+   stays in human review.
+2. Open an auto-merged pair to inspect the score breakdown, matched signals, and group
+   members. **Revert merge** requires a reason, returns the pair to manual review, and
+   suppresses automatic re-merge until an admin clears suppression.
+3. Manual merge and revert both write append-only audit actions. Verify them at
+   `/admin/audit`.
+4. The merged case detail shows a neutral merge banner and a link to the group; it never
+   exposes another complainant's PII.
+5. `/reports` is chart-first and reconciles with the scoped totals. `/reports/geo` drives
+   the lazy-loaded Leaflet/OpenStreetMap region map; region chips provide keyboard
+   selection, and every value also appears in the data table. Tile requests go to
+   OpenStreetMap unless `VITE_MAP_TILE_URL` is set; the rest of the report remains usable
+   when tiles are blocked. The default OSM tile servers are for light/demo use under the
+   [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/); point
+   `VITE_MAP_TILE_URL` at a self-hosted or commercial provider before high-volume use.
+6. To pause automatic merging without disabling review, set
+   `OVERLAP_AUTO_MERGE_ENABLED=false` and restart the API.
+
 ## 5. Deploy
 
 1. Build API and web from a clean checkout with `bun install --frozen-lockfile`.
 2. Run the API process (`bun run --filter @casesync/api start`) behind TLS.
 3. Serve `apps/web/dist` with a static host or reverse proxy.
-4. Set `CORS_ORIGIN` to the deployed web origin and `BETTER_AUTH_URL` to the API URL.
+4. Set `CORS_ORIGIN` to the deployed web origin (comma-separate multiple origins) and
+   `BETTER_AUTH_URL` to the API URL.
 5. Keep Jev credentials and MongoDB credentials server-side only.
 6. Run the SLA scheduler as a single API instance (`CRON_ENABLED=true`) or externalize
    the job before scaling horizontally.
@@ -113,7 +145,7 @@ and files consistent.
 |---|---|
 | API exits on startup | `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` in `apps/api/.env` |
 | `MongoDB connection is not ready` | DB reachable; startup connects before Better Auth initializes |
-| Browser sign-in fails | API/web origins match `CORS_ORIGIN`; cookies allowed |
+| Browser sign-in fails | `CORS_ORIGIN` accepts a comma-separated list; outside production loopback `localhost`/`127.0.0.1` are normalised, but deployed hosts must match exactly. Check Vite is still on 5173 (`strictPort`) and cookies are allowed |
 | E2E ports busy | E2E uses API 3100 and web 4173; free them or stop conflicting servers |
 | Seed refuses to write | `ALLOW_SEED`/`ALLOW_SEED_RESET` guards and target host |
 | Stress data present | `bun run seed:stress:reset` |

@@ -1,13 +1,15 @@
 # CaseSync — Stage 9 Next-Phase Plan
 
-Status: **Phases 1 and 4 implemented; manual screen-reader sign-off pending. Phases 0,
-2–3, and 5–6 remain planned.** Phase 4 was pulled forward at product-owner request;
+Status: **Phases 1 and 4 and the Phase 3 navigation refresh implemented; manual
+screen-reader sign-off pending. Phase 0, Phase 2, the remaining Phase 3 flows, and
+Phases 5–6 remain planned.** Phase 4 was pulled forward at product-owner request;
 Phase 0 baseline debt still gates the Stage 9 definition of done. This is the decision-complete
 execution plan for Stage 9 and defines the work, data/API/UI contracts, sequencing, test
 evidence, and exit gates.
 
 - **Plan date:** 2026-10-30
-- **Baseline:** Stages 0–8 implemented; pushed CI green on `5666cad`; docs on `fcb73f1`
+- **Baseline:** Stages 0–8 implemented; pushed CI green on `5666cad`; docs refreshed on
+  `0e1d2d7`
 - **Umbrella name:** Stage 9 — next phase (Phases 0–6 below)
 - **Deployment:** explicitly out of scope until a later decision
 - **Companions:** `../README.md`, `../product/end-product-and-stages.md`,
@@ -39,11 +41,12 @@ the status tables must agree.
 
 ## 2. Baseline and known debt
 
-### 2.1 Verified baseline
+### 2.1 Verified baseline (refreshed 2026-10-31)
 
-- Biome, API/web typechecks, unit/component tests, 50 DB-backed integration tests,
-  6 seeded Playwright tests, builds, and `bun audit --audit-level=high` pass locally.
-- API coverage is 87.1% lines / 89.6% functions against an 85% floor.
+- Biome, API/web typechecks, 85 API unit tests, 25 web component/URL tests, 55 DB-backed
+  integration tests, 12 seeded Playwright tests, builds, and
+  `bun audit --audit-level=high` pass locally.
+- API coverage is 87.4% lines / 89.7% functions against an 85% floor.
 - CI is green on `5666cad` across static checks, unit/component, integration/coverage,
   builds, seeded browser smoke, and dependency audit.
 - Integration and E2E need a disposable MongoDB on port `27018` locally; the system
@@ -62,8 +65,8 @@ the status tables must agree.
 | Auto-merge | Every base relationship is `PENDING`; no automatic merge or group model | Add bounded, reversible auto-merge; keep every member record |
 | Representatives | `user.institutionId` exists but no role, approval, or scope | Add `INSTITUTION_REPRESENTATIVE`, approval lifecycle, institution scope |
 | Email domains | No allowlist collection or signup suggestion | Add admin-managed domains; suggestion only |
-| Navigation | Flat 11-link staff navbar; notifications badge sits in the nav | Primary links + More; notification bell with preview |
-| Charts/GIS | No chart or map dependency/components | Local SVG chart primitives and bundled India outline |
+| Navigation | Flat 11-link staff navbar; notifications badge sits in the nav | Primary links + More; notification bell with preview (**implemented**) |
+| Charts/GIS | No chart or map dependency/components | Local SVG chart primitives; lazy-loaded Leaflet/OpenStreetMap map (**implemented**) |
 | Hardening | In-process rate limits; no CSP/header baseline or request IDs | Host-independent hardening only |
 | CI debt | Node 20 action, floating runner, Bun skew, build annotations | Clean, pinned, warning-free baseline |
 
@@ -78,7 +81,7 @@ the status tables must agree.
 | API TypeScript | `noUnusedLocals` / `noUnusedParameters` are not enabled |
 | Web TypeScript | `typecheck:web` includes only `src`, so tests/e2e are not typechecked |
 | Tests | Integration fixtures are duplicated; shared factories are still optional |
-| Docs | Duplicated stage counts and stale “deferred” statements remain in older sections |
+| Docs | Stage 9 status/count drift was corrected on 2026-10-31; the Phase 0 truth pass still owns CI/Bun/build claims |
 | Accessibility | Manual keyboard/screen-reader/mobile passes are not recorded |
 
 ## 3. Locked decisions and invariants
@@ -89,12 +92,12 @@ the status tables must agree.
 | 2 | Reverting an auto-merge **returns the pair to manual review**; it never re-runs auto-merge automatically. |
 | 3 | A merged complaint shows a **neutral merge-group banner**; no other complainant's PII is exposed. |
 | 4 | Institution representatives can **post public responses and attach evidence only**; they cannot request information or change case status. |
-| 5 | The GIS view is a **region-bubble map over a local India outline**; no external tile provider or runtime geo API. |
+| 5 | The GIS view is a **region-bubble Leaflet map over OpenStreetMap tiles** by default; the tile URL is configurable with `VITE_MAP_TILE_URL` and no runtime geo API or API key is used (revised 2026-10-31). |
 | 6 | Email-domain matching at signup is **suggestion-only**; it never auto-verifies a user or grants institution access. |
 | 7 | **Deployment is out of scope** for Stage 9. |
 | 8 | Auto-merge eligibility requires an **exact AICTE institution-ID match**, a cross-bureau pair, both cases non-disposed, a passing text gate, and no JEV veto. Fuzzy-name pairs remain in human review regardless of score. |
 | 9 | The merge group is a **flat set with one canonical case**. No nested or recursive groups. |
-| 10 | Charts and the map use **local SVG primitives and bundled assets**; no charting or map service dependency is added unless a later decision explicitly replaces this rule. |
+| 10 | Charts use **local SVG primitives**. The map uses **Leaflet + OpenStreetMap tiles**, lazy-loaded behind a skeleton; region chips and a data table remain available when tiles fail. No charting service is added (revised 2026-10-31). |
 
 Additional invariants:
 
@@ -127,7 +130,8 @@ Phase 5 (hardening) ── Phase 6 (docs/polish)
 ```
 
 - Phase 1 and Phase 2 can run in parallel after Phase 0.
-- Phase 3 needs the role model and routes from Phase 2.
+- The remaining Phase 3 role flows need the role model and routes from Phase 2; the
+  navigation refresh is already implemented.
 - Phase 4 needs the navigation and screen inventory from Phase 3.
 - Phases 5–6 run continuously and close the stage.
 - Every phase must leave the previous stages’ tests green. No phase may bundle unrelated
@@ -572,6 +576,12 @@ and semantically.
 - The bell reaches `/notifications` and unread state reconciles with the API.
 - Admin features remain discoverable from More; no duplicate primary links.
 
+**Implemented 2026-10-31:** primary links + More/Admin overflow on staff, primary links on
+the portal shell, notification bell with five-item preview and mark-all-read, account
+menu, mobile drawers, route-change close, Escape/click-outside handling, and one-row
+width checks at 375/768/1024/1440 px. Role landing refinements, consolidated case tabs,
+and the explicit resolution loop remain open.
+
 ## 9. Phase 4 — Visual redesign, dashboard/reports, and GIS
 
 **Goal:** replace the bland, table-heavy presentation with a modern, vibrant-but-restrained
@@ -614,8 +624,10 @@ Data:
 
 - Add `latitude` and `longitude` (`number`, bounded) to `Region`; seed all 9 regions.
 - Institution coordinates are optional and are not required for the region-bubble view.
-- Bundle a simplified India outline with the web app; no external tiles or runtime geo
-  service.
+- Use Leaflet with OpenStreetMap tiles (lazy-loaded). `VITE_MAP_TILE_URL` can point at a
+  self-hosted or regional tile provider; no runtime geo API or API key is required.
+- Keep region chips, a live text summary, and the data table as the non-tile path so the
+  report still works when tiles are unavailable.
 
 API:
 
@@ -660,29 +672,34 @@ UI:
 - E2E/axe: chart and map pages, keyboard focus, table fallback, mobile reflow,
   reduced-motion.
 - Dashboard/reports are chart-first but numerically reconcile with the API.
-- The map works offline from the bundled outline and has a table fallback.
-- No external tile/geo network dependency.
+- The map degrades to region chips, the live text summary, and the data table when tiles
+  are unavailable.
+- Tile requests are limited to the configured provider; no runtime geo API call.
 - Axe remains clean; manual keyboard/zoom checks pass.
-- Route-level splitting prevents one oversized chunk; document the bundle budget.
+- Route-level splitting keeps Leaflet and route code out of the initial chunk; the
+  main-chunk warning remains Phase 0 debt.
 
-### 9.5 Implementation evidence (2026-10-30)
+### 9.5 Implementation evidence (2026-10-31)
 
 - Region coordinates are optional on the API model, bounded by validation, seeded for all
   9 regional offices, editable in the admin organization screen, and returned by
   `GET /reports/geo` with scoped zero-count rows.
-- The web app uses local SVG chart primitives and a bundled India outline. The map uses
-  region-volume bubbles, overdue-pressure colour, keyboard selection, a live text summary,
-  and a data-table fallback.
+- The web app uses local SVG chart primitives and a lazy-loaded Leaflet map over
+  OpenStreetMap tiles (`VITE_MAP_TILE_URL` override). The map uses region-volume bubbles,
+  overdue-pressure colour, keyboard region chips, a live text summary, and a data-table
+  fallback.
 - Dashboard and reports are chart-first. Reports keeps current-filter CSV export and moves
   detailed cross-tabs behind an expandable detail section. Dashboard keeps the 30-second
   refresh contract and sources its status donut from the reports summary so the slices
   reconcile with the report total.
-- Dashboard and reports routes are lazy-loaded. The production build emits a 437.65 kB
-  main chunk (123.80 kB gzip), 14.31 kB dashboard chunk, 10.36 kB reports chunk, and
-  14.59 kB map chunk; the budget is main chunk ≤ 500 kB and chart/map route chunks ≤ 20 kB.
+- Dashboard and reports routes are lazy-loaded. The latest production build emits a
+  ~928 kB main chunk (about 201 kB gzip), a 32.0 kB dashboard chunk, a 32.2 kB reports
+  chunk, a 30.0 kB region-map chunk, and a 156.8 kB Leaflet chunk (about 46 kB gzip). The
+  main chunk still exceeds the 500 kB budget and remains Phase 0 debt.
 - Automated evidence: API/web typechecks, Biome, unit/component tests, production build,
-  46 stage-1 integration tests, all 8 seeded Playwright tests, axe scans on core staff/public
-  routes, map keyboard/mobile-reflow checks, and reduced-motion checks pass locally.
+  55 integration tests, all 12 seeded Playwright tests, axe scans on core staff/public
+  routes plus the mobile drawer, navigation/bell journeys, map keyboard/mobile-reflow
+  checks, and reduced-motion checks pass locally.
 - Remaining Phase 4 gate: record the manual screen-reader sign-off and 200% zoom review.
 
 ## 10. Phase 5 — Production hardening (no deployment)
@@ -792,9 +809,9 @@ Stage 9-specific gates:
 | Concurrent/duplicate merges | Atomic claim, partial unique indexes on active membership/canonical, idempotent evaluation, transactional where possible |
 | Representative data leak | Institution scope in the central helper; public projection only; separate shell; negative tests in both directions |
 | Domain spoofing | Suggestion-only signup; admin-approved allowlist; no automatic verification or access |
-| Bundle growth from charts/map | Local SVG primitives, lazy-loaded routes, bundle budget in CI |
-| Navigation change hides features | Primary links + discoverable “More”; role-filtered admin group; mobile parity |
-| GIS data ambiguity | Region coordinates seeded and versioned; no external tiles; table fallback; coordinates validated/backfilled |
+| Bundle growth from charts/map | Local SVG charts, lazy-loaded Leaflet chunk, bundle budget in CI; main chunk warning remains Phase 0 debt |
+| Navigation change hides features | Primary links + discoverable “More”; role-filtered admin group; mobile parity (implemented) |
+| GIS data ambiguity | Region coordinates seeded and versioned; configurable tile provider; chips/table fallback; coordinates validated/backfilled |
 | Manual accessibility regressions | Axe gate plus keyboard/zoom/screen-reader checks after the redesign |
 | Scope creep into deployment | Deployment explicitly out of scope; hardening stops at host-independent controls |
 

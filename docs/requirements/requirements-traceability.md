@@ -1,6 +1,6 @@
 # CaseSync — Requirements Traceability Matrix
 
-**Last verified:** 2026-10-30  
+**Last verified:** 2026-10-31  
 **Source of truth:** original AICTE problem statement + `docs/product/end-product-and-stages.md` + this matrix  
 **Detailed audit:** `docs/requirements/requirements-realignment.md`
 
@@ -24,7 +24,7 @@ Status legend:
 | Objectives | Partial | Core monitoring/overlap/reporting, case workflow, SLA alerts, and administration/attachments work; OBJ-06 pending-bucket definition remains. |
 | Institution profile | **Done** | Registry list/create/edit/verify + profile/history, aliases, duplicate checks, and admin merge. |
 | Case tracking | **Done** | Lifecycle API + operational UI (registration, action panel, history tabs); officer names resolved; pagination wired; Stage 7 smoke covers case list/timeline. |
-| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Stage 9 plans the bounded exact-institution auto-merge exception. |
+| Overlap detection | **Done** (implementation) | Exact + fuzzy + Jev + human review; base alert always survives Jev; re-assessment triggers, manual link/unlink, scoped/deduped notifications, and queue pagination are wired. Stage 9 Phase 1 implements the bounded exact-institution auto-merge exception. |
 | Dashboard | **Done** | Tiles, unassigned/assigned, region/bureau/institution tables, date filters, recent overlaps/escalations, names, SLA-derived beyond-timeline count, and 30s refresh. |
 | Workflow/audit | **Done** | Append-only case history, scoped attachments, staff action UI, and admin `audit_log`. |
 | Search/filters | **Done** | Case region/date/category/status/bureau filters, sorting, pagination, exports, and paginated/filterable notifications. |
@@ -34,7 +34,7 @@ Status legend:
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
-| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 1 auto-merge and Phase 4 UI/GIS are implemented; other phases remain planned. See §11.2. |
+| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 0, Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -49,7 +49,7 @@ Status legend:
 | SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs implemented; manual escalation only |
 | Stage 9 auto-merge | Exact AICTE ID, cross-bureau, both non-disposed, combined `0.85`, text `0.75`, no JEV veto; flat reversible group; revert suppresses re-merge | **Implemented** (Phase 1); fuzzy/manual paths unchanged |
 | Stage 9 representatives | Separate `INSTITUTION_REPRESENTATIVE`, admin approval/revocation, institution scope, public projection only; domain suggestion never grants access | **Planned** Phase 2 |
-| Stage 9 GIS/charts | Local SVG primitives + bundled India outline; no external chart/tile/geo service | **Planned** Phase 4 |
+| Stage 9 GIS/charts | Local SVG chart primitives + lazy-loaded Leaflet/OpenStreetMap map (configurable tile URL, keyboard region chips, table fallback) | **Implemented** Phase 4 |
 | Target users | Authorized AICTE officials = MVP | Role/scope matrix |
 
 ## 1. Objectives
@@ -213,7 +213,7 @@ Status legend:
 | EXT-08 | Public tracking without account enumeration | **Done** | `/public/track`, case number + email, generic 404, rate limit | — |
 | EXT-09 | Ownership/IDOR protection and portal rate limits | **Done** | Complainant-scoped queries; signup/track/write limits | — |
 | EXT-10 | Admin verification queue and staff complaint workflow | **Done** | `/admin/verifications`, case Conversation tab, acknowledge/request-info/resolve | — |
-| EXT-11 | Institution representative accounts | **Deferred** | Documented deferral | Separate role, institution scoping, and approval model. |
+| EXT-11 | Institution representative accounts | **Planned** | Stage 9 Phase 2 scope | Separate role, institution scoping, approval model, and suggestion-only domain allowlist. |
 
 ## 12. Non-functional requirements
 
@@ -233,23 +233,26 @@ Status legend:
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
 | Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
-## 13. Test and ops baseline (verified)
+## 13. Test and ops baseline (verified 2026-10-31)
 
-- 71 API unit tests, 10 web component/URL tests, and 50 database-backed integration
+- 85 API unit tests, 25 web component/URL tests, and 55 database-backed integration
   tests; Jev is mocked and a fetch guard blocks real calls.
 - Integration coverage includes signup blocking, scoping/IDOR, dashboard/report
   reconciliation, overlap correctness/coordination, SLA jobs, admin/master CRUD,
   attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, and Stage 8
   verification/ownership/public-visibility/reopen flows. `RUN_INTEGRATION=1` runs
   locally against run-scoped records; CI uses `mongo:7`.
-- Coverage is 87.1% lines / 89.6% functions with an 85% floor.
-- 3 seeded staff smoke journeys, 2 portal E2E journeys, an axe accessibility scan, and a
-  tagged 5,000-case performance test.
+- Coverage is 87.4% lines / 89.7% functions with an 85% floor.
+- 12 seeded Playwright tests: 3 staff smoke journeys, 2 portal journeys, an axe
+  accessibility scan (including the mobile drawer), 3 navigation/bell journeys,
+  map/reflow and reduced-motion checks, and a merge/revert journey; plus a tagged
+  5,000-case performance test.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
 - API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
-  reports no vulnerabilities. Stage 8 local gates pass (50 integration tests, 6 seeded
+  reports no vulnerabilities. Stage 8 local gates passed (50 integration tests, 6 seeded
+  browser tests); Stage 9 Phase 1/3/4 local gates pass (55 integration tests, 12 seeded
   browser tests). CI is green on Stage 7 (`4abd2f3`) and Stage 8 (`5666cad`).
 
 ## 14. Documentation corrections applied
@@ -289,4 +292,4 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
 7. ~~Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.~~ Done in
    Stage 7; observe CI green on a pushed commit.
 8. ~~Optional public complainant portal.~~ Done in Stage 8; institution representative
-   accounts remain deferred.
+   accounts are planned for Stage 9 Phase 2.

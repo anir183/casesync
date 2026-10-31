@@ -1,9 +1,11 @@
 # CaseSync - UI/UX Design Plan
 
-Status: active design reference. Stage 9 Phases 1 and 4 are implemented on the existing
-screens: reversible overlap auto-merge, merge score/group/revert controls, theme tokens,
-shared primitives, chart-first dashboard/reports, and the local GIS map. Stage 9
-navigation/notification/representative targets remain planned. Location:
+Status: active design reference. Stage 9 Phases 1 and 4 and the Phase 3 navigation
+refresh are implemented on the existing screens: reversible overlap auto-merge, merge
+score/group/revert controls, theme tokens, shared primitives, chart-first
+dashboard/reports, primary/More navigation with a notification bell and mobile drawer,
+and the Leaflet/OpenStreetMap map. Representative and remaining flow targets remain
+planned. Location:
 `docs/product/ui-ux-design-plan.md`.
 
 The implemented shell has login, scoped dashboard, case registry and detail, case
@@ -12,9 +14,10 @@ and detail with filters/pagination and manual link/unlink, reports, notification
 admin user/organization/SLA/audit/verification screens, the public complainant portal,
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
-**Stage 9 status:** Phase 1 auto-merge and Phase 4 visual redesign, chart-first
-dashboard/reports, and the local GIS region map are implemented. Baseline navigation/flow
-refresh, notification bell, and representative shell remain planned. The decision-complete
+**Stage 9 status:** Phase 1 auto-merge, Phase 4 visual redesign/chart-first
+dashboard/reports/Leaflet map, and the Phase 3 navigation refresh (primary/More,
+notification bell, mobile drawer) are implemented. Representative shell and the remaining
+Phase 3 flows remain planned. The decision-complete
 plan is [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
@@ -89,8 +92,10 @@ Use CSS variables for theming.
   empty-state, and local SVG chart primitives.
 - Status never relies on colour alone; focus rings stay visible; respect
   `prefers-reduced-motion`.
-- Charts and the GIS map use local primitives and a bundled India outline. No chart or
-  map service, external tile provider, or runtime geo API is added.
+- Charts use local SVG primitives. The GIS map uses Leaflet with OpenStreetMap tiles by
+  default, lazy-loaded and configurable through `VITE_MAP_TILE_URL`; region chips and a
+  table keep it usable when tiles are unavailable. No chart service or runtime geo API is
+  added.
 - Lazy-load chart/map routes and keep the main bundle within a documented budget.
 
 ## Layout
@@ -138,8 +143,8 @@ No staff/admin links and no internal case tabs.
 | **Overlaps (Review Queue)** | Priority queue | Review queue with Awaiting review, Auto-merged, Manually merged, Reverted, and Dismissed tabs; institution, both cases, bureaus, score/assessment summary |
 | **Overlap Compare View** | Side-by-side review | Two panels (Case A/B), evidence panel (same institution, different bureaus), Jev assessment, score breakdown, merge/revert controls, and mandatory reasons. |
 | **Merge Group** | Reversible merge detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral “not a duplicate determination” notice; no other complainant's PII |
-| **Reports** | Analytics | Implemented chart-first with table drill-down, current-filter CSV export, ageing/overlap charts, and a local GIS region bubble map. Filterable by date/bureau/region/status/category; scoped to role |
-| **Notifications** | Alerts | List with read/unread, type filter, link to canonical destination. Stage 9 plans a persistent bell with unread count and five-item preview. |
+| **Reports** | Analytics | Implemented chart-first with table drill-down, current-filter CSV export, ageing/overlap charts, and a lazy-loaded Leaflet/OpenStreetMap region bubble map. Filterable by date/bureau/region/status/category; scoped to role |
+| **Notifications** | Alerts | List with read/unread, type filter, and canonical links. A persistent bell with unread count and a five-item preview is implemented in both staff and portal shells. |
 | **Case Registration** | Create a case | Single form (institution resolution, bureau, category, received date, description, next action). Duplicate-institution warning before submit |
 | **Institutions (Registry)** | Manage institutions | Search by name/AICTE ID/region; create/edit/verify (role-gated); duplicate warning; row → profile |
 | **Admin — Users** | Staff management | Invite/create, role/bureau/region assign, deactivate/reactivate; no public sign-up |
@@ -154,7 +159,7 @@ No staff/admin links and no internal case tabs.
 | **Portal Notifications** | Complainant updates | Public deep links only, no internal references |
 | **Representative Signup (planned Stage 9)** | Institution access request | Institution selection, role, optional evidence; email-domain suggestion is labelled “suggested, not verified” |
 | **Representative Shell (planned Stage 9)** | Institution queue | Dashboard, scoped cases, public thread/documents, public reply/evidence only, notifications, profile; pending/rejected/revoked landing states |
-| **GIS Region Map (Phase 4)** | Regional overview | Region bubbles over a bundled local India outline; tooltip, keyboard focus, live text summary, table fallback; no external tiles |
+| **GIS Region Map (Phase 4)** | Regional overview | Leaflet region bubbles over OpenStreetMap tiles; tooltip, keyboard region chips, live text summary, table fallback; tile URL configurable |
 | **Admin — Institution Domains (planned Stage 9)** | Email allowlist | Add/verify/activate domains; suggestion-only explanation |
 | **Admin — Representatives (planned Stage 9)** | Access approvals | Pending/approved/rejected/revoked queue; approve/reject/revoke with reason |
 
@@ -263,9 +268,9 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 - `EmptyState` - helpful message + action
 - `ConfirmDialog` - for destructive/important actions (transfer/dispose/confirm/revert)
 - `ThemeToggle` - light/dark/system
-- Implemented Phase 4: `Card`, `StatCard`, chart primitives, region map, theme toggle,
-  skeleton, empty state, and responsive table primitives. `NotificationBell` and
-  `MergeBanner` remain planned.
+- Implemented Stage 9: `Card`, `StatCard`, chart primitives, Leaflet region map, theme
+  toggle, skeleton, empty state, responsive table primitives, `NotificationBell`, and
+  `MergeBanner`.
 
 ## UX Rules
 - **One action path** - Don't put "view case" in 5 places; use row click + canonical link
@@ -305,11 +310,13 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 
 ### Stage 9 planned implementation order
 
-1. Primary/More navigation, notification bell, role landings, and case-tab consolidation.
-2. Merge queue/detail/group controls and neutral banner.
-3. Representative shell plus admin representative/domain screens.
-4. Design tokens/primitives, chart-first dashboard/reports, and the local GIS map.
-5. Accessibility re-scan, keyboard/zoom/reduced-motion checks, and bundle budget.
+1. Primary/More navigation and notification bell (done); role landing refinements and
+   case-tab consolidation remain.
+2. Merge queue/detail/group controls and neutral banner (done).
+3. Representative shell plus admin representative/domain screens (planned).
+4. Design tokens/primitives, chart-first dashboard/reports, and the Leaflet map (done).
+5. Accessibility re-scan, keyboard/zoom/reduced-motion checks, and bundle budget
+   (automated checks done; manual pass and chunk warning remain).
 
 ## DoD
 - [ ] Dark/light mode works, no flash of wrong theme

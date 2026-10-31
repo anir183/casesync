@@ -18,13 +18,15 @@ checks, and admin verification review. Local lint, typechecks, unit tests, build
 Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
 performance suite runs locally, not in CI. The pushed CI run is green on `5666cad`.**
 
-**Stage 9 is planned, not implemented.** It covers baseline/tooling fixes, reversible
-high-confidence overlap auto-merge, institution representative accounts, a navigation and
-user-flow refresh, a visual redesign with dashboard/report charts and a local GIS region
-map, hardening, and documentation polish. Deployment remains out of scope. See
+**Stage 9 is in progress: Phase 1 (reversible exact-institution overlap auto-merge),
+Phase 4 (visual redesign, chart-first dashboard/reports, lazy-loaded Leaflet/OpenStreetMap
+GIS map), and the Phase 3 navigation refresh (primary links + More, notification bell,
+mobile drawer) are implemented. Phases 0 (baseline/tooling), 2 (institution
+representatives), the remaining Phase 3 flows, 5 (hardening), and 6 (polish) remain
+planned.** Deployment remains out of scope. See
 [`plans/next-phase-plan.md`](plans/next-phase-plan.md).
 
-Last verified: 2026-10-30.
+Last verified: 2026-10-31.
 
 | Area | State |
 |---|---|
@@ -37,7 +39,7 @@ Last verified: 2026-10-30.
 | Stage 6 — admin, attachments, audit | Complete |
 | Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
 | Stage 8 — public portal | Complete; CI green on `5666cad` |
-| Stage 9 — next phase | **Partial**; reversible exact-institution auto-merge and local GIS/UI refresh implemented; representatives, baseline fixes, and hardening remain planned |
+| Stage 9 — next phase | **Partial**; reversible exact-institution auto-merge, navigation refresh, and Leaflet/OpenStreetMap GIS/UI refresh implemented; representatives, remaining Phase 3 flows, baseline fixes, and hardening remain planned |
 
 ### Working
 
@@ -84,9 +86,11 @@ Last verified: 2026-10-30.
   deduped scoped notifications, and shared dashboard/report overdue metrics.
 - Search input is bounded and regex-escaped; abuse-prone auth/search/assessment/upload
   routes are rate-limited with `429`/retry metadata.
-- **71 API unit tests, 10 web component/URL tests, 50 opt-in database integration tests,
-  3 staff smoke journeys, 2 portal journeys, 1 accessibility scan, and 1 stress-data
-  performance test.** Jev is always mocked and a fetch guard blocks real Jev calls.
+- **85 API unit tests, 25 web component/URL tests, 55 opt-in database integration tests,
+  12 seeded Playwright tests (3 staff smoke journeys, 2 portal journeys, 1 accessibility
+  scan including the mobile drawer, 3 navigation/bell journeys, 2 map/reflow/reduced-motion
+  journeys, and 1 merge/revert journey), and 1 stress-data performance test.** Jev is
+  always mocked and a fetch guard blocks real Jev calls.
 - CI workflow covers lint/typecheck, unit/component, Mongo-backed integration/coverage,
   builds, seeded browser smoke/portal/accessibility, and dependency audit.
 
@@ -109,24 +113,47 @@ Last verified: 2026-10-30.
   isolation, public/internal messages and attachment visibility, accept/reopen.
 - `apps/web/e2e/portal.spec.ts`: complainant filing/conversation/tracking, admin
   acknowledge/request-information/resolve, and closure acceptance.
-- Local Stage 8 gate: all 50 integration tests pass, all 6 seeded browser tests pass
-  (including the portal journey and axe scan), and API coverage is 87.1% lines /
-  89.6% functions.
+- Local Stage 8 gate at the time: all 50 integration tests passed, all 6 seeded browser
+  tests passed (including the portal journey and axe scan), and API coverage was 87.1%
+  lines / 89.6% functions.
 - Pushed CI run `5666cad` is green across static checks, unit/component, integration and
   coverage, builds, seeded browser smoke, and dependency audit.
 - Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
 
+### Stage 9 evidence (Phases 1, 3 navigation, and 4)
+
+- Phase 1 auto-merge: `packages/utils/src/overlap-scoring.ts` and
+  `apps/api/src/modules/overlaps/overlap.scoring.ts` score exact-institution,
+  cross-bureau, non-disposed pairs; combined `0.85`, text `0.75`, hard JEV veto.
+- Flat `case_merge_groups` with one canonical case and an immutable member snapshot;
+  member complaints and their history are never rewritten.
+- Merge/revert/suppression-clear APIs require reasons and write append-only audit
+  actions; revert returns the pair to manual review and suppresses re-merge.
+- UI: auto-merged/needs-review/reverted queues, score breakdown, merge-group page,
+  neutral case banner, and revert control.
+- Phase 4: design tokens/theme, shared primitives, chart-first dashboard/reports, and a
+  lazy-loaded Leaflet/OpenStreetMap map with region bubbles, keyboard region chips, and a
+  table fallback.
+- Phase 3 navigation: role-filtered primary links plus a More/Admin overflow, notification
+  bell with a five-item preview, account menu, and mobile drawer on both staff and portal
+  shells.
+- Local gates on 2026-10-31: 85 API unit + 25 web component/URL tests, 55 DB-backed
+  integration tests, 12 seeded Playwright tests, and 87.4% lines / 89.7% functions of
+  API coverage.
+
 ### Remaining non-blocking gaps
 
-Stage 9 is the planned closure path for the product gaps:
+Stage 9 is the closure path for the remaining product gaps:
 
 - Institution representative accounts are planned, not deferred: a separate external
   role, institution-side scoping, an approval model, and an email-domain allowlist.
 - Reversible high-confidence auto-merge is implemented only for exact-institution pairs
   that pass the confidence/text gates and have no JEV veto; Stage 3's human-review
   workflow remains the default for every other pair.
-- The navigation, dashboard, reports, and case-detail surfaces are due for the Stage 9
-  flow/visual refresh, including charts and a local GIS region map.
+- The dashboard, reports, and case detail carry the Phase 4 visual refresh, chart-first
+  views, and Leaflet/OpenStreetMap map. The navigation refresh (primary links + More,
+  notification bell, mobile drawer) is implemented; role-specific landing refinements,
+  consolidated case tabs, and the complaint-resolution loop from Phase 3 remain pending.
 - Baseline debt remains: `actions/checkout@v4` Node 20 deprecation, `ubuntu-latest`
   migration, Bun version skew, Zod/Rollup and chunk-size warnings, API unused-symbol
   checks, and web typechecking that excludes tests/e2e.

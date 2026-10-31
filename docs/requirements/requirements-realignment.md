@@ -1,7 +1,7 @@
 # CaseSync — Requirements Realignment Audit
 
 Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
-Audit date: 2026-10-28. Last verified: 2026-10-29.
+Audit date: 2026-10-28. Last verified: 2026-10-31 (Stage 9 Phase 1, Phase 3 navigation, and Phase 4 verified).
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
 separately as an **optional Stage 8 extension**, now implemented but still outside MVP
@@ -16,7 +16,9 @@ security, accessibility, performance, stress-seed, and runbook gates; Stage 8 ad
 external intake surface with separate ownership and public-projection controls.
 
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
-(`5666cad`)**.
+(`5666cad`); Stage 9 is partial — Phase 1 reversible auto-merge, the Phase 3 navigation
+refresh, and Phase 4 UI/charts/GIS are implemented, while Phase 0, Phase 2, the remaining
+Phase 3 flows, and Phases 5–6 remain planned.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -33,7 +35,7 @@ Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI 
 - Stage 4 is implemented and verified: scoped dashboard, region/bureau/institution
   reporting, quarterly grouping, CSV exports, shared disposal/reopened metrics,
   notification pagination, deterministic demo seed/reset, and reconciliation tests.
-  71 API unit tests, 10 web component/URL tests, and 50 DB-backed integration tests are
+  85 API unit tests, 25 web component/URL tests, and 55 DB-backed integration tests are
   present; tests cannot call real Jev.
 - Stage 5 is implemented and verified: admin SLA rules, automatic/manual deadlines,
   daily pending/approaching/overdue scans, scoped dedupe, job run history, minimal SLA
@@ -47,7 +49,7 @@ Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI 
 - Stage 8 is implemented: public complainant signup/login, exact-AICTE verification with
   document-review approval, filing/tracking, public/internal conversation and documents,
   ownership checks, portal rate limits, staff complaint workflow, and admin verification
-  queue. Institution representative accounts are deferred.
+  queue. Institution representative accounts are planned for Stage 9 Phase 2.
 - Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
@@ -304,7 +306,8 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Tests after Stage 8: 71 API unit tests + 10 web tests + 50 DB-backed integration tests.
+- Current tests (2026-10-31): 85 API unit tests + 25 web tests + 55 DB-backed integration
+  tests + 12 seeded Playwright tests.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
 - Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Stage 7 added
   rate limits, component/E2E/accessibility/performance gates, CI, stress seed, and runbook.
@@ -415,7 +418,7 @@ Still open from Stage 3:
 17. Advanced analytics/trends/export PDF.
 18. Fuzzy matching at scale (Atlas Search/indexed blocking).
 19. ~~Public complainant portal extension (see §17).~~ Done in Stage 8; institution
-    representative accounts remain deferred.
+    representative accounts are planned for Stage 9 Phase 2.
 
 ## 17. Optional extension — public complainant portal
 
@@ -429,7 +432,8 @@ acceptance. It is a separate product surface, now implemented as Stage 8:
 - Public projection rules (no internal notes, findings, actor IDs, Jev raw data) — done.
 - Ownership/IDOR checks, generic public tracking, and portal rate limits — done.
 - Staff conversation/acknowledge/request-info/resolve and admin verification queue — done.
-- Institution representative accounts — deferred; separate role/scoping/approval model.
+- Institution representative accounts — planned for Stage 9 Phase 2; separate
+  role/scoping/approval model and suggestion-only email domains.
 - Separate integration, portal E2E, component, and accessibility coverage — added.
 
 The original target users are **authorized AICTE officials**, so the internal dashboard
@@ -489,4 +493,5 @@ The MVP is accepted only when all of these are true:
 8. **Auth**: keep Better Auth email/password; no SSO requirement for MVP.
 
 Still open: case-numbering ownership, automatic vs manual escalation, deployment
-target, anonymous complaints, reopen window/auto-close, institution representatives.
+target, anonymous complaints, reopen window/auto-close, and institution representatives
+(planned for Stage 9 Phase 2).

@@ -65,8 +65,8 @@ The internal dashboard remains the source of truth.
 | `/overlaps` | Coordination queue | Awaiting review, auto-merged, manually merged, reverted, and dismissed tabs; filters bureau, region, match type; confidence/merge score; age; pagination. |
 | `/overlaps/:id` | Compare & review | Side-by-side cases; institution; match evidence; Jev assessment; score breakdown, merge/revert controls, audit; legacy confirm/dismiss for unmerged pairs. |
 | `/merge-groups/:id` | Merge-group detail | Canonical case, member case numbers/statuses, merge/revert audit, neutral duplicate-determination notice. |
-| `/reports` | Reports | Date range, bureau, region, status, category filters; bureau/region/institution/status/ageing/disposal/overlap/monthly/quarterly; CSV export. Stage 9 plans chart-first views and a local GIS region map. |
-| `/notifications` | Notification centre | Unread/all, type filter, deep links, mark read/all; pagination. Stage 9 plans a persistent bell with a five-item preview. |
+| `/reports` | Reports | Date range, bureau, region, status, category filters; bureau/region/institution/status/ageing/disposal/overlap/monthly/quarterly; CSV export. Stage 9 Phase 4 implements chart-first views and a lazy-loaded Leaflet/OpenStreetMap region map. |
+| `/notifications` | Notification centre | Unread/all, type filter, deep links, mark read/all; pagination. Stage 9 Phase 3 adds a persistent bell with a five-item preview. |
 | `/admin/users` | User administration | Create/deactivate users; assign role, bureau, region; reset password/invite. |
 | `/admin/organization` | Org configuration | Bureaus, regions, categories. |
 | `/admin/sla` | SLA rules | Defaults + bureau/category/region overrides; reminder offsets; active flag. |
@@ -95,7 +95,7 @@ The Stage 8 complainant portal is implemented at `/portal` and related routes
 `/portal/complaints/new`, `/portal/complaints/:id`, `/portal/notifications`,
 `/portal/track`). These are not part of MVP acceptance.
 
-Stage 9 plans a separate representative shell at `/institution` with dashboard, scoped
+Stage 9 Phase 2 plans a separate representative shell at `/institution` with dashboard, scoped
 cases, notifications, profile, and a public response/evidence-only case view. It remains
 outside MVP acceptance.
 
@@ -128,7 +128,7 @@ outside MVP acceptance.
 | New `case_merge_groups`: `canonicalCaseId`, `memberCaseIds`, `snapshot`, `status`, merge/revert actor and reason | Flat, reversible merge group without rewriting member complaints. |
 | `user.institutionId` + representative approval fields | Institution-scoped representative access. |
 | New `institution_email_domains`: domain, institution ID, verified, added-by/at | Admin-managed signup suggestions; never auto-verification. |
-| `regions` additions: `latitude`, `longitude` (optional institution coordinates) | GIS region bubbles over a local outline. |
+| `regions` additions: `latitude`, `longitude` (optional institution coordinates) | Region bubbles on the Leaflet/OpenStreetMap map. |
 
 ### States
 
@@ -228,7 +228,7 @@ layout.
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
-| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
 
 ### Current position (honest)
 
@@ -243,8 +243,8 @@ layout.
   relationship is always created for same-institution cross-bureau pairs, Jev only
   enriches, re-assessment runs on create/assign/transfer/institution change, review
   notifications are scoped and deduped, the queue is filtered/paginated, and manual
-  link/unlink is available. API and web typecheck; 71 API unit tests, 10 web tests, and
-  50 DB-backed integration tests pass; integration tests cannot call real Jev.
+  link/unlink is available. API and web typecheck; 85 API unit tests, 25 web tests, and
+  55 DB-backed integration tests pass; integration tests cannot call real Jev.
 - Stage 4 implementation is complete: scoped dashboard/search/reports, region names and
   filters, quarterly grouping, CSV exports, shared disposal/reopened metrics, inclusive
   UTC bounds, notification pagination, deterministic demo seed/reset, and reconciliation
@@ -259,11 +259,12 @@ layout.
   required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
-- Stage 9 is planned, not implemented: baseline/tooling fixes, reversible high-confidence
-  overlap auto-merge, institution representatives and email-domain suggestion, navigation
-  and user-flow refresh, visual redesign with charts and a local GIS region map,
-  production hardening, and documentation polish. See
-  [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
+- Stage 9 is partial: Phase 1 (reversible exact-institution overlap auto-merge), the
+  Phase 3 navigation refresh, and Phase 4 (visual redesign, chart-first
+  dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Baseline/tooling fixes,
+  institution representatives and email-domain suggestion, the remaining Phase 3 flows,
+  production hardening, and documentation polish remain planned. See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is
+  out of scope.
 
 ## 6. Stage details and expectations
 
@@ -330,7 +331,7 @@ officials without cross-bureau data leakage.
 **Current gaps:** none blocking the internal MVP; manual screen-reader/mobile checks and
 hosting remain operational follow-ups. Bureau/region/category CRUD, admin `audit_log`,
 and admin users/organization web screens are delivered in Stage 6. The backend is
-verified by 50 DB-backed integration tests covering signup blocking, scoping,
+verified by 55 DB-backed integration tests covering signup blocking, scoping,
 IDOR, dashboard totals, admin guards, deactivation/session revocation, institution
 writes, case registration scope, pagination, duplicate checks, officer directory, the
 full lifecycle audit trail, Stage 3 overlap correctness/coordination, and Stage 6
@@ -418,7 +419,8 @@ coordinate it.
 - `overlap.scan.ts` for periodic sweeps (still pending).
 - Relationship creation policy module with tests.
 - Tests: enabled/disabled/failure/timeout; exact heading; human review by default;
-  re-assessment after transfer. Stage 9 will add the bounded auto-merge exception.
+  re-assessment after transfer. Stage 9 Phase 1 adds the bounded, reversible auto-merge
+  exception.
 
 **Exit criteria**
 - With `JEV_ENABLED=false`, two seeded same-institution cross-bureau cases produce
@@ -480,7 +482,7 @@ confirm, dismiss, manually link, or unlink with notes and append-only audit acti
 **Contribution:** converts operational data into oversight and data-driven
 decision-making, one of the stated outcomes.
 
-**Current gaps:** no blocking gaps; Stage 7 stress-data performance budgets cover the documented page budget, and SLA-driven overdue is implemented in Stage 5. Stage 9 plans chart-first reports and a local GIS region map.
+**Current gaps:** no blocking gaps; Stage 7 stress-data performance budgets cover the documented page budget, and SLA-driven overdue is implemented in Stage 5. Stage 9 Phase 4 implements chart-first reports and a Leaflet/OpenStreetMap region map.
 
 ---
 
@@ -616,23 +618,23 @@ edit DB" from operations.
 
 ---
 
-### Stage 9 — Next phase (planned, not implemented)
+### Stage 9 — Next phase (partial — Phases 1, 3 navigation, and 4 implemented)
 
 **Goal:** close the remaining product, usability, and operational gaps without reopening
 Stages 0–8. The decision-complete plan is
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
-**Planned phases**
+**Phases**
 
-| Phase | Scope |
-|---|---|
-| 0 | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
-| 1 | Reversible auto-merge for exact-institution high-confidence pairs; explainable score, flat merge group, revert/suppression, audit, queue/detail UI, neutral banner. |
-| 2 | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
-| 3 | Information architecture: primary links + More, persistent notification bell, role landings, consolidated case tabs, explicit resolution loop. |
-| 4 | Visual redesign with local SVG charts, chart-first dashboard/reports, region coordinates, `/reports/geo`, bundled India outline, accessible table fallback. |
-| 5 | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. |
-| 6 | Documentation/ADR/polish pass and final QA matrix without a deployment step. |
+| Phase | Status | Scope |
+|---|---|---|
+| 0 | Planned | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
+| 1 | **Implemented** | Reversible auto-merge for exact-institution high-confidence pairs; explainable score, flat merge group, revert/suppression, audit, queue/detail UI, neutral banner. |
+| 2 | Planned | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
+| 3 | **Partial** | Navigation refresh implemented: primary links + More, persistent notification bell, account menu, mobile drawer. Role landing refinements, consolidated case tabs, and the explicit resolution loop remain planned. |
+| 4 | **Implemented** | Visual redesign with local SVG charts, chart-first dashboard/reports, region coordinates, `/reports/geo`, lazy-loaded Leaflet/OpenStreetMap map, region chips, accessible table fallback. |
+| 5 | Planned | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. |
+| 6 | Planned | Documentation/ADR/polish pass and final QA matrix without a deployment step. |
 
 **Planned contracts**
 
@@ -645,12 +647,15 @@ Stages 0–8. The decision-complete plan is
   member complaints are never rewritten.
 - Representative access comes from the authenticated user and public projections only;
   domain suggestions never verify or grant access.
-- GIS is region-bubble over a bundled local outline; no external tile or geo service.
+- GIS is a region-bubble Leaflet map over OpenStreetMap tiles by default; the tile URL is
+  configurable with `VITE_MAP_TILE_URL`, the map is lazy-loaded, and region chips plus a
+  data table keep the view usable when tiles are unavailable.
 - Deployment remains out of scope.
 
 **Exit criteria:** every Phase 0–6 gate and the Stage 9 definition of done in
-[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. This section stays
-**planned** until then.
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. Phases 1 and 4
+and the Phase 3 navigation refresh are implemented; this section stays **partial** until
+every gate passes.
 
 ## 7. Definition of Done (applies to every stage)
 
@@ -693,13 +698,14 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 1 auto-merge and Phase 4 UI/GIS done; baseline, representatives, hardening, docs remain)
+Stage 9 (partial — Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; baseline, representatives, remaining flows, hardening, docs remain)
 ```
 
 Parallelizable in Stage 9:
 - Phase 1 (auto-merge) and Phase 2 (representatives/domains) can run in parallel after
   Phase 0.
-- Phase 3 needs the Phase 2 role model and routes.
+- The remaining Phase 3 role flows need the Phase 2 role model and routes; the
+  navigation refresh is already done.
 - Phase 4 needs the Phase 3 navigation and screen inventory.
 - Phases 5–6 run continuously and close the stage.
 

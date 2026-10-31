@@ -1,24 +1,26 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-10-30  
-**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 50 DB-backed integration tests, API coverage (87.1% lines / 89.6% functions), and 6 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phases 1 and 4 implemented; manual screen-reader sign-off pending. Phases 0 and 2–3/5–6 remain planned. See `docs/plans/next-phase-plan.md`.
+**Last verified:** 2026-10-31  
+**Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
+**Stage 9:** Phases 1 and 4 and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phases 0, 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
 
 > **Verification note.** API and web typechecks pass; Biome is clean. The API suite has
-> 80 unit tests and 55 DB-backed integration tests; web has 15 component/URL tests. The
-> Stage 9 Phase 1 browser journey covers merge-group visibility and revert. Coverage
-> figures below predate Phase 1 and will be refreshed in the Phase 0 truth pass.
+> 85 unit tests and 55 DB-backed integration tests; web has 25 component/URL tests. The
+> Stage 9 Phase 1 browser journey covers merge-group visibility and revert; navigation,
+> bell, accessibility, map, and portal journeys cover the refreshed shells. Coverage is
+> measured at 87.4% lines / 89.7% functions across the full API suite.
 > Stage 8 adds 5 integration tests covering auto/document verification, complaint
 > lifecycle, public projections, ownership isolation, and reopen. Stage 9 Phase 4 adds
 > geo aggregation/scope tests, chart/theme/map component tests, and map
 > keyboard/mobile/reduced-motion browser checks. `bun run verify` covers lint, typecheck,
 > unit tests, and build; DB-backed integration, coverage, seeded E2E, and performance run
-> in CI or with a local MongoDB; the tagged performance suite is local only. All eight
+> in CI or with a local MongoDB; the tagged performance suite is local only. All twelve
 > seeded Playwright tests pass locally (three staff smoke journeys, two portal journeys,
-> accessibility, map/reflow, and reduced-motion).
+> accessibility including the mobile drawer, three navigation/bell journeys, map/reflow,
+> reduced-motion, and merge/revert).
 > Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
 
 ## Rules
@@ -214,7 +216,8 @@ rejects unsupported/empty/oversized files, and admin changes are audited.
 - [x] Playwright E2E critical journeys (seeded smoke: sign-in/filter/timeline, viewer
       scope/IDOR, overlap queue/reports)
 - [x] Security checklist + IDOR/regex/upload/search-bound/rate-limit tests
-- [x] Accessibility audit (axe WCAG A/AA on nine core pages; no serious/critical)
+- [x] Accessibility audit (axe WCAG A/AA on staff core pages, portal pages, and the
+      mobile drawer; no serious/critical)
 - [x] Performance budgets/pagination load test on 5,000 stress cases
 - [x] CI: lint, typecheck, unit, integration, build, E2E smoke, coverage, audit
 - [x] `seed:stress` script (demo seed/reset delivered in Stage 4)
@@ -248,15 +251,16 @@ not needed to prove the complainant flow and are now planned for Stage 9 with a 
 external role, institution-side scoping, an approval model, and an email-domain allowlist.
 The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PARTIAL — Phases 1 and 4 implemented)
+## Stage 9 — Next phase (PARTIAL — Phases 1, Phase 3 navigation, and 4 implemented)
 
-Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `planned`). Locked
+Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
+Phases 1 and 4 plus the Phase 3 navigation refresh implemented). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
 that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
 review and suppresses automatic re-merge; the merge group is flat with one canonical case;
 the merge banner is neutral; representatives may post public responses/evidence only; GIS
-uses local region bubbles over a bundled India outline with no external tile/geo service;
-email-domain matching is suggestion-only; deployment is out of scope.
+uses a lazy-loaded Leaflet map with OpenStreetMap tiles by default and a configurable
+`VITE_MAP_TILE_URL`; email-domain matching is suggestion-only; deployment is out of scope.
 
 ### Phase 0 — Baseline fixes and audit
 
@@ -302,14 +306,14 @@ email-domain matching is suggestion-only; deployment is out of scope.
 
 ### Phase 3 — Information architecture and user flows
 
-- [ ] Replace the flat 11-link navbar with primary links + “More”.
-- [ ] Add notification bell/unread preview + “View all” → `/notifications` on staff and
+- [x] Replace the flat 11-link navbar with primary links + “More”.
+- [x] Add notification bell/unread preview + “View all” → `/notifications` on staff and
       portal shells.
 - [ ] Consolidate tabs and move secondary actions into overflow menus.
 - [ ] Define role-specific landing pages and empty states.
 - [ ] Make the authority ↔ complainant loop explicit (request, respond, acknowledge,
       escalate, resolve, reopen, close) with next-action ownership and SLA context.
-- [ ] Mobile navigation parity and keyboard checks.
+- [x] Mobile navigation parity and keyboard checks.
 
 ### Phase 4 — Visual redesign, dashboard/reports, and GIS
 
@@ -317,9 +321,10 @@ email-domain matching is suggestion-only; deployment is out of scope.
 - [x] Chart-first dashboard (KPI trends, status donut, volume trend, category bars, SLA
       gauge, recent activity, map preview) that reconciles with the API.
 - [x] Chart-first reports with table drill-down and current-filter export.
-- [x] Add region coordinates, `/reports/geo`, a bundled local India outline, region
-      bubbles, tooltip, keyboard focus, and table fallback.
-- [x] Lazy-load charts/map; keep the main bundle under budget.
+- [x] Add region coordinates, `/reports/geo`, a lazy-loaded Leaflet/OpenStreetMap map,
+      region bubbles, tooltip, keyboard region chips, and table fallback.
+- [x] Lazy-load charts/map.
+- [ ] Keep the main bundle under 500 kB (currently ~928 kB, tracked as Phase 0 debt).
 - [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
 - [ ] Manual screen-reader pass and 200% zoom review.
 
@@ -363,10 +368,14 @@ email-domain matching is suggestion-only; deployment is out of scope.
 - [x] Stage 8 CI green on clean checkout
   - CI run `5666cad` is green (2026-10-30): static checks, unit/component, integration
     and coverage, builds, seeded browser smoke, and dependency audit.
-  - Local Stage 8 gates pass: 50 integration tests, 6 seeded browser tests, API coverage
-    87.1% lines / 89.6% functions.
-- [ ] Stage 9: merge threshold/veto/idempotency/revert/audit tests.
+  - Local Stage 8 gates at the time: 50 integration tests, 6 seeded browser tests, API
+    coverage 87.1% lines / 89.6% functions.
+  - Local Stage 9 gates on 2026-10-31: 85 API unit + 25 web tests, 55 integration tests,
+    12 seeded browser tests, coverage 87.4% lines / 89.7% functions.
+- [x] Stage 9: merge threshold/veto/idempotency/revert/audit tests.
 - [ ] Stage 9: representative institution isolation and denied-action tests.
 - [ ] Stage 9: domain suggestion-only tests and admin allowlist tests.
-- [ ] Stage 9: dashboard/report/map reconciliation, accessible fallback, and bundle gate.
-- [ ] Stage 9: merge/revert and representative E2E journeys.
+- [x] Stage 9: dashboard/report/map reconciliation and accessible fallback.
+- [ ] Stage 9: bundle gate (current build still warns above 500 kB).
+- [x] Stage 9: merge/revert E2E journey.
+- [ ] Stage 9: representative E2E journey.

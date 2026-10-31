@@ -23,15 +23,16 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-10-30)
+## 2. Current test baseline (verified 2026-10-31)
 
-- **74 API unit tests across 18 files** plus **15 web component/URL tests across 6
+- **85 API unit tests across 20 files** plus **25 web component/URL tests across 8
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
   geo aggregation, state machine, scope/permission, dates, CSV, metrics, demo fixtures,
-  report export, case filters, SLA timezone/rule/alert boundaries, rate limiting,
-  pagination, confirmation dialogs, attachment permissions, URL filters, chart math,
-  theme persistence, and regional-map keyboard/fallback behavior.
-- **51 database-backed integration tests** in `apps/api/tests/integration/` covering
+  report export, case filters, SLA timezone/rule/alert boundaries, rate limiting, CORS
+  origin parsing, pagination, confirmation dialogs, attachment permissions, URL filters,
+  chart math, theme persistence, navigation filtering, notification bell behavior, and
+  regional-map/chip/table fallback behavior.
+- **55 database-backed integration tests** in `apps/api/tests/integration/` covering
   signup blocking, bureau/region scoping, IDOR 404s, dashboard totals, admin user guards,
   deactivation/session revocation, institution writes/merge, case-registration scope,
   pagination contracts, duplicate checks, officer-directory scoping, auto numbering,
@@ -42,16 +43,17 @@ exit criteria.
   Phase 4 geo scope/date/reconciliation behavior. They are
   opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service, while local
   runs use run-scoped records in the configured dev database.
-- **8 seeded Playwright browser tests**: three staff smoke journeys (officer case
+- **12 seeded Playwright browser tests**: three staff smoke journeys (officer case
   search/timeline, viewer scope/IDOR, overlap queue/reports), two portal journeys
   (file/converse/track/resolve/accept, invalid tracking), an axe serious/critical
-  accessibility scan of staff, portal, and verification pages, plus Stage 9 Phase 4 map
-  keyboard/mobile-reflow and reduced-motion checks.
+  accessibility scan of staff, portal, and verification pages plus the mobile drawer,
+  three navigation journeys (one-row widths, mobile drawer, bell preview), Stage 9 Phase 4
+  map keyboard/mobile-reflow and reduced-motion checks, and a merge-group revert journey.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
-- **Coverage gate**: 87.1% lines and 89.6% functions from the full API suite; CI floor is
-  85% lines/functions.
+- **Coverage gate**: 87.4% lines and 89.7% functions from the full API suite (140 tests
+  incl. integration); CI floor is 85% lines/functions.
 - **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks, unit/component
   tests, Mongo-backed integration/coverage, builds, seeded E2E/accessibility, and a
   high-severity dependency audit.
@@ -259,9 +261,10 @@ grows. Do not duplicate full integration coverage; test UI behavior and error ha
 
 ## 7. E2E plan (Playwright)
 
-Implemented now: three seeded smoke journeys plus the accessibility scan above, run
-against production builds on API port 3100 and web port 4173. The performance test is
-tagged and run separately with the stress seed.
+Implemented now: 12 seeded journeys (staff smoke, portal, navigation/bell, accessibility
+including the mobile drawer, map/reflow, reduced motion, and merge/revert), run against
+production builds on API port 3100 and web port 4173. The performance test is tagged and
+run separately with the stress seed.
 
 ### Remaining full journeys
 
@@ -386,7 +389,7 @@ CI must never rewrite files. Keep `check` (write mode) for local use.
 ### Coverage thresholds
 
 The CI gate currently enforces **85% lines and 85% functions** for the API suite. The
-full suite is at 87.1% lines / 89.6% functions. Coverage is a floor, not a goal; a critical
+full suite is at 87.4% lines / 89.7% functions. Coverage is a floor, not a goal; a critical
 rule with no test blocks the stage even if coverage is high.
 
 ## 11. Manual QA checklist (per stage)

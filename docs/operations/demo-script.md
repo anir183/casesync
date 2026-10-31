@@ -129,7 +129,7 @@ All sections below are demoable; do not fake missing behaviour.
 5. At `/portal/track`, show case number + email tracking; wrong pairs return a generic
    404. Acknowledge/resolve as staff, then accept resolution as the complainant.
 6. Mention: ownership checks, public projections, unverified filing block, and portal
-   rate limits. Institution representative accounts are deferred.
+   rate limits. Institution representative accounts are planned for Stage 9 Phase 2.
 
 ## 3. Reset and repeatability
 

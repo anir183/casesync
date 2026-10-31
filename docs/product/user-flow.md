@@ -3,9 +3,10 @@
 Status: implemented design plus partial Stage 9 delivery. Internal-official MVP is the
 committed scope; the public complainant experience is an **optional Stage 8 extension**
 and remains outside MVP acceptance. Stage 9 Phase 4 is implemented: visual tokens,
-chart-first dashboard/reports, and the local GIS map. Baseline fixes, exact-institution
-reversible auto-merge, institution representatives, navigation/flow refresh, hardening,
-and docs remain planned. See
+chart-first dashboard/reports, and a lazy-loaded Leaflet/OpenStreetMap map. The Phase 3
+navigation refresh (primary links + More, notification bell, mobile drawer) is also
+implemented. Baseline fixes, exact-institution reversible auto-merge, institution
+representatives, the remaining Phase 3 flows, hardening, and docs remain planned. See
 `docs/plans/next-phase-plan.md` for the decision-complete plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
@@ -52,9 +53,10 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Notifications are scoped to the recipient; overlap alerts target involved
   bureaus/regions plus oversight roles.
 - Institution write endpoints are role-gated and region-bound, with duplicate warnings.
-- 71 API unit tests + 10 web component/URL tests + 50 opt-in DB-backed integration
-  tests, plus seeded staff smoke, portal E2E, accessibility, and stress-data performance
-  tests. Integration tests cannot call real Jev.
+- 85 API unit tests + 25 web component/URL tests + 55 opt-in DB-backed integration
+  tests, plus 12 seeded browser tests (staff smoke, portal E2E, accessibility, navigation,
+  map/reflow, reduced-motion, merge/revert) and stress-data performance. Integration tests
+  cannot call real Jev.
 
 ### Stage 8 delivery
 - `COMPLAINANT` role and public self-registration at `/portal/signup`.
@@ -403,8 +405,10 @@ Additional fields:
   institution scope and revocation invalidates sessions.
 - Representative lists/detail use the public projection only, always filtered by the
   authenticated user's institution. A tampered ID/institution returns 404.
-- `/reports/geo` returns region aggregates; the client renders bubbles over a bundled
-  outline. No external geo/tile call.
+- `/reports/geo` returns region aggregates; the client renders bubbles with Leaflet over
+  OpenStreetMap tiles, lazy-loaded behind a skeleton. The tile URL is configurable with
+  `VITE_MAP_TILE_URL`; region chips and the data table keep the view usable when tiles
+  are unavailable. No runtime geo API or API key is required.
 - `case_merge_groups` is read/detail only; all writes go through audited merge/revert
   services.
 
@@ -452,9 +456,12 @@ Expose:
 - Pagination/infinite scrolling for queues; case, institution, overlap, and notification
   registries use server-side pagination.
 - Implemented Phase 4: responsive chart-first dashboard/reports, chart/table parity, and
-  a keyboard-accessible region map with a bundled India outline.
-- Planned Stage 9: primary/More navigation, persistent notification bell, clear role
-  landings, and consolidated case tabs.
+  a keyboard-accessible Leaflet/OpenStreetMap region map with region chips and a table
+  fallback.
+- Implemented Phase 3 navigation: primary/More navigation, persistent notification bell,
+  account menu, and mobile drawer on staff and portal shells.
+- Planned Stage 9: role landing refinements, consolidated case tabs, and the explicit
+  complaint-resolution loop.
 
 ## 13. Delivery phases
 
@@ -502,10 +509,10 @@ Expose:
 - Phase 1: reversible exact-institution auto-merge, queue/detail/group controls, revert
   and suppression, audit.
 - Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
-- Phase 3: primary/More navigation, notification bell, role landings, case tabs,
-  resolution loop.
+- Phase 3 (partial): primary/More navigation, notification bell, and mobile drawer done;
+  role landing refinements, case tabs, and resolution loop remain.
 - Phase 4 (done): visual refresh, local SVG charts, region coordinates, `/reports/geo`,
-  bundled India outline, table fallback.
+  lazy-loaded Leaflet/OpenStreetMap map, region chips, table fallback.
 - Phase 5: CSP/headers, distributed rate-limit path, request IDs, readiness,
   idempotency, index/pagination audit, dependency/secret scanning.
 - Phase 6: docs/ADR/polish and final QA; no deployment step.
@@ -581,7 +588,7 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
    one bounded exception: exact-institution high-confidence pairs may auto-merge.
 5. **Region master**: seed the official AICTE regional offices (code/name/active);
    `regionId` references that master. Stage 9 adds required-on-seed coordinates for the
-   local GIS map.
+   Leaflet/OpenStreetMap region map.
 6. **"Pending"**: dashboard shows pending/unassigned, assigned-not-started, under
    process, and overdue separately; "pending" is not a single opaque bucket.
 7. **SLA defaults**: 30-day resolution; approaching-deadline reminders at 7, 3, and
@@ -592,8 +599,9 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 9. **Representatives**: separate planned `INSTITUTION_REPRESENTATIVE` role, admin
    approval/revocation, institution scope, public projection only; domain suggestions
    never verify or grant access.
-10. **Stage 9 GIS/charts**: local SVG primitives and bundled India outline, no external
-    tile/chart service.
+10. **Stage 9 GIS/charts**: local SVG chart primitives; the region map uses Leaflet with
+    OpenStreetMap tiles by default, a configurable `VITE_MAP_TILE_URL`, lazy loading, and
+    keyboard/table fallbacks. No chart service or runtime geo API is used.
 11. **Deployment**: still out of scope.
 
 ### Still open
