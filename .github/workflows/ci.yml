@@ -33,6 +33,7 @@ jobs:
       - run: bun run check:ci
       - run: bun run typecheck:api
       - run: bun run typecheck:web
+      - run: bun run typecheck:web:tests
 
   unit:
     name: Unit and component tests

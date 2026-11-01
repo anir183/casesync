@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { type APIResponse, expect, test } from '@playwright/test'
 import { signedInApi } from './helpers'
 
 interface PageResponse<T> {
@@ -8,7 +8,7 @@ interface PageResponse<T> {
   pageSize: number
 }
 
-async function timed(label: string, request: () => Promise<Response>) {
+async function timed(label: string, request: () => Promise<APIResponse>) {
   const started = performance.now()
   const response = await request()
   const duration = performance.now() - started
@@ -21,7 +21,7 @@ function median(values: number[]) {
   return [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]
 }
 
-async function measure(label: string, request: () => Promise<Response>) {
+async function measure(label: string, request: () => Promise<APIResponse>) {
   await request()
   const samples = [
     await timed(label, request),

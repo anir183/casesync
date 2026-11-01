@@ -1,10 +1,10 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { type Page, expect, test } from '@playwright/test'
 import { signIn } from './helpers'
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
-async function seriousViolations(page: Parameters<typeof AxeBuilder>[0]['page']) {
+async function seriousViolations(page: Page) {
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
   return results.violations
     .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
