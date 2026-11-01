@@ -1351,7 +1351,7 @@ export async function listOwnMessages(userId: string, caseId: string) {
 }
 
 export async function acceptResolution(userId: string, caseId: string) {
-  const user = await requireComplainantUser(userId)
+  await requireComplainantUser(userId)
   const item = await requireOwnedCase(userId, caseId)
   if (item.status !== CASE_STATUS.DISPOSED) {
     throw new AppError(
@@ -1439,7 +1439,7 @@ export async function reopenComplaint(userId: string, caseId: string, reason: st
 }
 
 export async function addComplainantAttachment(userId: string, caseId: string, file: File) {
-  const user = await requireComplainantUser(userId)
+  await requireComplainantUser(userId)
   const item = await requireOwnedCase(userId, caseId)
   if (item.status === CASE_STATUS.CLOSED) {
     throw new AppError(

@@ -12,7 +12,6 @@ import {
   ROLES,
 } from '@casesync/config'
 import { evaluateOverlapScore, normalizePairKey } from '@casesync/utils'
-import mongoose from 'mongoose'
 import { env } from '#/config/env'
 import { AUDIT_ACTION, AUDIT_ENTITY, recordAudit } from '#/lib/audit'
 import { AppError, HTTP_STATUS } from '#/lib/errors'

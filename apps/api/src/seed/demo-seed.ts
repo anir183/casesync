@@ -8,7 +8,6 @@ import {
   OVERLAP,
   OVERLAP_MERGE_STATUS,
   RELATIONSHIP_MATCH_TYPE,
-  RELATIONSHIP_REVIEW_STATUS,
   ROLES,
   VERIFICATION_METHOD,
   VERIFICATION_REQUEST_STATUS,
@@ -60,12 +59,6 @@ function addDays(value: Date, days: number) {
 
 function addHours(value: Date, hours: number) {
   return new Date(value.getTime() + hours * HOUR_MS)
-}
-
-function atHour(value: Date, hour: number) {
-  const date = new Date(value)
-  date.setUTCHours(hour, 0, 0, 0)
-  return date
 }
 
 async function seedInstitutions(
@@ -221,7 +214,6 @@ function buildCaseHistory(
   ]
   const assignments: HistoryAssignment[] = []
   const assignmentAt = addDays(receivedAt, 1)
-  const assignedActor = officerId ?? adminId
 
   if (demo.status === CASE_STATUS.TRANSFERRED) {
     const fromBureau = bureauId

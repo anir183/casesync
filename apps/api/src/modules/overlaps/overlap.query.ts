@@ -114,30 +114,9 @@ interface CaseLike {
   nextAction?: string
 }
 
-interface InstitutionLike {
-  _id: unknown
-  name: string
-  aictePermanentId?: string
-  regionId?: unknown
-}
-
 interface BureauLike {
   _id: unknown
   name: string
-}
-
-interface AssessmentLike {
-  _id: unknown
-  status: string
-  relationshipChoice?: string
-  coordinationReviewNoul?: number
-  confidence?: number
-  probabilities?: Record<string, number>
-  rationale?: string
-  modelVersion?: string
-  latencyMs?: number
-  errorMessage?: string
-  assessedAt?: Date
 }
 
 export async function buildOverlapDtos(relationships: RelationshipLike[]): Promise<OverlapDto[]> {
