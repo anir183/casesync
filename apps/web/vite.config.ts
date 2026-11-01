@@ -21,6 +21,20 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      // Zod 4.6.7 ships two comments that Rollup removes because their annotation
+      // position is invalid. There is no upstream fix yet; filter only those two
+      // files and re-check after a Zod or Rollup upgrade.
+      onwarn(warning, warn) {
+        const knownZodAnnotationFiles = ['zod/v4/core/util.js', 'zod/v4/core/regexes.js']
+        const id = warning.id?.replaceAll('\\', '/')
+        const isKnownZodAnnotation =
+          warning.code === 'INVALID_ANNOTATION' &&
+          id !== undefined &&
+          knownZodAnnotationFiles.some((file) => id.endsWith(file))
+
+        if (isKnownZodAnnotation) return
+        warn(warning)
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
