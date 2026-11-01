@@ -13,7 +13,7 @@ import { StatCard } from '#/components/shared/stat-card'
 import { StatusBadge } from '#/components/shared/status-badge'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
 import { matchTypeLabel } from '#/features/overlaps/labels'
@@ -67,8 +67,8 @@ interface DashboardFilters {
   dateTo?: string
 }
 
-const CELL = 'px-3 py-2.5 text-sm'
-const HEAD_CELL = `${CELL} text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const CELL = 'px-4 py-3 text-sm'
+const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
 
 function titleCase(value: string) {
   return value
@@ -122,7 +122,10 @@ function WorkloadTable<T extends StatusCounts>({
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={String(row[labelKey])} className="border-b border-border last:border-0">
+                  <tr
+                    key={String(row[labelKey])}
+                    className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
+                  >
                     <td className={CELL}>
                       <div className="font-medium">{String(row[labelKey])}</div>
                       {'bureauCode' in row && row.bureauCode !== '—' ? (
@@ -209,7 +212,7 @@ export function DashboardPage() {
       />
 
       <Card>
-        <CardContent className="pt-4">
+        <CardBody>
           <form className="flex flex-wrap items-end gap-3" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" htmlFor="dashboard-from">
@@ -244,7 +247,7 @@ export function DashboardPage() {
               Reset
             </Button>
           </form>
-        </CardContent>
+        </CardBody>
       </Card>
 
       {isError && (

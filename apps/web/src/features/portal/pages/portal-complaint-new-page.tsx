@@ -1,9 +1,11 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { usePortalProfile, usePublicCategories, useSubmitComplaint } from '../api'
 
@@ -21,17 +23,32 @@ export function PortalComplaintNewPage() {
   const [consentGiven, setConsentGiven] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  if (profile.isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>
+  if (profile.isLoading) {
+    return (
+      <div
+        className="mx-auto max-w-3xl space-y-4"
+        aria-busy="true"
+        aria-label="Loading complaint form"
+      >
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    )
+  }
   if (profile.data && profile.data.verificationStatus !== 'VERIFIED') {
     return (
-      <div className="mx-auto max-w-2xl space-y-3 rounded-lg border border-border bg-background p-6">
-        <h1 className="text-xl font-semibold">Verification required</h1>
-        <p className="text-sm text-muted-foreground">
-          Your institution must be verified before you can file a complaint.
-        </p>
-        <Link to="/portal/verification" className="text-sm underline underline-offset-4">
-          Continue verification
-        </Link>
+      <div className="mx-auto max-w-2xl">
+        <Card>
+          <CardBody className="space-y-3">
+            <PageHeader
+              title="Verification required"
+              description="Your institution must be verified before you can file a complaint."
+            />
+            <Link to="/portal/verification" className="text-sm underline underline-offset-4">
+              Continue verification
+            </Link>
+          </CardBody>
+        </Card>
       </div>
     )
   }
@@ -66,12 +83,10 @@ export function PortalComplaintNewPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">File a complaint</h1>
-        <p className="text-sm text-muted-foreground">
-          Institution: {profile.data?.institutionName} · {profile.data?.email}
-        </p>
-      </div>
+      <PageHeader
+        title="File a complaint"
+        description={`Institution: ${profile.data?.institutionName} · ${profile.data?.email}`}
+      />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Complaint details</CardTitle>
@@ -162,7 +177,7 @@ export function PortalComplaintNewPage() {
                 team for handling this complaint.
               </span>
             </label>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
             <div className="flex gap-2">
               <Button type="submit" disabled={submit.isPending}>
                 {submit.isPending ? 'Filing...' : 'File complaint'}

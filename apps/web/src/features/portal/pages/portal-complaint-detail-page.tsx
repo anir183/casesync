@@ -1,8 +1,10 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import {
   downloadComplaintAttachment,
@@ -26,12 +28,19 @@ export function PortalComplaintDetailPage() {
   const [showReopen, setShowReopen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  if (complaint.isLoading)
-    return <p className="text-sm text-muted-foreground">Loading complaint...</p>
+  if (complaint.isLoading) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading complaint">
+        <Skeleton className="h-8 w-72" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
   if (complaint.error || !complaint.data) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {complaint.error instanceof Error ? complaint.error.message : 'Complaint not found.'}
         </p>
         <Link to="/portal/dashboard" className="text-sm underline">
@@ -80,17 +89,19 @@ export function PortalComplaintDetailPage() {
       <Link to="/portal/dashboard" className="text-sm underline underline-offset-4">
         Back to my complaints
       </Link>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs text-muted-foreground">{item.caseNumber}</p>
-          <h1 className="text-2xl font-semibold">{item.subject ?? 'Complaint'}</h1>
-          <p className="text-sm text-muted-foreground">
-            {item.institutionName ?? 'Institution'} · Submitted{' '}
-            {new Date(item.submittedAt).toLocaleDateString()}
-          </p>
-        </div>
-        <ComplaintStatusBadge status={item.status} label={item.statusLabel} />
-      </div>
+      <PageHeader
+        title={item.subject ?? 'Complaint'}
+        description={
+          <>
+            <p className="font-mono text-xs">{item.caseNumber}</p>
+            <p>
+              {item.institutionName ?? 'Institution'} · Submitted{' '}
+              {new Date(item.submittedAt).toLocaleDateString()}
+            </p>
+          </>
+        }
+        actions={<ComplaintStatusBadge status={item.status} label={item.statusLabel} />}
+      />
 
       {item.status === 'DISPOSED' && (
         <Card>
@@ -150,7 +161,7 @@ export function PortalComplaintDetailPage() {
         </Card>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">

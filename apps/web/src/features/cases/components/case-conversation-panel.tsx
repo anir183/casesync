@@ -5,6 +5,7 @@ import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate } from '#/lib/utils'
@@ -122,10 +123,14 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {messages.isLoading && (
-            <p className="text-sm text-muted-foreground">Loading messages...</p>
+            <div className="space-y-2" aria-busy="true" aria-label="Loading messages">
+              {['a', 'b', 'c'].map((row) => (
+                <Skeleton key={row} className="h-20 w-full" />
+              ))}
+            </div>
           )}
           {messages.error && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-danger">
               {messages.error instanceof Error
                 ? messages.error.message
                 : 'Messages could not be loaded.'}
@@ -193,8 +198,8 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
           <CardTitle>Complaint workflow</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {feedback && <p className="text-sm text-green-700">{feedback}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
+          {feedback && <p className="text-sm text-success">{feedback}</p>}
 
           {!canWrite && (
             <p className="text-sm text-muted-foreground">

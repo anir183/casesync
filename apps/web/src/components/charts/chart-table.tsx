@@ -27,7 +27,7 @@ export function ChartTable({
                 <th
                   key={column}
                   scope="col"
-                  className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  className="px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground"
                 >
                   {column}
                 </th>
@@ -36,11 +36,14 @@ export function ChartTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.map(String).join('|')} className="border-t border-border">
+              <tr
+                key={row.map(String).join('|')}
+                className="border-t border-border transition-colors hover:bg-muted/40"
+              >
                 {row.map((cell, cellIndex) => (
                   <td
                     key={`${columns[cellIndex] ?? 'column'}-${String(cell)}`}
-                    className="px-3 py-2 text-sm"
+                    className="px-4 py-2.5 text-sm"
                   >
                     {cell}
                   </td>

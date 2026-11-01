@@ -3,9 +3,15 @@ import { type ChangeEvent, useRef, useState } from 'react'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate } from '#/lib/utils'
 import { downloadAttachment, useAttachments, useUploadAttachment } from '../api'
+
+const CELL_CLASS = 'px-4 py-3 text-sm'
+const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 
 const ACCEPTED_TYPES = [
   'application/pdf',
@@ -77,9 +83,15 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
       )}
 
       {feedback && <p className="text-sm text-muted-foreground">{feedback}</p>}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading attachments...</p>}
+      {isLoading && (
+        <div className="space-y-2" aria-busy="true" aria-label="Loading attachments">
+          {['a', 'b'].map((row) => (
+            <Skeleton key={row} className="h-11 w-full" />
+          ))}
+        </div>
+      )}
       {error && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {error instanceof Error ? error.message : 'Attachments could not be loaded'}
         </p>
       )}
@@ -89,24 +101,25 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
       )}
 
       {items && items.length > 0 && (
-        <div className="overflow-x-auto">
+        <TableScroll label="Supporting documents">
           <table className="w-full min-w-[640px] border-collapse text-left">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-3 py-2.5">Document</th>
-                <th className="px-3 py-2.5">Type</th>
-                <th className="px-3 py-2.5">Size</th>
-                <th className="px-3 py-2.5">Uploaded</th>
-                <th className="px-3 py-2.5" />
+              <tr className="border-b border-border">
+                <th className={HEAD_CLASS}>Document</th>
+                <th className={HEAD_CLASS}>Type</th>
+                <th className={HEAD_CLASS}>Size</th>
+                <th className={HEAD_CLASS}>Visibility</th>
+                <th className={HEAD_CLASS}>Uploaded</th>
+                <th className={HEAD_CLASS} />
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2.5 text-sm">{item.filename}</td>
-                  <td className="px-3 py-2.5 text-sm">{item.mimeType ?? '—'}</td>
-                  <td className="px-3 py-2.5 text-sm">{formatBytes(item.sizeBytes)}</td>
-                  <td className="px-3 py-2.5 text-sm">
+                <tr key={item.id} className={ROW_CLASS}>
+                  <td className={CELL_CLASS}>{item.filename}</td>
+                  <td className={CELL_CLASS}>{item.mimeType ?? '—'}</td>
+                  <td className={CELL_CLASS}>{formatBytes(item.sizeBytes)}</td>
+                  <td className={CELL_CLASS}>
                     <Badge
                       variant={
                         item.visibility === ATTACHMENT_VISIBILITY.PUBLIC ? 'muted' : 'warning'
@@ -115,8 +128,8 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
                       {item.visibility.toLowerCase()}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2.5 text-sm">{formatDate(item.createdAt)}</td>
-                  <td className="px-3 py-2.5 text-right">
+                  <td className={CELL_CLASS}>{formatDate(item.createdAt)}</td>
+                  <td className={`${CELL_CLASS} text-right`}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -129,7 +142,7 @@ export function AttachmentsPanel({ caseId }: { caseId: string }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
     </div>
   )

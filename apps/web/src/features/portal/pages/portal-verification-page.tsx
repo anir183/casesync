@@ -1,9 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { apiClient } from '#/lib/api-client'
 import { portalKeys, usePortalProfile, usePublicInstitutions } from '../api'
@@ -69,19 +71,18 @@ export function PortalVerificationPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Institution verification</h1>
-        <p className="text-sm text-muted-foreground">
-          Verification links your complaint to the correct AICTE institution and prevents
-          impersonation.
-        </p>
-      </div>
+      <PageHeader
+        title="Institution verification"
+        description="Verification links your complaint to the correct AICTE institution and prevents impersonation."
+      />
 
       {profile.isLoading && (
-        <p className="text-sm text-muted-foreground">Loading verification status...</p>
+        <div aria-busy="true" aria-label="Loading verification status">
+          <Skeleton className="h-40 w-full" />
+        </div>
       )}
       {profile.error && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {profile.error instanceof Error ? profile.error.message : 'Status could not be loaded.'}
         </p>
       )}
@@ -100,7 +101,7 @@ export function PortalVerificationPage() {
               </p>
             )}
             {status === 'VERIFIED' && (
-              <p className="text-green-700">
+              <p className="text-success">
                 Your account is verified.{' '}
                 <Link to="/portal/complaints/new" className="underline">
                   File a complaint
@@ -109,12 +110,12 @@ export function PortalVerificationPage() {
               </p>
             )}
             {status === 'PENDING_REVIEW' && (
-              <p className="text-amber-700">
+              <p className="text-warning-soft-foreground">
                 Your documents are under review. You will be notified when a decision is made.
               </p>
             )}
             {status === 'REJECTED' && (
-              <div className="space-y-1 text-red-700">
+              <div className="space-y-1 text-danger">
                 <p>Your previous verification was rejected.</p>
                 {profile.data.rejectionReason && <p>Reason: {profile.data.rejectionReason}</p>}
               </div>
@@ -204,8 +205,8 @@ export function PortalVerificationPage() {
                   affiliation.
                 </p>
               </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {feedback && <p className="text-sm text-green-700">{feedback}</p>}
+              {error && <p className="text-sm text-danger">{error}</p>}
+              {feedback && <p className="text-sm text-success">{feedback}</p>}
               <Button type="submit" disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit verification'}
               </Button>

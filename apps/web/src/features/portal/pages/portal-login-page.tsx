@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
+import { Card, CardBody } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { FieldLabel } from '#/components/ui/textarea'
 import { signIn } from '#/lib/auth-client'
@@ -31,51 +33,50 @@ export function PortalLoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Complainant sign in</h1>
-        <p className="text-sm text-muted-foreground">
-          Access your complaints and verification status.
-        </p>
-      </div>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 rounded-lg border border-border bg-background p-6"
-      >
-        <div className="space-y-1">
-          <FieldLabel htmlFor="portal-email">Email</FieldLabel>
-          <Input
-            id="portal-email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </div>
-        <div className="space-y-1">
-          <FieldLabel htmlFor="portal-password">Password</FieldLabel>
-          <Input
-            id="portal-password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign in'}
-        </Button>
-        <p className="text-sm text-muted-foreground">
-          New here?{' '}
-          <Link to="/portal/signup" className="underline">
-            Create an account
-          </Link>
-          . Forgot your password? Contact support through the AICTE office.
-        </p>
-      </form>
+    <div className="mx-auto max-w-md space-y-6">
+      <PageHeader
+        title="Complainant sign in"
+        description="Access your complaints and verification status."
+      />
+      <Card>
+        <CardBody>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <FieldLabel htmlFor="portal-email">Email</FieldLabel>
+              <Input
+                id="portal-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <FieldLabel htmlFor="portal-password">Password</FieldLabel>
+              <Input
+                id="portal-password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+            {error && <p className="text-sm text-danger">{error}</p>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              New here?{' '}
+              <Link to="/portal/signup" className="underline">
+                Create an account
+              </Link>
+              . Forgot your password? Contact support through the AICTE office.
+            </p>
+          </form>
+        </CardBody>
+      </Card>
     </div>
   )
 }

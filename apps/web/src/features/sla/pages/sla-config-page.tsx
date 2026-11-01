@@ -1,9 +1,12 @@
 import { type FormEvent, useState } from 'react'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { formatDate } from '#/lib/utils'
 import {
@@ -37,8 +40,9 @@ const EMPTY_FORM: FormState = {
   active: true,
 }
 
-const CELL = 'px-3 py-2 text-sm'
-const HEAD_CELL = `${CELL} text-xs uppercase tracking-wide text-muted-foreground`
+const CELL = 'px-4 py-3 text-sm'
+const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 
 function scopeLabel(item: SlaConfig) {
   const parts = [
@@ -122,46 +126,44 @@ export function SlaConfigPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">SLA rules</h1>
-          <p className="text-sm text-muted-foreground">
-            Resolution rules, reminder windows, and the daily SLA scan.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={runJob.isPending}
-          onClick={() => runJob.mutate()}
-        >
-          {runJob.isPending ? 'Running…' : 'Run SLA scan now'}
-        </Button>
-      </div>
+      <PageHeader
+        title="SLA rules"
+        description="Resolution rules, reminder windows, and the daily SLA scan."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={runJob.isPending}
+            onClick={() => runJob.mutate()}
+          >
+            {runJob.isPending ? 'Running…' : 'Run SLA scan now'}
+          </Button>
+        }
+      />
 
       {data && (
         <div className="grid gap-4 sm:grid-cols-3">
           <Card>
-            <CardContent>
+            <CardBody>
               <p className="text-sm text-muted-foreground">Default resolution</p>
               <p className="mt-1 text-2xl font-semibold">{data.settings.defaultSlaDays} days</p>
-            </CardContent>
+            </CardBody>
           </Card>
           <Card>
-            <CardContent>
+            <CardBody>
               <p className="text-sm text-muted-foreground">Approaching thresholds</p>
               <p className="mt-1 text-2xl font-semibold">
                 {data.settings.reminderDays.join(' / ')} days
               </p>
-            </CardContent>
+            </CardBody>
           </Card>
           <Card>
-            <CardContent>
+            <CardBody>
               <p className="text-sm text-muted-foreground">Pending reminder / timezone</p>
               <p className="mt-1 text-2xl font-semibold">
                 {data.settings.pendingReminderDays}d · {data.settings.timezone}
               </p>
-            </CardContent>
+            </CardBody>
           </Card>
         </div>
       )}
@@ -272,7 +274,7 @@ export function SlaConfigPage() {
             </div>
           </form>
           {mutationError && (
-            <p className="mt-3 text-sm text-red-600">{errorMessage(mutationError)}</p>
+            <p className="mt-3 text-sm text-danger">{errorMessage(mutationError)}</p>
           )}
           {runJob.data && (
             <p className="mt-3 text-sm text-muted-foreground">
@@ -288,56 +290,64 @@ export function SlaConfigPage() {
         <CardHeader>
           <CardTitle className="text-base">Configured rules</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {isError && <p className="text-sm text-red-600">Unable to load SLA rules.</p>}
-          {isLoading && <p className="text-sm text-muted-foreground">Loading SLA rules…</p>}
+        <CardContent>
+          {isError && <p className="text-sm text-danger">Unable to load SLA rules.</p>}
+          {isLoading && (
+            <div className="space-y-2" aria-busy="true" aria-label="Loading SLA rules">
+              {['a', 'b', 'c', 'd'].map((row) => (
+                <Skeleton key={row} className="h-11 w-full" />
+              ))}
+            </div>
+          )}
           {!isLoading && !isError && data?.items.length === 0 && (
             <p className="text-sm text-muted-foreground">No SLA rules configured.</p>
           )}
           {data && data.items.length > 0 && (
-            <table className="w-full min-w-[760px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className={HEAD_CELL}>Scope</th>
-                  <th className={HEAD_CELL}>Resolution</th>
-                  <th className={HEAD_CELL}>Reminders</th>
-                  <th className={HEAD_CELL}>Status</th>
-                  <th className={HEAD_CELL}>Updated</th>
-                  <th className={HEAD_CELL}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((item) => (
-                  <tr key={item.id} className="border-b border-border last:border-0">
-                    <td className={CELL}>{scopeLabel(item)}</td>
-                    <td className={CELL}>{item.slaDays} days</td>
-                    <td className={CELL}>
-                      {item.reminderDays?.join(' / ') ?? 'Default'} · pending{' '}
-                      {item.pendingReminderDays ?? 'default'}d
-                    </td>
-                    <td className={CELL}>
-                      <Badge variant={item.active ? 'muted' : 'warning'}>
-                        {item.active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td className={CELL}>{formatDate(item.updatedAt)}</td>
-                    <td className={`${CELL} space-x-2 whitespace-nowrap`}>
-                      <Button variant="ghost" size="sm" onClick={() => startEdit(item)}>
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={deleteConfig.isPending}
-                        onClick={() => void handleDelete(item)}
-                      >
-                        Delete
-                      </Button>
-                    </td>
+            <TableScroll label="Configured SLA rules">
+              <table className="w-full min-w-[760px] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className={HEAD_CELL}>Scope</th>
+                    <th className={HEAD_CELL}>Resolution</th>
+                    <th className={HEAD_CELL}>Reminders</th>
+                    <th className={HEAD_CELL}>Status</th>
+                    <th className={HEAD_CELL}>Updated</th>
+                    <th className={HEAD_CELL}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.items.map((item) => (
+                    <tr key={item.id} className={ROW}>
+                      <td className={CELL}>{scopeLabel(item)}</td>
+                      <td className={CELL}>{item.slaDays} days</td>
+                      <td className={CELL}>
+                        {item.reminderDays?.join(' / ') ?? 'Default'} · pending{' '}
+                        {item.pendingReminderDays ?? 'default'}d
+                      </td>
+                      <td className={CELL}>
+                        <Badge variant={item.active ? 'muted' : 'warning'}>
+                          {item.active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </td>
+                      <td className={CELL}>{formatDate(item.updatedAt)}</td>
+                      <td className={`${CELL} space-x-2 whitespace-nowrap`}>
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(item)}>
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={deleteConfig.isPending}
+                          onClick={() => void handleDelete(item)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableScroll>
           )}
         </CardContent>
       </Card>

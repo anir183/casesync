@@ -8,10 +8,11 @@ import { TrendChart } from '#/components/charts/trend-chart'
 import { PageHeader } from '#/components/shared/page-header'
 import { StatCard } from '#/components/shared/stat-card'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { matchTypeLabel } from '#/features/overlaps/labels'
 import { formatDate } from '#/lib/utils'
@@ -19,8 +20,9 @@ import type { GeoRegionRow, ReportFilters, ReportGroupRow } from '../api'
 import { downloadReports, useReports, useReportsGeo } from '../api'
 import { RegionMap } from '../components/region-map'
 
-const CELL = 'px-3 py-2.5 text-sm'
-const HEAD_CELL = `${CELL} text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const CELL = 'px-4 py-3 text-sm'
+const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
 
 function cleanFilters(input: ReportFilters): ReportFilters {
@@ -54,7 +56,7 @@ function CountTable({
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <TableScroll label={title}>
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
@@ -64,14 +66,14 @@ function CountTable({
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={String(row[labelKey])} className="border-b border-border last:border-0">
+                  <tr key={String(row[labelKey])} className={ROW}>
                     <td className={CELL}>{String(row[labelKey])}</td>
                     <td className={CELL}>{row.count}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         )}
       </CardContent>
     </Card>
@@ -88,7 +90,7 @@ function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) 
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <TableScroll label={title}>
             <table className="w-full min-w-[360px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
@@ -100,7 +102,7 @@ function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) 
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.name} className="border-b border-border last:border-0">
+                  <tr key={row.name} className={ROW}>
                     <td className={CELL}>{row.name}</td>
                     <td className={CELL}>{row.total}</td>
                     <td className={CELL}>{row.open}</td>
@@ -109,7 +111,7 @@ function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) 
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         )}
       </CardContent>
     </Card>
@@ -184,7 +186,7 @@ export function ReportsPage() {
       />
 
       <Card>
-        <CardContent className="pt-4">
+        <CardBody>
           <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" htmlFor="report-from">
@@ -265,7 +267,7 @@ export function ReportsPage() {
               </Button>
             </div>
           </form>
-        </CardContent>
+        </CardBody>
       </Card>
 
       {exportError && <p className="text-sm text-danger-soft-foreground">{exportError}</p>}

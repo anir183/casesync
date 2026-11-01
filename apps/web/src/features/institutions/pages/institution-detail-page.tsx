@@ -1,11 +1,13 @@
 import { PAGINATION, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { Skeleton } from '#/components/ui/skeleton'
 import { CaseTable } from '#/features/cases/components/case-table'
 import { useCurrentUser } from '#/lib/session'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
@@ -95,7 +97,7 @@ function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
             ))}
           </div>
         )}
-        {feedback && <p className="text-sm text-red-600">{feedback}</p>}
+        {feedback && <p className="text-sm text-danger">{feedback}</p>}
       </CardContent>
     </Card>
   )
@@ -113,12 +115,23 @@ export function InstitutionDetailPage() {
   const canWrite = hasAnyRole(user?.role, ROLE_GROUPS.INSTITUTION_WRITE)
   const canRegister = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading institution…</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading institution">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
+        </div>
+        <Skeleton className="h-72" />
+      </div>
+    )
+  }
 
   if (isError || !data) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {error instanceof Error ? error.message : 'Institution not found'}
         </p>
         <Link to="/institutions" className="text-sm underline underline-offset-4">
@@ -154,56 +167,62 @@ export function InstitutionDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-3">
         <Link
           to="/institutions"
           className="text-sm text-muted-foreground underline underline-offset-4"
         >
           ← Back to institutions
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">{institution.name}</h1>
-          <Badge variant={institution.verified ? 'success' : 'warning'}>
-            {institution.verified ? 'Verified' : 'Unverified'}
-          </Badge>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Consolidated complaint history across all Bureaus and Cells.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {canWrite && (
-            <Link
-              to={`/institutions/${institution.id}/edit`}
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            >
-              Edit institution
-            </Link>
-          )}
-          {canWrite && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleVerified}
-              disabled={updateInstitution.isPending}
-            >
-              {updateInstitution.isPending
-                ? 'Saving...'
-                : institution.verified
-                  ? 'Mark unverified'
-                  : 'Mark verified'}
-            </Button>
-          )}
-          {canRegister && (
-            <Link
-              to={`/cases/new?institutionId=${institution.id}`}
-              className={buttonVariants({ size: 'sm' })}
-            >
-              Register case
-            </Link>
-          )}
-        </div>
-        {feedback && <p className="mt-2 text-sm text-emerald-700">{feedback}</p>}
-        {verifyError && <p className="mt-2 text-sm text-red-600">{verifyError}</p>}
+        <PageHeader
+          title={institution.name}
+          description={
+            <div className="space-y-1">
+              <div>
+                <Badge variant={institution.verified ? 'success' : 'warning'}>
+                  {institution.verified ? 'Verified' : 'Unverified'}
+                </Badge>
+              </div>
+              <p>Consolidated complaint history across all Bureaus and Cells.</p>
+            </div>
+          }
+          actions={
+            <>
+              {canWrite && (
+                <Link
+                  to={`/institutions/${institution.id}/edit`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  Edit institution
+                </Link>
+              )}
+              {canWrite && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleVerified}
+                  disabled={updateInstitution.isPending}
+                >
+                  {updateInstitution.isPending
+                    ? 'Saving...'
+                    : institution.verified
+                      ? 'Mark unverified'
+                      : 'Mark verified'}
+                </Button>
+              )}
+              {canRegister && (
+                <Link
+                  to={`/cases/new?institutionId=${institution.id}`}
+                  className={buttonVariants({ size: 'sm' })}
+                >
+                  Register case
+                </Link>
+              )}
+            </>
+          }
+        />
+        {feedback && <p className="text-sm text-success">{feedback}</p>}
+        {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

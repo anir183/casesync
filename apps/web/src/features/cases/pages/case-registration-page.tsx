@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { useInstitution, useInstitutions } from '#/features/institutions/api'
 import { useBureaus, useCategories } from '#/features/organization/api'
@@ -51,7 +53,7 @@ function toPayload(values: RegistrationValues) {
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
-  return <p className="text-xs text-red-600">{message}</p>
+  return <p className="text-xs text-danger">{message}</p>
 }
 
 export function CaseRegistrationPage() {
@@ -132,13 +134,18 @@ export function CaseRegistrationPage() {
   }
 
   if (sessionPending) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading case form">
+        <Skeleton className="h-8 w-52" />
+        <Skeleton className="h-80 w-full" />
+      </div>
+    )
   }
 
   if (!canRegister) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-red-600">You do not have permission to register cases.</p>
+        <p className="text-sm text-danger">You do not have permission to register cases.</p>
         <Link to="/cases" className="text-sm underline underline-offset-4">
           Back to case registry
         </Link>
@@ -148,14 +155,14 @@ export function CaseRegistrationPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-3">
         <Link to="/cases" className="text-sm text-muted-foreground underline underline-offset-4">
           ← Back to case registry
         </Link>
-        <h1 className="mt-3 text-2xl font-semibold">Register case</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Record a complaint against an institution and route it to the responsible Bureau or Cell.
-        </p>
+        <PageHeader
+          title="Register case"
+          description="Record a complaint against an institution and route it to the responsible Bureau or Cell."
+        />
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -319,7 +326,7 @@ export function CaseRegistrationPage() {
         </Card>
 
         {createCase.isError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-danger">
             {createCase.error instanceof Error
               ? createCase.error.message
               : 'Case could not be registered'}

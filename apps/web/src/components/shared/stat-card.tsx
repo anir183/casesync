@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Card, CardContent } from '#/components/ui/card'
+import { Card, CardBody } from '#/components/ui/card'
 import { cn } from '#/lib/utils'
 
 export function StatCard({
@@ -30,7 +30,7 @@ export function StatCard({
 
   return (
     <Card className={cn('overflow-hidden', className)}>
-      <CardContent className="flex items-start justify-between gap-3 pt-4">
+      <CardBody className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
           <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -48,7 +48,7 @@ export function StatCard({
             {icon}
           </span>
         ) : null}
-      </CardContent>
+      </CardBody>
     </Card>
   )
 }

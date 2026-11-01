@@ -1,10 +1,13 @@
 import { ROLES } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { FieldLabel } from '#/components/ui/textarea'
 import { useBureaus, useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
@@ -25,6 +28,10 @@ interface FormState {
   regionId: string
   active: boolean
 }
+
+const CELL_CLASS = 'px-4 py-3 text-sm'
+const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 
 const EMPTY_FORM: FormState = {
   name: '',
@@ -116,28 +123,26 @@ export function AdminUsersPage() {
   const mutationError = createUser.error ?? updateUser.error ?? resetPassword.error
 
   if (currentUser?.role !== ROLES.ADMIN) {
-    return <p className="text-sm text-red-600">Only administrators can manage users.</p>
+    return <p className="text-sm text-danger">Only administrators can manage users.</p>
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Users</h1>
-        <p className="text-sm text-muted-foreground">
-          Invite staff, assign roles and scopes, deactivate accounts, or issue temporary passwords.
-        </p>
-      </div>
+      <PageHeader
+        title="Users"
+        description="Invite staff, assign roles and scopes, deactivate accounts, or issue temporary passwords."
+      />
 
       {temporaryPassword && (
         <Card>
-          <CardContent className="space-y-1">
+          <CardBody className="space-y-1">
             <p className="text-sm font-medium">Temporary password</p>
             <p className="font-mono text-lg">{temporaryPassword}</p>
             <p className="text-xs text-muted-foreground">
               Share this through an approved channel. It is shown only once and active sessions have
               been revoked.
             </p>
-          </CardContent>
+          </CardBody>
         </Card>
       )}
 
@@ -245,7 +250,7 @@ export function AdminUsersPage() {
             </div>
           </form>
           {mutationError && (
-            <p className="mt-2 text-sm text-red-600">{errorMessage(mutationError)}</p>
+            <p className="mt-2 text-sm text-danger">{errorMessage(mutationError)}</p>
           )}
         </CardContent>
       </Card>
@@ -255,23 +260,29 @@ export function AdminUsersPage() {
           <CardTitle className="text-base">Staff directory</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading && <p className="text-sm text-muted-foreground">Loading users...</p>}
+          {isLoading && (
+            <div className="space-y-2" aria-busy="true" aria-label="Loading users">
+              {['a', 'b', 'c', 'd'].map((row) => (
+                <Skeleton key={row} className="h-11 w-full" />
+              ))}
+            </div>
+          )}
           {error && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-danger">
               {error instanceof Error ? error.message : 'Users could not be loaded'}
             </p>
           )}
           {users && (
-            <div className="overflow-x-auto">
+            <TableScroll label="Staff users">
               <table className="w-full min-w-[860px] border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-3 py-2.5">Name</th>
-                    <th className="px-3 py-2.5">Email</th>
-                    <th className="px-3 py-2.5">Role</th>
-                    <th className="px-3 py-2.5">Scope</th>
-                    <th className="px-3 py-2.5">Status</th>
-                    <th className="px-3 py-2.5" />
+                  <tr className="border-b border-border">
+                    <th className={HEAD_CLASS}>Name</th>
+                    <th className={HEAD_CLASS}>Email</th>
+                    <th className={HEAD_CLASS}>Role</th>
+                    <th className={HEAD_CLASS}>Scope</th>
+                    <th className={HEAD_CLASS}>Status</th>
+                    <th className={HEAD_CLASS} />
                   </tr>
                 </thead>
                 <tbody>
@@ -279,21 +290,17 @@ export function AdminUsersPage() {
                     const bureau = bureaus?.find((option) => option.id === item.bureauId)
                     const region = regions?.find((option) => option.id === item.regionId)
                     return (
-                      <tr key={item.id} className="border-b border-border last:border-0">
-                        <td className="px-3 py-2.5 text-sm">{item.name}</td>
-                        <td className="px-3 py-2.5 text-sm">{item.email}</td>
-                        <td className="px-3 py-2.5 text-sm">
-                          {(item.role ?? '—').replace(/_/g, ' ')}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm">
-                          {bureau?.name ?? region?.name ?? 'All'}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm">
+                      <tr key={item.id} className={ROW_CLASS}>
+                        <td className={CELL_CLASS}>{item.name}</td>
+                        <td className={CELL_CLASS}>{item.email}</td>
+                        <td className={CELL_CLASS}>{(item.role ?? '—').replace(/_/g, ' ')}</td>
+                        <td className={CELL_CLASS}>{bureau?.name ?? region?.name ?? 'All'}</td>
+                        <td className={CELL_CLASS}>
                           <Badge variant={item.active ? 'success' : 'muted'}>
                             {item.active ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2.5 text-right">
+                        <td className={`${CELL_CLASS} text-right`}>
                           <div className="flex justify-end gap-2">
                             <Button variant="outline" size="sm" onClick={() => startEdit(item)}>
                               Edit
@@ -313,7 +320,7 @@ export function AdminUsersPage() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           )}
         </CardContent>
       </Card>

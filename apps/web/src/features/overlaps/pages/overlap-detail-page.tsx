@@ -2,9 +2,11 @@ import { OVERLAP, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import type { OverlapCase, ReviewAction } from '#/features/overlaps/api'
 import { useOverlap, useReviewOverlap, useUnlinkOverlap } from '#/features/overlaps/api'
@@ -83,12 +85,23 @@ export function OverlapDetailPage() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [reviewError, setReviewError] = useState<string | null>(null)
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading overlap...</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading overlap">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-64 w-full" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
+        </div>
+      </div>
+    )
+  }
 
   if (isError || !overlap) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {error instanceof Error ? error.message : 'Overlap not found'}
         </p>
         <Link to="/overlaps" className="text-sm underline underline-offset-4">
@@ -142,20 +155,26 @@ export function OverlapDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-3">
         <Link to="/overlaps" className="text-sm text-muted-foreground underline underline-offset-4">
           ← Back to overlap queue
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">{OVERLAP.HEADING}</h1>
-          <ReviewStatusBadge status={overlap.reviewStatus} />
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {overlap.institution?.name ?? 'Unknown institution'}
-          {overlap.institution?.aictePermanentId
-            ? ` · AICTE ID ${overlap.institution.aictePermanentId}`
-            : ''}
-        </p>
+        <PageHeader
+          title={OVERLAP.HEADING}
+          description={
+            <div className="space-y-1">
+              <div>
+                <ReviewStatusBadge status={overlap.reviewStatus} />
+              </div>
+              <p>
+                {overlap.institution?.name ?? 'Unknown institution'}
+                {overlap.institution?.aictePermanentId
+                  ? ` · AICTE ID ${overlap.institution.aictePermanentId}`
+                  : ''}
+              </p>
+            </div>
+          }
+        />
       </div>
 
       <Card>
@@ -201,7 +220,7 @@ export function OverlapDetailPage() {
               <p className="text-sm text-muted-foreground">{assessment.rationale}</p>
             )}
             {assessment?.errorMessage && (
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-warning-soft-foreground">
                 AI assessment note: {assessment.errorMessage}
               </p>
             )}
@@ -250,7 +269,7 @@ export function OverlapDetailPage() {
                     placeholder="Add context for this decision..."
                   />
                 </div>
-                {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+                {reviewError && <p className="text-sm text-danger">{reviewError}</p>}
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => setPendingAction('confirm')}>Confirm overlap</Button>
                   <Button variant="outline" onClick={() => setPendingAction('dismiss')}>
@@ -287,7 +306,7 @@ export function OverlapDetailPage() {
                         placeholder="Explain why the cases should no longer be linked..."
                       />
                     </div>
-                    {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+                    {reviewError && <p className="text-sm text-danger">{reviewError}</p>}
                     <Button variant="outline" onClick={() => setPendingAction('unlink')}>
                       Unlink cases
                     </Button>
@@ -298,7 +317,7 @@ export function OverlapDetailPage() {
                 </p>
               </div>
             )}
-            {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
+            {feedback && <p className="text-sm text-success">{feedback}</p>}
           </CardContent>
         </Card>
       )}

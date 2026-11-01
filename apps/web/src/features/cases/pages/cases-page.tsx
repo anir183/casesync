@@ -8,11 +8,13 @@ import {
 } from '@casesync/config'
 import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
 import { type CaseFilters, downloadCases, useCases } from '../api'
@@ -85,29 +87,27 @@ export function CasesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Case registry</h1>
-          <p className="text-sm text-muted-foreground">
-            Every institution-related complaint across Bureaus and Cells.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void handleExport()}
-            disabled={isExporting}
-          >
-            {isExporting ? 'Exporting…' : 'Export CSV'}
-          </Button>
-          {canRegister && (
-            <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
-              Register case
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Case registry"
+        description="Every institution-related complaint across Bureaus and Cells."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void handleExport()}
+              disabled={isExporting}
+            >
+              {isExporting ? 'Exporting…' : 'Export CSV'}
+            </Button>
+            {canRegister && (
+              <Link to="/cases/new" className={buttonVariants({ size: 'sm' })}>
+                Register case
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -228,7 +228,7 @@ export function CasesPage() {
         </CardContent>
       </Card>
 
-      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
+      {exportError && <p className="text-sm text-danger">{exportError}</p>}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2">
@@ -239,11 +239,17 @@ export function CasesPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {isError && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-danger">
               {error instanceof Error ? error.message : 'Unable to load cases'}
             </p>
           )}
-          {isLoading && <p className="text-sm text-muted-foreground">Loading cases…</p>}
+          {isLoading && (
+            <div className="space-y-2" aria-busy="true" aria-label="Loading cases">
+              {['a', 'b', 'c', 'd', 'e'].map((row) => (
+                <Skeleton key={row} className="h-11 w-full" />
+              ))}
+            </div>
+          )}
           {!isLoading && !isError && <CaseTable cases={cases?.items ?? []} />}
           {cases && cases.total > 0 && (
             <Pagination

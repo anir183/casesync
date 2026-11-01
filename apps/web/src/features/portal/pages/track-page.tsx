@@ -1,7 +1,8 @@
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { FieldLabel } from '#/components/ui/textarea'
 import { apiClient } from '#/lib/api-client'
@@ -35,16 +36,13 @@ export function TrackPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Track a complaint</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter the complaint number and the email address used when filing. Public tracking shows
-          status updates and public messages only.
-        </p>
-      </div>
+      <PageHeader
+        title="Track a complaint"
+        description="Enter the complaint number and the email address used when filing. Public tracking shows status updates and public messages only."
+      />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardBody>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <FieldLabel htmlFor="track-number">Complaint number</FieldLabel>
@@ -72,8 +70,8 @@ export function TrackPage() {
               </Button>
             </div>
           </form>
-          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-        </CardContent>
+          {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+        </CardBody>
       </Card>
 
       {result && (

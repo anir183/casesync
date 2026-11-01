@@ -1,10 +1,18 @@
 import { useState } from 'react'
+import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { formatDate } from '#/lib/utils'
 import { useAuditLog } from '../api'
+
+const CELL_CLASS = 'px-4 py-3 text-sm'
+const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW_CLASS =
+  'border-b border-border align-top transition-colors last:border-0 hover:bg-muted/40'
 
 const ENTITY_TYPES = [
   'USER',
@@ -33,12 +41,10 @@ export function AdminAuditPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Audit log</h1>
-        <p className="text-sm text-muted-foreground">
-          Append-only history of administrative and master-data changes.
-        </p>
-      </div>
+      <PageHeader
+        title="Audit log"
+        description="Append-only history of administrative and master-data changes."
+      />
 
       <Card>
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
@@ -79,9 +85,15 @@ export function AdminAuditPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading audit log...</p>}
+          {isLoading && (
+            <div className="space-y-2" aria-busy="true" aria-label="Loading audit log">
+              {['a', 'b', 'c', 'd', 'e'].map((row) => (
+                <Skeleton key={row} className="h-11 w-full" />
+              ))}
+            </div>
+          )}
           {error && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-danger">
               {error instanceof Error ? error.message : 'Audit log could not be loaded'}
             </p>
           )}
@@ -89,32 +101,32 @@ export function AdminAuditPage() {
             <p className="text-sm text-muted-foreground">No audit entries match these filters.</p>
           )}
           {data && data.items.length > 0 && (
-            <div className="overflow-x-auto">
+            <TableScroll label="Audit log entries">
               <table className="w-full min-w-[900px] border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-3 py-2.5">When</th>
-                    <th className="px-3 py-2.5">Actor</th>
-                    <th className="px-3 py-2.5">Action</th>
-                    <th className="px-3 py-2.5">Entity</th>
-                    <th className="px-3 py-2.5">Details</th>
+                  <tr className="border-b border-border">
+                    <th className={HEAD_CLASS}>When</th>
+                    <th className={HEAD_CLASS}>Actor</th>
+                    <th className={HEAD_CLASS}>Action</th>
+                    <th className={HEAD_CLASS}>Entity</th>
+                    <th className={HEAD_CLASS}>Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.items.map((item) => (
-                    <tr key={item.id} className="border-b border-border align-top last:border-0">
-                      <td className="px-3 py-2.5 text-sm">{formatDate(item.createdAt)}</td>
-                      <td className="px-3 py-2.5 text-sm">{item.actorName ?? item.actorId}</td>
-                      <td className="px-3 py-2.5 text-sm">
+                    <tr key={item.id} className={ROW_CLASS}>
+                      <td className={CELL_CLASS}>{formatDate(item.createdAt)}</td>
+                      <td className={CELL_CLASS}>{item.actorName ?? item.actorId}</td>
+                      <td className={CELL_CLASS}>
                         <Badge variant={actionVariant(item.action)}>
                           {item.action.replace(/_/g, ' ')}
                         </Badge>
                       </td>
-                      <td className="px-3 py-2.5 text-sm">
+                      <td className={CELL_CLASS}>
                         <p>{item.entityType.replace(/_/g, ' ')}</p>
                         <p className="font-mono text-xs text-muted-foreground">{item.entityId}</p>
                       </td>
-                      <td className="px-3 py-2.5 text-sm">
+                      <td className={CELL_CLASS}>
                         <details>
                           <summary className="cursor-pointer text-xs underline underline-offset-4">
                             View before / after
@@ -149,7 +161,7 @@ export function AdminAuditPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           )}
           {data && data.total > 0 && (
             <Pagination

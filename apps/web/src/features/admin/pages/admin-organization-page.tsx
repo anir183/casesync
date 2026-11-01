@@ -1,8 +1,10 @@
 import { type FormEvent, useState } from 'react'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { FieldLabel } from '#/components/ui/textarea'
 import {
   type Bureau,
@@ -18,6 +20,10 @@ import {
   useSaveCategory,
   useSaveRegion,
 } from '#/features/organization/api'
+
+const CELL_CLASS = 'px-4 py-3 text-sm'
+const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 
 interface MasterRow {
   id: string
@@ -220,42 +226,40 @@ function MasterSection({
         </form>
 
         {mutationError ? (
-          <p className="text-sm text-red-600">{errorMessage(mutationError)}</p>
+          <p className="text-sm text-danger">{errorMessage(mutationError)}</p>
         ) : null}
 
-        <div className="overflow-x-auto">
+        <TableScroll label={`${title} records`}>
           <table className="w-full min-w-[600px] border-collapse text-left">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-3 py-2.5">Code</th>
-                <th className="px-3 py-2.5">Name</th>
-                {withOfficeCity && <th className="px-3 py-2.5">City</th>}
-                {withCoordinates && <th className="px-3 py-2.5">Coordinates</th>}
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5" />
+              <tr className="border-b border-border">
+                <th className={HEAD_CLASS}>Code</th>
+                <th className={HEAD_CLASS}>Name</th>
+                {withOfficeCity && <th className={HEAD_CLASS}>City</th>}
+                {withCoordinates && <th className={HEAD_CLASS}>Coordinates</th>}
+                <th className={HEAD_CLASS}>Status</th>
+                <th className={HEAD_CLASS} />
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2.5 font-mono text-sm">{item.code}</td>
-                  <td className="px-3 py-2.5 text-sm">{item.name}</td>
-                  {withOfficeCity && (
-                    <td className="px-3 py-2.5 text-sm">{item.officeCity ?? '—'}</td>
-                  )}
+                <tr key={item.id} className={ROW_CLASS}>
+                  <td className={`${CELL_CLASS} font-mono`}>{item.code}</td>
+                  <td className={CELL_CLASS}>{item.name}</td>
+                  {withOfficeCity && <td className={CELL_CLASS}>{item.officeCity ?? '—'}</td>}
                   {withCoordinates && (
-                    <td className="px-3 py-2.5 text-sm">
+                    <td className={CELL_CLASS}>
                       {item.latitude !== undefined && item.longitude !== undefined
                         ? `${item.latitude.toFixed(3)}, ${item.longitude.toFixed(3)}`
                         : '—'}
                     </td>
                   )}
-                  <td className="px-3 py-2.5 text-sm">
+                  <td className={CELL_CLASS}>
                     <Badge variant={item.active ? 'success' : 'muted'}>
                       {item.active ? 'Active' : 'Inactive'}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2.5 text-right">
+                  <td className={`${CELL_CLASS} text-right`}>
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={() => startEdit(item)}>
                         Edit
@@ -275,9 +279,9 @@ function MasterSection({
             </tbody>
           </table>
           {items.length === 0 && (
-            <p className="px-3 py-3 text-sm text-muted-foreground">No records yet.</p>
+            <p className="px-4 py-3 text-sm text-muted-foreground">No records yet.</p>
           )}
-        </div>
+        </TableScroll>
       </CardContent>
     </Card>
   )
@@ -296,12 +300,10 @@ export function AdminOrganizationPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Organization masters</h1>
-        <p className="text-sm text-muted-foreground">
-          Bureaus, regions, and complaint categories used across cases, routing, and SLA rules.
-        </p>
-      </div>
+      <PageHeader
+        title="Organization masters"
+        description="Bureaus, regions, and complaint categories used across cases, routing, and SLA rules."
+      />
 
       <MasterSection
         title="Bureaus"

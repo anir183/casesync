@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import {
   type VerificationRequest,
@@ -21,13 +23,10 @@ export function AdminVerificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Complainant verifications</h1>
-        <p className="text-sm text-muted-foreground">
-          Review document-based institution verification requests. Approving links the complainant
-          to the selected institution permanently.
-        </p>
-      </div>
+      <PageHeader
+        title="Complainant verifications"
+        description="Review document-based institution verification requests. Approving links the complainant to the selected institution permanently."
+      />
 
       <div className="max-w-xs space-y-1">
         <FieldLabel htmlFor="verification-status">Status</FieldLabel>
@@ -44,10 +43,16 @@ export function AdminVerificationsPage() {
         </Select>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {requests.isLoading && <p className="text-sm text-muted-foreground">Loading requests...</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {requests.isLoading && (
+        <div className="space-y-4" aria-busy="true" aria-label="Loading verification requests">
+          {['a', 'b', 'c'].map((row) => (
+            <Skeleton key={row} className="h-56 w-full" />
+          ))}
+        </div>
+      )}
       {requests.error && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {requests.error instanceof Error
             ? requests.error.message
             : 'Requests could not be loaded.'}

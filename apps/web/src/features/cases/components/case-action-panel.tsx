@@ -308,8 +308,8 @@ export function CaseActionPanel({ item }: { item: CaseDetail }) {
               </div>
             )}
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
+            {feedback && <p className="text-sm text-success">{feedback}</p>}
 
             <Button onClick={requestSubmit} disabled={action.isPending}>
               {action.isPending ? 'Saving…' : ACTION_LABELS[kind]}

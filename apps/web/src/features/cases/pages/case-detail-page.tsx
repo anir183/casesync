@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Skeleton } from '#/components/ui/skeleton'
+import { TableScroll } from '#/components/ui/table-scroll'
 import { AttachmentsPanel } from '#/features/attachments/components/attachments-panel'
 import { CaseLinkPanel } from '#/features/overlaps/components/case-link-panel'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
@@ -11,6 +14,10 @@ import { CaseActionPanel } from '../components/case-action-panel'
 import { CaseConversationPanel } from '../components/case-conversation-panel'
 
 type Tab = 'overview' | 'actions' | 'assignments' | 'conversation' | 'documents' | 'related'
+
+const CELL_CLASS = 'px-4 py-3 text-sm'
+const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'overview', label: 'Overview' },
@@ -74,22 +81,22 @@ function AssignmentHistory({ item }: { item: CaseDetail }) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <TableScroll label="Assignment history">
       <table className="w-full min-w-[720px] border-collapse text-left">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-            <th className="px-3 py-2.5">Officer</th>
-            <th className="px-3 py-2.5">Bureau/Cell</th>
-            <th className="px-3 py-2.5">From</th>
-            <th className="px-3 py-2.5">To</th>
-            <th className="px-3 py-2.5">Assigned by</th>
-            <th className="px-3 py-2.5">Remarks</th>
+          <tr className="border-b border-border">
+            <th className={HEAD_CLASS}>Officer</th>
+            <th className={HEAD_CLASS}>Bureau/Cell</th>
+            <th className={HEAD_CLASS}>From</th>
+            <th className={HEAD_CLASS}>To</th>
+            <th className={HEAD_CLASS}>Assigned by</th>
+            <th className={HEAD_CLASS}>Remarks</th>
           </tr>
         </thead>
         <tbody>
           {item.assignments.map((assignment) => (
-            <tr key={assignment._id} className="border-b border-border last:border-0">
-              <td className="px-3 py-2.5 text-sm">
+            <tr key={assignment._id} className={ROW_CLASS}>
+              <td className={CELL_CLASS}>
                 {assignment.officerName ?? 'Unassigned'}
                 {!assignment.endedAt && (
                   <Badge variant="success" className="ml-2">
@@ -97,20 +104,20 @@ function AssignmentHistory({ item }: { item: CaseDetail }) {
                   </Badge>
                 )}
               </td>
-              <td className="px-3 py-2.5 text-sm">{assignment.bureauName ?? '—'}</td>
-              <td className="px-3 py-2.5 text-sm">{formatDate(assignment.assignedAt)}</td>
-              <td className="px-3 py-2.5 text-sm">
+              <td className={CELL_CLASS}>{assignment.bureauName ?? '—'}</td>
+              <td className={CELL_CLASS}>{formatDate(assignment.assignedAt)}</td>
+              <td className={CELL_CLASS}>
                 {assignment.endedAt ? formatDate(assignment.endedAt) : 'Open'}
               </td>
-              <td className="px-3 py-2.5 text-sm">
+              <td className={CELL_CLASS}>
                 {assignment.assignedByName ?? assignment.assignedBy ?? '—'}
               </td>
-              <td className="px-3 py-2.5 text-sm">{assignment.remarks ?? '—'}</td>
+              <td className={CELL_CLASS}>{assignment.remarks ?? '—'}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   )
 }
 
@@ -119,12 +126,23 @@ export function CaseDetailPage() {
   const { data: item, isLoading, isError, error } = useCaseDetail(id)
   const [tab, setTab] = useState<Tab>('overview')
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading case...</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading case">
+        <Skeleton className="h-8 w-72" />
+        <Skeleton className="h-10 w-full" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    )
+  }
 
   if (isError || !item) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {error instanceof Error ? error.message : 'Case not found'}
         </p>
         <Link to="/cases" className="text-sm underline underline-offset-4">
@@ -136,30 +154,39 @@ export function CaseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-3">
         <Link to="/cases" className="text-sm text-muted-foreground underline underline-offset-4">
           ← Back to case registry
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">{item.caseNumber}</h1>
-          {item.subject && <p className="text-sm text-muted-foreground">{item.subject}</p>}
-          <CaseStatusBadge status={item.status} />
-          <Badge variant="muted">
-            {item.officerName ? `Officer: ${item.officerName}` : 'Unassigned'}
-          </Badge>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          <Link to={`/institutions/${item.institutionId}`} className="underline underline-offset-4">
-            {item.institution?.name ?? item.institutionName ?? 'Unknown institution'}
-          </Link>{' '}
-          · {item.bureau?.name ?? item.bureauName ?? 'Unassigned bureau'}
-          {item.regionName ? ` · ${item.regionName}` : ''}
-        </p>
+        <PageHeader
+          title={item.caseNumber}
+          description={
+            <div className="space-y-2">
+              {item.subject && <p>{item.subject}</p>}
+              <div className="flex flex-wrap items-center gap-2">
+                <CaseStatusBadge status={item.status} />
+                <Badge variant="muted">
+                  {item.officerName ? `Officer: ${item.officerName}` : 'Unassigned'}
+                </Badge>
+              </div>
+              <p>
+                <Link
+                  to={`/institutions/${item.institutionId}`}
+                  className="underline underline-offset-4"
+                >
+                  {item.institution?.name ?? item.institutionName ?? 'Unknown institution'}
+                </Link>{' '}
+                · {item.bureau?.name ?? item.bureauName ?? 'Unassigned bureau'}
+                {item.regionName ? ` · ${item.regionName}` : ''}
+              </p>
+            </div>
+          }
+        />
       </div>
 
       {item.mergeGroup && (
-        <Card className="border-emerald-200 bg-emerald-50/60">
-          <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6 text-sm">
+        <Card className="border-success/30 bg-success-soft/60">
+          <CardBody className="flex flex-wrap items-center justify-between gap-3 text-sm">
             <div>
               <p className="font-medium">
                 Linked for coordinated handling
@@ -176,7 +203,7 @@ export function CaseDetailPage() {
             >
               Open merge group
             </Link>
-          </CardContent>
+          </CardBody>
         </Card>
       )}
 

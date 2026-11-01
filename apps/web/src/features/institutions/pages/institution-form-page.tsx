@@ -4,11 +4,13 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
@@ -33,7 +35,7 @@ type InstitutionValues = z.infer<typeof institutionSchema>
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
-  return <p className="text-xs text-red-600">{message}</p>
+  return <p className="text-xs text-danger">{message}</p>
 }
 
 export function InstitutionFormPage() {
@@ -118,15 +120,20 @@ export function InstitutionFormPage() {
   }
 
   if (sessionPending || (isEdit && isLoading)) {
-    return <p className="text-sm text-muted-foreground">Loading institution...</p>
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading institution">
+        <Skeleton className="h-8 w-52" />
+        <Skeleton className="h-72 w-full" />
+      </div>
+    )
   }
 
   if (!canWrite) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-red-600">
+        <div className="rounded-lg border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-soft-foreground">
           You do not have permission to manage institution records.
-        </p>
+        </div>
         <Link to="/institutions" className="text-sm underline underline-offset-4">
           Back to institutions
         </Link>
@@ -145,13 +152,11 @@ export function InstitutionFormPage() {
         >
           ← Back
         </Link>
-        <h1 className="mt-3 text-2xl font-semibold">
-          {isEdit ? 'Edit institution' : 'New institution'}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Keep the institution name and AICTE permanent ID consistent so cases consolidate onto one
-          record.
-        </p>
+        <PageHeader
+          className="mt-3"
+          title={isEdit ? 'Edit institution' : 'New institution'}
+          description="Keep the institution name and AICTE permanent ID consistent so cases consolidate onto one record."
+        />
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -220,7 +225,7 @@ export function InstitutionFormPage() {
               {existingDuplicates.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-200 bg-amber-50 p-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-soft/70 p-3"
                 >
                   <div>
                     <Link
@@ -243,7 +248,7 @@ export function InstitutionFormPage() {
         )}
 
         {mutation.isError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-danger">
             {mutation.error instanceof Error
               ? mutation.error.message
               : 'Institution could not be saved'}

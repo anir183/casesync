@@ -48,7 +48,7 @@ export function NotificationBell({
     >
       {(close) => (
         <div>
-          <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <p className="text-sm font-semibold">Notifications</p>
               <p className="text-xs text-muted-foreground">
@@ -60,7 +60,7 @@ export function NotificationBell({
                 type="button"
                 onClick={onMarkAllRead}
                 disabled={isMarkingAllRead}
-                className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                className="rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
               >
                 Mark all read
               </button>
@@ -68,7 +68,7 @@ export function NotificationBell({
           </div>
 
           {preview.length === 0 ? (
-            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+            <p className="px-4 py-8 text-center text-sm text-muted-foreground">
               No notifications yet.
             </p>
           ) : (
@@ -84,7 +84,10 @@ export function NotificationBell({
                         if (unread) onOpenNotification?.(item.id)
                         close()
                       }}
-                      className="block px-3 py-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      className={cn(
+                        'block px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                        unread && 'bg-primary/[0.04]',
+                      )}
                     >
                       <div className="flex items-start gap-2">
                         <span
@@ -125,11 +128,11 @@ export function NotificationBell({
             </ul>
           )}
 
-          <div className="border-t border-border p-1.5">
+          <div className="border-t border-border p-2">
             <Link
               to="/notifications"
               onClick={close}
-              className="block rounded-lg px-2.5 py-2 text-center text-sm font-medium text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="block rounded-lg px-3 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               View all notifications
             </Link>

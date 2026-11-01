@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { EmptyState } from '#/components/shared/empty-state'
+import { PageHeader } from '#/components/shared/page-header'
 import { buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useCurrentUser } from '#/lib/session'
 import { usePortalComplaints, usePortalProfile } from '../api'
 import { ComplaintStatusBadge } from '../components/complaint-status-badge'
@@ -13,26 +16,24 @@ export function PortalDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">My complaints</h1>
-          <p className="text-sm text-muted-foreground">
-            Welcome back, {user?.name ?? 'complainant'}.
-          </p>
-        </div>
-        {verified ? (
-          <Link to="/portal/complaints/new" className={buttonVariants()}>
-            File a complaint
-          </Link>
-        ) : (
-          <Link to="/portal/verification" className={buttonVariants()}>
-            Verify to file a complaint
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="My complaints"
+        description={`Welcome back, ${user?.name ?? 'complainant'}.`}
+        actions={
+          verified ? (
+            <Link to="/portal/complaints/new" className={buttonVariants()}>
+              File a complaint
+            </Link>
+          ) : (
+            <Link to="/portal/verification" className={buttonVariants()}>
+              Verify to file a complaint
+            </Link>
+          )
+        }
+      />
 
       {profile.error && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {profile.error instanceof Error ? profile.error.message : 'Profile could not be loaded.'}
         </p>
       )}
@@ -70,24 +71,35 @@ export function PortalDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {complaints.isLoading && (
-            <p className="text-sm text-muted-foreground">Loading complaints...</p>
+            <div className="space-y-2" aria-busy="true" aria-label="Loading complaints">
+              {['a', 'b', 'c'].map((row) => (
+                <Skeleton key={row} className="h-20 w-full" />
+              ))}
+            </div>
           )}
           {complaints.error && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-danger">
               {complaints.error instanceof Error
                 ? complaints.error.message
                 : 'Could not load complaints.'}
             </p>
           )}
           {complaints.data && complaints.data.items.length === 0 && (
-            <div className="space-y-2 py-4 text-sm text-muted-foreground">
-              <p>You have not filed a complaint yet.</p>
-              {verified && (
-                <Link to="/portal/complaints/new" className="underline underline-offset-4">
-                  File your first complaint
-                </Link>
-              )}
-            </div>
+            <EmptyState
+              className="border-0 bg-transparent"
+              title="No complaints yet"
+              description="You have not filed a complaint yet."
+              action={
+                verified ? (
+                  <Link
+                    to="/portal/complaints/new"
+                    className="text-sm underline underline-offset-4"
+                  >
+                    File your first complaint
+                  </Link>
+                ) : undefined
+              }
+            />
           )}
           {complaints.data?.items.map((item) => (
             <Link

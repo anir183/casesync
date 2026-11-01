@@ -152,7 +152,7 @@ export function MergeDecisionPanel({ overlap }: { overlap: Overlap }) {
               </p>
             )}
             {vetoLabel && (
-              <p className="text-amber-700">
+              <p className="text-warning-soft-foreground">
                 <span className="font-medium">Auto-merge veto: </span>
                 {vetoLabel}
               </p>
@@ -211,8 +211,8 @@ export function MergeDecisionPanel({ overlap }: { overlap: Overlap }) {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
+        {feedback && <p className="text-sm text-success">{feedback}</p>}
 
         <div className="flex flex-wrap gap-2">
           {canMerge && <Button onClick={() => setPendingAction('merge')}>Merge cases</Button>}

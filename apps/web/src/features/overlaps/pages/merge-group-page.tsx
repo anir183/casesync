@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
+import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useMergeGroup } from '#/features/overlaps/api'
 import { MergeStatusBadge } from '#/features/overlaps/components/status-badges'
 import { matchTypeLabel, mergeStatusLabel, percent } from '#/features/overlaps/labels'
@@ -10,12 +12,20 @@ export function MergeGroupPage() {
   const { id = '' } = useParams()
   const { data: group, isLoading, isError, error } = useMergeGroup(id)
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading merge group...</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-label="Loading merge group">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-56 w-full" />
+      </div>
+    )
+  }
 
   if (isError || !group) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-danger">
           {error instanceof Error ? error.message : 'Merge group not found'}
         </p>
         <Link to="/overlaps" className="text-sm underline underline-offset-4">
@@ -27,20 +37,26 @@ export function MergeGroupPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-3">
         <Link to="/overlaps" className="text-sm text-muted-foreground underline underline-offset-4">
           ← Back to overlap queue
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">Merge group</h1>
-          <Badge variant={group.status === 'active' ? 'success' : 'danger'}>
-            {group.status === 'active' ? 'Active' : 'Reverted'}
-          </Badge>
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {group.memberCaseIds.length} case records linked for coordinated handling. This is not a
-          duplicate determination; original records and histories are unchanged.
-        </p>
+        <PageHeader
+          title="Merge group"
+          description={
+            <div className="space-y-1">
+              <div>
+                <Badge variant={group.status === 'active' ? 'success' : 'danger'}>
+                  {group.status === 'active' ? 'Active' : 'Reverted'}
+                </Badge>
+              </div>
+              <p>
+                {group.memberCaseIds.length} case records linked for coordinated handling. This is
+                not a duplicate determination; original records and histories are unchanged.
+              </p>
+            </div>
+          }
+        />
       </div>
 
       <Card>

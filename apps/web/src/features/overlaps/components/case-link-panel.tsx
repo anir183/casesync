@@ -102,8 +102,8 @@ export function CaseLinkPanel({ caseId }: { caseId: string }) {
               placeholder="Why are these cases related?"
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {feedback && <p className="text-sm text-emerald-700">{feedback}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
+          {feedback && <p className="text-sm text-success">{feedback}</p>}
           <Button type="submit" size="sm" disabled={link.isPending}>
             {link.isPending ? 'Linking…' : 'Link cases'}
           </Button>

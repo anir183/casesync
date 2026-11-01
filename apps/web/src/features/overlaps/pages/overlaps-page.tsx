@@ -1,11 +1,14 @@
 import { OVERLAP, PAGINATION } from '@casesync/config'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { EmptyState } from '#/components/shared/empty-state'
+import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select } from '#/components/ui/select'
+import { Skeleton } from '#/components/ui/skeleton'
 import { useBureaus, useRegions } from '#/features/organization/api'
 import {
   type Overlap,
@@ -137,14 +140,10 @@ export function OverlapsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">{OVERLAP.HEADING}</h1>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          Cases concerning the same institution but handled by different Bureaus/Cells are surfaced
-          here for review. High-confidence exact-institution pairs may be linked automatically under
-          bounded rules; every other overlap needs a human decision.
-        </p>
-      </div>
+      <PageHeader
+        title={OVERLAP.HEADING}
+        description="Cases concerning the same institution but handled by different Bureaus/Cells are surfaced here for review. High-confidence exact-institution pairs may be linked automatically under bounded rules; every other overlap needs a human decision."
+      />
 
       <div className="flex flex-wrap gap-2">
         {TABS.map((tab) => (
@@ -171,7 +170,7 @@ export function OverlapsPage() {
       </div>
 
       <Card>
-        <CardContent className="grid gap-3 pt-6 md:grid-cols-3">
+        <CardBody className="grid gap-3 md:grid-cols-3">
           <Select
             aria-label="Filter by bureau"
             value={filters.bureauId ?? ''}
@@ -208,33 +207,35 @@ export function OverlapsPage() {
               </option>
             ))}
           </Select>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Loading overlap queue...</p>}
+      {isLoading && (
+        <div className="space-y-4" aria-busy="true" aria-label="Loading overlap queue">
+          {['a', 'b', 'c'].map((row) => (
+            <Skeleton key={row} className="h-44 w-full" />
+          ))}
+        </div>
+      )}
 
       {isError && (
         <Card>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-red-600">
+          <CardBody className="space-y-3">
+            <p className="text-sm text-danger">
               {error instanceof Error ? error.message : 'Unable to load overlaps'}
             </p>
             <Button variant="outline" size="sm" onClick={() => void refetch()}>
               Retry
             </Button>
-          </CardContent>
+          </CardBody>
         </Card>
       )}
 
       {!isLoading && !isError && data?.items.length === 0 && (
-        <Card>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              No overlap alerts match this queue and filters. New alerts appear automatically when a
-              cross-bureau case is registered.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title="No overlap alerts"
+          description="No overlap alerts match this queue and filters. New alerts appear automatically when a cross-bureau case is registered."
+        />
       )}
 
       <div className="space-y-4">
