@@ -2,41 +2,133 @@ import { lazy } from 'react'
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '#/components/layout/app-shell'
 import { AuthGuard } from '#/components/layout/auth-guard'
-import { AdminAuditPage } from '#/features/admin/pages/admin-audit-page'
-import { AdminOrganizationPage } from '#/features/admin/pages/admin-organization-page'
-import { AdminUsersPage } from '#/features/admin/pages/admin-users-page'
-import { AdminVerificationsPage } from '#/features/admin/pages/admin-verifications-page'
 import { LoginPage } from '#/features/auth/pages/login-page'
-import { CaseDetailPage } from '#/features/cases/pages/case-detail-page'
-import { CaseRegistrationPage } from '#/features/cases/pages/case-registration-page'
-import { CasesPage } from '#/features/cases/pages/cases-page'
-import { InstitutionDetailPage } from '#/features/institutions/pages/institution-detail-page'
-import { InstitutionFormPage } from '#/features/institutions/pages/institution-form-page'
-import { InstitutionsPage } from '#/features/institutions/pages/institutions-page'
-import { NotificationsPage } from '#/features/notifications/pages/notifications-page'
-import { MergeGroupPage } from '#/features/overlaps/pages/merge-group-page'
-import { OverlapDetailPage } from '#/features/overlaps/pages/overlap-detail-page'
-import { OverlapsPage } from '#/features/overlaps/pages/overlaps-page'
 import { PortalGuard } from '#/features/portal/components/portal-guard'
 import { PortalLayout } from '#/features/portal/components/portal-layout'
-import { PortalComplaintDetailPage } from '#/features/portal/pages/portal-complaint-detail-page'
-import { PortalComplaintNewPage } from '#/features/portal/pages/portal-complaint-new-page'
-import { PortalDashboardPage } from '#/features/portal/pages/portal-dashboard-page'
-import { PortalLandingPage } from '#/features/portal/pages/portal-landing-page'
-import { PortalLoginPage } from '#/features/portal/pages/portal-login-page'
-import { PortalSignupPage } from '#/features/portal/pages/portal-signup-page'
-import { PortalVerificationPage } from '#/features/portal/pages/portal-verification-page'
-import { TrackPage } from '#/features/portal/pages/track-page'
-import { SlaConfigPage } from '#/features/sla/pages/sla-config-page'
 
+const AdminAuditPage = lazy(() =>
+  import('#/features/admin/pages/admin-audit-page').then((module) => ({
+    default: module.AdminAuditPage,
+  })),
+)
+const AdminOrganizationPage = lazy(() =>
+  import('#/features/admin/pages/admin-organization-page').then((module) => ({
+    default: module.AdminOrganizationPage,
+  })),
+)
+const AdminUsersPage = lazy(() =>
+  import('#/features/admin/pages/admin-users-page').then((module) => ({
+    default: module.AdminUsersPage,
+  })),
+)
+const AdminVerificationsPage = lazy(() =>
+  import('#/features/admin/pages/admin-verifications-page').then((module) => ({
+    default: module.AdminVerificationsPage,
+  })),
+)
+const CaseDetailPage = lazy(() =>
+  import('#/features/cases/pages/case-detail-page').then((module) => ({
+    default: module.CaseDetailPage,
+  })),
+)
+const CaseRegistrationPage = lazy(() =>
+  import('#/features/cases/pages/case-registration-page').then((module) => ({
+    default: module.CaseRegistrationPage,
+  })),
+)
+const CasesPage = lazy(() =>
+  import('#/features/cases/pages/cases-page').then((module) => ({
+    default: module.CasesPage,
+  })),
+)
 const DashboardPage = lazy(() =>
   import('#/features/dashboard/pages/dashboard-page').then((module) => ({
     default: module.DashboardPage,
   })),
 )
+const InstitutionDetailPage = lazy(() =>
+  import('#/features/institutions/pages/institution-detail-page').then((module) => ({
+    default: module.InstitutionDetailPage,
+  })),
+)
+const InstitutionFormPage = lazy(() =>
+  import('#/features/institutions/pages/institution-form-page').then((module) => ({
+    default: module.InstitutionFormPage,
+  })),
+)
+const InstitutionsPage = lazy(() =>
+  import('#/features/institutions/pages/institutions-page').then((module) => ({
+    default: module.InstitutionsPage,
+  })),
+)
+const MergeGroupPage = lazy(() =>
+  import('#/features/overlaps/pages/merge-group-page').then((module) => ({
+    default: module.MergeGroupPage,
+  })),
+)
+const NotificationsPage = lazy(() =>
+  import('#/features/notifications/pages/notifications-page').then((module) => ({
+    default: module.NotificationsPage,
+  })),
+)
+const OverlapDetailPage = lazy(() =>
+  import('#/features/overlaps/pages/overlap-detail-page').then((module) => ({
+    default: module.OverlapDetailPage,
+  })),
+)
+const OverlapsPage = lazy(() =>
+  import('#/features/overlaps/pages/overlaps-page').then((module) => ({
+    default: module.OverlapsPage,
+  })),
+)
+const PortalComplaintDetailPage = lazy(() =>
+  import('#/features/portal/pages/portal-complaint-detail-page').then((module) => ({
+    default: module.PortalComplaintDetailPage,
+  })),
+)
+const PortalComplaintNewPage = lazy(() =>
+  import('#/features/portal/pages/portal-complaint-new-page').then((module) => ({
+    default: module.PortalComplaintNewPage,
+  })),
+)
+const PortalDashboardPage = lazy(() =>
+  import('#/features/portal/pages/portal-dashboard-page').then((module) => ({
+    default: module.PortalDashboardPage,
+  })),
+)
+const PortalLandingPage = lazy(() =>
+  import('#/features/portal/pages/portal-landing-page').then((module) => ({
+    default: module.PortalLandingPage,
+  })),
+)
+const PortalLoginPage = lazy(() =>
+  import('#/features/portal/pages/portal-login-page').then((module) => ({
+    default: module.PortalLoginPage,
+  })),
+)
+const PortalSignupPage = lazy(() =>
+  import('#/features/portal/pages/portal-signup-page').then((module) => ({
+    default: module.PortalSignupPage,
+  })),
+)
+const PortalVerificationPage = lazy(() =>
+  import('#/features/portal/pages/portal-verification-page').then((module) => ({
+    default: module.PortalVerificationPage,
+  })),
+)
 const ReportsPage = lazy(() =>
   import('#/features/reports/pages/reports-page').then((module) => ({
     default: module.ReportsPage,
+  })),
+)
+const SlaConfigPage = lazy(() =>
+  import('#/features/sla/pages/sla-config-page').then((module) => ({
+    default: module.SlaConfigPage,
+  })),
+)
+const TrackPage = lazy(() =>
+  import('#/features/portal/pages/track-page').then((module) => ({
+    default: module.TrackPage,
   })),
 )
 

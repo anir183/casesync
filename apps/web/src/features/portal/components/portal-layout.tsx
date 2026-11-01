@@ -1,10 +1,11 @@
 import { Menu, User, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { NavDropdown } from '#/components/layout/nav-dropdown'
 import { NotificationBell } from '#/components/layout/notification-bell'
 import { ThemeToggle } from '#/components/theme/theme-toggle'
 import { Button } from '#/components/ui/button'
+import { Skeleton } from '#/components/ui/skeleton'
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -243,7 +244,21 @@ export function PortalLayout() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="space-y-4" aria-busy="true" aria-label="Loading page">
+              <Skeleton className="h-10 w-64" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+              </div>
+              <Skeleton className="h-72" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="border-t border-border bg-background">
