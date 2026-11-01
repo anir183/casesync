@@ -7,7 +7,7 @@ Companions: [`backup-and-retention.md`](backup-and-retention.md),
 
 ## 1. Prerequisites
 
-- Bun 1.4.4 (CI version) and Node-compatible tooling for Playwright.
+- Bun 1.4.4 (pinned in CI and `mise.toml`) and Node 24 for Playwright tooling.
 - MongoDB 7+ (Atlas for local demo/staging, Mongo service for CI).
 - `apps/api/.env` with `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
   `CORS_ORIGIN`, and optional Jev settings. Never commit it.
@@ -78,9 +78,10 @@ seeded browser tests, and 87.4% lines / 89.7% functions of API coverage.
 API unit/component tests preload inert test defaults, so `verify` does not need a
 personal `.env`; integration, seed, and E2E commands do need real DB/auth env.
 
-CI (`.github/workflows/ci.yml`) runs static analysis, unit/component tests,
-integration + coverage with Mongo 7, builds, seeded staff/portal browser smoke and
-accessibility, and dependency audit.
+CI (`.github/workflows/ci.yml`) pins every job to `ubuntu-24.04`, Bun `1.4.4`, and
+`actions/checkout@v7` / `actions/upload-artifact@v7`. It runs static analysis,
+unit/component tests, integration + coverage with Mongo 7, builds, seeded staff/portal
+browser smoke and accessibility, and dependency audit.
 
 ## 4.1 Stage 8 portal operations
 
