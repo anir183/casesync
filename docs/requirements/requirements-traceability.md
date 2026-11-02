@@ -1,6 +1,6 @@
 # CaseSync — Requirements Traceability Matrix
 
-**Last verified:** 2026-11-01  
+**Last verified:** 2026-11-02  
 **Source of truth:** original AICTE problem statement + `docs/product/end-product-and-stages.md` + this matrix  
 **Detailed audit:** `docs/requirements/requirements-realignment.md`
 
@@ -11,8 +11,8 @@ Status legend:
   usable end-to-end or is materially incomplete.
 - **Gap** — not implemented, or only a placeholder/model exists.
 - **Extension** — beyond the original requirement set (optional public portal).
-- **Planned** — Stage 9 scope is agreed and documented but **not implemented**; do not
-  treat it as delivered evidence.
+- **Planned** — Stage 9 or Stage 10 scope is agreed and documented but **not implemented**;
+  do not treat it as delivered evidence.
 
 > This matrix is intentionally conservative. Do not mark an item Done until its
 > acceptance path works in the UI/API and has test evidence.
@@ -35,6 +35,7 @@ Status legend:
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
 | Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
+| Stage 10 UI coverage | **Planned** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Current routes are coverable now; representative rows wait for Stage 9 Phase 2. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -233,7 +234,7 @@ Status legend:
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
 | Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
-## 13. Test and ops baseline (verified 2026-11-01)
+## 13. Test and ops baseline (verified 2026-11-02)
 
 - 85 API unit tests, 25 web component/URL tests, and 55 database-backed integration
   tests; Jev is mocked and a fetch guard blocks real calls.
@@ -241,12 +242,17 @@ Status legend:
   reconciliation, overlap correctness/coordination, SLA jobs, admin/master CRUD,
   attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, and Stage 8
   verification/ownership/public-visibility/reopen flows. `RUN_INTEGRATION=1` runs
-  locally against run-scoped records; CI uses `mongo:7`.
+  locally against run-scoped records; CI uses `mongo:7` (exact `7.0.45` pin planned).
 - Coverage is 87.4% lines / 89.7% functions with an 85% floor.
 - 12 seeded Playwright tests: 3 staff smoke journeys, 2 portal journeys, an axe
   accessibility scan (including the mobile drawer), 3 navigation/bell journeys,
   map/reflow and reduced-motion checks, and a merge/revert journey; plus a tagged
   5,000-case performance test.
+- Stage 10 baseline: 28 current concrete routes plus the root redirect, 8 seeded accounts
+  across 7 roles plus the planned representative role, and the planned representative
+  shell (5 screens plus the `/institution` redirect). The browser suite currently covers a
+  subset; use `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count.
+  Stage 10 adds no delivered coverage yet.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
@@ -295,3 +301,7 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
    Stage 7; observe CI green on a pushed commit.
 8. ~~Optional public complainant portal.~~ Done in Stage 8; institution representative
    accounts are planned for Stage 9 Phase 2.
+9. Stage 10: complete the Playwright route/role/mutation/state/accessibility/responsive
+   matrix and add visual regression baselines. Start on current routes; finish after
+   Stage 9 Phase 2 and the remaining Phase 3 flows. See
+   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).

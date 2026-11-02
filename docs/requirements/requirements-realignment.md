@@ -1,7 +1,7 @@
 # CaseSync — Requirements Realignment Audit
 
 Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
-Audit date: 2026-10-28. Last verified: 2026-11-01 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified).
+Audit date: 2026-10-28. Last verified: 2026-11-02 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified; Stage 10 planned).
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
 separately as an **optional Stage 8 extension**, now implemented but still outside MVP
@@ -18,7 +18,8 @@ external intake surface with separate ownership and public-projection controls.
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
 (`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency, Phase 1 reversible
 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/charts/GIS are implemented,
-while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned.**
+while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned. Stage 10
+(complete Playwright UI coverage) is planned and starts on current routes.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -53,6 +54,11 @@ while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned.**
 - Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
+- Stage 10 is planned: complete Playwright coverage of every route, role, mutation, UI
+  state, accessibility requirement, responsive breakpoint, and a stable visual subset.
+  The current suite covers 12 seeded journeys; the matrix in
+  `docs/quality/ui-test-matrix.md` is the progress measure. Representative-shell rows
+  wait for Stage 9 Phase 2.
 
 ## 1. Status legend
 
@@ -376,6 +382,28 @@ Still open from Stage 3:
 - Periodic overlap sweep/background batch and production-scale fuzzy blocking.
 - Automated browser E2E for confirm/dismiss/link/unlink.
 
+### 15.4 Stage 9–10 status update (applied 2026-11-02)
+
+Stage 9 Phase 0, Phase 1, the Phase 3 navigation refresh, and Phase 4 are implemented;
+the audit above predates them. Current facts:
+
+- Phase 0: CI pinned to `ubuntu-24.04` and Bun `1.4.4`; Node `24.21.0` is the local
+  browser-tooling target. Exact Node and MongoDB `7.0.45` CI pins remain Stage 10
+  follow-ups. Every route
+  lazy-loaded; warning-free production build; web tests/E2E typechecked.
+- Phase 1: reversible exact-institution auto-merge with score/veto gates, a flat merge
+  group, revert/suppression, audit, and queue/detail UI.
+- Phase 3: primary navigation + More, notification bell/preview, account menu, and mobile
+  drawer on staff and portal shells. Remaining role-landing, case-tab, and resolution-loop
+  work is planned.
+- Phase 4: design tokens, chart-first dashboard/reports, and a lazy-loaded
+  Leaflet/OpenStreetMap region map with keyboard chips and a table fallback.
+- Phase 2 representatives/domains and Phases 5–6 remain planned.
+- Stage 10: planned complete Playwright UI coverage. See
+  `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
+  `docs/plans/todo-tracker.md` for the current checklist. No Stage 10 coverage is
+  claimed yet.
+
 ## 16. Gap backlog (prioritized)
 
 ### P0 — required for a credible internal MVP demo
@@ -452,7 +480,8 @@ The MVP is accepted only when all of these are true:
    region; senior/authority/admin see all. Tested server-side. *(Done — Stage 1,
    integration-tested.)*
 3. An officer can register a case, assign it, add a remark, set next action,
-   transfer, escalate, dispose, and see the full audit trail in the UI.
+   transfer, escalate, dispose, and see the full audit trail in the UI. *(Implemented;
+   full browser coverage is Stage 10.)*
 4. Same-institution cross-bureau cases automatically produce a PENDING overlap
    relationship with the exact heading, regardless of Jev availability. *(Done —
    Stage 3, integration-tested.)*

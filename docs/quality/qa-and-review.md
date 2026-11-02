@@ -23,7 +23,7 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-11-01)
+## 2. Current test baseline (verified 2026-11-02)
 
 - **85 API unit tests across 20 files** plus **25 web component/URL tests across 8
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
@@ -41,8 +41,9 @@ exit criteria.
   attachments, invite/reset, Stage 7 search bounds/regex/operator-notation/rate-limit
   checks, Stage 8 verification/ownership/public-visibility/reopen flows, and Stage 9
   Phase 4 geo scope/date/reconciliation behavior. They are
-  opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service, while local
-  runs use run-scoped records in the configured dev database.
+  opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service (exact `7.0.45` pin planned), while local
+  runs use run-scoped records in the configured dev database. Local MongoDB `8.3.9` is
+  supported; the CI pin stays on the 7.0 line.
 - **12 seeded Playwright browser tests**: three staff smoke journeys (officer case
   search/timeline, viewer scope/IDOR, overlap queue/reports), two portal journeys
   (file/converse/track/resolve/accept, invalid tracking), an axe serious/critical
@@ -58,7 +59,8 @@ exit criteria.
   tests/e2e), unit/component tests, Mongo-backed integration/coverage, builds, seeded
   E2E/accessibility, and a high-severity dependency audit. Every job is pinned to
   `ubuntu-24.04` with Bun `1.4.4`, `actions/checkout@v7`, and
-  `actions/upload-artifact@v7`.
+  `actions/upload-artifact@v7`. Exact Node `24.21.0` and MongoDB `7.0.45` pins are
+  Stage 10 follow-ups.
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
 - API, web, and web test/e2e typechecks pass; Biome is clean; API and web production
@@ -83,7 +85,8 @@ exit criteria.
 | Integration | API routes + MongoDB + auth + services | `bun test` + disposable DB + `app.handle()` | Every PR / CI | Author |
 | Contract | Request/response validation, error shapes, OpenAPI drift | Elysia schemas + snapshot tests | CI | Author |
 | Component | Forms, filters, dialogs, visibility, empty/error states | Bun + Happy DOM + React Testing Library | PR / CI | Author |
-| E2E | Critical staff journeys | Playwright | CI smoke + pre-demo | Author/reviewer |
+| E2E | Critical staff, admin, portal, and quality journeys | Playwright | CI smoke + full on `main` + pre-demo | Author/reviewer |
+| UI coverage | Route × role × mutation × state × a11y × responsive × visual | Playwright + axe | Stage 10 matrix; smoke on PR, full on `main` | Author/reviewer |
 | Non-functional | Security, accessibility, performance, resilience | Scripts + axe + load tool | Stage gates / release | Reviewer |
 
 Do not chase unit-test coverage for trivial presentational code. Prefer behavior
@@ -172,7 +175,7 @@ Current (Stage 1) approach, because the Atlas user cannot create/drop databases:
 
 CI approach (implemented Stage 7):
 
-- GitHub Actions starts a disposable `mongo:7` service and points integration/coverage
+- GitHub Actions starts a disposable `mongo:7` service (exact `7.0.45` pin planned) and points integration/coverage
   and seeded E2E jobs at `casesync_test`.
 - Local integration remains run-scoped against the configured dev database because the
   Atlas user cannot create/drop databases.
@@ -267,14 +270,29 @@ Implemented with Bun + Happy DOM + React Testing Library (`apps/web/tests/`, pre
 Add behavior tests for new forms, role-gated dialogs, and empty/error states as the UI
 grows. Do not duplicate full integration coverage; test UI behavior and error handling.
 
-## 7. E2E plan (Playwright)
+## 7. E2E and complete UI coverage (Playwright)
 
 Implemented now: 12 seeded journeys (staff smoke, portal, navigation/bell, accessibility
 including the mobile drawer, map/reflow, reduced motion, and merge/revert), run against
 production builds on API port 3100 and web port 4173. The performance test is tagged and
 run separately with the stress seed.
 
-### Remaining full journeys
+**Stage 10 is the completion path.** The decision-complete plan is
+[`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
+action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
+
+- every current route (staff, admin, portal, auth) plus the planned representative shell
+  and its Phase 2 request/admin-queue routes once Stage 9 Phase 2 lands;
+- every user-facing mutation and its denied path;
+- loading, empty, error, permission-denied, not-found, pagination, filter, dialog, toast,
+  and pending states;
+- axe on every route and role, keyboard-only journeys, focus management, reduced motion,
+  and 200% zoom;
+- 375/768/1024/1440 px checks with no page-level overflow;
+- visual regression baselines for a stable high-value subset in light/dark at mobile and
+  desktop.
+
+### Remaining full journeys (tracked in the matrix)
 
 1. **Officer case lifecycle**: sign in as PGRC officer → register case → assign →
    remark → next action → transfer → escalate → dispose → timeline shows all.
@@ -282,12 +300,15 @@ run separately with the stress seed.
    queue → compare → confirm → related cases visible → audit.
 3. **Rules-first**: `JEV_ENABLED=false` → overlap appears with rule-based reason.
 4. **Scope**: PGRC officer cannot open RB case URL; regional officer cannot open
-   another region.
+   another region; viewer cannot mutate.
 5. **SLA**: seeded approaching/overdue cases → notifications appear once; dashboard
    count matches.
 6. **Reports**: filter by region/bureau/date → totals reconcile → export.
 7. **Admin**: create officer, assign bureau → officer can sign in and sees queue.
 8. **Institution**: search by AICTE ID → profile → consolidated history.
+9. **Portal**: signup → verify → file → converse → resolve → accept/reopen.
+10. **Representative** (blocked until Stage 9 Phase 2): institution scope and denied
+    internal actions.
 
 ### E2E rules
 
@@ -295,8 +316,23 @@ run separately with the stress seed.
 - Use a dedicated test DB; reset before run.
 - Run against a production build (`vite preview` + API) for release gate.
 - Capture trace/video on failure.
-- No real Jev calls; use `JEV_ENABLED=false` or a stub server.
-- Keep the smoke suite small (1–2 journeys) for every PR; full suite pre-demo.
+- No real Jev, OpenStreetMap tile, or third-party calls; use `JEV_ENABLED=false` and the
+  accessible map fallback.
+- Keep the smoke suite small for every PR; run the full suite on `main` or pre-demo.
+- Prefer role/label/accessible-name selectors; use `data-testid` only when no stable
+  accessible name exists.
+- No application behavior changes solely to satisfy a test.
+
+### Planned Stage 10 commands
+
+| Command | Behavior |
+|---|---|
+| `bun run test:e2e` | Full functional suite, excluding `@performance` and `@visual` |
+| `bun run test:e2e:smoke` | Tagged `@smoke` PR journeys |
+| `bun run test:e2e:full` | Full Chromium functional, a11y, responsive, and mutation suite |
+| `bun run test:e2e:ui` | Playwright UI mode for local debugging |
+| `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally |
+| `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
 
 ## 8. Security testing
 
@@ -369,12 +405,24 @@ Implemented in `.github/workflows/ci.yml`:
 
 1. **Static**: Biome check, API typecheck, web typecheck, web tests/e2e typecheck.
 2. **Unit**: API unit tests + web component tests via `bun run test:unit`.
-3. **Integration/coverage**: Mongo 7 service, `bun run test:coverage`, 85% floor,
-   coverage artifact upload.
+3. **Integration/coverage**: `mongo:7` service (pin `7.0.45` planned), `bun run
+   test:coverage`, 85% floor, coverage artifact upload.
 4. **Build**: API + web production builds.
-5. **E2E smoke**: Mongo 7 service, demo seed, Playwright Chromium, seeded smoke +
-   accessibility; report/artifacts on failure.
+5. **E2E smoke**: `mongo:7` service (pin `7.0.45` planned), demo seed, Playwright
+   Chromium, seeded smoke + accessibility; report/artifacts on failure.
 6. **Security**: `bun audit --audit-level=high`.
+
+### Planned Stage 10 CI split
+
+| Trigger | Jobs |
+|---|---|
+| Pull request | Static, unit, integration, build, `test:e2e:smoke` on Chromium |
+| Push to `main` | All PR jobs plus `test:e2e:full` on Chromium |
+| Nightly (optional) | Full suite plus cross-browser |
+| Release/manual | Cross-browser and visual baselines on the pinned image |
+
+The split is documented in [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
+Until it lands, the existing seeded browser job remains the smoke gate.
 
 Actual root scripts:
 
@@ -539,6 +587,9 @@ change description.
 - [x] `.env.example` complete; demo `.env` documented.
 - [x] Seed runs idempotently; guarded reset/stress helpers work.
 - [x] `verify`, integration, coverage, E2E, accessibility, and performance suites pass locally.
+- [ ] Stage 10 matrix complete: every route, role, mutation, state, a11y check, breakpoint,
+      and visual baseline covered or explicitly blocked.
+- [ ] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`.
 - [ ] CI green on a pushed commit.
 - [ ] Independent runbook walkthrough by someone other than the author.
 - [x] Security checklist complete.

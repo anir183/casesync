@@ -6,6 +6,7 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > reversible overlap auto-merge, the Phase 3 navigation refresh, and Phase 4 visual
 > redesign/charts/GIS are implemented and tested. Phase 2 (representatives/domains), the
 > remaining Phase 3 flows, Phase 5 (hardening), and Phase 6 (polish) remain planned.
+> Stage 10 (complete Playwright UI coverage) is planned and starts on current routes.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
@@ -14,23 +15,32 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 
 ## 1) Final Tech Stack
 
-| Layer | Tech | Notes |
+Versions below are the resolved versions in `bun.lock` as of 2026-11-02. Runtime
+libraries use caret ranges. `mise.toml` tracks the Bun `1.4` and Node `24` lines, and CI
+pins Bun `1.4.4`. Node `24.21.0` and MongoDB `7.0.45` are the exact targets; CI still
+uses the runner's Node and `mongo:7` until the Stage 10 CI work lands.
+
+| Layer | Tech | Version |
 |---|---|---|
-| Runtime | Bun (latest) | TS-first, fast, native fetch |
-| Backend | ElysiaJS (latest) | REST monolith, great TS inference, easy modules |
-| DB | MongoDB Atlas (latest) | Free tier, quick setup |
-| ODM | Mongoose (latest) | Schemas/validation/indexes |
-| Auth | Better Auth (latest) | Session httpOnly cookies, RBAC + bureau scoping |
-| Validation | Zod (latest) | Shared FE/BE |
-| Frontend | Vite + React 19 + TypeScript (latest) | Fast, standard |
-| UI | Tailwind CSS v4 + shadcn/ui (latest) | Composable components |
-| Data | TanStack Query + TanStack Table (latest) | Caching/tables/pagination |
-| Forms | React Hook Form + @hookform/resolvers + Zod (latest) | Type-safe forms |
-| Routing | React Router (latest) | SPA routing |
-| Icons/Dates | lucide-react, date-fns (latest) | UI utils |
-| Jobs | node-cron (latest) | SLA/deadlines/reminders |
+| Runtime | Bun | `1.4.4` |
+| Language | TypeScript | `5.6.3` |
+| Backend | ElysiaJS | `1.4.30` |
+| DB | MongoDB (Atlas or local) | CI `mongo:7` (recommended pin `7.0.45`); local `8.3.9` supported |
+| ODM | Mongoose | `8.24.7` |
+| Auth | Better Auth | `1.7.14` |
+| Validation | Zod | `4.6.7` |
+| Frontend | Vite + React | `6.4.5` / `19.3.1` |
+| UI | Tailwind CSS v4 + shadcn/ui | `4.3.3` |
+| Data | TanStack Query + TanStack Table | `5.105.0` / `8.21.3` |
+| Forms | React Hook Form + @hookform/resolvers + Zod | `7.91.0` / `5.9.2` / `4.6.7` |
+| Routing | React Router | `6.30.6` |
+| Icons/Dates | lucide-react, date-fns | `0.454.0` / `4.4.0` |
+| Charts/GIS | Local SVG charts + Leaflet / react-leaflet | `1.9.4` / `5.0.0` |
+| Jobs | node-cron | `3.0.3` |
 | AI (decision) | Jev API `POST https://jevmodel.org/v1/systemone` | Backend-only, pairwise structured decisions |
-| Lint/Format | Biome (latest) | Single tool |
+| Lint/Format | Biome | `1.9.4` |
+| E2E | Playwright + axe | `1.64.1` / `4.14.0` |
+| Browser tooling | Node | `24.21.0` target; CI still uses the runner Node |
 | Optional | Docker + Docker Compose | For demo if needed |
 
 ## 2) Architecture Overview
@@ -93,7 +103,7 @@ casesync/
 │   ├── types/              # types + zod schemas
 │   └── utils/              # pure helpers
 ├── docs/
-│   ├── README.md           # index + current status
+│   ├── README.md           # project README + docs index
 │   ├── product/            # end state, UX, user flows
 │   ├── requirements/       # audit + traceability
 │   ├── architecture/       # this document
@@ -308,15 +318,22 @@ committed; `.env.example` lists names with empty/placeholder values.
 See `docs/quality/qa-and-review.md` for the full pyramid and CI gates.
 
 Local DB-backed tests use run-scoped records in the dev database because the Atlas user
-cannot create/drop databases. CI uses a disposable `mongo:7` service.
+cannot create/drop databases. CI uses a disposable `mongo:7` service (exact `7.0.45` pin
+planned); local MongoDB `8.3.9` remains supported.
 
 | Tool | Purpose | Notes |
 |---|---|---|
 | Bun Test | Unit + integration | Built-in, fast |
-| Run-scoped dev DB records / disposable CI Mongo | DB-backed API tests | Unique run ID locally; fresh `mongo:7` in CI |
+| Run-scoped dev DB records / disposable CI Mongo | DB-backed API tests | Unique run ID locally; fresh `mongo:7` in CI (`7.0.45` pin planned) |
 | fetch/MSW mocks | Mock Jev API | **Never hit real Jev in tests** |
 | Bun + Happy DOM + React Testing Library | Critical component tests | Forms, filters, dialogs, permission states |
-| Playwright + axe | E2E smoke, accessibility, performance | Seeded journeys; stress budgets; WCAG scan |
+| Playwright + axe | E2E, route/role/mutation/state coverage, accessibility, responsive, visual | Seeded journeys; Stage 10 matrix; WCAG scan |
+| Tagged performance spec | Stress-data page budgets | Local/release only; 5,000-case seed |
+
+Stage 10 defines the complete UI coverage contract in
+[`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and tracks it in
+[`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Do not infer whole-product
+coverage from the current 12 seeded journeys.
 
 **Priority:** utils (pair/normalize/similarity), overlap orchestration with DB
 (exact/fuzzy, Jev enabled/disabled/failure/timeout, base relationship always created),

@@ -1,0 +1,403 @@
+# CaseSync — Stage 10: Complete Playwright UI Coverage
+
+Status: planned. Location: `docs/plans/ui-testing-plan.md`.
+Plan date: 2026-11-02.
+Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
+[`../quality/qa-and-review.md`](../quality/qa-and-review.md),
+[`../quality/accessibility-audit.md`](../quality/accessibility-audit.md),
+[`next-phase-plan.md`](next-phase-plan.md),
+[`../product/end-product-and-stages.md`](../product/end-product-and-stages.md).
+
+## 1. Why this stage exists
+
+The Playwright suite proves the highest-value journeys: staff smoke, portal, navigation,
+accessibility, map reflow, reduced motion, and merge/revert. It does **not** prove the
+whole UI. Many routes, roles, mutations, and failure states are covered only by API
+integration tests or manual checks, and there is no visual regression baseline.
+
+Stage 10 closes that gap. It is a separate stage rather than another Stage 9 phase
+because it is cross-cutting UI quality work that spans every feature area, and because
+its final exit gate depends on Stage 9 finishing the representative shell and the
+remaining role flows.
+
+### Goal
+
+> One deterministic Playwright suite proves every user-facing route, role, mutation, UI
+> state, accessibility requirement, and responsive breakpoint in the final UI.
+
+### Non-goals
+
+- Replacing API integration tests. The browser suite validates user-visible behavior; it
+  does not duplicate exhaustive server-side validation.
+- Load, soak, or security penetration testing. The tagged performance suite stays
+  separate.
+- Deployment, hosting, or infrastructure work.
+- Changing product behavior to make tests easier. Testability fixes must be behavior
+  neutral.
+
+## 2. Entry conditions
+
+Stage 10 can start on the current routes immediately. The matrix marks rows that depend
+on unfinished Stage 9 work.
+
+| Condition | Effect |
+|---|---|
+| Current routes (staff, admin, portal, auth) | Coverable now |
+| Stage 9 Phase 2 representative shell (5 routes, plus sign-up and admin queues) | Rows marked **Blocked** until Phase 2 lands |
+| Stage 9 Phase 3 remaining role flows and consolidated case tabs | Rows marked **Blocked** until Phase 3 lands |
+| Stage 9 Phase 5 hardening (headers, request IDs) | Not a blocker; add assertions when it lands |
+| Seeded demo data | Required; `seed:demo` must stay deterministic |
+| Production builds | Required; tests run against built API and web, matching CI |
+
+Final Stage 10 exit is blocked until every Stage 9 UI dependency is closed or the
+affected row is explicitly accepted as out of scope with a written reason.
+
+## 3. Scope
+
+### 3.1 Coverage workstreams
+
+| Workstream | Deliverable |
+|---|---|
+| Inventory | Living route × role × action × state matrix covering all current routes and the future representative shell |
+| Fixtures | Shared auth/role fixtures, API helpers, deterministic per-test data, reset/isolation for destructive specs |
+| Route coverage | Every page renders for an allowed role; direct URL access is denied for a disallowed role |
+| Mutations | Every user-facing create/update/delete/transition has a browser test |
+| States | Loading, empty, error, permission-denied, pagination, filters, dialogs, toasts, disabled/pending mutations |
+| Accessibility | axe on every route and role; keyboard-only journeys; focus management; reduced motion; 200% zoom |
+| Responsive | 375, 768, 1024, and 1440 px; no page overflow; table scroll containment; mobile drawer parity |
+| Visual regression | Stable screenshot baselines for a high-value subset in light/dark at mobile/desktop |
+| CI | Smoke on PR; full Chromium on main; cross-browser and visual jobs on release/manual |
+| Documentation | This plan plus the living matrix, both kept truthful as routes change |
+
+### 3.2 Route inventory
+
+Current concrete routes (28) plus the root redirect (1):
+
+**Public and auth**
+
+- `/login`
+- `/portal`
+- `/portal/login`
+- `/portal/signup`
+- `/portal/track`
+
+**Complainant portal (guarded)**
+
+- `/portal/dashboard`
+- `/portal/verification`
+- `/portal/complaints/new`
+- `/portal/complaints/:id`
+- `/portal/notifications`
+
+**Staff**
+
+- `/` (redirects to `/dashboard`)
+- `/dashboard`
+- `/cases`
+- `/cases/new`
+- `/cases/:id`
+- `/institutions`
+- `/institutions/new`
+- `/institutions/:id`
+- `/institutions/:id/edit`
+- `/overlaps`
+- `/overlaps/:id`
+- `/merge-groups/:id`
+- `/reports`
+- `/notifications`
+
+**Admin**
+
+- `/admin/users`
+- `/admin/organization`
+- `/admin/audit`
+- `/admin/verifications`
+- `/admin/sla`
+
+**Planned representative shell (Stage 9 Phase 2)**
+
+- `/institution` (redirect to `/institution/dashboard`)
+- `/institution/dashboard`
+- `/institution/cases`
+- `/institution/cases/:id`
+- `/institution/notifications`
+- `/institution/profile`
+
+Stage 9 Phase 2 also adds the representative request/sign-up entry point and the
+`/admin/institution-domains` and `/admin/institution-representatives` admin queues. Their
+rows are added to the matrix when the final paths land; they are blocked on the same
+Phase 2 work.
+
+The detailed role and action mapping lives in
+[`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). That matrix is the
+authority for coverage; this plan defines how the suite is built.
+
+### 3.3 Role matrix
+
+Seed accounts (password from `SEED_PASSWORD`, default `Passw0rd!123`):
+
+| Role | Seed account | Primary scope |
+|---|---|---|
+| `ADMIN` | `admin@casesync.test` | All data and administration |
+| `SENIOR_MANAGEMENT` | `senior@casesync.test` | Cross-bureau read and coordination |
+| `COMPETENT_AUTHORITY` | `competent@casesync.test` | Sensitive decisions, reopen, overlap decisions |
+| `BUREAU_OFFICER` (PGRC) | `pgrc.officer@casesync.test` | PGRC cases and related records |
+| `BUREAU_OFFICER` (RB) | `rb.officer@casesync.test` | RB cases and related records |
+| `REGIONAL_OFFICER` | `regional.north@casesync.test` | North-region cases and institutions |
+| `VIEWER` | `viewer@casesync.test` | Read-only scoped or all per policy |
+| `COMPLAINANT` | `complainant@casesync.test` | Own complaints and public data |
+| `INSTITUTION_REPRESENTATIVE` | Not seeded yet | Own institution, public projection only (Stage 9 Phase 2) |
+
+Every route gets two assertions: the allowed role can render it, and at least one
+disallowed role is denied without leaking data.
+
+### 3.4 Mutation inventory
+
+| Area | Mutations to cover in the browser |
+|---|---|
+| Cases | Register, assign, transfer, escalate, remark, set next action, dispose, reopen, attach document |
+| Institutions | Create, edit, verify, merge duplicate, alias change |
+| Overlaps | Confirm, dismiss, manual link, unlink, re-assess, merge, revert, clear suppression |
+| Notifications | Mark one read, mark all read, follow deep link |
+| Admin users | Create, deactivate, reactivate, change role/scope, reset password |
+| Organization | Create/edit bureau, region, category |
+| SLA | Create/edit rule, toggle active, override bureau/category/region |
+| Admin audit | Verify merge/revert and admin actions appear |
+| Verification queue | Approve, reject, request more evidence |
+| Portal complaint | Sign up, verify, file, message, attach, accept resolution, reopen |
+| Account | Sign out, switch session, theme change |
+
+Each mutation test asserts the visible result, the audit or timeline entry where
+applicable, and the denied path for an unauthorized role.
+
+### 3.5 UI state inventory
+
+- Initial loading skeletons.
+- Empty collections and empty search results.
+- Fetch error with retry affordance.
+- Permission-denied and not-found routes.
+- Pagination first/middle/last and page-size changes.
+- Filter, search, sort, and CSV export interactions.
+- Confirmation dialogs: cancel, confirm, pending, error.
+- Toast success and error messages.
+- Disabled and pending states for mutations.
+- Session expiry and redirect to `/login`.
+- Reduced motion and 200% zoom reflow.
+- Light and dark themes.
+
+## 4. Test architecture
+
+### 4.1 Layout
+
+```text
+apps/web/e2e/
+├── fixtures/
+│   ├── auth.ts          # role storage states and sign-in helpers
+│   ├── data.ts          # unique-suffix factories and seed lookups
+│   └── api.ts           # signed-in request contexts and reset helpers
+├── journeys/
+│   ├── auth.spec.ts
+│   ├── dashboard.spec.ts
+│   ├── cases.spec.ts
+│   ├── institutions.spec.ts
+│   ├── overlaps.spec.ts
+│   ├── reports.spec.ts
+│   ├── notifications.spec.ts
+│   ├── admin.spec.ts
+│   └── portal.spec.ts
+├── coverage/
+│   ├── routes.spec.ts   # route × role render/deny
+│   ├── states.spec.ts   # loading, empty, error, pagination, dialogs
+│   └── mutations.spec.ts
+├── quality/
+│   ├── accessibility.spec.ts
+│   ├── responsive.spec.ts
+│   └── visual.spec.ts
+├── performance.spec.ts  # tagged @performance, local/release only
+└── helpers.ts
+```
+
+Existing specs move into this structure without losing coverage. The suite keeps the
+current production-build web server on API port `3100` and web port `4173`.
+
+### 4.2 Fixtures and data
+
+- `signIn(page, roleKey)` maps a role key to a seed account and asserts the landing page.
+- `signedInApi(roleKey)` returns a request context for setup and verification.
+- Authenticated role state may be cached per worker; mutation specs create their own
+  context to avoid cross-test coupling.
+- Every created record uses a unique suffix (`Date.now()` plus a counter) so reruns do
+  not collide.
+- Destructive specs (merge, revert, deactivate, dispose) run in their own data slice and
+  restore through API helpers or `seed:reset` between groups.
+- Tests must not depend on execution order. `fullyParallel` stays off until data
+  isolation is proven, then may be enabled per project.
+- Fixed clocks and fixed IDs where the UI displays dates, to keep visual baselines
+  stable.
+
+### 4.3 Selectors and assertions
+
+- Prefer role, label, and accessible-name selectors.
+- Use `data-testid` only for values with no stable accessible name.
+- Assert user-visible outcomes, not implementation details.
+- Wait on UI state, never arbitrary timeouts.
+- No assertions against raw Mongo documents from the browser suite; use API helpers.
+
+### 4.4 Determinism
+
+- `JEV_ENABLED=false`, `OVERLAP_AUTO_ASSESS=false`, `CRON_ENABLED=false` in the E2E
+  environment, matching the current config.
+- A fixed seed dataset; no network calls to Jev, OpenStreetMap tiles, or third parties.
+  Map tests use the accessible region chips and table fallback.
+- Stable sort orders, fixed page sizes, and explicit dates.
+- Visual tests disable animations and wait for fonts and charts to settle.
+
+## 5. Accessibility strategy
+
+- axe (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) runs on every route for its primary
+  allowed role, and on denied/empty variants where the shell is visible.
+- Fail on serious and critical violations; report moderate violations as tracked debt.
+- Keyboard-only paths: sign-in, primary navigation, mobile drawer, filters, tables,
+  dialogs, case action panel, overlap compare/merge/revert, portal filing.
+- Focus management: dialogs trap and return focus; route changes move focus to the
+  heading; skip link reaches main content.
+- Reduced motion: chart-heavy and map routes respect `prefers-reduced-motion`.
+- 200% zoom and text-only zoom reflow without horizontal page scrolling.
+- Manual screen-reader sign-off remains a Stage 9/Stage 10 release checklist item; it is
+  not replaced by axe.
+
+## 6. Responsive strategy
+
+| Width | Represents | Checks |
+|---|---|---|
+| 375 px | Mobile | Drawer navigation, stacked cards, table horizontal containment, no page overflow |
+| 768 px | Tablet | Two-column layouts, filter wrapping, chart reflow |
+| 1024 px | Small desktop | Full navigation, table density |
+| 1440 px | Desktop | Full layout, map, charts, baseline screenshots |
+
+Each breakpoint asserts no document-level horizontal overflow and no clipped primary
+action. Table-heavy routes must scroll inside their container, not the page.
+
+## 7. Visual regression strategy
+
+- Playwright `toHaveScreenshot` with a committed baseline directory.
+- Stable subset only: `/dashboard`, `/cases`, `/cases/:id`, `/institutions`,
+  `/institutions/:id`, `/overlaps`, `/overlaps/:id`, `/reports`, `/notifications`,
+  `/admin/users`, `/portal`, `/portal/dashboard`.
+- Light and dark themes at 375 px and 1440 px.
+- Mask volatile content: relative timestamps, random IDs, chart tooltips, map tiles.
+- Baselines are generated in the pinned CI image (`ubuntu-24.04`, Chromium `1.64.1`) to
+  avoid font and rendering drift.
+- Update baselines only through the documented command and a reviewed diff.
+- Visual tests run on main or release/manual, not on every PR, until the suite is proven
+  stable.
+
+## 8. Commands and configuration
+
+New scripts at the root and in `apps/web`:
+
+| Script | Behavior |
+|---|---|
+| `test:e2e` | Existing full functional suite, excluding `@performance` and `@visual` |
+| `test:e2e:smoke` | Tagged `@smoke` critical journeys for PR feedback |
+| `test:e2e:full` | All functional, accessibility, responsive, and mutation specs on Chromium |
+| `test:e2e:ui` | Playwright UI mode for local debugging |
+| `test:e2e:update-snapshots` | Regenerate visual baselines intentionally |
+| `test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
+| `test:perf` | Unchanged stress-data performance suite |
+
+Playwright projects:
+
+- `chromium-desktop` — required CI browser, 1440 px.
+- `chromium-mobile` — 375 px responsive and selected journey checks.
+- `firefox-desktop` and `webkit-desktop` — release/manual cross-browser.
+- `visual-desktop` and `visual-mobile` — screenshot baselines, light/dark.
+
+Tagging:
+
+- `@smoke` — sign-in, dashboard, case read, overlap read, portal landing.
+- `@mutation` — any test that changes data.
+- `@a11y`, `@responsive`, `@visual`, `@performance` — quality workstreams.
+
+## 9. CI strategy
+
+| Trigger | Jobs |
+|---|---|
+| Pull request | Static, unit, integration, build, `test:e2e:smoke` on Chromium |
+| Push to `main` | All PR jobs plus `test:e2e:full` on Chromium |
+| Nightly (optional) | Full suite plus cross-browser |
+| Release/manual | Cross-browser and visual baselines on the pinned image |
+
+- Keep the existing seeded browser job as the smoke job.
+- Full Chromium runs after merge so a flaky or slow suite does not block small PRs.
+- Upload traces, screenshots, videos, and the HTML report on failure with a short
+  retention period.
+- Fail the job on unexpected test retries; track flake rate per spec.
+- Pin the MongoDB service to `mongo:7.0.45` so CI matches the supported database line.
+  Local MongoDB `8.3.9` remains supported; document the difference in the runbook.
+- Do not add visual or cross-browser jobs to PRs until their runtime and stability are
+  measured.
+
+## 10. Exit criteria
+
+Stage 10 is complete only when all are true:
+
+1. Every row in [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md) is
+   **Covered** or explicitly **Blocked** with a linked Stage 9 dependency and owner.
+2. Every user-facing mutation has a browser test, including its denied path.
+3. Every current route has a render test and a role-denial test.
+4. Every route has an axe scan with zero serious/critical findings.
+5. Keyboard, focus, reduced-motion, and 200% zoom checks pass.
+6. 375/768/1024/1440 px checks pass with no page-level overflow.
+7. Visual baselines exist for the agreed subset and pass twice consecutively.
+8. The full Chromium suite passes twice in a row against production builds and a fresh
+   `seed:demo`.
+9. CI runs the agreed jobs and uploads artifacts on failure.
+10. The runbook, QA plan, accessibility audit, and matrix agree on commands and scope.
+11. No application behavior changed solely to satisfy a test.
+
+## 11. Work breakdown and commit sequence
+
+Each commit is independently reviewable. Do not commit or push unless explicitly asked.
+
+1. `test(e2e): add role fixtures and route inventory`
+   - Fixtures, helpers, route × role render/deny spec, matrix scaffold.
+2. `test(e2e): cover staff and admin mutations`
+   - Cases, institutions, overlaps, notifications, admin, SLA, verification, audit.
+3. `test(e2e): cover portal and auth flows`
+   - Signup, verification, filing, messaging, attachments, accept/reopen, session expiry.
+4. `test(e2e): cover loading, empty, error, and permission states`
+   - State specs, dialogs, pagination, filters, toasts.
+5. `test(e2e): expand accessibility and responsive coverage`
+   - axe on all routes/roles, keyboard, focus, reduced motion, zoom, breakpoints.
+6. `test(e2e): add visual regression baselines`
+   - Visual projects, masking, committed baselines, update command.
+7. `ci: split smoke, full, cross-browser, and visual jobs`
+   - Workflow changes, artifact upload, MongoDB pin.
+8. `docs: record the Stage 10 coverage baseline`
+   - Matrix status, QA plan, runbook, and evidence; only after exit gates pass.
+
+Steps 1–4 can proceed on current routes. Step 5 can proceed except for blocked
+representative rows. Steps 6–8 wait for Stable UI and the Stage 9 dependencies.
+
+## 12. Risks and mitigations
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Seed data drift | Broad suite fails for unrelated reasons | Treat `seed:demo` as a contract; add a seed-shape test and keep fixtures explicit |
+| Shared mutable data | Order-dependent flakes | Unique suffixes, per-test contexts, isolated destructive slices |
+| Long runtime | Slow PR feedback | Tagged smoke on PR; full suite on main |
+| Visual flake from fonts/maps | False failures | Pin CI image and browser, mask volatile content, run visuals off PRs |
+| Dynamic dates and counts | Brittle assertions | Fixed clocks, relative assertions, stable seed, masked dynamic values |
+| Route churn during Stage 9 | Repeated rewrites | Derive the matrix from the router; block dependent rows instead of guessing |
+| Accessibility debt discovered late | Rework | Run axe per route as each spec lands, not at the end |
+| Over-testing trivial UI | Maintenance cost | Focus on user-visible behavior and contract-critical states |
+| Hidden test-only behavior | Production risk | No behavior changes for tests; test through public UI and API |
+
+## 13. Definition of done
+
+Stage 10 is done when the suite is the authoritative proof of the UI: it runs
+deterministically from a clean checkout and fresh seed, covers the matrix, fails for the
+right reasons, and is documented well enough for a new contributor to add a route
+without guessing. Until then the stage stays **in progress**, and the matrix — not the
+test count — is the progress measure.

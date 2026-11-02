@@ -1,8 +1,9 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-01  
+**Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
+**Stage 10:** planned. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -271,8 +272,10 @@ exit gate; the evidence column records the verified result.
 - [x] Bump `actions/checkout` to `v7` and `actions/upload-artifact` to `v7`; keep
       `oven-sh/setup-bun@v2`.
 - [x] Pin every CI job to `ubuntu-24.04` and document the image in the runbook.
-- [x] Pin Bun `1.4.4` across CI, `mise.toml`, runbook, and local docs; pin Node `24` in
-      `mise.toml`.
+- [x] Pin Bun `1.4.4` in CI, the runbook, and local docs; `mise.toml` tracks the `1.4`
+      line. Document Node `24.21.0` as the Playwright tooling target; `mise.toml` tracks
+      the `24` line.
+- [ ] Pin Node `24.21.0` explicitly in CI (it currently uses the runner's Node).
 - [x] Lazy-load every route page in `apps/web/src/app/router.tsx`; add a portal
       `Suspense` boundary; main chunk below 500 kB (verified 483.90 kB / 137.86 kB gzip).
 - [x] Add a narrow, documented Rollup `onwarn` filter for only the two known
@@ -386,6 +389,81 @@ indigo/teal language.
 - [ ] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
 - [ ] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment).
 
+## Stage 10 — Complete Playwright UI coverage (PLANNED)
+
+Full plan: `docs/plans/ui-testing-plan.md`. Living matrix:
+`docs/quality/ui-test-matrix.md`. Stage 10 is a separate cross-cutting stage, not another
+Stage 9 phase. Current routes are coverable now; representative-shell rows are blocked by
+Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
+
+### Foundation
+
+- [ ] Add shared role/auth fixtures, signed-in API helpers, and unique-suffix data factories.
+- [ ] Add reset/isolation for destructive specs (merge, revert, deactivate, dispose).
+- [ ] Add Playwright projects for desktop Chromium, mobile Chromium, Firefox, WebKit, and
+      visual desktop/mobile.
+- [ ] Add `@smoke`, `@mutation`, `@a11y`, `@responsive`, `@visual`, and `@performance` tags.
+- [ ] Add scripts: `test:e2e:smoke`, `test:e2e:full`, `test:e2e:ui`,
+      `test:e2e:update-snapshots`, `test:e2e:cross-browser`.
+
+### Route and role coverage
+
+- [ ] Render and direct-URL denial tests for every public, auth, portal, staff, and admin route.
+- [ ] Cover all eight seeded roles plus the planned institution representative.
+- [ ] Assert denied access without data leakage for cases, institutions, overlaps, admin
+      routes, and portal complaints.
+- [ ] Add the five representative-shell routes when Stage 9 Phase 2 lands.
+
+### Mutations
+
+- [ ] Cases: register, assign, transfer, escalate, remark, next action, dispose, reopen,
+      attachment.
+- [ ] Institutions: create, edit, verify, merge, alias.
+- [ ] Overlaps: confirm, dismiss, link, unlink, re-assess, merge, revert, clear suppression.
+- [ ] Notifications: mark one read, mark all read, deep link.
+- [ ] Admin: users, organization, SLA, verification queue, audit.
+- [ ] Portal: signup, verification, file, message, attach, accept/reopen.
+- [ ] Account: sign out, theme.
+- [ ] Assert denial and missing-reason paths for every privileged mutation.
+
+### UI states
+
+- [ ] Loading, empty, empty search, error with retry, and not-found states.
+- [ ] Pagination first/middle/last and page-size changes.
+- [ ] Filters, search, sort, and CSV export.
+- [ ] Dialog cancel/confirm/pending/error and focus return.
+- [ ] Success and error toasts; disabled/pending mutations.
+- [ ] Session-expiry redirect; mobile drawer; notification bell preview.
+
+### Accessibility and responsive
+
+- [ ] axe on every route and primary role; zero serious/critical findings.
+- [ ] Keyboard-only journeys for sign-in, navigation, filters, dialogs, case actions, and
+      overlap merge/revert.
+- [ ] Focus management on route change and dialogs.
+- [ ] Reduced motion on chart and map routes.
+- [ ] 200% zoom reflow.
+- [ ] 375/768/1024/1440 px with no page-level overflow.
+
+### Visual regression
+
+- [ ] Baselines for dashboard, cases, case detail, institutions, institution detail,
+      overlaps, overlap detail, reports, notifications, admin users, portal, and portal
+      dashboard.
+- [ ] Light/dark at mobile/desktop.
+- [ ] Mask volatile dates, IDs, chart tooltips, and map tiles.
+- [ ] Generate baselines on the pinned CI image; review every update.
+
+### CI and documentation
+
+- [ ] Keep smoke on pull requests; full Chromium on `main`.
+- [ ] Add cross-browser and visual jobs to release/manual.
+- [ ] Upload traces, screenshots, videos, and the HTML report on failure.
+- [ ] Pin the CI MongoDB service to `mongo:7.0.45`; document local `8.3.9` compatibility.
+- [ ] Add commands, artifacts, and scope to the runbook and QA plan.
+- [ ] Keep the matrix current in the same change as every route or mutation.
+- [ ] Record the Stage 10 baseline only after all exit gates pass.
+
 ## Testing Definition of Done
 
 - [x] Critical pure utils tested (pair/normalize/similarity)
@@ -423,3 +501,11 @@ indigo/teal language.
       warning).
 - [x] Stage 9: merge/revert E2E journey.
 - [ ] Stage 9: representative E2E journey.
+- [ ] Stage 10: every route has render and role-denial coverage.
+- [ ] Stage 10: every user-facing mutation has a browser test and denial path.
+- [ ] Stage 10: axe clean on every route and role.
+- [ ] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
+- [ ] Stage 10: 375/768/1024/1440 px checks pass with no page overflow.
+- [ ] Stage 10: visual baselines pass twice consecutively.
+- [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
+- [ ] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.

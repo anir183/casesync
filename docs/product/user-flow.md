@@ -2,12 +2,14 @@
 
 Status: implemented design plus partial Stage 9 delivery. Internal-official MVP is the
 committed scope; the public complainant experience is an **optional Stage 8 extension**
-and remains outside MVP acceptance. Stage 9 Phase 4 is implemented: visual tokens,
-chart-first dashboard/reports, and a lazy-loaded Leaflet/OpenStreetMap map. The Phase 3
-navigation refresh (primary links + More, notification bell, mobile drawer) is also
-implemented. Baseline fixes, exact-institution reversible auto-merge, institution
-representatives, the remaining Phase 3 flows, hardening, and docs remain planned. See
-`docs/plans/next-phase-plan.md` for the decision-complete plan,
+and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency), Phase 1
+(reversible exact-institution auto-merge), the Phase 3 navigation refresh (primary links
++ More, notification bell, mobile drawer), and Phase 4 (visual tokens, chart-first
+dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Stage 9 Phase 2
+(representatives/domains), the remaining Phase 3 flows, and Phases 5–6 remain planned.
+Stage 10 (complete Playwright UI coverage) is planned and starts on current routes; see
+`docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. See
+`docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
 
@@ -31,7 +33,7 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 ### What exists
 - Staff accounts are admin-invite-only (`STAFF_SIGNUP_ENABLED=false`) and the API
   rejects public staff sign-up with HTTP 403 `SIGNUP_DISABLED`.
-- Seven seeded staff users, one per role, plus a verified demo complainant:
+- Seven seeded staff users covering every staff role, plus a verified demo complainant:
   `admin@`, `senior@`, `competent@`, `pgrc.officer@`, `rb.officer@`,
   `regional.north@`, `viewer@casesync.test`, and `complainant@casesync.test`.
 - Roles: `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`,
@@ -563,6 +565,10 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - Implemented Stage 9 Phase 1: exact pair auto-merges, merge group is visible, and revert
   restores manual review. Planned Stage 9: representative approval/revocation and
   institution isolation; notification bell.
+- Stage 10 (planned): make the browser suite the authoritative proof of the UI. The
+  living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
+  state × accessibility × responsive × visual coverage; representative rows stay blocked
+  until Stage 9 Phase 2.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,
@@ -572,6 +578,8 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - `bun run verify` (lint, typechecks, unit/component, builds)
 - Mongo-backed integration/coverage
 - Seeded staff + portal E2E and accessibility
+- Stage 10 (planned): smoke on PR, full Chromium on `main`, cross-browser and visual on
+  release/manual
 - Dependency audit
 
 ## 15. Decisions (locked 2026-10-28) and remaining questions

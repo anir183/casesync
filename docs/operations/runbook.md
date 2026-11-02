@@ -1,15 +1,19 @@
 # CaseSync — Operations Runbook
 
 Status: Stage 7–9 runbook (Stage 9 Phase 0, Phase 1, Phase 3 navigation, and Phase 4
-implemented).
-Last verified: 2026-11-01.
+implemented) plus the planned Stage 10 UI coverage commands.
+Last verified: 2026-11-02.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
 ## 1. Prerequisites
 
-- Bun 1.4.4 (pinned in CI and `mise.toml`) and Node 24 for Playwright tooling.
-- MongoDB 7+ (Atlas for local demo/staging, Mongo service for CI).
+- Bun 1.4.4 (pinned in CI; `mise.toml` tracks the `1.4` line). Node 24.21.0 is the
+  Playwright tooling target (`mise.toml` tracks the `24` line); CI currently uses the
+  runner's Node.
+- MongoDB production/CI line 7.0. CI uses the `mongo:7` image; pin `7.0.45` in Stage 10.
+  Local MongoDB 8.3.9 is supported for development and integration runs; do not silently
+  change the CI major without a migration pass.
 - `apps/api/.env` with `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
   `CORS_ORIGIN`, and optional Jev settings. Never commit it.
 - For CI/E2E, set `JEV_ENABLED=false`, `CRON_ENABLED=false`,
@@ -73,18 +77,36 @@ bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
 
-Current local baseline (2026-11-01): 85 API unit + 25 web tests, 55 integration tests, 12
+Planned Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)):
+
+```bash
+bun run test:e2e:smoke             # tagged @smoke PR gate
+bun run test:e2e:full              # full Chromium functional/a11y/responsive/mutation suite
+bun run test:e2e:ui                # Playwright UI mode
+bun run test:e2e:update-snapshots  # intentional visual baseline update
+bun run test:e2e:cross-browser     # Chromium + Firefox + WebKit
+```
+
+Visual baselines must be generated on the pinned CI image and reviewed before commit.
+Install browsers once per machine with
+`cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
+cross-browser suite).
+
+Current local baseline (2026-11-02): 85 API unit + 25 web tests, 55 integration tests, 12
 seeded browser tests, and 87.4% lines / 89.7% functions of API coverage. The production
 web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
-was lazy-loaded; `bun audit --audit-level=high` is clean.
+was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
+new runtime.
 
 API unit/component tests preload inert test defaults, so `verify` does not need a
 personal `.env`; integration, seed, and E2E commands do need real DB/auth env.
 
 CI (`.github/workflows/ci.yml`) pins every job to `ubuntu-24.04`, Bun `1.4.4`, and
 `actions/checkout@v7` / `actions/upload-artifact@v7`. It runs static analysis,
-unit/component tests, integration + coverage with Mongo 7, builds, seeded staff/portal
-browser smoke and accessibility, and dependency audit.
+unit/component tests, integration + coverage with `mongo:7`, builds, seeded staff/portal
+browser smoke and accessibility, and dependency audit. Exact Node `24.21.0` and MongoDB
+`7.0.45` pins are Stage 10 follow-ups. Stage 10 splits this into PR smoke, `main` full Chromium, and
+release/manual cross-browser and visual jobs.
 
 ## 4.1 Stage 8 portal operations
 

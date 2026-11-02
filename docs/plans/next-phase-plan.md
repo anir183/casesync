@@ -21,6 +21,13 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
   `../quality/security-checklist.md`, `../quality/accessibility-audit.md`,
   `../operations/runbook.md`, `../operations/backup-and-retention.md`, `todo-tracker.md`
 
+> **Stage 10 sequencing.** Complete Playwright UI coverage is a separate stage after
+> Stage 9: [`ui-testing-plan.md`](ui-testing-plan.md) with the living matrix at
+> [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 can start on
+> current routes now, but its representative-shell rows wait for Stage 9 Phase 2 and its
+> final exit gate waits for the remaining Phase 3 role flows. Stage 9 must not mark those
+> rows covered on Stage 10's behalf.
+
 ## 1. Purpose
 
 Stage 9 closes the remaining product, usability, and operational gaps without reopening
@@ -53,8 +60,9 @@ the status tables must agree.
 - Integration and E2E need a disposable MongoDB on port `27018` locally; the system
   `mongod` requires auth and is not the test target.
 - The tagged performance suite (`bun run test:perf`) is **local only**; CI does not run it.
-- CI uses Bun `1.4.4`, `ubuntu-24.04`, MongoDB 7, `actions/checkout@v7`,
-  `oven-sh/setup-bun@v2`, and `actions/upload-artifact@v7`.
+- CI uses Bun `1.4.4`, `ubuntu-24.04`, `actions/checkout@v7`, `oven-sh/setup-bun@v2`, and
+  `actions/upload-artifact@v7`. It currently uses the runner's Node and `mongo:7`; exact
+  Node `24.21.0` and MongoDB `7.0.45` pins are Stage 10 follow-ups.
 
 ### 2.2 Confirmed gaps this plan closes
 
@@ -80,7 +88,7 @@ the decision taken; the resolved results follow it.
 |---|---|---|
 | GitHub Actions | `actions/checkout@v4` and `actions/upload-artifact@v4` target the deprecated Node 20 runtime | Bump to `actions/checkout@v7` and `actions/upload-artifact@v7`; keep `oven-sh/setup-bun@v2` |
 | Runner image | `ubuntu-latest` is floating | Pin every job to `ubuntu-24.04` and record the choice |
-| Bun/Node | CI pins Bun `1.4.4`; the local toolchain is `1.4.2`; `mise.toml` says `latest`/`lts` | Pin Bun `1.4.4` in CI, `mise.toml`, runbook, and local instructions; pin Node `24` in `mise.toml` |
+| Bun/Node | CI pins Bun `1.4.4`; the local toolchain is `1.4.2`; `mise.toml` says `latest`/`lts` | Pin Bun `1.4.4` in CI, runbook, and local instructions; track the `1.4` line in `mise.toml`. Document Node `24.21.0` as the browser-tooling target; track the `24` line in `mise.toml`; the CI Node pin is a Stage 10 follow-up |
 | Build warnings | Two `node_modules/zod` Rollup annotation warnings; no upstream fix in Zod 4.6.7 or Rollup 4.67.4 | Add a narrow, documented `onwarn` filter that matches only the known zod annotation warnings, logs everything else, and states when to remove it |
 | Web bundle | Main chunk is ~928 kB (~201 kB gzip); only Dashboard and Reports are lazy | Lazy-load every route page, add a portal `Suspense` boundary, and target a main chunk below 500 kB |
 | API TypeScript | `noUnusedLocals` / `noUnusedParameters` are not enabled | Enable both and fix the eight known findings (complaint service, overlap query/scoring, demo seed) |
@@ -95,7 +103,7 @@ Resolved on 2026-11-01 (local verification; CI workflow updated but not pushed):
 | Area | Verified result |
 |---|---|
 | Actions/runner | Every job on `ubuntu-24.04`; `actions/checkout@v7` and `actions/upload-artifact@v7`; `oven-sh/setup-bun@v2` retained |
-| Bun/Node | Bun `1.4.4` in CI, `mise.toml`, and the runbook; Node `24` in `mise.toml` |
+| Bun/Node | Bun `1.4.4` in CI and the runbook, with `mise.toml` on the `1.4` line; Node `24.21.0` documented as the browser-tooling target, with `mise.toml` on the `24` line. Exact Node and MongoDB `7.0.45` CI pins are Stage 10 follow-ups |
 | Bundle | Every route page lazy-loaded with a portal `Suspense` skeleton; main chunk 483.90 kB (137.86 kB gzip); no >500 kB warning |
 | Warnings | `onwarn` filters only the two known `node_modules/zod` annotation warnings; the web build is otherwise clean |
 | API types | `noUnusedLocals` / `noUnusedParameters` enabled; all eight findings fixed; `typecheck:api` passes |
@@ -170,7 +178,7 @@ Phase 5 (hardening) ── Phase 6 (docs/polish)
 |---|---|---|
 | CI actions | Bump `actions/checkout` to `v7` and `actions/upload-artifact` to `v7` (both Node 24 majors); keep `oven-sh/setup-bun@v2` | CI shows no Node 20 deprecation annotation |
 | Runner | Pin every job to `ubuntu-24.04`; document the choice in the runbook | CI diff uses one image |
-| Bun/Node | Pin Bun `1.4.4` in CI, `mise.toml`, runbook, and local instructions; pin Node `24` in `mise.toml` | `mise.toml` and workflow agree |
+| Bun/Node | Pin Bun `1.4.4` in CI, runbook, and local instructions; track the `1.4` line in `mise.toml`. Document Node `24.21.0` as the browser-tooling target; track the `24` line in `mise.toml`; the CI Node pin is a Stage 10 follow-up | `mise.toml` and workflow agree |
 | Bundle split | Convert every route page in `apps/web/src/app/router.tsx` to `React.lazy`, keeping only the shell, guards, and login eager; wrap the portal `Outlet` in `Suspense` with the same skeleton pattern the staff shell uses | Main JS chunk < 500 kB; no chunk-size warning |
 | Warnings | Add a narrow Rollup `onwarn` filter that matches only the two known `node_modules/zod` annotation warnings; log every other warning unchanged; comment why the filter exists and when to remove it | Build output clean without hiding unrelated warnings |
 | API types | Enable `noUnusedLocals` and `noUnusedParameters`; fix the eight current findings in `complaint.service.ts`, `overlap.query.ts`, `overlap.scoring.ts`, and `seed/demo-seed.ts` | `bun run typecheck:api` |

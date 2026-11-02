@@ -155,7 +155,7 @@ fixtures.
 
 Integration tests do not use the demo seed. They create run-scoped users, regions,
 bureaus, institutions, and cases with a unique `RUN_ID`, and clean up by ID/email because
-the local Atlas user cannot create/drop databases. CI uses a disposable `mongo:7`
-service instead. See [`../quality/qa-and-review.md`](../quality/qa-and-review.md).
+the local Atlas user cannot create/drop databases. CI uses a disposable `mongo:7` service
+instead (exact `7.0.45` pin planned). See [`../quality/qa-and-review.md`](../quality/qa-and-review.md).
 
 Test data must not reuse demo ObjectIds or emails.

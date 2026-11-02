@@ -229,6 +229,7 @@ layout.
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
 | 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
+| 10 | Complete Playwright UI coverage | **Planned** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered or blocked; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
 
 ### Current position (honest)
 
@@ -259,12 +260,18 @@ layout.
   required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
-- Stage 9 is partial: Phase 1 (reversible exact-institution overlap auto-merge), the
-  Phase 3 navigation refresh, and Phase 4 (visual redesign, chart-first
-  dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Baseline/tooling fixes,
-  institution representatives and email-domain suggestion, the remaining Phase 3 flows,
-  production hardening, and documentation polish remain planned. See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is
-  out of scope.
+- Stage 9 is partial: Phase 0 baseline/UI consistency, Phase 1 (reversible exact-institution
+  overlap auto-merge), the Phase 3 navigation refresh, and Phase 4 (visual redesign,
+  chart-first dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Institution
+  representatives and email-domain suggestions, the remaining Phase 3 flows, production
+  hardening, and documentation polish remain planned. See
+  [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
+- Stage 10 is planned: complete Playwright UI coverage across every route, role, mutation,
+  UI state, accessibility check, responsive breakpoint, and a stable visual-regression
+  subset. It can start on current routes now; representative-shell rows stay blocked until
+  Stage 9 Phase 2, and final exit waits for the remaining Phase 3 flows. See
+  [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
+  [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
 
 ## 6. Stage details and expectations
 
@@ -628,7 +635,7 @@ Stages 0–8. The decision-complete plan is
 
 | Phase | Status | Scope |
 |---|---|---|
-| 0 | Planned | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
+| 0 | **Implemented** | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
 | 1 | **Implemented** | Reversible auto-merge for exact-institution high-confidence pairs; explainable score, flat merge group, revert/suppression, audit, queue/detail UI, neutral banner. |
 | 2 | Planned | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
 | 3 | **Partial** | Navigation refresh implemented: primary links + More, persistent notification bell, account menu, mobile drawer. Role landing refinements, consolidated case tabs, and the explicit resolution loop remain planned. |
@@ -656,6 +663,55 @@ Stages 0–8. The decision-complete plan is
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. Phase 0, Phase 1,
 Phase 4, and the Phase 3 navigation refresh are implemented; this section stays
 **partial** until every gate passes.
+
+---
+
+### Stage 10 — Complete Playwright UI coverage
+
+**Goal:** one deterministic Playwright suite proves every user-facing route, role,
+mutation, UI state, accessibility requirement, and responsive breakpoint in the final UI.
+The decision-complete plan is [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md);
+the living coverage matrix is [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
+
+**Scope**
+
+- Route × role coverage for every current route (staff, admin, portal, auth), plus the
+  planned representative shell and its request/admin-queue routes once Stage 9 Phase 2
+  lands.
+- Every user-facing mutation, including its denied path: cases, institutions, overlaps and
+  merge/revert, notifications, admin users/organization/SLA/audit/verifications, portal
+  complaint flow, and attachments.
+- Loading, empty, error, permission-denied, not-found, pagination, filter, dialog, toast,
+  and pending-state coverage.
+- axe on every route and role, keyboard-only journeys, focus management, reduced motion,
+  and 200% zoom.
+- 375, 768, 1024, and 1440 px checks with no page-level overflow.
+- Visual regression baselines for a stable high-value subset in light/dark at mobile and
+  desktop.
+- CI split: smoke on pull requests, full Chromium on `main`, cross-browser and visual on
+  release/manual; traces and reports on failure.
+
+**Dependencies**
+
+- Current routes are coverable now.
+- Representative-shell rows are **blocked** until Stage 9 Phase 2.
+- Final exit is **blocked** until the remaining Stage 9 Phase 3 role flows land.
+
+**Exit criteria**
+
+1. Every matrix row is covered or explicitly blocked with a linked dependency.
+2. Every user-facing mutation has a browser test, including denial.
+3. Every route renders for an allowed role and is denied for a disallowed role.
+4. axe reports zero serious/critical findings on every route and role.
+5. Keyboard, focus, reduced-motion, and zoom checks pass.
+6. Responsive checks pass at all four widths.
+7. Visual baselines pass twice consecutively.
+8. The full Chromium suite passes twice against fresh production builds and `seed:demo`.
+9. CI and docs agree on commands and results.
+10. No application behavior changed solely to satisfy a test.
+
+**Contribution:** converts the UI from "the critical journeys are tested" to "the product
+is proven", which is the last quality gap before a credible release or handover.
 
 ## 7. Definition of Done (applies to every stage)
 
@@ -699,6 +755,8 @@ Stage 7 (done — QA + CI + release)
 Stage 8 (done — optional public portal)
    ↓
 Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; representatives, remaining flows, hardening, docs remain)
+   ↓
+Stage 10 (planned — complete Playwright UI coverage; starts now on current routes, exits after Stage 9 Phase 2/3)
 ```
 
 Parallelizable in Stage 9:
@@ -711,6 +769,10 @@ Parallelizable in Stage 9:
 
 Stage 8 followed Stage 7 so the public portal could reuse the hardened security, test,
 and CI foundation instead of delaying the MVP. Stage 9 keeps deployment out of scope.
+
+Stage 10 overlaps Stage 9 by design: fixtures, route/role coverage, and current-route
+mutations can start immediately, while the representative-shell rows and the final exit
+gate wait for Stage 9 Phase 2 and the remaining Phase 3 flows.
 
 ## 9. Risks and mitigations
 

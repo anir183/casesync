@@ -1,6 +1,7 @@
 # CaseSync — Accessibility Audit
 
-Status: Stage 7–8 plus Stage 9 Phase 4 and Phase 0.5 evidence. Last verified: 2026-11-01.
+Status: Stage 7–8 evidence, Stage 9 Phase 4 and Phase 0.5 evidence, plus the planned
+Stage 10 expansion. Last verified: 2026-11-02.
 Tests: `apps/web/e2e/accessibility.spec.ts`, `apps/web/e2e/reports.spec.ts`.
 
 ## 1. Scope and method
@@ -28,6 +29,16 @@ Portal pages are scanned unauthenticated; authenticated complainant dashboard/de
 ```bash
 bun run test:e2e
 ```
+
+### Planned Stage 10 expansion
+
+Stage 10 ([`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)) expands the scan
+from the core pages above to **every route and its primary allowed role**, plus denied and
+empty variants where the shell is visible, and the planned representative shell when
+Stage 9 Phase 2 lands. It also adds keyboard-only journeys, dialog focus trap/return,
+route-change focus, 200% zoom reflow, and reduced-motion checks. The living coverage status
+is tracked in [`ui-test-matrix.md`](ui-test-matrix.md). Until those rows are covered, this
+audit remains a core-page result, not a whole-product claim.
 
 ## 2. Result
 
@@ -61,4 +72,6 @@ Automated scanning does not prove full accessibility. Before a public release, p
 - Color-contrast review for any future custom theme changes.
 
 These manual checks are follow-ups, not blockers for the internal MVP demo. Add an
-authenticated portal-detail scan before a full public release.
+authenticated portal-detail scan before a full public release. Stage 10 makes the
+automated portion exhaustive per route and role; the manual screen-reader pass remains a
+release checklist item.

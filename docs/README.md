@@ -1,378 +1,174 @@
 # CaseSync
 
-CaseSync is a unified dashboard for monitoring and tracking institution-related
-complaint cases across AICTE Bureaus/Cells (for example PGRC, RB, and others).
+**A single source of truth for institution-related complaints across AICTE Bureaus and Cells.**
 
-It is an **internal, authorized-official product**. A public complainant portal is a
-separate, optional extension (Stage 8) and is not part of MVP acceptance.
+CaseSync is an internal dashboard for monitoring and tracking institution-related
+complaint cases. It brings every case, bureau, officer, movement, and deadline into one
+scoped workspace, and surfaces same-institution work happening in different Bureaus
+before it becomes duplicate effort.
 
-This directory is the documentation entry point. Start here, then follow the map in
-[Documentation map](#documentation-map).
+An optional public complainant portal extends the same case workflow to verified
+complainants. It is a separate surface and does not expose internal notes, findings, or
+assessment data.
 
-## Current status
+## What it does
 
-**Stages 0–8 are implemented. The internal MVP is hardened and the optional public
-complainant portal is built: self-registration, exact-AICTE verification with document
-review fallback, filing/tracking, public/internal conversation and documents, ownership
-checks, and admin verification review. Local lint, typechecks, unit tests, builds,
-Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
-performance suite runs locally, not in CI. The pushed CI run is green on `5666cad`.**
-
-**Stage 9 is in progress: Phase 0 (baseline/tooling plus the final UI consistency pass),
-Phase 1 (reversible exact-institution overlap auto-merge), Phase 4 (visual redesign,
-chart-first dashboard/reports, lazy-loaded Leaflet/OpenStreetMap GIS map), and the Phase 3
-navigation refresh (primary links + More, notification bell, mobile drawer) are
-implemented. Phase 2 (institution representatives), the remaining Phase 3 flows,
-Phase 5 (hardening), and Phase 6 (polish) remain planned.** Deployment remains out of
-scope. See [`plans/next-phase-plan.md`](plans/next-phase-plan.md).
-
-Last verified: 2026-11-01.
-
-| Area | State |
-|---|---|
-| Stage 0 — foundation | Complete |
-| Stage 1 — identity, organization, access | Complete |
-| Stage 2 — registry and case operations | Complete; browser smoke present |
-| Stage 3 — overlap intelligence and coordination | Complete; browser smoke present |
-| Stage 4 — monitoring, search, reports | Complete; browser smoke present |
-| Stage 5 — SLA, deadlines, alerts | Complete |
-| Stage 6 — admin, attachments, audit | Complete |
-| Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
-| Stage 8 — public portal | Complete; CI green on `5666cad` |
-| Stage 9 — next phase | **Partial**; Phase 0 baseline/UI consistency, reversible exact-institution auto-merge, navigation refresh, and Leaflet/OpenStreetMap GIS/UI refresh implemented; representatives, remaining Phase 3 flows, and hardening remain planned |
-
-### Working
-
-- Better Auth sessions with admin-invite-only staff accounts, roles, bureau/region
-  scoping, and `active` enforcement with session revocation.
-- Public complainant signup/login, exact-AICTE auto-verification, document-review
-  fallback with admin approval, and unverified filing blocks.
-- Complainant dashboard, complaint filing, tracked status timeline, accept/reopen,
-  public/internal messages, and public/internal attachment visibility.
-- Server-side complainant ownership/IDOR checks, public projection rules, and dedicated
-  signup/track/portal rate limits.
-- Staff complaint conversation, acknowledge/request-information/resolve actions, and
-  admin complainant-verification queue.
-- Case lifecycle APIs, append-only `case_actions`, assignments, transfers, escalation,
-  disposal, and reopen.
-- Overlap detection with exact and fuzzy institution matching, optional Jev assessment,
-  review queue, compare view, human confirm/dismiss, manual link/unlink, and
-  re-assessment after case movement or institution identity changes.
-- Base overlap relationships always survive Jev; Jev only enriches with choice,
-  probabilities, coordination score, and rationale.
-- Review notifications are scoped to involved bureaus/regions plus oversight roles and
-  deduped per relationship.
-- Scoped dashboard with date/region/bureau filters, 30s refresh, region names, recent
-  overlaps/escalations, and shared status/unassigned/overdue metrics.
-- Case registry with URL-backed filters, region filter, sorting, CSV export, and
-  inclusive UTC date bounds; reports with bureau/region/status/category filters,
-  monthly/quarterly series, overlap summary, reconciliation, and CSV export.
-- Institution profile summary, paginated/filterable notification centre, and 30s
-  dashboard polling.
-- Institution registry UI (`/institutions` list, create, edit, verify) with duplicate
-  warnings and a paginated institution case history.
-- Case registration UI (`/cases/new`) with institution search, bureau/category routing,
-  dates, description, next action, and optional initial assignment.
-- Case workspace tabs (overview, actions, assignments, related) and a role-gated action
-  panel for assign, transfer, escalate, dispose, reopen, remark, and next action.
-- Paginated case, institution, and overlap lists with totals; officer, actor, bureau, and
-  region names resolved server-side.
-- Region/category/bureau masters, admin user management and password reset, admin audit
-  log, institution aliases/merge, scoped attachments, and deterministic demo/stress
-  seeds plus guarded resets.
-- Admin web screens for users, organization masters, and audit; attachment upload/download
-  on the case detail **Documents** tab.
-- SLA rules with admin UI, automatic deadlines, daily pending/approaching/overdue scans,
-  deduped scoped notifications, and shared dashboard/report overdue metrics.
-- Search input is bounded and regex-escaped; abuse-prone auth/search/assessment/upload
-  routes are rate-limited with `429`/retry metadata.
-- **85 API unit tests, 25 web component/URL tests, 55 opt-in database integration tests,
-  12 seeded Playwright tests (3 staff smoke journeys, 2 portal journeys, 1 accessibility
-  scan including the mobile drawer, 3 navigation/bell journeys, 2 map/reflow/reduced-motion
-  journeys, and 1 merge/revert journey), and 1 stress-data performance test.** Jev is
-  always mocked and a fetch guard blocks real Jev calls.
-- CI workflow covers lint/typecheck, unit/component, Mongo-backed integration/coverage,
-  builds, seeded browser smoke/portal/accessibility, and dependency audit.
-
-### Stage 7 evidence (historical)
-
-- `bun run verify`: Biome, API/web typechecks, API unit + web component tests, both builds.
-- `bun run test:integration`: 45 DB-backed tests at Stage 7.
-- `bun run test:coverage`: 89.4% lines / 90.0% functions; 85% floor.
-- `bun run test:e2e`: three seeded smoke journeys + axe scan of nine core pages.
-- `bun run test:perf`: 5,000 stress cases within documented budgets; auto-reset.
-- `bun audit --audit-level=high`: no vulnerabilities.
-
-### Stage 8 evidence
-
-- API module `apps/api/src/modules/complaints/` with public, portal, staff, and admin
-  routes; public projections hide internal notes, findings, actor IDs, and Jev data.
-- Verification auto-approves only on an exact AICTE permanent-ID match; institution-only
-  selection and mismatches require document review.
-- `apps/api/tests/integration/stage8.integration.test.ts`: verification paths, ownership
-  isolation, public/internal messages and attachment visibility, accept/reopen.
-- `apps/web/e2e/portal.spec.ts`: complainant filing/conversation/tracking, admin
-  acknowledge/request-information/resolve, and closure acceptance.
-- Local Stage 8 gate at the time: all 50 integration tests passed, all 6 seeded browser
-  tests passed (including the portal journey and axe scan), and API coverage was 87.1%
-  lines / 89.6% functions.
-- Pushed CI run `5666cad` is green across static checks, unit/component, integration and
-  coverage, builds, seeded browser smoke, and dependency audit.
-- Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
-
-### Stage 9 evidence (Phase 0, Phases 1, 3 navigation, and 4)
-
-- Phase 1 auto-merge: `packages/utils/src/overlap-scoring.ts` and
-  `apps/api/src/modules/overlaps/overlap.scoring.ts` score exact-institution,
-  cross-bureau, non-disposed pairs; combined `0.85`, text `0.75`, hard JEV veto.
-- Flat `case_merge_groups` with one canonical case and an immutable member snapshot;
-  member complaints and their history are never rewritten.
-- Merge/revert/suppression-clear APIs require reasons and write append-only audit
-  actions; revert returns the pair to manual review and suppresses re-merge.
-- UI: auto-merged/needs-review/reverted queues, score breakdown, merge-group page,
-  neutral case banner, and revert control.
-- Phase 4: design tokens/theme, shared primitives, chart-first dashboard/reports, and a
-  lazy-loaded Leaflet/OpenStreetMap map with region bubbles, keyboard region chips, and a
-  table fallback.
-- Phase 3 navigation: role-filtered primary links plus a More/Admin overflow, notification
-  bell with a five-item preview, account menu, and mobile drawer on both staff and portal
-  shells.
-- Phase 0: every CI job on `ubuntu-24.04` with `actions/checkout@v7` /
-  `actions/upload-artifact@v7`, Bun `1.4.4` and Node `24` pinned, all route pages lazy
-  (main chunk 483.90 kB / 137.86 kB gzip), narrow Zod `onwarn` filter, API unused-symbol
-  checks, and web tests/e2e typechecked through `typecheck:web:tests`.
-- Phase 0.5 UI consistency: `CardBody`, page-wide `PageHeader`, normalized table/form
-  spacing and scroll regions, skeleton/empty/error states, and a single-list
-  notification page with a matching bell preview. Verified at 375/768/1024/1440 px in
-  light and dark mode.
-- Local gates on 2026-11-01: 85 API unit + 25 web component/URL tests, 55 DB-backed
-  integration tests, 12 seeded Playwright tests, 87.4% lines / 89.7% functions of API
-  coverage, a warning-free build, and a clean high-severity dependency audit.
-
-### Remaining non-blocking gaps
-
-Stage 9 is the closure path for the remaining product gaps:
-
-- Institution representative accounts are planned, not deferred: a separate external
-  role, institution-side scoping, an approval model, and an email-domain allowlist.
-- Reversible high-confidence auto-merge is implemented only for exact-institution pairs
-  that pass the confidence/text gates and have no JEV veto; Stage 3's human-review
-  workflow remains the default for every other pair.
-- The dashboard, reports, and case detail carry the Phase 4 visual refresh, chart-first
-  views, and Leaflet/OpenStreetMap map. The navigation refresh (primary links + More,
-  notification bell, mobile drawer) is implemented; role-specific landing refinements,
-  consolidated case tabs, and the complaint-resolution loop from Phase 3 remain pending.
-- Optional shared integration factories (extracting the duplicated `stage1`/`stage8`
-  setup) are a recorded follow-up, along with distributed rate limiting, malware
-  scanning, and the manual screen-reader/mobile accessibility pass.
-- Optional periodic overlap sweep/background batch for production scale.
-- Mutations use pending/disabled states rather than optimistic UI.
-- The tagged performance suite is local-only and is not part of CI.
-
-## Documentation map
-
-| Document | Purpose |
-|---|---|
-| [`product/end-product-and-stages.md`](product/end-product-and-stages.md) | End-state product, screens, data model, journeys, stages, exit criteria, risks. |
-| [`product/ui-ux-design-plan.md`](product/ui-ux-design-plan.md) | Design system, screens, workflow patterns, UX rules. |
-| [`product/user-flow.md`](product/user-flow.md) | Personas, permissions, journeys, UI inventory; internal MVP first. |
-| [`requirements/requirements-realignment.md`](requirements/requirements-realignment.md) | Dated audit: every requirement mapped to Done/Partial/Gap with evidence. |
-| [`requirements/requirements-traceability.md`](requirements/requirements-traceability.md) | Living requirement matrix with evidence and remaining work. |
-| [`architecture/stack-and-architecture.md`](architecture/stack-and-architecture.md) | Stack, architecture, data model, conventions, API, jobs, testing. |
-| [`quality/qa-and-review.md`](quality/qa-and-review.md) | Test pyramid, integration/E2E/security/performance, CI, review, release gate. |
-| [`quality/security-checklist.md`](quality/security-checklist.md) | Security controls, abuse cases, rate limits, and residual risks. |
-| [`quality/accessibility-audit.md`](quality/accessibility-audit.md) | Automated axe scope/results and remaining manual checks. |
-| [`operations/mock-data.md`](operations/mock-data.md) | Current demo seed/reset commands, fixtures, and safety guards. |
-| [`operations/demo-script.md`](operations/demo-script.md) | Current 10-minute demo runbook and demoable slice. |
-| [`operations/runbook.md`](operations/runbook.md) | Setup, seed, verification, deploy, backup/restore, troubleshooting. |
-| [`operations/backup-and-retention.md`](operations/backup-and-retention.md) | Backup targets, retention, restore procedure, and known gaps. |
-| [`plans/todo-tracker.md`](plans/todo-tracker.md) | Stage-based build tracker, current status, and remaining work. |
-| [`plans/next-phase-plan.md`](plans/next-phase-plan.md) | Decision-complete Stage 9 plan: fixes, auto-merge, representatives, flows, UI/GIS, hardening, polish. |
-| [`tiger-style.md`](tiger-style.md) | Code style and documentation conventions. |
-
-Source-of-truth order: the original problem statement, then requirements, then
-architecture and stage plan, then the tracker. If two documents disagree, fix the
-document that is wrong rather than keeping both versions.
-
-## Scope
-
-### MVP (original requirement)
-
-A single-window dashboard for authorized AICTE officials to:
-
-- view institution-related cases across Bureaus/Cells;
-- see the current bureau/officer and full case movement;
-- identify same-institution cross-bureau overlaps;
-- coordinate via a human-reviewed queue;
-- monitor pending, disposed, under-process, transferred, escalated, and overdue cases;
-- generate institution/region/bureau/status reports;
-- receive overlap, escalation, pending, and SLA alerts.
-
-### Optional extension (not MVP)
-
-A public complainant portal with self-registration, filing/tracking, two-way
-conversation, and document exchange. Signup is verified against an AICTE institution ID,
-with a document-review/admin-approval fallback. It does not delay the internal MVP. See
-[`product/user-flow.md`](product/user-flow.md); the complainant flow is implemented as
-Stage 8. Institution representative accounts are planned for Stage 9.
-
-## Problem statement (summary)
-
-AICTE receives institution-related complaints through different Bureaus/Cells
-independently. This leads to:
-
-- no consolidated view of an institution's complaint history;
-- unclear ownership (which bureau/cell/officer is handling what);
-- overlapping or duplicate work across bureaus;
-- delayed disposal and poor coordination;
-- difficulty tracking timelines and SLAs.
-
-## Goal
-
-Create a single source of truth to **centralize, track, and coordinate**
-institution-related complaints:
-
-- **Institution-centric view** — every complaint links to an institution; see full
-  history across all bureaus.
-- **Case lifecycle and ownership** — status, assignments, transfers, actions, audit.
-- **Cross-bureau overlap detection** — same institution across bureaus; rules first,
-  Jev optional and advisory; exact heading
-  **"Potential Overlapping Cases – Coordination Required"**.
-- **Alerts and notifications** — overlap review, deadlines/SLA, escalations.
-- **Search, filters, reports** — institution, AICTE Permanent ID, case ID, bureau,
-  region, category, status, date range.
-- **Auditability** — append-only action history; AI assessments separate from human
-  decisions.
-
-## Core principles
-
-- **DB narrows, Jev evaluates** — resolve institution and cross-bureau candidates
-  before any AI call.
-- **Rules over AI** — exact ID and normalized/fuzzy matching work with
-  `JEV_ENABLED=false`.
-- **Human review by default, bounded automation by exception** — AI never auto-confirms
-  an overlap. Stage 9 adds a reversible high-confidence auto-merge with an audit trail;
-  every other pair stays in human review.
-- **Audit first** — append-only `case_actions`; AI history separate from human
-  decisions.
-- **Backend owns secrets** — `JEVMODEL_API_KEY` is server-only; never `VITE_*`.
-- **Boring, explicit code** — no magic strings or numbers; extract only when reused;
-  composition over inheritance; functions stay short and self-documenting. Follow
-  [`tiger-style.md`](tiger-style.md).
-- **No git commits or pushes unless explicitly requested.**
+- **Institution-centric history** — every complaint links to an institution, so its full
+  cross-bureau history is visible in one place.
+- **Case lifecycle and ownership** — registration, assignment, transfer, escalation,
+  disposal, reopen, remarks, and an append-only audit trail.
+- **Cross-bureau overlap detection** — rules first (exact AICTE ID plus normalized and
+  fuzzy name matching), with an optional, advisory AI assessment (Jev). Confirmed pairs
+  support reversible coordinated handling without rewriting either complaint.
+- **Monitoring and reports** — scoped dashboard, searchable registries, bureau/region/
+  status/ageing/disposal reports, chart and map views, and CSV export.
+- **SLA and alerts** — configurable deadlines, scheduled pending/approaching/overdue
+  scans, and deduplicated notifications.
+- **Administration** — users and roles, bureaus, regions, categories, SLA rules,
+  institutions, aliases, audit, and attachments.
+- **Public portal** — verified complainant signup, complaint filing and tracking,
+  two-way public conversation, and document exchange.
 
 ## Tech stack
 
-| Layer | Tech | Notes |
+| Layer | Technology | Version |
 |---|---|---|
-| Runtime | [Bun](https://bun.sh/) | Fast, TypeScript-first |
-| Backend | [ElysiaJS](https://elysiajs.com/) | Type-safe modular monolith |
-| DB | [MongoDB Atlas](https://www.mongodb.com/atlas) | Document model |
-| ODM | [Mongoose](https://mongoosejs.com/) | Schemas, validation, indexes |
-| Auth | [Better Auth](https://www.better-auth.com/) | Session cookies, RBAC |
-| Validation | [Zod](https://zod.dev/) | Shared frontend/backend |
-| Frontend | [Vite](https://vitejs.dev/) + [React 19](https://react.dev/) + TypeScript | SPA |
-| UI | [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) | Tokens and components |
-| Data/state | TanStack Query, TanStack Table | Fetching, caching, tables |
-| Forms | React Hook Form + Zod | Type-safe forms |
-| Routing | React Router | Client routing |
-| Jobs | node-cron | SLA, deadlines, reminders |
-| AI/decision | Jev API `POST /v1/systemone` | Backend-only, pairwise, advisory |
-| Lint/format | Biome | Single tool |
+| Runtime | [Bun](https://bun.sh/) | `1.4.4` |
+| Language | TypeScript | `5.6.3` |
+| Backend | [ElysiaJS](https://elysiajs.com/) | `1.4.30` |
+| Database | MongoDB | `7.0.x` (CI `mongo:7`; recommended pin `7.0.45`; local `8.x` supported) |
+| ODM | [Mongoose](https://mongoosejs.com/) | `8.24.7` |
+| Auth | [Better Auth](https://www.better-auth.com/) | `1.7.14` |
+| Validation | [Zod](https://zod.dev/) | `4.6.7` |
+| Frontend | [React](https://react.dev/) + [Vite](https://vitejs.dev/) | `19.3.1` / `6.4.5` |
+| Routing | [React Router](https://reactrouter.com/) | `6.30.6` |
+| Data / tables | [TanStack Query](https://tanstack.com/query) + [TanStack Table](https://tanstack.com/table) | `5.105.0` / `8.21.3` |
+| UI | [Tailwind CSS](https://tailwindcss.com/) + shadcn/ui | `4.3.3` |
+| Charts / GIS | Local SVG charts + [Leaflet](https://leafletjs.com/) / OpenStreetMap | `1.9.4` |
+| Jobs | [node-cron](https://github.com/node-cron/node-cron) | `3.0.3` |
+| Lint / format | [Biome](https://biomejs.dev/) | `1.9.4` |
+| E2E | [Playwright](https://playwright.dev/) | `1.64.1` |
+| Accessibility | [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) | `4.14.0` |
 
-## Monorepo layout
+Node `24.21.0` is the Playwright tooling target. `mise.toml` tracks the Bun `1.4` and
+Node `24` lines; CI pins Bun `1.4.4` and currently uses the runner's Node. Exact Node
+`24.21.0` and MongoDB `7.0.45` pins are Stage 10 follow-ups.
+
+## Quick start
+
+### Prerequisites
+
+- [mise](https://mise.jdx.dev/) (recommended) or Bun `1.4` and Node `24`
+- MongoDB running locally, or a MongoDB Atlas connection string
+
+### Setup
+
+```bash
+mise install
+bun install
+cp .env.example .env
+```
+
+Set `MONGODB_URI`, `BETTER_AUTH_SECRET`, and the optional Jev values in `.env`.
+Set `JEV_ENABLED=false` to run fully rules-based.
+
+```bash
+bun run seed:demo   # deterministic demo data: users, institutions, cases, overlaps, SLAs
+bun run dev         # API and web together
+```
+
+The web app runs on `http://localhost:5173`; the API runs on `http://localhost:3000`.
+Sign in with a seeded account (see `docs/operations/mock-data.md`).
+
+Prefer separate terminals when you need focused logs:
+
+```bash
+bun run dev:api
+bun run dev:web
+```
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `bun run dev` | Run the API and web apps together |
+| `bun run build` | Build the API and web production bundles |
+| `bun run check` | Biome check and write formatting fixes |
+| `bun run check:ci` | Biome check without writing |
+| `bun run test:unit` | API unit tests and web component tests |
+| `bun run test:integration` | Mongo-backed API integration tests |
+| `bun run test:coverage` | Integration tests with the coverage floor |
+| `bun run test:e2e` | Seed demo data and run the Playwright suite |
+| `bun run test:perf` | Stress seed, performance budgets, and reset (local only) |
+| `bun run verify` | Lint, typechecks, unit tests, and builds |
+
+Typechecks run per app because the root TypeScript setup does not resolve workspace
+paths:
+
+```bash
+bun run typecheck:api
+bun run typecheck:web
+bun run typecheck:web:tests
+```
+
+## Project structure
 
 ```text
 casesync/
 ├── apps/
-│   ├── api/   # ElysiaJS API (Bun)
-│   └── web/   # Vite + React frontend
+│   ├── api/          # ElysiaJS API, Mongo models, jobs, seeds
+│   └── web/          # Vite + React SPA and Playwright suite
 ├── packages/
-│   ├── types/   # Shared TS types + Zod schemas
-│   ├── utils/   # Pure helpers (pair key, normalization, similarity)
-│   └── config/  # Shared constants/enums
-├── docs/        # Product, requirements, architecture, quality, operations, plans
-└── package.json # workspaces
+│   ├── config/       # Shared constants and enums
+│   ├── types/        # Shared TypeScript types and Zod schemas
+│   └── utils/        # Pure helpers: pairing, normalization, similarity
+├── docs/             # Product, requirements, architecture, quality, operations
+├── scripts/          # Local verification helpers
+└── mise.toml         # Bun and Node version lines
 ```
 
-## Getting started
+## Testing
 
-### Prerequisites
+- **Unit and component** — business rules, state transitions, scoping helpers, filters,
+  charts, dialogs, and forms.
+- **Integration** — Mongo-backed API flows: auth and RBAC, IDOR, lifecycle audit,
+  overlap correctness, admin, attachments, and portal ownership.
+- **End-to-end** — Playwright against production builds and seeded data; staff, admin,
+  portal, accessibility, responsive, and merge/revert journeys.
+- **Accessibility** — automated WCAG 2.0/2.1 A/AA scans with axe.
+- **Performance** — a tagged stress-data suite run locally before demos and releases.
 
-- [Bun](https://bun.sh/) installed
-- MongoDB Atlas account (or local MongoDB) and connection string
-- Jev API key (optional; set `JEV_ENABLED=false` to run rules-only)
+The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md); the living
+route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). Current
+results and quality gates live in [QA and review](quality/qa-and-review.md).
 
-### Setup
+## Documentation
 
-1. Clone the repo. Do not commit or push unless instructed.
-2. Copy env files: `cp .env.example .env` in the root/apps as needed.
-3. Set `MONGODB_URI`, `BETTER_AUTH_SECRET`, and optional Jev values.
-4. Install from the repo root: `bun install`.
-5. Run API and web separately (recommended):
-   - `bun run dev:api` (from the repo root; the API reads `apps/api/.env`)
-   - `bun run dev:web`
-6. Open the web app and sign in with a seeded account.
+| Area | Start here |
+|---|---|
+| Product and stages | [End product and stage plan](product/end-product-and-stages.md) |
+| User journeys and roles | [User flow](product/user-flow.md) |
+| UI and UX | [UI/UX design plan](product/ui-ux-design-plan.md) |
+| Architecture | [Stack and architecture](architecture/stack-and-architecture.md) |
+| Requirements | [Traceability](requirements/requirements-traceability.md) · [Realignment audit](requirements/requirements-realignment.md) |
+| Quality | [QA and review](quality/qa-and-review.md) · [Security](quality/security-checklist.md) · [Accessibility](quality/accessibility-audit.md) |
+| UI test coverage | [Stage 10 plan](plans/ui-testing-plan.md) · [Coverage matrix](quality/ui-test-matrix.md) |
+| Operations | [Runbook](operations/runbook.md) · [Mock data](operations/mock-data.md) · [Demo script](operations/demo-script.md) · [Backup and retention](operations/backup-and-retention.md) |
+| Planning | [Todo tracker](plans/todo-tracker.md) · [Stage 9 plan](plans/next-phase-plan.md) |
+| Conventions | [Tiger style](tiger-style.md) |
 
-### Seed data
+Project status, stage evidence, and remaining work are tracked in
+[`plans/todo-tracker.md`](plans/todo-tracker.md) and the stage and quality documents
+above, not in this README.
 
-```bash
-bun run seed        # masters + users
-bun run seed:demo   # masters + users + full demo dataset (idempotent)
-bun run seed:reset  # guarded demo-only reset, then reseed
-```
+## Contributing
 
-`apps/api/src/seed.ts` is idempotent and creates:
+- Read [`tiger-style.md`](tiger-style.md) before changing code.
+- Keep changes scoped and update the relevant docs when behavior, contracts, or
+  operations change.
+- Do not commit `.env` files, secrets, real PII, or real AICTE documents.
+- Do not commit or push unless explicitly asked.
 
-- 9 AICTE regional offices;
-- 10 categories;
-- 4 bureaus (`PGRC`, `RB`, `ACAD`, `FIN`);
-- 7 staff users, one per role, plus one verified complainant, all using the dev
-  password from `SEED_PASSWORD`;
-- with `seed:demo`: 8 institutions, 13 staff cases, 6 overlap scenarios, related
-  actions/assignments/notifications, and 5 SLA configs.
+## License
 
-`seed:reset` removes only demo-owned records and never truncates collections.
-`seed:stress` creates 60 institutions and 5,000 deterministic cases by default
-(`STRESS_CASES` overrides); `seed:stress:reset` removes only stress-owned records. See
-[`operations/mock-data.md`](operations/mock-data.md) for the exact dataset and guards.
-
-### Testing and quality
-
-```bash
-bun run check          # Biome (writes formatting locally)
-bun run verify         # lint, typechecks, unit/component tests, builds
-bun run test:unit      # API unit + web component tests
-bun run build          # API + web builds
-bun run test:integration
-bun run test:coverage  # 85% lines/functions floor
-bun run test:e2e       # demo seed + Playwright staff/portal/accessibility
-bun run test:perf      # stress seed + performance budgets + reset (local only)
-bun audit --audit-level=high
-```
-
-The tagged performance suite is not part of CI; run it locally before a demo or release.
-Database-backed integration tests are opt-in and use run-scoped records in the dev
-database locally; CI uses a disposable `mongo:7` service:
-
-```bash
-cd apps/api && RUN_INTEGRATION=1 bun test tests/integration
-```
-
-Typechecks are run per app because the root `tsc` setup does not resolve workspace
-paths:
-
-```bash
-bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json
-cd apps/web && ./node_modules/.bin/tsc -b --noEmit
-```
-
-Stage 7 gates pass locally against the current tree at the verification date above. See
-[`quality/qa-and-review.md`](quality/qa-and-review.md),
-[`quality/security-checklist.md`](quality/security-checklist.md), and
-[`quality/accessibility-audit.md`](quality/accessibility-audit.md).
-
-## Git rule
-
-Do not commit or push unless the user explicitly instructs it. Never commit `.env`,
-secrets, real PII, or real AICTE documents.
+MIT © 2026 CacheCrew. See [LICENSE](../LICENSE).
