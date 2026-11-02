@@ -1,6 +1,6 @@
 # CaseSync — Accessibility Audit
 
-Status: Stage 7–8 plus Stage 9 Phase 4 evidence. Last verified: 2026-10-30.
+Status: Stage 7–8 plus Stage 9 Phase 4 and Phase 0.5 evidence. Last verified: 2026-11-01.
 Tests: `apps/web/e2e/accessibility.spec.ts`, `apps/web/e2e/reports.spec.ts`.
 
 ## 1. Scope and method
@@ -32,7 +32,8 @@ bun run test:e2e
 ## 2. Result
 
 Pass: no serious or critical accessibility violations were reported on the scanned
-pages as of 2026-10-31, including the mobile navigation drawer. The check runs as part of
+pages as of 2026-11-01, including the mobile navigation drawer after the Phase 0.5 UI
+pass. The check runs as part of
 the seeded browser suite and CI. Phase 4 adds automated checks that the reports map
 reaches each region chip by keyboard, announces its text summary, reflows at 375 px, and
 that chart-heavy routes honour `prefers-reduced-motion`. The authenticated complainant

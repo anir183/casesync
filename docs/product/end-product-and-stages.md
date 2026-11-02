@@ -653,9 +653,9 @@ Stages 0–8. The decision-complete plan is
 - Deployment remains out of scope.
 
 **Exit criteria:** every Phase 0–6 gate and the Stage 9 definition of done in
-[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. Phases 1 and 4
-and the Phase 3 navigation refresh are implemented; this section stays **partial** until
-every gate passes.
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. Phase 0, Phase 1,
+Phase 4, and the Phase 3 navigation refresh are implemented; this section stays
+**partial** until every gate passes.
 
 ## 7. Definition of Done (applies to every stage)
 
@@ -698,7 +698,7 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; baseline, representatives, remaining flows, hardening, docs remain)
+Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; representatives, remaining flows, hardening, docs remain)
 ```
 
 Parallelizable in Stage 9:

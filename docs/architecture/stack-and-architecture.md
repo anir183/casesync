@@ -2,10 +2,11 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stages 0–8 are complete. Stage 9 is partial: Phase 1 reversible overlap auto-merge,
-> the Phase 3 navigation refresh, and Phase 4 visual redesign/charts/GIS are implemented
-> and tested. Phases 0 (baseline), 2 (representatives/domains), the remaining Phase 3
-> flows, 5 (hardening), and 6 (polish) remain planned. Case/institution APIs, web workflows, overlap correctness/coordination, scoped
+> Stages 0–8 are complete. Stage 9 is partial: Phase 0 baseline/UI consistency, Phase 1
+> reversible overlap auto-merge, the Phase 3 navigation refresh, and Phase 4 visual
+> redesign/charts/GIS are implemented and tested. Phase 2 (representatives/domains), the
+> remaining Phase 3 flows, Phase 5 (hardening), and Phase 6 (polish) remain planned.
+> Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
 > describe the target contract are still the target; they are not a claim that every part

@@ -18,15 +18,15 @@ checks, and admin verification review. Local lint, typechecks, unit tests, build
 Mongo-backed integration/coverage, and the seeded browser suite pass; the tagged
 performance suite runs locally, not in CI. The pushed CI run is green on `5666cad`.**
 
-**Stage 9 is in progress: Phase 1 (reversible exact-institution overlap auto-merge),
-Phase 4 (visual redesign, chart-first dashboard/reports, lazy-loaded Leaflet/OpenStreetMap
-GIS map), and the Phase 3 navigation refresh (primary links + More, notification bell,
-mobile drawer) are implemented. Phases 0 (baseline/tooling), 2 (institution
-representatives), the remaining Phase 3 flows, 5 (hardening), and 6 (polish) remain
-planned.** Deployment remains out of scope. See
-[`plans/next-phase-plan.md`](plans/next-phase-plan.md).
+**Stage 9 is in progress: Phase 0 (baseline/tooling plus the final UI consistency pass),
+Phase 1 (reversible exact-institution overlap auto-merge), Phase 4 (visual redesign,
+chart-first dashboard/reports, lazy-loaded Leaflet/OpenStreetMap GIS map), and the Phase 3
+navigation refresh (primary links + More, notification bell, mobile drawer) are
+implemented. Phase 2 (institution representatives), the remaining Phase 3 flows,
+Phase 5 (hardening), and Phase 6 (polish) remain planned.** Deployment remains out of
+scope. See [`plans/next-phase-plan.md`](plans/next-phase-plan.md).
 
-Last verified: 2026-10-31.
+Last verified: 2026-11-01.
 
 | Area | State |
 |---|---|
@@ -39,7 +39,7 @@ Last verified: 2026-10-31.
 | Stage 6 — admin, attachments, audit | Complete |
 | Stage 7 — hardening and release | Complete; CI green on `4abd2f3` |
 | Stage 8 — public portal | Complete; CI green on `5666cad` |
-| Stage 9 — next phase | **Partial**; reversible exact-institution auto-merge, navigation refresh, and Leaflet/OpenStreetMap GIS/UI refresh implemented; representatives, remaining Phase 3 flows, baseline fixes, and hardening remain planned |
+| Stage 9 — next phase | **Partial**; Phase 0 baseline/UI consistency, reversible exact-institution auto-merge, navigation refresh, and Leaflet/OpenStreetMap GIS/UI refresh implemented; representatives, remaining Phase 3 flows, and hardening remain planned |
 
 ### Working
 
@@ -120,7 +120,7 @@ Last verified: 2026-10-31.
   coverage, builds, seeded browser smoke, and dependency audit.
 - Demo complainant: `complainant@casesync.test` / `Passw0rd!123`, linked to `dit`.
 
-### Stage 9 evidence (Phases 1, 3 navigation, and 4)
+### Stage 9 evidence (Phase 0, Phases 1, 3 navigation, and 4)
 
 - Phase 1 auto-merge: `packages/utils/src/overlap-scoring.ts` and
   `apps/api/src/modules/overlaps/overlap.scoring.ts` score exact-institution,
@@ -137,9 +137,17 @@ Last verified: 2026-10-31.
 - Phase 3 navigation: role-filtered primary links plus a More/Admin overflow, notification
   bell with a five-item preview, account menu, and mobile drawer on both staff and portal
   shells.
-- Local gates on 2026-10-31: 85 API unit + 25 web component/URL tests, 55 DB-backed
-  integration tests, 12 seeded Playwright tests, and 87.4% lines / 89.7% functions of
-  API coverage.
+- Phase 0: every CI job on `ubuntu-24.04` with `actions/checkout@v7` /
+  `actions/upload-artifact@v7`, Bun `1.4.4` and Node `24` pinned, all route pages lazy
+  (main chunk 483.90 kB / 137.86 kB gzip), narrow Zod `onwarn` filter, API unused-symbol
+  checks, and web tests/e2e typechecked through `typecheck:web:tests`.
+- Phase 0.5 UI consistency: `CardBody`, page-wide `PageHeader`, normalized table/form
+  spacing and scroll regions, skeleton/empty/error states, and a single-list
+  notification page with a matching bell preview. Verified at 375/768/1024/1440 px in
+  light and dark mode.
+- Local gates on 2026-11-01: 85 API unit + 25 web component/URL tests, 55 DB-backed
+  integration tests, 12 seeded Playwright tests, 87.4% lines / 89.7% functions of API
+  coverage, a warning-free build, and a clean high-severity dependency audit.
 
 ### Remaining non-blocking gaps
 
@@ -154,12 +162,10 @@ Stage 9 is the closure path for the remaining product gaps:
   views, and Leaflet/OpenStreetMap map. The navigation refresh (primary links + More,
   notification bell, mobile drawer) is implemented; role-specific landing refinements,
   consolidated case tabs, and the complaint-resolution loop from Phase 3 remain pending.
-- Baseline debt remains: `actions/checkout@v4` Node 20 deprecation, `ubuntu-latest`
-  migration, Bun version skew, Zod/Rollup and chunk-size warnings, API unused-symbol
-  checks, and web typechecking that excludes tests/e2e.
+- Optional shared integration factories (extracting the duplicated `stage1`/`stage8`
+  setup) are a recorded follow-up, along with distributed rate limiting, malware
+  scanning, and the manual screen-reader/mobile accessibility pass.
 - Optional periodic overlap sweep/background batch for production scale.
-- Optional shared integration factories, distributed rate limiting, malware scanning,
-  and manual screen-reader/mobile accessibility passes.
 - Mutations use pending/disabled states rather than optimistic UI.
 - The tagged performance suite is local-only and is not part of CI.
 

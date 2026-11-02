@@ -1,7 +1,7 @@
 # CaseSync — Requirements Realignment Audit
 
 Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
-Audit date: 2026-10-28. Last verified: 2026-10-31 (Stage 9 Phase 1, Phase 3 navigation, and Phase 4 verified).
+Audit date: 2026-10-28. Last verified: 2026-11-01 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified).
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
 separately as an **optional Stage 8 extension**, now implemented but still outside MVP
@@ -16,9 +16,9 @@ security, accessibility, performance, stress-seed, and runbook gates; Stage 8 ad
 external intake surface with separate ownership and public-projection controls.
 
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
-(`5666cad`); Stage 9 is partial — Phase 1 reversible auto-merge, the Phase 3 navigation
-refresh, and Phase 4 UI/charts/GIS are implemented, while Phase 0, Phase 2, the remaining
-Phase 3 flows, and Phases 5–6 remain planned.**
+(`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency, Phase 1 reversible
+auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/charts/GIS are implemented,
+while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -306,8 +306,9 @@ Stage 1 landed after this audit. Superseding facts:
 - Central scope (`lib/scope.ts`) applies to cases, actions, assignments, related,
   overlaps, institutions, dashboard, reports, and notifications.
 - Institution writes are role-gated and region-bound.
-- Current tests (2026-10-31): 85 API unit tests + 25 web tests + 55 DB-backed integration
-  tests + 12 seeded Playwright tests.
+- Current tests (2026-11-01): 85 API unit tests + 25 web tests + 55 DB-backed integration
+  tests + 12 seeded Playwright tests; the web build is warning-free with a 483.90 kB main
+  chunk, and web tests/e2e are typechecked.
 - Seed script: `apps/api/src/seed.ts` is idempotent.
 - Delivered in Stage 6: admin web screens, bureau CRUD, and `audit_log`. Stage 7 added
   rate limits, component/E2E/accessibility/performance gates, CI, stress seed, and runbook.

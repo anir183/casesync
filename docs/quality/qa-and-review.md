@@ -23,7 +23,7 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-10-31)
+## 2. Current test baseline (verified 2026-11-01)
 
 - **85 API unit tests across 20 files** plus **25 web component/URL tests across 8
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
@@ -54,12 +54,20 @@ exit criteria.
   data automatically.
 - **Coverage gate**: 87.4% lines and 89.7% functions from the full API suite (140 tests
   incl. integration); CI floor is 85% lines/functions.
-- **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks, unit/component
-  tests, Mongo-backed integration/coverage, builds, seeded E2E/accessibility, and a
-  high-severity dependency audit.
+- **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks (including web
+  tests/e2e), unit/component tests, Mongo-backed integration/coverage, builds, seeded
+  E2E/accessibility, and a high-severity dependency audit. Every job is pinned to
+  `ubuntu-24.04` with Bun `1.4.4`, `actions/checkout@v7`, and
+  `actions/upload-artifact@v7`.
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
-- API and web typechecks; Biome is clean; API and web production builds pass.
+- API, web, and web test/e2e typechecks pass; Biome is clean; API and web production
+  builds pass. The web build is warning-free: every route is lazy-loaded and the main
+  chunk is 483.90 kB (137.86 kB gzip), below the 500 kB budget.
+- The Phase 0.5 UI consistency pass is verified at 375/768/1024/1440 px in light and
+  dark mode with no horizontal page overflow; axe stays clean on desktop routes and the
+  mobile drawer.
+- `bun audit --audit-level=high` reports no vulnerabilities across 283 packages.
 - `verify` passes locally and in a clean source copy after `bun install
   --frozen-lockfile`. API unit tests preload inert test env defaults
   (`apps/api/tests/setup.ts`), so they do not require a personal `apps/api/.env`;
@@ -168,8 +176,8 @@ CI approach (implemented Stage 7):
   and seeded E2E jobs at `casesync_test`.
 - Local integration remains run-scoped against the configured dev database because the
   Atlas user cannot create/drop databases.
-- Shared integration factories are still optional follow-up work; existing tests use
-  run-scoped fixtures and IDs.
+- Shared integration factories remain a recorded follow-up (Phase 0 deferred them); the
+  current tests use run-scoped fixtures and IDs.
 
 Keep the rest of the current contract:
 
@@ -359,7 +367,7 @@ cap or aggregate in Mongo (`$group`) before claiming scale.
 
 Implemented in `.github/workflows/ci.yml`:
 
-1. **Static**: Biome check, API typecheck, web typecheck.
+1. **Static**: Biome check, API typecheck, web typecheck, web tests/e2e typecheck.
 2. **Unit**: API unit tests + web component tests via `bun run test:unit`.
 3. **Integration/coverage**: Mongo 7 service, `bun run test:coverage`, 85% floor,
    coverage artifact upload.
@@ -375,12 +383,13 @@ Actual root scripts:
   "check:ci": "biome check .",
   "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
   "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
+  "typecheck:web:tests": "cd apps/web && ./node_modules/.bin/tsc --noEmit -p tsconfig.test.json",
   "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
   "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration",
   "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
   "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
   "test:perf": "./scripts/perf-smoke.sh",
-  "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run test:unit && bun run build"
+  "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"
 }
 ```
 

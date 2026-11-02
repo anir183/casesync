@@ -14,11 +14,11 @@ and detail with filters/pagination and manual link/unlink, reports, notification
 admin user/organization/SLA/audit/verification screens, the public complainant portal,
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
-**Stage 9 status:** Phase 1 auto-merge, Phase 4 visual redesign/chart-first
-dashboard/reports/Leaflet map, and the Phase 3 navigation refresh (primary/More,
-notification bell, mobile drawer) are implemented. Representative shell and the remaining
-Phase 3 flows remain planned. The decision-complete
-plan is [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
+**Stage 9 status:** Phase 0 baseline plus the final UI consistency pass, Phase 1
+auto-merge, Phase 4 visual redesign/chart-first dashboard/reports/Leaflet map, and the
+Phase 3 navigation refresh (primary/More, notification bell, mobile drawer) are
+implemented. The representative shell and the remaining Phase 3 flows remain planned. The
+decision-complete plan is [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
 - **Simple, minimal, modern** - Clean layout, no visual clutter
@@ -96,7 +96,33 @@ Use CSS variables for theming.
   default, lazy-loaded and configurable through `VITE_MAP_TILE_URL`; region chips and a
   table keep it usable when tiles are unavailable. No chart service or runtime geo API is
   added.
-- Lazy-load chart/map routes and keep the main bundle within a documented budget.
+- Lazy-load every route page and keep the main bundle within a documented budget.
+- Final consistency pass (Phase 0.5): one spacing rhythm across cards, headers,
+  notifications, tables, forms, and states; comfortable at 375–1440 px in both themes.
+
+### Final UI consistency pass (Phase 0.5, complete)
+
+The pass refines the implemented indigo/teal language without a palette change and without
+touching routes, API calls, permissions, or test assertions.
+
+- **Cards:** add `CardBody` for headerless cards (`p-5`) and keep `CardContent` for
+  content after a header (`p-5 pt-0`). Normalize `CardHeader` to the same 20 px scale and
+  delete scattered `pt-4`/`pt-6` workarounds so no card content sits flush against its
+  top edge.
+- **Page headers:** adopt the existing `PageHeader` on every page. Titles, descriptions,
+  and action groups share one size, width, and alignment; page sections use `space-y-6`.
+- **Notifications:** a single divided list card instead of floating cards — generous row
+  padding, unread tint + dot (never colour alone), timestamp, hover/focus actions,
+  skeleton loading, and `EmptyState`. The bell preview gets a roomier header, rows, and
+  “View all” footer that match the page.
+- **Tables/forms:** one cell-padding scale, consistent header treatment and row hover,
+  rounded containers with a visible horizontal-scroll affordance; labels, helper text,
+  inputs, and selects share one vertical rhythm.
+- **States/responsive:** skeletons instead of plain loading text; consistent
+  empty/error/permission panels; `px-4 sm:px-6` page padding; headers stack and filters
+  wrap without awkward gaps at 375/768/1024/1440 px.
+- **Accessibility:** AA contrast in both themes, visible focus rings, reduced-motion
+  behaviour, and axe coverage on desktop routes plus the mobile drawer.
 
 ## Layout
 ```
@@ -262,6 +288,7 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 
 **Shared:**
 - `PageHeader` - title, description, actions
+- `CardBody` - headerless card content at the standard 20 px padding
 - `DataTable` - generic wrapper around TanStack Table
 - `StatusBadge` - status colors consistent, never colour-only
 - `Timeline` - append-only action history
@@ -316,7 +343,9 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 3. Representative shell plus admin representative/domain screens (planned).
 4. Design tokens/primitives, chart-first dashboard/reports, and the Leaflet map (done).
 5. Accessibility re-scan, keyboard/zoom/reduced-motion checks, and bundle budget
-   (automated checks done; manual pass and chunk warning remain).
+   (automated checks done; manual pass remains).
+6. Final UI consistency pass: cards, notifications, page headers, tables/forms, states,
+   and responsive spacing (Phase 0.5, done).
 
 ## DoD
 - [ ] Dark/light mode works, no flash of wrong theme
@@ -328,7 +357,8 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 - [ ] Tables paginate/sort server-side and export the current filter set
 - [ ] SLA badges use text + icon, not color alone
 - [ ] Loading/empty/error/permission-denied states exist on every data screen
-- [ ] Comfortable spacing throughout
+- [x] Comfortable spacing throughout (Phase 0.5: cards, notifications, headers, tables,
+      forms, states)
 - [ ] No jarring animations
 - [ ] Consistent components used
 - [ ] Keyboard-only pass and AA contrast verified

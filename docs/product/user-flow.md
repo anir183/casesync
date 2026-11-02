@@ -26,7 +26,7 @@ portal also needs a **public complainant experience** and a clear split between
 public updates and internal notes. This document defines personas, permissions,
 screens, journeys, data changes, APIs, and a phased delivery plan.
 
-## 2. Current state (verified 2026-10-30)
+## 2. Current state (verified 2026-11-01)
 
 ### What exists
 - Staff accounts are admin-invite-only (`STAFF_SIGNUP_ENABLED=false`) and the API
@@ -503,11 +503,12 @@ Expose:
 - Audit export remains a follow-up.
 - Acceptance: critical journeys run in CI; ownership/IDOR and public-leakage tests pass.
 
-### Phase G — Stage 9 next phase (planned)
-- Phase 0: pin CI/Bun/runner, clear warnings, enable unused-symbol checks, typecheck web
-  tests/e2e, shared fixtures, docs truth pass.
-- Phase 1: reversible exact-institution auto-merge, queue/detail/group controls, revert
-  and suppression, audit.
+### Phase G — Stage 9 next phase (partial)
+- Phase 0 (done): pin CI/Bun/runner, clear warnings, enable unused-symbol checks,
+  typecheck web tests/e2e, lazy-load every route, final UI consistency pass, docs truth
+  pass. Shared integration fixtures remain a deferred follow-up.
+- Phase 1 (done): reversible exact-institution auto-merge, queue/detail/group controls,
+  revert and suppression, audit.
 - Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
 - Phase 3 (partial): primary/More navigation, notification bell, and mobile drawer done;
   role landing refinements, case tabs, and resolution loop remain.

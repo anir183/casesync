@@ -1,8 +1,8 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-10-31  
+**Last verified:** 2026-11-01  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phases 1 and 4 and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phases 0, 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -251,10 +251,11 @@ not needed to prove the complainant flow and are now planned for Stage 9 with a 
 external role, institution-side scoping, an approval model, and an email-domain allowlist.
 The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PARTIAL — Phases 1, Phase 3 navigation, and 4 implemented)
+## Stage 9 — Next phase (PARTIAL — Phase 0, Phases 1, 3 navigation, and 4 implemented)
 
 Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
-Phases 1 and 4 plus the Phase 3 navigation refresh implemented). Locked
+Phase 0 baseline, the final UI consistency pass, Phases 1 and 4, and the Phase 3
+navigation refresh implemented). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
 that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
 review and suppresses automatic re-merge; the merge group is flat with one canonical case;
@@ -262,16 +263,54 @@ the merge banner is neutral; representatives may post public responses/evidence 
 uses a lazy-loaded Leaflet map with OpenStreetMap tiles by default and a configurable
 `VITE_MAP_TILE_URL`; email-domain matching is suggestion-only; deployment is out of scope.
 
-### Phase 0 — Baseline fixes and audit
+### Phase 0 — Baseline fixes and audit (complete)
 
-- [ ] Bump `actions/checkout` past the Node 20 deprecation; review other action majors.
-- [ ] Decide/document the runner image and update every CI job consistently.
-- [ ] Pin one Bun version across CI, `mise.toml`, runbook, and local docs.
-- [ ] Resolve Zod/Rollup annotations and the >500 kB chunk warning.
-- [ ] Enable API unused-symbol checks and add a web tests/e2e typecheck gate.
-- [ ] Add shared integration factories and remove duplicated fixtures.
-- [ ] Documentation truth pass (CI scope, performance-suite location, counts, statuses).
-- [ ] CI green with no deprecation/build annotations.
+Decisions finalized 2026-11-01 and implemented the same day. Every checkbox below was an
+exit gate; the evidence column records the verified result.
+
+- [x] Bump `actions/checkout` to `v7` and `actions/upload-artifact` to `v7`; keep
+      `oven-sh/setup-bun@v2`.
+- [x] Pin every CI job to `ubuntu-24.04` and document the image in the runbook.
+- [x] Pin Bun `1.4.4` across CI, `mise.toml`, runbook, and local docs; pin Node `24` in
+      `mise.toml`.
+- [x] Lazy-load every route page in `apps/web/src/app/router.tsx`; add a portal
+      `Suspense` boundary; main chunk below 500 kB (verified 483.90 kB / 137.86 kB gzip).
+- [x] Add a narrow, documented Rollup `onwarn` filter for only the two known
+      `node_modules/zod` annotation warnings; log all other warnings.
+- [x] Enable API `noUnusedLocals` / `noUnusedParameters` and fix the eight findings.
+- [x] Add `apps/web/tsconfig.test.json` and `typecheck:web:tests`; wire it into `verify`
+      and the CI static job.
+- [x] Record the final command set and bundle sizes in the runbook and QA docs.
+- [x] Documentation truth pass (CI scope, performance-suite location, counts, statuses).
+- [x] Update the CI workflow with no deprecated action inputs; the production build is
+      warning-free. The workflow is committed but not pushed, so the next remote run must
+      be confirmed green.
+
+Verified locally on 2026-11-01: Biome clean (242 files), API/web/test typechecks pass,
+85 API unit + 25 web tests pass, 55 integration tests pass, coverage 87.4% lines /
+89.7% functions, seeded E2E 12/12, `bun audit --audit-level=high` finds no
+vulnerabilities, and the production build is warning-free.
+
+**Deferred follow-up:** extract shared integration runtime/bootstrap and auth/case
+factories from `stage1`/`stage8`. Not a Phase 0 exit gate; keep run-scoped isolation.
+
+### Phase 0.5 — Final UI consistency pass (complete)
+
+CSS/markup only; no route, API, permission, or assertion changes. Keeps the current
+indigo/teal language.
+
+- [x] Add `CardBody` for headerless cards and normalize `CardHeader`/`CardContent` to a
+      20 px scale; remove scattered `pt-4`/`pt-6` workarounds.
+- [x] Adopt `PageHeader` on every page; standardize page rhythm to `space-y-6`.
+- [x] Rebuild notifications as one divided list card with unread tint/dot, roomy rows,
+      hover/focus actions, skeleton loading, and `EmptyState`.
+- [x] Refine the bell preview header/rows/footer and “View all” affordance.
+- [x] Normalize table cell padding, header treatment, row hover, scroll affordance, and
+      form label/helper/input spacing.
+- [x] Replace plain loading text with skeletons; align empty/error/permission states.
+- [x] Verify responsive spacing at 375/768/1024/1440 px in light and dark mode; run axe
+      on desktop routes and the mobile drawer.
+- [x] Full seeded E2E (12 journeys), Biome, typechecks, unit tests, and build stay green.
 
 ### Phase 1 — Reversible overlap auto-merge
 
@@ -324,7 +363,8 @@ uses a lazy-loaded Leaflet map with OpenStreetMap tiles by default and a configu
 - [x] Add region coordinates, `/reports/geo`, a lazy-loaded Leaflet/OpenStreetMap map,
       region bubbles, tooltip, keyboard region chips, and table fallback.
 - [x] Lazy-load charts/map.
-- [ ] Keep the main bundle under 500 kB (currently ~928 kB, tracked as Phase 0 debt).
+- [x] Keep the main bundle under 500 kB (483.90 kB / 137.86 kB gzip after the Phase 0
+      route-level split).
 - [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
 - [ ] Manual screen-reader pass and 200% zoom review.
 
@@ -372,10 +412,14 @@ uses a lazy-loaded Leaflet map with OpenStreetMap tiles by default and a configu
     coverage 87.1% lines / 89.6% functions.
   - Local Stage 9 gates on 2026-10-31: 85 API unit + 25 web tests, 55 integration tests,
     12 seeded browser tests, coverage 87.4% lines / 89.7% functions.
+  - Local Phase 0 re-run on 2026-11-01: the same counts pass, the web build is
+    warning-free (483.90 kB main chunk / 137.86 kB gzip), and the high-severity
+    dependency audit is clean.
 - [x] Stage 9: merge threshold/veto/idempotency/revert/audit tests.
 - [ ] Stage 9: representative institution isolation and denied-action tests.
 - [ ] Stage 9: domain suggestion-only tests and admin allowlist tests.
 - [x] Stage 9: dashboard/report/map reconciliation and accessible fallback.
-- [ ] Stage 9: bundle gate (current build still warns above 500 kB).
+- [x] Stage 9: bundle gate (main chunk 483.90 kB / 137.86 kB gzip; no chunk-size
+      warning).
 - [x] Stage 9: merge/revert E2E journey.
 - [ ] Stage 9: representative E2E journey.

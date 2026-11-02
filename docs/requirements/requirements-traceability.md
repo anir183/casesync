@@ -1,6 +1,6 @@
 # CaseSync — Requirements Traceability Matrix
 
-**Last verified:** 2026-10-31  
+**Last verified:** 2026-11-01  
 **Source of truth:** original AICTE problem statement + `docs/product/end-product-and-stages.md` + this matrix  
 **Detailed audit:** `docs/requirements/requirements-realignment.md`
 
@@ -34,7 +34,7 @@ Status legend:
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
-| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 0, Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
+| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -233,7 +233,7 @@ Status legend:
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
 | Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
-## 13. Test and ops baseline (verified 2026-10-31)
+## 13. Test and ops baseline (verified 2026-11-01)
 
 - 85 API unit tests, 25 web component/URL tests, and 55 database-backed integration
   tests; Jev is mocked and a fetch guard blocks real calls.
@@ -250,10 +250,12 @@ Status legend:
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
-- API/web typechecks, Biome, and production builds pass; `bun audit --audit-level=high`
-  reports no vulnerabilities. Stage 8 local gates passed (50 integration tests, 6 seeded
-  browser tests); Stage 9 Phase 1/3/4 local gates pass (55 integration tests, 12 seeded
-  browser tests). CI is green on Stage 7 (`4abd2f3`) and Stage 8 (`5666cad`).
+- API/web/test typechecks, Biome, and production builds pass; the web build is
+  warning-free with every route lazy-loaded and a 483.90 kB main chunk (137.86 kB gzip).
+  `bun audit --audit-level=high` reports no vulnerabilities. Stage 8 local gates passed
+  (50 integration tests, 6 seeded browser tests); Stage 9 Phase 0/1/3/4 local gates pass
+  (55 integration tests, 12 seeded browser tests). CI is green on Stage 7 (`4abd2f3`) and
+  Stage 8 (`5666cad`); the Stage 9 workflow changes are committed but not pushed.
 
 ## 14. Documentation corrections applied
 

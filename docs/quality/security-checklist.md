@@ -1,6 +1,6 @@
 # CaseSync — Security Checklist
 
-Status: Stage 7–9 release evidence. Last verified: 2026-10-31.
+Status: Stage 7–9 release evidence. Last verified: 2026-11-01.
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
 

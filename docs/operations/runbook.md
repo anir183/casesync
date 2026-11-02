@@ -1,7 +1,8 @@
 # CaseSync — Operations Runbook
 
-Status: Stage 7–9 runbook (Stage 9 Phase 1, Phase 3 navigation, and Phase 4 implemented).
-Last verified: 2026-10-31.
+Status: Stage 7–9 runbook (Stage 9 Phase 0, Phase 1, Phase 3 navigation, and Phase 4
+implemented).
+Last verified: 2026-11-01.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
@@ -64,7 +65,7 @@ create an institution representative account (planned for Stage 9 Phase 2).
 ## 4. Verification gates
 
 ```bash
-bun run verify          # Biome, typechecks, unit/component tests, builds
+bun run verify          # Biome, API/web/test typechecks, unit/component tests, builds
 bun run test:integration
 bun run test:coverage   # 85% lines/functions floor; also run in CI
 bun run test:e2e        # seeded staff + portal smoke/accessibility, excludes performance
@@ -72,8 +73,10 @@ bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
 
-Current local baseline (2026-10-31): 85 API unit + 25 web tests, 55 integration tests, 12
-seeded browser tests, and 87.4% lines / 89.7% functions of API coverage.
+Current local baseline (2026-11-01): 85 API unit + 25 web tests, 55 integration tests, 12
+seeded browser tests, and 87.4% lines / 89.7% functions of API coverage. The production
+web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
+was lazy-loaded; `bun audit --audit-level=high` is clean.
 
 API unit/component tests preload inert test defaults, so `verify` does not need a
 personal `.env`; integration, seed, and E2E commands do need real DB/auth env.
