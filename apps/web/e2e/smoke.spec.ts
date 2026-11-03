@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { PASSWORD, signIn, signedInApi } from './helpers'
 
-test.describe('critical staff smoke journeys', () => {
+test.describe('@smoke critical staff smoke journeys', () => {
   test('officer signs in, filters cases and reviews the audit timeline', async ({ page }) => {
     await signIn(page, 'pgrc.officer@casesync.test')
 

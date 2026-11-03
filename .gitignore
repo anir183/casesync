@@ -57,3 +57,4 @@ storage/
 # Playwright
 playwright-report/
 test-results/
+apps/web/e2e/.auth/

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './helpers'
 
-test('reports map supports keyboard focus and mobile reflow', async ({ page }) => {
+test('@responsive reports map supports keyboard focus and mobile reflow', async ({ page }) => {
   await signIn(page, 'admin@casesync.test')
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
@@ -22,7 +22,7 @@ test('reports map supports keyboard focus and mobile reflow', async ({ page }) =
   expect(overflow).toBeLessThanOrEqual(1)
 })
 
-test('chart-heavy routes respect reduced motion', async ({ page }) => {
+test('@a11y chart-heavy routes respect reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await signIn(page, 'admin@casesync.test')
   await page.goto('/dashboard')

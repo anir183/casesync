@@ -10,7 +10,9 @@ interface OverlapListResponse {
   }>
 }
 
-test('auto-merged pair exposes its group and reverts to human review', async ({ page }) => {
+test('@mutation auto-merged pair exposes its group and reverts to human review', async ({
+  page,
+}) => {
   const api = await signedInApi('admin@casesync.test')
   const response = await api.get(
     '/api/v1/overlaps?status=CONFIRMED&mergeStatus=auto_merged&pageSize=100',

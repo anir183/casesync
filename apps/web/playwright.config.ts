@@ -2,6 +2,10 @@ import { defineConfig, devices } from '@playwright/test'
 
 const WEB_PORT = 4173
 const API_PORT = 3100
+const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH?.trim()
+const allBrowsers = process.env.PLAYWRIGHT_ALL_BROWSERS === '1'
+
+const launchOptions = executablePath ? { executablePath } : undefined
 
 export default defineConfig({
   testDir: './e2e',
@@ -12,12 +16,43 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  globalSetup: './e2e/global-setup.ts',
   use: {
     baseURL: `http://localhost:${WEB_PORT}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     ...devices['Desktop Chrome'],
+    ...(launchOptions ? { launchOptions } : {}),
   },
+  projects: [
+    {
+      name: 'chromium-desktop',
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(launchOptions ? { launchOptions } : {}),
+      },
+    },
+    {
+      name: 'chromium-mobile',
+      grep: /@responsive|@mobile/,
+      use: {
+        ...devices['Pixel 7'],
+        ...(launchOptions ? { launchOptions } : {}),
+      },
+    },
+    ...(allBrowsers
+      ? [
+          {
+            name: 'firefox-desktop',
+            use: { ...devices['Desktop Firefox'], ...(launchOptions ? { launchOptions } : {}) },
+          },
+          {
+            name: 'webkit-desktop',
+            use: { ...devices['Desktop Safari'], ...(launchOptions ? { launchOptions } : {}) },
+          },
+        ]
+      : []),
+  ],
   webServer: [
     {
       name: 'api',

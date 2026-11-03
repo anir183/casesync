@@ -18,7 +18,7 @@ async function signOut(page: Parameters<typeof signIn>[0]) {
   await expect(page).toHaveURL(/\/(portal|login)$/)
 }
 
-test.describe('public complainant portal', () => {
+test.describe('@mutation public complainant portal', () => {
   test('complainant files, tracks and closes a complaint while staff handle it', async ({
     page,
   }) => {

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './helpers'
 
-test('staff navigation stays on one row from mobile to desktop', async ({ page }) => {
+test('@responsive staff navigation stays on one row from mobile to desktop', async ({ page }) => {
   await signIn(page, 'admin@casesync.test')
 
   for (const width of [375, 768, 1024, 1440]) {
@@ -24,7 +24,9 @@ test('staff navigation stays on one row from mobile to desktop', async ({ page }
   }
 })
 
-test('mobile drawer keeps primary and admin destinations discoverable', async ({ page }) => {
+test('@responsive mobile drawer keeps primary and admin destinations discoverable', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await signIn(page, 'admin@casesync.test')
 
@@ -38,7 +40,9 @@ test('mobile drawer keeps primary and admin destinations discoverable', async ({
   await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0)
 })
 
-test('notification bell previews items and reaches the notification centre', async ({ page }) => {
+test('@responsive notification bell previews items and reaches the notification centre', async ({
+  page,
+}) => {
   await signIn(page, 'admin@casesync.test')
 
   await page.getByRole('button', { name: /^Notifications/ }).click()

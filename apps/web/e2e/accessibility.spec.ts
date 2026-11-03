@@ -16,7 +16,7 @@ async function seriousViolations(page: Page) {
     }))
 }
 
-test('core staff and public pages have no serious or critical accessibility violations', async ({
+test('@a11y core staff and public pages have no serious or critical accessibility violations', async ({
   page,
 }) => {
   await page.goto('/login')

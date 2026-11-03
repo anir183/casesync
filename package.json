@@ -18,6 +18,11 @@
     "test:api": "bun run --filter @casesync/api test",
     "test:web": "bun run --filter @casesync/web test",
     "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
+    "test:e2e:smoke": "bun run seed:demo && bun run --filter @casesync/web test:e2e:smoke",
+    "test:e2e:full": "bun run seed:demo && bun run --filter @casesync/web test:e2e:full",
+    "test:e2e:mobile": "bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile",
+    "test:e2e:ui": "bun run seed:demo && bun run --filter @casesync/web test:e2e:ui",
+    "test:e2e:cross-browser": "bun run seed:demo && bun run --filter @casesync/web test:e2e:cross-browser",
     "seed:stress": "bun run --filter @casesync/api seed:stress",
     "seed:stress:reset": "bun run --filter @casesync/api seed:stress:reset",
     "test:perf": "./scripts/perf-smoke.sh",
@@ -31,7 +36,8 @@
     "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4"
+    "@biomejs/biome": "^1.9.4",
+    "@playwright/mcp": "^0.0.84"
   },
   "overrides": {
     "@scalar/themes": "^0.19.3"
