@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stage 10. Last verified: 2026-11-02.
+Status: living matrix for Stage 10. Last verified: 2026-11-03.
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -115,20 +115,33 @@ not counted in the summary yet.
 ## 2. Mutation coverage
 
 A browser test must assert the visible result and the denied path for at least one
-disallowed role.
+disallowed role. Staff and admin mutations were closed by
+`apps/web/e2e/coverage/mutations.spec.ts` (14 tests, `@mutation`); portal mutations
+remain in the next workstream.
+
+Role groups used below come from `@casesync/config`:
+
+- `CASE_WRITE` = `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`,
+  `REGIONAL_OFFICER`.
+- `CASE_DISPOSAL` = `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`.
+- `INSTITUTION_WRITE` = `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER`.
+- `OVERLAP_REVIEW` = `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`,
+  `BUREAU_OFFICER`.
+- `MERGE_SUPPRESSION_CLEAR` = `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`.
 
 ### Cases
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Register case | `ADMIN`, `BUREAU_OFFICER`, `COMPETENT_AUTHORITY` | `VIEWER`, `REGIONAL_OFFICER` where policy denies | **Planned** |
+| Register case | `CASE_WRITE` | `VIEWER` (route denial) | **Covered** |
+| Start processing | `CASE_WRITE` | `VIEWER` (action panel hidden) | **Covered** |
+| Escalate | `CASE_WRITE` | `VIEWER` (action panel hidden) | **Covered** |
+| Remark | `CASE_WRITE` | `VIEWER`, out-of-scope staff | **Covered** |
 | Assign / reassign | Owning bureau, `ADMIN` | `VIEWER`, other bureau | **Planned** |
 | Transfer | Owning bureau, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `ADMIN` | `VIEWER`, other bureau | **Planned** |
-| Escalate | Owning bureau, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `ADMIN` | `VIEWER` | **Planned** |
-| Remark | Scoped staff | `VIEWER`, out-of-scope staff | **Planned** |
-| Set next action | Scoped staff | `VIEWER`, out-of-scope staff | **Planned** |
-| Dispose | `COMPETENT_AUTHORITY`, `ADMIN`, policy-allowed senior | `VIEWER`, bureau officer where policy denies | **Planned** |
-| Reopen | `COMPETENT_AUTHORITY`, `ADMIN` | `VIEWER`, bureau officer | **Planned** |
+| Set next action | `CASE_WRITE` | `VIEWER`, out-of-scope staff | **Planned** |
+| Dispose | `CASE_DISPOSAL` | `VIEWER`, bureau officer where policy denies | **Planned** |
+| Reopen | `CASE_DISPOSAL` | `VIEWER`, bureau officer | **Planned** |
 | Upload / download attachment | Scoped staff | Out-of-scope staff, complainant on internal attachment | **Planned** |
 | Staff conversation actions | Staff with case access | Out-of-scope staff, complainant on internal actions | **Partial** |
 
@@ -136,48 +149,49 @@ disallowed role.
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Create institution | `ADMIN`, `BUREAU_OFFICER` | `VIEWER`, `REGIONAL_OFFICER` where policy denies | **Planned** |
-| Edit institution | `ADMIN`, `BUREAU_OFFICER` | `VIEWER` | **Planned** |
-| Verify institution | `ADMIN`, `BUREAU_OFFICER` | `VIEWER` | **Planned** |
-| Merge duplicate | `ADMIN` | Non-admin | **Planned** |
+| Create institution | `INSTITUTION_WRITE` | `VIEWER` (route denial) | **Covered** |
+| Edit institution | `INSTITUTION_WRITE` | `VIEWER` (route denial and hidden control) | **Covered** |
+| Verify institution | `INSTITUTION_WRITE` | `VIEWER` (hidden control) | **Covered** |
+| Merge duplicate | `ADMIN` | Non-admin (hidden merge panel) | **Covered** |
 | Change alias | `ADMIN` | Non-admin | **Planned** |
 
 ### Overlaps and merge groups
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Confirm overlap | `OVERLAP_REVIEW` roles (senior, authority, admin) | `VIEWER`, plain bureau officer where denied | **Planned** |
-| Dismiss overlap | `OVERLAP_REVIEW` roles | `VIEWER` | **Planned** |
-| Manual link / unlink | `OVERLAP_REVIEW` roles | `VIEWER` | **Planned** |
-| Re-assess | `OVERLAP_REVIEW` roles | `VIEWER` | **Planned** |
-| Merge pair | `OVERLAP_REVIEW` roles + reason | `VIEWER`, missing reason | **Planned** |
-| Revert merge | `OVERLAP_REVIEW` roles + reason | `VIEWER`, missing reason | **Partial** |
-| Clear suppression | `MERGE_SUPPRESSION_CLEAR` roles | `VIEWER` | **Planned** |
+| Confirm overlap | `OVERLAP_REVIEW` | `VIEWER`, `REGIONAL_OFFICER` | **Covered** |
+| Dismiss overlap | `OVERLAP_REVIEW` | `VIEWER`, `REGIONAL_OFFICER` | **Covered** |
+| Unlink | `OVERLAP_REVIEW` | `VIEWER`, `REGIONAL_OFFICER` | **Covered** |
+| Manual link | `OVERLAP_REVIEW` | `VIEWER` | **Partial** (API setup only) |
+| Re-assess | `OVERLAP_REVIEW` | `VIEWER` | **Planned** |
+| Merge pair | `OVERLAP_REVIEW` + reason | `REGIONAL_OFFICER`, missing reason | **Covered** |
+| Revert merge | `OVERLAP_REVIEW` + reason | `REGIONAL_OFFICER`, missing reason | **Covered** |
+| Clear suppression | `MERGE_SUPPRESSION_CLEAR` | `REGIONAL_OFFICER` | **Covered** |
 
 ### Notifications
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Mark one read | Recipient | Other user | **Planned** |
-| Mark all read | Recipient | Other user | **Planned** |
+| Mark one read | Recipient | Other user (API denial) | **Covered** |
+| Mark all read | Recipient | Other user | **Covered** |
 | Follow deep link | Recipient with access | Recipient without access | **Partial** |
 
 ### Admin
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Create user / invite | `ADMIN` | All non-admin | **Planned** |
-| Deactivate / reactivate user | `ADMIN` | All non-admin | **Planned** |
+| Create user / invite | `ADMIN` | All non-admin (route denial) | **Covered** |
+| Deactivate / reactivate user | `ADMIN` | All non-admin (route denial) | **Partial** (deactivate only) |
 | Change role / scope | `ADMIN` | All non-admin | **Planned** |
-| Reset password | `ADMIN` | All non-admin | **Planned** |
-| Create / edit bureau | `ADMIN` | All non-admin | **Planned** |
-| Create / edit region | `ADMIN` | All non-admin | **Planned** |
-| Create / edit category | `ADMIN` | All non-admin | **Planned** |
-| Create / edit SLA rule | `ADMIN` | All non-admin | **Planned** |
-| Toggle SLA active | `ADMIN` | All non-admin | **Planned** |
-| Approve verification | `ADMIN` | Non-admin staff | **Planned** |
-| Reject verification | `ADMIN` | Non-admin staff | **Planned** |
-| Read/admin audit entries | `ADMIN` | Non-admin | **Planned** |
+| Reset password | `ADMIN` | All non-admin (route denial) | **Covered** |
+| Create / edit bureau | `ADMIN` | All non-admin (server denial) | **Planned** |
+| Create / edit region | `ADMIN` | All non-admin (server denial) | **Planned** |
+| Create / edit / delete category | `ADMIN` | All non-admin (server denial) | **Covered** |
+| Create / edit / delete SLA rule | `ADMIN` | All non-admin (server denial) | **Covered** |
+| Toggle SLA active | `ADMIN` | All non-admin | **Covered** (deactivate path) |
+| Approve verification | `ADMIN` | Non-admin staff (route denial) | **Covered** |
+| Reject verification | `ADMIN` | Non-admin staff (route denial) | **Covered** |
+| Read/admin audit entries | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `VIEWER` | Other staff (route denial) | **Covered** |
 
 ### Portal and account
 
@@ -192,6 +206,11 @@ disallowed role.
 | Reopen complaint | Owning `COMPLAINANT` | Other complainant, staff | **Planned** |
 | Sign out | All roles | N/A | **Partial** |
 | Switch theme | All roles | N/A | **Planned** |
+
+Step 2 also fixed two app bugs surfaced by these tests: the bureau officer case
+registration form now sets the bureau only after the bureau list loads, and
+`POST /cases/:id/actions` now returns a JSON action DTO instead of serialising a raw
+Mongoose document as text.
 
 ## 3. UI state coverage
 

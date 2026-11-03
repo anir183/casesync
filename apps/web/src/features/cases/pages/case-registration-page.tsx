@@ -111,10 +111,10 @@ export function CaseRegistrationPage() {
   }, [initialInstitution, selected])
 
   useEffect(() => {
-    if (isBureauOfficer && user?.bureauId) {
-      setValue('bureauId', user.bureauId)
-    }
-  }, [isBureauOfficer, user?.bureauId, setValue])
+    if (!isBureauOfficer || !user?.bureauId) return
+    if (!bureaus?.some((bureau) => bureau.id === user.bureauId)) return
+    setValue('bureauId', user.bureauId)
+  }, [isBureauOfficer, user?.bureauId, bureaus, setValue])
 
   function selectInstitution(item: { id: string; name: string }) {
     setSelected({ id: item.id, name: item.name })

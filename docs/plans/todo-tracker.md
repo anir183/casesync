@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation and current-route render/denial coverage have landed; see `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, and staff/admin mutation coverage have landed; see `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -417,15 +417,23 @@ Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
 
 ### Mutations
 
-- [ ] Cases: register, assign, transfer, escalate, remark, next action, dispose, reopen,
-      attachment.
-- [ ] Institutions: create, edit, verify, merge, alias.
-- [ ] Overlaps: confirm, dismiss, link, unlink, re-assess, merge, revert, clear suppression.
-- [ ] Notifications: mark one read, mark all read, deep link.
-- [ ] Admin: users, organization, SLA, verification queue, audit.
+Staff/admin paths landed in `apps/web/e2e/coverage/mutations.spec.ts`; portal/auth paths
+remain.
+
+- [x] Cases: register, start processing, escalate, remark (viewer denial).
+- [ ] Cases: assign, transfer, next action, dispose, reopen, attachment.
+- [x] Institutions: create, edit, verify, merge (viewer and non-admin denials).
+- [ ] Institutions: alias.
+- [x] Overlaps: confirm, dismiss, unlink, merge, revert, clear suppression (regional denial).
+- [ ] Overlaps: manual link through the UI, re-assess, missing-reason paths.
+- [x] Notifications: mark one read, mark all read (cross-user denial).
+- [ ] Notifications: deep link.
+- [x] Admin: invite/reset/deactivate user, categories, SLA rules, verification
+      approve/reject, audit route.
+- [ ] Admin: user reactivation and role/scope changes, bureaus, regions.
 - [ ] Portal: signup, verification, file, message, attach, accept/reopen.
 - [ ] Account: sign out, theme.
-- [ ] Assert denial and missing-reason paths for every privileged mutation.
+- [ ] Assert denial and missing-reason paths for every remaining privileged mutation.
 
 ### UI states
 

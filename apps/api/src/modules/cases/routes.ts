@@ -125,7 +125,16 @@ export const casesRoutes = new Elysia({ prefix: '/cases' })
     '/:id/actions',
     async ({ params, body, user }) => {
       requireRole(user, CASE_WRITE_ROLES)
-      return addRemark(params.id, user.id, body.remarks, user)
+      const action = await addRemark(params.id, user.id, body.remarks, user)
+      return {
+        id: String(action._id),
+        caseId: String(action.caseId),
+        actorId: action.actorId,
+        actionType: action.actionType,
+        remarks: action.remarks,
+        metadata: action.metadata,
+        createdAt: action.createdAt,
+      }
     },
     {
       body: t.Object({
