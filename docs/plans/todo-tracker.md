@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** planned. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation and current-route render/denial coverage have landed; see `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -389,7 +389,7 @@ indigo/teal language.
 - [ ] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
 - [ ] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment).
 
-## Stage 10 — Complete Playwright UI coverage (PLANNED)
+## Stage 10 — Complete Playwright UI coverage (IN PROGRESS)
 
 Full plan: `docs/plans/ui-testing-plan.md`. Living matrix:
 `docs/quality/ui-test-matrix.md`. Stage 10 is a separate cross-cutting stage, not another
@@ -398,19 +398,20 @@ Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
 
 ### Foundation
 
-- [ ] Add shared role/auth fixtures, signed-in API helpers, and unique-suffix data factories.
+- [x] Add shared role/auth fixtures, signed-in API helpers, and unique-suffix data factories.
 - [ ] Add reset/isolation for destructive specs (merge, revert, deactivate, dispose).
-- [ ] Add Playwright projects for desktop Chromium, mobile Chromium, Firefox, WebKit, and
-      visual desktop/mobile.
+- [x] Add Playwright projects for desktop Chromium and mobile Chromium, with Firefox and
+      WebKit available through `PLAYWRIGHT_ALL_BROWSERS=1`. Visual projects remain.
 - [ ] Add `@smoke`, `@mutation`, `@a11y`, `@responsive`, `@visual`, and `@performance` tags.
-- [ ] Add scripts: `test:e2e:smoke`, `test:e2e:full`, `test:e2e:ui`,
-      `test:e2e:update-snapshots`, `test:e2e:cross-browser`.
+- [x] Add scripts: `test:e2e:smoke`, `test:e2e:full`, `test:e2e:mobile`, `test:e2e:ui`,
+      `test:e2e:cross-browser`. `test:e2e:update-snapshots` waits for the visual workstream.
 
 ### Route and role coverage
 
-- [ ] Render and direct-URL denial tests for every public, auth, portal, staff, and admin route.
-- [ ] Cover all eight seeded roles plus the planned institution representative.
-- [ ] Assert denied access without data leakage for cases, institutions, overlaps, admin
+- [x] Render and direct-URL denial tests for every public, auth, portal, staff, and admin route.
+- [x] Cover all eight seeded roles. The institution representative stays blocked on Stage 9
+      Phase 2.
+- [x] Assert denied access without data leakage for cases, institutions, overlaps, admin
       routes, and portal complaints.
 - [ ] Add the five representative-shell routes when Stage 9 Phase 2 lands.
 

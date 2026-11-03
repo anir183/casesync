@@ -6,7 +6,8 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > reversible overlap auto-merge, the Phase 3 navigation refresh, and Phase 4 visual
 > redesign/charts/GIS are implemented and tested. Phase 2 (representatives/domains), the
 > remaining Phase 3 flows, Phase 5 (hardening), and Phase 6 (polish) remain planned.
-> Stage 10 (complete Playwright UI coverage) is planned and starts on current routes.
+> Stage 10 (complete Playwright UI coverage) is in progress: fixtures and current-route
+> render/denial coverage have landed.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that

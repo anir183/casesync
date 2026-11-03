@@ -1,7 +1,7 @@
 # CaseSync — Requirements Realignment Audit
 
 Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
-Audit date: 2026-10-28. Last verified: 2026-11-02 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified; Stage 10 planned).
+Audit date: 2026-10-28. Last verified: 2026-11-02 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified; Stage 10 in progress).
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
 separately as an **optional Stage 8 extension**, now implemented but still outside MVP
@@ -19,7 +19,8 @@ Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI 
 (`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency, Phase 1 reversible
 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/charts/GIS are implemented,
 while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned. Stage 10
-(complete Playwright UI coverage) is planned and starts on current routes.**
+(complete Playwright UI coverage) is in progress: fixtures, per-role sessions, and
+current-route render/denial coverage have landed.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -54,11 +55,10 @@ while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned. Sta
 - Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
-- Stage 10 is planned: complete Playwright coverage of every route, role, mutation, UI
-  state, accessibility requirement, responsive breakpoint, and a stable visual subset.
-  The current suite covers 12 seeded journeys; the matrix in
-  `docs/quality/ui-test-matrix.md` is the progress measure. Representative-shell rows
-  wait for Stage 9 Phase 2.
+- Stage 10 is in progress: fixtures, per-role storage states, and current-route
+  render/denial coverage have landed. Mutation, UI-state, accessibility, responsive, and
+  visual workstreams remain. The matrix in `docs/quality/ui-test-matrix.md` is the
+  progress measure. Representative-shell rows wait for Stage 9 Phase 2.
 
 ## 1. Status legend
 
@@ -399,10 +399,10 @@ the audit above predates them. Current facts:
 - Phase 4: design tokens, chart-first dashboard/reports, and a lazy-loaded
   Leaflet/OpenStreetMap region map with keyboard chips and a table fallback.
 - Phase 2 representatives/domains and Phases 5–6 remain planned.
-- Stage 10: planned complete Playwright UI coverage. See
-  `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
-  `docs/plans/todo-tracker.md` for the current checklist. No Stage 10 coverage is
-  claimed yet.
+- Stage 10: in progress. Fixtures and current-route render/denial coverage have landed;
+  see `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
+  `docs/plans/todo-tracker.md` for the current checklist. Remaining workstreams are
+  mutations, UI states, accessibility, responsive, visual regression, and the CI split.
 
 ## 16. Gap backlog (prioritized)
 

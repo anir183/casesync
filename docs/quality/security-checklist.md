@@ -1,6 +1,6 @@
 # CaseSync — Security Checklist
 
-Status: Stage 7–9 release evidence plus the planned Stage 10 UI coverage. Last verified:
+Status: Stage 7–9 release evidence plus the in-progress Stage 10 UI coverage. Last verified:
 2026-11-02.
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -15,7 +15,8 @@ rate-limits abuse-prone routes, validates uploads, and is clean under
 
 This is not a penetration test. Malware scanning, distributed rate limiting, and a
 formal HTTP security-header review remain production hardening items. Browser-level
-role/IDOR denial coverage is expanded in Stage 10
+route denial coverage has landed in Stage 10, with mutation and IDOR denial coverage still
+in progress
 ([`ui-test-matrix.md`](ui-test-matrix.md)); server-side evidence below remains the
 authority for the control itself.
 

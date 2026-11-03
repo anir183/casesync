@@ -1,6 +1,6 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
-Status: planned. Location: `docs/plans/ui-testing-plan.md`.
+Status: in progress. Step 1 fixtures and current-route render/denial coverage have landed. Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -192,9 +192,11 @@ applicable, and the denied path for an unauthorized role.
 ```text
 apps/web/e2e/
 ├── fixtures/
+│   ├── accounts.ts      # seed accounts, role keys, URLs, password
 │   ├── auth.ts          # role storage states and sign-in helpers
 │   ├── data.ts          # unique-suffix factories and seed lookups
 │   └── api.ts           # signed-in request contexts and reset helpers
+├── global-setup.ts      # caches one storage state per seeded role in .auth/
 ├── journeys/
 │   ├── auth.spec.ts
 │   ├── dashboard.spec.ts
@@ -301,8 +303,9 @@ New scripts at the root and in `apps/web`:
 | `test:e2e` | Existing full functional suite, excluding `@performance` and `@visual` |
 | `test:e2e:smoke` | Tagged `@smoke` critical journeys for PR feedback |
 | `test:e2e:full` | All functional, accessibility, responsive, and mutation specs on Chromium |
+| `test:e2e:mobile` | The 375 px responsive project only |
 | `test:e2e:ui` | Playwright UI mode for local debugging |
-| `test:e2e:update-snapshots` | Regenerate visual baselines intentionally |
+| `test:e2e:update-snapshots` | Regenerate visual baselines intentionally (visual workstream, not yet implemented) |
 | `test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
 | `test:perf` | Unchanged stress-data performance suite |
 
@@ -316,8 +319,14 @@ Playwright projects:
 Tagging:
 
 - `@smoke` — sign-in, dashboard, case read, overlap read, portal landing.
+- `@routes` — the route × role render/denial matrix.
 - `@mutation` — any test that changes data.
 - `@a11y`, `@responsive`, `@visual`, `@performance` — quality workstreams.
+
+The Playwright MCP launcher (`scripts/playwright-mcp.ts`) resolves a usable browser at
+runtime: `PLAYWRIGHT_EXECUTABLE_PATH`, then `PLAYWRIGHT_BROWSER`, then Playwright-managed
+Chromium, system Chrome/Chromium/Edge, Firefox, and WebKit. Contributors do not need to
+edit a hard-coded browser path.
 
 ## 9. CI strategy
 

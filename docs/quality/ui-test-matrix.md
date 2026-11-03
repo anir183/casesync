@@ -29,56 +29,69 @@ leakage. `A11y` = axe scan with zero serious/critical findings. `Responsive` = c
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/login` | Anonymous | Partial | N/A | Partial | Planned | Planned | **Partial** |
-| `/portal` | Anonymous | Partial | N/A | Partial | Planned | Planned | **Partial** |
-| `/portal/login` | Anonymous | Partial | N/A | Partial | Planned | N/A | **Partial** |
-| `/portal/signup` | Anonymous | Partial | N/A | Partial | Planned | N/A | **Partial** |
-| `/portal/track` | Anonymous | Partial | N/A | Partial | Planned | N/A | **Partial** |
+| `/login` | Anonymous | Covered | N/A | Partial | Planned | Planned | **Partial** |
+| `/portal` | Anonymous | Covered | N/A | Partial | Planned | Planned | **Partial** |
+| `/portal/login` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
+| `/portal/signup` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
+| `/portal/track` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
 
 ### Complainant portal
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/portal/dashboard` | `COMPLAINANT` | Partial | Planned | Planned | Planned | Planned | **Partial** |
-| `/portal/verification` | `COMPLAINANT` | Planned | Planned | Planned | Planned | N/A | **Planned** |
-| `/portal/complaints/new` | Verified `COMPLAINANT` | Partial | Planned | Planned | Planned | N/A | **Partial** |
-| `/portal/complaints/:id` | Owning `COMPLAINANT` | Partial | Planned | Planned | Planned | Planned | **Partial** |
-| `/portal/notifications` | `COMPLAINANT` | Planned | Planned | Planned | Planned | N/A | **Planned** |
+| `/portal/dashboard` | `COMPLAINANT` | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/portal/verification` | `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
+| `/portal/complaints/new` | Verified `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
+| `/portal/complaints/:id` | Owning `COMPLAINANT` | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/portal/notifications` | `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
 
-Denial cases include a complainant opening another complainant's complaint, a staff user
-opening a portal route, and an unverified complainant opening the filing route.
+Denial cases currently cover staff users opening portal routes and anonymous users opening
+staff routes. Another-complainant ownership denial and unverified-complainant filing
+denial are not covered yet: the seed creates one verified complainant, so those need
+additional fixture accounts in the mutation/state workstream.
 
 ### Staff
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/` | Authenticated staff | Planned | N/A | N/A | N/A | N/A | **Planned** |
-| `/dashboard` | All staff roles | Partial | Planned | Partial | Partial | Planned | **Partial** |
-| `/cases` | All staff roles | Partial | Partial | Partial | Planned | Planned | **Partial** |
-| `/cases/new` | `ADMIN`, `BUREAU_OFFICER`, `COMPETENT_AUTHORITY` | Planned | Partial | Partial | Planned | N/A | **Partial** |
-| `/cases/:id` | Scoped staff | Partial | Partial | Planned | Planned | Planned | **Partial** |
-| `/institutions` | All staff roles | Planned | Planned | Partial | Planned | Planned | **Partial** |
-| `/institutions/new` | `ADMIN`, `BUREAU_OFFICER` | Planned | Planned | N/A | Planned | N/A | **Planned** |
-| `/institutions/:id` | Scoped staff | Planned | Planned | Planned | Planned | Planned | **Planned** |
-| `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER` | Planned | Planned | N/A | Planned | N/A | **Planned** |
-| `/overlaps` | Staff with overlap access | Partial | Planned | Partial | Planned | Planned | **Partial** |
-| `/overlaps/:id` | Staff with overlap access | Partial | Planned | Planned | Planned | Planned | **Partial** |
-| `/merge-groups/:id` | Staff with overlap access | Planned | Planned | Planned | Planned | N/A | **Planned** |
-| `/reports` | All staff roles | Partial | Planned | Partial | Partial | Planned | **Partial** |
-| `/notifications` | All staff roles | Partial | Planned | Partial | Planned | Planned | **Partial** |
+| `/` | Authenticated staff | Covered | Covered | N/A | N/A | N/A | **Covered** |
+| `/dashboard` | All staff roles | Covered | Covered | Partial | Partial | Planned | **Partial** |
+| `/cases` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
+| `/cases/new` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Partial | Planned | N/A | **Partial** |
+| `/cases/:id` | Scoped staff | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/institutions` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
+| `/institutions/new` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | N/A | Planned | N/A | **Partial** |
+| `/institutions/:id` | Scoped staff | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | N/A | Planned | N/A | **Partial** |
+| `/overlaps` | Staff with overlap access | Covered | Covered | Partial | Planned | Planned | **Partial** |
+| `/overlaps/:id` | Staff with overlap access | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/merge-groups/:id` | Staff with overlap access | Covered | Covered | Planned | Planned | N/A | **Partial** |
+| `/reports` | All staff roles | Covered | Covered | Partial | Partial | Planned | **Partial** |
+| `/notifications` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
 
 ### Admin
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/admin/users` | `ADMIN` | Planned | Partial | Planned | Planned | Planned | **Partial** |
-| `/admin/organization` | `ADMIN` | Planned | Planned | Planned | Planned | N/A | **Planned** |
-| `/admin/audit` | `ADMIN` | Planned | Partial | Planned | Planned | N/A | **Planned** |
-| `/admin/verifications` | `ADMIN` | Planned | Planned | Partial | Planned | N/A | **Partial** |
-| `/admin/sla` | `ADMIN` | Planned | Planned | Partial | Planned | N/A | **Partial** |
+| `/admin/users` | `ADMIN` | Covered | Covered | Planned | Planned | Planned | **Partial** |
+| `/admin/organization` | All authenticated staff (read); `ADMIN` (write) | Covered | N/A | Planned | Planned | N/A | **Partial** |
+| `/admin/audit` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `VIEWER` | Covered | Covered | Planned | Planned | N/A | **Partial** |
+| `/admin/verifications` | `ADMIN` | Covered | Covered | Partial | Planned | N/A | **Partial** |
+| `/admin/sla` | `ADMIN` | Covered | Covered | Partial | Planned | N/A | **Partial** |
 
-Admin denial is currently exercised for navigation visibility and one direct visit; every
-admin route needs a direct-URL denial test.
+Route render and direct-URL denial cells were closed by
+`apps/web/e2e/coverage/routes.spec.ts`, which uses cached per-role storage states from
+`apps/web/e2e/global-setup.ts`. Denial assertions also check that the protected heading,
+table, or record text is absent.
+
+Two route rows are deliberately asymmetric:
+
+- `/admin/organization` is readable by every authenticated staff member, so there is no
+  route-level denial. Non-admin writes are denied by the API and get their browser
+  coverage with the mutation workstream. The anonymous request is still denied by the
+  staff guard and is asserted here.
+- `/admin/audit` is readable by `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, and
+  `VIEWER`. Bureau and regional officers receive an `Insufficient permissions` state.
 
 ### Planned representative shell (Stage 9 Phase 2)
 
@@ -188,7 +201,7 @@ disallowed role.
 | Empty collection | Cases, institutions, overlaps, notifications, audit | **Planned** |
 | Empty search result | Case/institution/overlap search | **Planned** |
 | Fetch error with retry | All query-backed lists and detail pages | **Planned** |
-| Permission denied | Direct URLs for every role-gated route | **Partial** |
+| Permission denied | Direct URLs for every role-gated route | **Covered** |
 | Not found | `/cases/:id`, `/institutions/:id`, `/overlaps/:id`, `/merge-groups/:id`, portal complaint | **Planned** |
 | Pagination first/middle/last | Cases, institutions, overlaps, notifications | **Planned** |
 | Page-size change | Paginated lists | **Planned** |
@@ -253,12 +266,12 @@ pinned CI image, not on developer machines.
 | Area | Covered | Partial | Planned | Blocked | N/A |
 |---|---|---|---|---|---|
 | Routes — public/auth | 0 | 5 | 0 | 0 | 0 |
-| Routes — portal | 0 | 3 | 2 | 0 | 0 |
-| Routes — staff | 0 | 9 | 5 | 0 | 0 |
-| Routes — admin | 0 | 3 | 2 | 0 | 0 |
+| Routes — portal | 0 | 5 | 0 | 0 | 0 |
+| Routes — staff | 1 | 13 | 0 | 0 | 0 |
+| Routes — admin | 0 | 5 | 0 | 0 | 0 |
 | Routes — representative | 0 | 0 | 0 | 6 | 0 |
 | Mutations | 0 | 7 | 39 | 0 | 0 |
-| UI states | 0 | 6 | 14 | 0 | 0 |
+| UI states | 1 | 5 | 14 | 0 | 0 |
 | Visual screens | 0 | 0 | 12 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts.

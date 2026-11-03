@@ -23,10 +23,11 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
 
 > **Stage 10 sequencing.** Complete Playwright UI coverage is a separate stage after
 > Stage 9: [`ui-testing-plan.md`](ui-testing-plan.md) with the living matrix at
-> [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 can start on
-> current routes now, but its representative-shell rows wait for Stage 9 Phase 2 and its
-> final exit gate waits for the remaining Phase 3 role flows. Stage 9 must not mark those
-> rows covered on Stage 10's behalf.
+> [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 has started on
+> current routes: fixtures and route render/denial coverage have landed. Its
+> representative-shell rows wait for Stage 9 Phase 2, and its final exit gate waits for the
+> remaining Phase 3 role flows. Stage 9 must not mark those rows covered on Stage 10's
+> behalf.
 
 ## 1. Purpose
 

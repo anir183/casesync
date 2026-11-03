@@ -266,10 +266,11 @@ layout.
   representatives and email-domain suggestions, the remaining Phase 3 flows, production
   hardening, and documentation polish remain planned. See
   [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
-- Stage 10 is planned: complete Playwright UI coverage across every route, role, mutation,
-  UI state, accessibility check, responsive breakpoint, and a stable visual-regression
-  subset. It can start on current routes now; representative-shell rows stay blocked until
-  Stage 9 Phase 2, and final exit waits for the remaining Phase 3 flows. See
+- Stage 10 is in progress: complete Playwright UI coverage across every route, role,
+  mutation, UI state, accessibility check, responsive breakpoint, and a stable
+  visual-regression subset. Fixtures, per-role sessions, and current-route render/denial
+  coverage have landed; representative-shell rows stay blocked until Stage 9 Phase 2, and
+  final exit waits for the remaining Phase 3 flows. See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
 
@@ -756,7 +757,7 @@ Stage 8 (done — optional public portal)
    ↓
 Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; representatives, remaining flows, hardening, docs remain)
    ↓
-Stage 10 (planned — complete Playwright UI coverage; starts now on current routes, exits after Stage 9 Phase 2/3)
+Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial landed, exits after Stage 9 Phase 2/3)
 ```
 
 Parallelizable in Stage 9:
@@ -770,9 +771,9 @@ Parallelizable in Stage 9:
 Stage 8 followed Stage 7 so the public portal could reuse the hardened security, test,
 and CI foundation instead of delaying the MVP. Stage 9 keeps deployment out of scope.
 
-Stage 10 overlaps Stage 9 by design: fixtures, route/role coverage, and current-route
-mutations can start immediately, while the representative-shell rows and the final exit
-gate wait for Stage 9 Phase 2 and the remaining Phase 3 flows.
+Stage 10 overlaps Stage 9 by design: fixtures and current-route route/role coverage have
+landed, and current-route mutations can proceed, while the representative-shell rows and
+the final exit gate wait for Stage 9 Phase 2 and the remaining Phase 3 flows.
 
 ## 9. Risks and mitigations
 

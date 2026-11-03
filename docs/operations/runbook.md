@@ -1,7 +1,7 @@
 # CaseSync — Operations Runbook
 
 Status: Stage 7–9 runbook (Stage 9 Phase 0, Phase 1, Phase 3 navigation, and Phase 4
-implemented) plus the planned Stage 10 UI coverage commands.
+implemented) plus the Stage 10 UI coverage commands.
 Last verified: 2026-11-02.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
@@ -77,14 +77,15 @@ bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
 
-Planned Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)):
+Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)):
 
 ```bash
 bun run test:e2e:smoke             # tagged @smoke PR gate
-bun run test:e2e:full              # full Chromium functional/a11y/responsive/mutation suite
+bun run test:e2e:full              # desktop functional/a11y/responsive/mutation + mobile responsive
+bun run test:e2e:mobile            # mobile Chromium responsive project only
 bun run test:e2e:ui                # Playwright UI mode
-bun run test:e2e:update-snapshots  # intentional visual baseline update
-bun run test:e2e:cross-browser     # Chromium + Firefox + WebKit
+bun run test:e2e:cross-browser     # Chromium + Firefox + WebKit (PLAYWRIGHT_ALL_BROWSERS=1)
+bun run test:e2e:update-snapshots  # visual baselines; planned with the visual workstream
 ```
 
 Visual baselines must be generated on the pinned CI image and reviewed before commit.
@@ -92,8 +93,10 @@ Install browsers once per machine with
 `cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
 cross-browser suite).
 
-Current local baseline (2026-11-02): 85 API unit + 25 web tests, 55 integration tests, 12
-seeded browser tests, and 87.4% lines / 89.7% functions of API coverage. The production
+Current local baseline (2026-11-02): 85 API unit + 25 web tests, 55 integration tests, 73
+desktop browser tests (29-route render/denial matrix, 8 role smoke checks, and the existing
+journeys), 4 responsive checks on the mobile project, and 87.4% lines / 89.7% functions of
+API coverage. The production
 web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
 was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
 new runtime.

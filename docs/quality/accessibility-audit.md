@@ -1,6 +1,6 @@
 # CaseSync — Accessibility Audit
 
-Status: Stage 7–8 evidence, Stage 9 Phase 4 and Phase 0.5 evidence, plus the planned
+Status: Stage 7–8 evidence, Stage 9 Phase 4 and Phase 0.5 evidence, plus the in-progress
 Stage 10 expansion. Last verified: 2026-11-02.
 Tests: `apps/web/e2e/accessibility.spec.ts`, `apps/web/e2e/reports.spec.ts`.
 
@@ -30,7 +30,7 @@ Portal pages are scanned unauthenticated; authenticated complainant dashboard/de
 bun run test:e2e
 ```
 
-### Planned Stage 10 expansion
+### Stage 10 expansion
 
 Stage 10 ([`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)) expands the scan
 from the core pages above to **every route and its primary allowed role**, plus denied and

@@ -277,7 +277,9 @@ including the mobile drawer, map/reflow, reduced motion, and merge/revert), run 
 production builds on API port 3100 and web port 4173. The performance test is tagged and
 run separately with the stress seed.
 
-**Stage 10 is the completion path.** The decision-complete plan is
+**Stage 10 is the completion path, and work is in progress.** Shared fixtures,
+per-role storage states, and current-route render/denial coverage have landed. The
+decision-complete plan is
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
 action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 
@@ -323,16 +325,17 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
   accessible name exists.
 - No application behavior changes solely to satisfy a test.
 
-### Planned Stage 10 commands
+### Stage 10 commands
 
 | Command | Behavior |
 |---|---|
 | `bun run test:e2e` | Full functional suite, excluding `@performance` and `@visual` |
 | `bun run test:e2e:smoke` | Tagged `@smoke` PR journeys |
-| `bun run test:e2e:full` | Full Chromium functional, a11y, responsive, and mutation suite |
+| `bun run test:e2e:full` | Full Chromium functional, a11y, responsive, and mutation suite plus the mobile responsive project |
+| `bun run test:e2e:mobile` | The mobile Chromium project only |
 | `bun run test:e2e:ui` | Playwright UI mode for local debugging |
-| `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally |
-| `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
+| `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite (`PLAYWRIGHT_ALL_BROWSERS=1`) |
+| `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally (visual workstream, not yet implemented) |
 
 ## 8. Security testing
 
@@ -412,7 +415,7 @@ Implemented in `.github/workflows/ci.yml`:
    Chromium, seeded smoke + accessibility; report/artifacts on failure.
 6. **Security**: `bun audit --audit-level=high`.
 
-### Planned Stage 10 CI split
+### Stage 10 CI split (target)
 
 | Trigger | Jobs |
 |---|---|
@@ -436,6 +439,11 @@ Actual root scripts:
   "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration",
   "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
   "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
+  "test:e2e:smoke": "bun run seed:demo && bun run --filter @casesync/web test:e2e:smoke",
+  "test:e2e:full": "bun run seed:demo && bun run --filter @casesync/web test:e2e:full",
+  "test:e2e:mobile": "bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile",
+  "test:e2e:ui": "bun run seed:demo && bun run --filter @casesync/web test:e2e:ui",
+  "test:e2e:cross-browser": "bun run seed:demo && bun run --filter @casesync/web test:e2e:cross-browser",
   "test:perf": "./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"
 }
