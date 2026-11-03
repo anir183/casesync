@@ -12,8 +12,10 @@ build
 .output
 
 # Testing
-coverage
+coverage/
 *.lcov
+# The e2e `coverage/` folder holds Playwright specs, not generated reports.
+!apps/web/e2e/coverage/
 
 # Environment
 .env
