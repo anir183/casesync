@@ -8,8 +8,8 @@ and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency), P
 dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Stage 9 Phase 2
 (representatives/domains), the remaining Phase 3 flows, and Phases 5–6 remain planned.
 Stage 10 (complete Playwright UI coverage) is in progress, with fixtures, current-route
-coverage, and staff/admin mutations landed; see `docs/plans/ui-testing-plan.md` and
-`docs/quality/ui-test-matrix.md`. See
+coverage, staff/admin mutations, and the first UI-state suite landed; see
+`docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.

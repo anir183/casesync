@@ -278,8 +278,8 @@ production builds on API port 3100 and web port 4173. The performance test is ta
 run separately with the stress seed.
 
 **Stage 10 is the completion path, and work is in progress.** Shared fixtures,
-per-role storage states, current-route render/denial coverage, and staff/admin mutation
-coverage have landed. The decision-complete plan is
+per-role storage states, current-route render/denial coverage, staff/admin mutation
+coverage, and the first UI-state suite have landed. The decision-complete plan is
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
 action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 

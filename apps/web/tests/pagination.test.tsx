@@ -16,15 +16,16 @@ describe('Pagination', () => {
     expect((screen.getByRole('button', { name: 'Next' }) as HTMLButtonElement).disabled).toBe(false)
   })
 
-  test('moves between pages and resets to page one when page size changes', () => {
+  test('moves between pages and leaves page resets to the page-size owner', () => {
     const pages: number[] = []
+    const pageSizes: number[] = []
     render(
       <Pagination
         page={2}
         pageSize={20}
         total={45}
         onPageChange={(page) => pages.push(page)}
-        onPageSizeChange={() => {}}
+        onPageSizeChange={(pageSize) => pageSizes.push(pageSize)}
       />,
     )
 
@@ -32,6 +33,18 @@ describe('Pagination', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Previous' }))
     fireEvent.change(screen.getByLabelText('Rows per page'), { target: { value: '50' } })
 
-    expect(pages).toEqual([3, 1, 1])
+    expect(pages).toEqual([3, 1])
+    expect(pageSizes).toEqual([50])
+  })
+
+  test('resets to page one on page-size change when no page-size handler is supplied', () => {
+    const pages: number[] = []
+    render(
+      <Pagination page={2} pageSize={20} total={45} onPageChange={(page) => pages.push(page)} />,
+    )
+
+    fireEvent.change(screen.getByLabelText('Rows per page'), { target: { value: '50' } })
+
+    expect(pages).toEqual([1])
   })
 })

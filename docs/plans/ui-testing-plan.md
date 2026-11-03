@@ -1,8 +1,8 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
-Status: in progress. Step 1 fixtures/current-route render and denial coverage and Step 2
-staff/admin mutation coverage have landed. Portal/auth mutations are next. Location:
-`docs/plans/ui-testing-plan.md`.
+Status: in progress. Step 1 fixtures/current-route render and denial coverage, Step 2
+staff/admin mutation coverage, and Step 4 UI-state coverage have landed. Step 3
+portal/auth mutations are next. Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -388,9 +388,9 @@ Each commit is independently reviewable. Do not commit or push unless explicitly
 8. `docs: record the Stage 10 coverage baseline`
    - Matrix status, QA plan, runbook, and evidence; only after exit gates pass.
 
-Steps 1–2 are complete. Steps 3–4 can proceed on current routes. Step 5 can proceed
-except for blocked representative rows. Steps 6–8 wait for Stable UI and the Stage 9
-dependencies.
+Steps 1, 2, and 4 are complete. Step 3 (portal/auth mutations) is next and can proceed on
+current routes. Step 5 can proceed except for blocked representative rows. Steps 6–8 wait
+for Stable UI and the Stage 9 dependencies.
 
 ## 12. Risks and mitigations
 

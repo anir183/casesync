@@ -32,7 +32,10 @@ export function Pagination({
           className="h-8 w-24"
           value={String(pageSize)}
           onChange={(event) => {
-            onPageSizeChange?.(Number(event.target.value))
+            if (onPageSizeChange) {
+              onPageSizeChange(Number(event.target.value))
+              return
+            }
             onPageChange(PAGINATION.DEFAULT_PAGE)
           }}
         >

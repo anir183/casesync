@@ -35,7 +35,7 @@ Status legend:
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
 | Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
-| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, and staff/admin mutation coverage have landed; portal/auth mutations, state, accessibility, responsive, visual, and CI workstreams remain. Representative rows wait for Stage 9 Phase 2. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
+| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, staff/admin mutation coverage, and the first UI-state suite have landed; portal/auth mutations, remaining UI states, accessibility, responsive, visual, and CI workstreams remain. Representative rows wait for Stage 9 Phase 2. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -250,10 +250,10 @@ Status legend:
   5,000-case performance test.
 - Stage 10 baseline: 28 current concrete routes plus the root redirect, 8 seeded accounts
   across 7 roles plus the planned representative role, and the planned representative
-  shell (5 screens plus the `/institution` redirect). Current-route render/denial and
-  staff/admin mutation coverage is delivered; portal/auth mutations, state, accessibility,
-  responsive, and visual rows are still open. Use `docs/quality/ui-test-matrix.md` as the
-  coverage measure, not the test count.
+  shell (5 screens plus the `/institution` redirect). Current-route render/denial,
+  staff/admin mutation, and first UI-state coverage is delivered; portal/auth mutations,
+  remaining states, accessibility, responsive, and visual rows are still open. Use
+  `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
