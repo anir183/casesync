@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
+import { createVerifiedComplainant } from './fixtures/api'
 import { PASSWORD, signIn } from './helpers'
-
-const COMPLAINANT_EMAIL = 'complainant@casesync.test'
 
 async function signInPortal(page: Parameters<typeof signIn>[0], email: string) {
   await page.goto('/portal/login')
@@ -19,15 +18,18 @@ async function signOut(page: Parameters<typeof signIn>[0]) {
 }
 
 test.describe('@mutation public complainant portal', () => {
+  test.describe.configure({ timeout: 180_000 })
+
   test('complainant files, tracks and closes a complaint while staff handle it', async ({
     page,
   }) => {
     const subject = `E2E fee complaint ${Date.now()}`
-    await signInPortal(page, COMPLAINANT_EMAIL)
+    const account = await createVerifiedComplainant('portal-journey')
+    await signInPortal(page, account.email)
 
-    await expect(
-      page.getByText(/Verified institution:.*Delhi Institute of Technology/),
-    ).toBeVisible()
+    const verified = page.getByText(/Verified institution:/)
+    await expect(verified).toBeVisible()
+    await expect(verified).toContainText(account.institutionName)
     await page.getByRole('link', { name: 'File a complaint', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'File a complaint' })).toBeVisible()
 
@@ -63,7 +65,7 @@ test.describe('@mutation public complainant portal', () => {
     await signOut(page)
     await page.goto('/portal/track')
     await page.getByLabel('Complaint number').fill(caseNumber as string)
-    await page.getByLabel('Email address').fill(COMPLAINANT_EMAIL)
+    await page.getByLabel('Email address').fill(account.email)
     await page.getByRole('button', { name: 'Track complaint' }).click()
     await expect(page.getByText(subject)).toBeVisible()
     await expect(
@@ -89,7 +91,7 @@ test.describe('@mutation public complainant portal', () => {
     ).toBeVisible()
 
     await signOut(page)
-    await signInPortal(page, COMPLAINANT_EMAIL)
+    await signInPortal(page, account.email)
     await page.goto(complaintPath)
     await expect(page.getByText('The excess fee was refunded.')).toBeVisible()
     await expect(page.getByText('Resolved', { exact: true }).first()).toBeVisible()

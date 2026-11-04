@@ -491,7 +491,9 @@ test.describe('@mutation staff and admin write paths', () => {
       await admin.page.getByRole('button', { name: 'Revert merge' }).click()
       await expect(admin.page.getByRole('heading', { name: 'Revert this merge?' })).toBeVisible()
       await admin.page.getByRole('button', { name: 'Revert merge' }).last().click()
-      await expect(admin.page.getByText(/Merge reverted/)).toBeVisible()
+      await expect(
+        admin.page.getByText(/Merge reverted\. The cases returned to human review/),
+      ).toBeVisible()
       await expect(
         admin.page.getByText('Auto-merge suppressed pending human clearance'),
       ).toBeVisible()
@@ -502,7 +504,9 @@ test.describe('@mutation staff and admin write paths', () => {
         admin.page.getByRole('heading', { name: 'Clear auto-merge suppression?' }),
       ).toBeVisible()
       await admin.page.getByRole('button', { name: 'Clear suppression' }).last().click()
-      await expect(admin.page.getByText(/Suppression cleared/)).toBeVisible()
+      await expect(
+        admin.page.getByText(/Suppression cleared\. The overlap is back in human review/),
+      ).toBeVisible()
     } finally {
       await admin.context.close()
     }

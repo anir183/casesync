@@ -12,6 +12,7 @@ import {
   useNotifications,
 } from '#/features/notifications/api'
 import { signOut, useSession } from '#/lib/auth-client'
+import { useRouteFocus } from '#/lib/use-route-focus'
 import { cn } from '#/lib/utils'
 
 const PORTAL_LINK_CLASS = ({ isActive }: { isActive: boolean }) =>
@@ -32,6 +33,7 @@ export function PortalLayout() {
   const { data: session } = useSession()
   const navigate = useNavigate()
   const location = useLocation()
+  const mainRef = useRouteFocus(location.pathname)
   const [mobileOpen, setMobileOpen] = useState(false)
   const user = session?.user as { name?: string; email?: string; role?: string } | undefined
   const signedIn = Boolean(user)
@@ -63,6 +65,12 @@ export function PortalLayout() {
 
   return (
     <div className="min-h-screen bg-muted/20">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link
@@ -243,7 +251,12 @@ export function PortalLayout() {
         )}
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <main
+        ref={mainRef}
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto max-w-6xl px-4 py-6 focus:outline-none sm:px-6 sm:py-8"
+      >
         <Suspense
           fallback={
             <div className="space-y-4" aria-busy="true" aria-label="Loading page">

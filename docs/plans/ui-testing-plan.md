@@ -1,9 +1,9 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
 Status: in progress. Step 1 fixtures/current-route render and denial coverage, Step 2
-staff/admin mutation coverage, Step 3 portal/auth flows, and Step 4 UI-state coverage
-have landed. Step 5 accessibility and responsive expansion is next. Location:
-`docs/plans/ui-testing-plan.md`.
+staff/admin mutation coverage, Step 3 portal/auth flows, Step 4 UI-state coverage, and
+Step 5 accessibility/responsive expansion have landed. Step 6 visual regression is next.
+Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -389,9 +389,13 @@ Each commit is independently reviewable. Do not commit or push unless explicitly
 8. `docs: record the Stage 10 coverage baseline`
    - Matrix status, QA plan, runbook, and evidence; only after exit gates pass.
 
-Steps 1–4 are complete. Step 5 (accessibility and responsive expansion) is next and can
-proceed except for blocked representative rows. Steps 6–8 wait for Stable UI and the
-Stage 9 dependencies.
+Steps 1–5 are complete. Step 5 added the shared route manifest, 45 accessibility tests
+(29 route scans, 11 denial scans, and keyboard/focus checks), and 12 responsive tests
+(375/768/1024/1440 px reflow, table containment, 200% page and text-only zoom, reduced
+motion). It also fixed four accessibility defects and added skip links plus route-change
+heading focus. Step 6 (visual regression) is next; representative rows remain blocked on
+Stage 9 Phase 2 and final exit waits on the remaining Phase 3 flows. Steps 7–8 wait for
+Stable UI and the Stage 9 dependencies.
 
 ## 12. Risks and mitigations
 

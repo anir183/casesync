@@ -7,8 +7,8 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > redesign/charts/GIS are implemented and tested. Phase 2 (representatives/domains), the
 > remaining Phase 3 flows, Phase 5 (hardening), and Phase 6 (polish) remain planned.
 > Stage 10 (complete Playwright UI coverage) is in progress: fixtures, current-route
-> render/denial coverage, staff/admin and portal/auth mutation coverage, and the first
-> UI-state suite have landed.
+> render/denial coverage, mutation coverage, UI states, and accessibility/responsive
+> expansion have landed; visual regression and the CI split remain.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
@@ -335,7 +335,8 @@ planned); local MongoDB `8.3.9` remains supported.
 Stage 10 defines the complete UI coverage contract in
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and tracks it in
 [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Do not infer whole-product
-coverage from the current 12 seeded journeys.
+coverage from the seeded suite: representative rows are blocked and visual/CI work is
+still in progress.
 
 **Priority:** utils (pair/normalize/similarity), overlap orchestration with DB
 (exact/fuzzy, Jev enabled/disabled/failure/timeout, base relationship always created),

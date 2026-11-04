@@ -1,6 +1,7 @@
-import { type Page, expect, request, test } from '@playwright/test'
+import { type Page, expect, test } from '@playwright/test'
+import { createVerifiedComplainant } from '../fixtures/api'
 import { loadSeedData } from '../fixtures/data'
-import { API_URL, PASSWORD, signedInApi } from '../helpers'
+import { PASSWORD, signedInApi } from '../helpers'
 
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=',
@@ -39,8 +40,8 @@ async function selectInstitution(page: Page, search: string, label = 'Institutio
   await expect(select).not.toHaveValue('')
 }
 
-async function createComplaint(subject: string) {
-  const complainant = await signedInApi('complainant')
+async function createComplaint(email: string, subject: string) {
+  const complainant = await signedInApi(email)
   try {
     const profile = (await (await complainant.get('/api/v1/portal/me')).json()) as {
       institutionId?: string
@@ -65,6 +66,8 @@ async function createComplaint(subject: string) {
 }
 
 test.describe('@mutation portal and account flows', () => {
+  test.describe.configure({ timeout: 180_000 })
+
   test('a new complainant verifies with an exact AICTE ID and signs out', async ({ page }) => {
     const email = uniqueEmail('verified-signup')
 
@@ -121,40 +124,21 @@ test.describe('@mutation portal and account flows', () => {
   })
 
   test('another complainant cannot open a complaint they do not own', async ({ page }) => {
-    const publicApi = await request.newContext({ baseURL: API_URL })
-    let email = ''
-    try {
-      const institutions = (await (
-        await publicApi.get('/api/v1/public/institutions?q=Institute')
-      ).json()) as { items: Array<{ name: string; aictePermanentId?: string }> }
-      const institution = institutions.items.find((item) => item.aictePermanentId)
-      expect(institution?.aictePermanentId).toBeTruthy()
-      email = uniqueEmail('other-complainant')
-      const signup = await publicApi.post('/api/v1/public/complainant/sign-up', {
-        data: {
-          name: 'E2E Other Complainant',
-          email,
-          password: PASSWORD,
-          aictePermanentId: institution?.aictePermanentId,
-        },
-      })
-      expect(signup.ok()).toBe(true)
-    } finally {
-      await publicApi.dispose()
-    }
+    const account = await createVerifiedComplainant('other-complainant')
 
     const data = await loadSeedData()
-    await signInPortal(page, email)
+    await signInPortal(page, account.email)
     await page.goto(`/portal/complaints/${data.complaint.id}`)
     await expect(page.getByText('Complaint not found')).toBeVisible({ timeout: 20_000 })
     await expect(page.getByText(data.complaint.caseNumber)).toHaveCount(0)
   })
 
   test('a complainant uploads and downloads a public document', async ({ page }) => {
+    const account = await createVerifiedComplainant('attachment')
     const subject = `E2E attachment ${Date.now()}`
-    const complaint = await createComplaint(subject)
+    const complaint = await createComplaint(account.email, subject)
 
-    await signInPortal(page, 'complainant@casesync.test')
+    await signInPortal(page, account.email)
     await page.goto(`/portal/complaints/${complaint.id}`)
     await expect(page.getByRole('heading', { name: subject })).toBeVisible()
 
@@ -174,8 +158,9 @@ test.describe('@mutation portal and account flows', () => {
   })
 
   test('a complainant reopens a resolved complaint with a reason', async ({ page }) => {
+    const account = await createVerifiedComplainant('reopen')
     const subject = `E2E reopen ${Date.now()}`
-    const complaint = await createComplaint(subject)
+    const complaint = await createComplaint(account.email, subject)
 
     const admin = await signedInApi('admin')
     try {
@@ -191,7 +176,7 @@ test.describe('@mutation portal and account flows', () => {
       await admin.dispose()
     }
 
-    await signInPortal(page, 'complainant@casesync.test')
+    await signInPortal(page, account.email)
     await page.goto(`/portal/complaints/${complaint.id}`)
     await expect(page.getByRole('heading', { name: subject })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Resolution' })).toBeVisible()

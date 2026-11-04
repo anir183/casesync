@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, and the UI-state suite have landed; see `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, and accessibility/responsive expansion have landed; visual regression and CI remain. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -448,18 +448,24 @@ pagination bug where changing page size reset the size through a second callback
 - [x] Dialog cancel, pending mutation, failed mutation, session expiry, and theme switch.
 - [ ] Empty collections on institutions, notifications, overlaps, and audit.
 - [ ] Pagination and filters on the remaining paginated lists.
-- [ ] Dialog confirm/error focus return; mobile drawer; notification bell preview.
+- [x] Dialog focus trap and trigger restore; mobile drawer open/close.
+- [ ] Dialog confirm/error focus return after the mutation settles; notification bell
+      preview.
 - [ ] Success toasts for the remaining mutation groups.
 
 ### Accessibility and responsive
 
-- [ ] axe on every route and primary role; zero serious/critical findings.
-- [ ] Keyboard-only journeys for sign-in, navigation, filters, dialogs, case actions, and
-      overlap merge/revert.
-- [ ] Focus management on route change and dialogs.
-- [ ] Reduced motion on chart and map routes.
-- [ ] 200% zoom reflow.
-- [ ] 375/768/1024/1440 px with no page-level overflow.
+`apps/web/e2e/accessibility.spec.ts` adds 45 tests (29 route scans, 11 denial scans, and
+keyboard/focus checks); `apps/web/e2e/responsive.spec.ts` adds 12 tests across the four
+breakpoints, zoom, and reduced motion. Representative rows stay blocked.
+
+- [x] axe on every current route and primary role; zero serious/critical findings.
+- [ ] Keyboard-only journeys for filters, case actions, and overlap merge/revert.
+- [x] Keyboard-only sign-in, navigation, dialog, drawer, and table-scroll checks.
+- [x] Focus management on route change and dialogs (trap, Escape, trigger restore).
+- [x] Reduced motion on chart and map routes.
+- [x] 200% page and text-only zoom reflow.
+- [x] 375/768/1024/1440 px with no page-level overflow on the staff and portal route groups.
 
 ### Visual regression
 
@@ -519,9 +525,9 @@ pagination bug where changing page size reset the size through a second callback
 - [ ] Stage 9: representative E2E journey.
 - [ ] Stage 10: every route has render and role-denial coverage.
 - [ ] Stage 10: every user-facing mutation has a browser test and denial path.
-- [ ] Stage 10: axe clean on every route and role.
-- [ ] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
-- [ ] Stage 10: 375/768/1024/1440 px checks pass with no page overflow.
+- [x] Stage 10: axe clean on every current route and primary role.
+- [x] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
+- [x] Stage 10: 375/768/1024/1440 px checks pass on staff and portal route groups.
 - [ ] Stage 10: visual baselines pass twice consecutively.
 - [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
 - [ ] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.

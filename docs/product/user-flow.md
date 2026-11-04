@@ -8,7 +8,7 @@ and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency), P
 dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Stage 9 Phase 2
 (representatives/domains), the remaining Phase 3 flows, and Phases 5–6 remain planned.
 Stage 10 (complete Playwright UI coverage) is in progress, with fixtures, current-route
-coverage, staff/admin and portal/auth mutations, and the first UI-state suite landed; see
+coverage, mutations, UI states, and accessibility/responsive expansion landed; see
 `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
@@ -568,8 +568,9 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   institution isolation; notification bell.
 - Stage 10 (in progress): make the browser suite the authoritative proof of the UI. The
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
-  state × accessibility × responsive × visual coverage; representative rows stay blocked
-  until Stage 9 Phase 2.
+  state × accessibility × responsive × visual coverage. Route, mutation, state, and
+  accessibility/responsive rows are covered for current routes; visual regression and CI
+  remain, and representative rows stay blocked until Stage 9 Phase 2.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,

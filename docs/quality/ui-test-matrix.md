@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stage 10. Last verified: 2026-11-04.
+Status: living matrix for Stage 10. Last verified: 2026-11-05.
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -29,55 +29,55 @@ leakage. `A11y` = axe scan with zero serious/critical findings. `Responsive` = c
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/login` | Anonymous | Covered | N/A | Partial | Planned | Planned | **Partial** |
-| `/portal` | Anonymous | Covered | N/A | Partial | Planned | Planned | **Partial** |
-| `/portal/login` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
-| `/portal/signup` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
-| `/portal/track` | Anonymous | Covered | N/A | Partial | Planned | N/A | **Partial** |
+| `/login` | Anonymous | Covered | N/A | Covered | Planned | Planned | **Partial** |
+| `/portal` | Anonymous | Covered | N/A | Covered | Planned | Planned | **Partial** |
+| `/portal/login` | Anonymous | Covered | N/A | Covered | Planned | N/A | **Partial** |
+| `/portal/signup` | Anonymous | Covered | N/A | Covered | Planned | N/A | **Partial** |
+| `/portal/track` | Anonymous | Covered | N/A | Covered | Covered | N/A | **Covered** |
 
 ### Complainant portal
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/portal/dashboard` | `COMPLAINANT` | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/portal/verification` | `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
-| `/portal/complaints/new` | Verified `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
-| `/portal/complaints/:id` | Owning `COMPLAINANT` | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/portal/notifications` | `COMPLAINANT` | Covered | Covered | Planned | Planned | N/A | **Partial** |
+| `/portal/dashboard` | `COMPLAINANT` | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/portal/verification` | `COMPLAINANT` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/portal/complaints/new` | Verified `COMPLAINANT` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/portal/complaints/:id` | Owning `COMPLAINANT` | Covered | Covered | Covered | Planned | Planned | **Partial** |
+| `/portal/notifications` | `COMPLAINANT` | Covered | Covered | Covered | Planned | N/A | **Partial** |
 
-Denial cases currently cover staff users opening portal routes and anonymous users opening
-staff routes. Another-complainant ownership denial and unverified-complainant filing
-denial are not covered yet: the seed creates one verified complainant, so those need
-additional fixture accounts in the mutation/state workstream.
+Denial cases cover staff users opening portal routes and anonymous users opening staff
+routes. Another-complainant ownership denial and unverified-complainant filing denial are
+covered in `coverage/portal-auth.spec.ts` with fresh verified complainants created through
+the public sign-up API.
 
 ### Staff
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
 | `/` | Authenticated staff | Covered | Covered | N/A | N/A | N/A | **Covered** |
-| `/dashboard` | All staff roles | Covered | Covered | Partial | Partial | Planned | **Partial** |
-| `/cases` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
-| `/cases/new` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Partial | Planned | N/A | **Partial** |
-| `/cases/:id` | Scoped staff | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/institutions` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
-| `/institutions/new` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | N/A | Planned | N/A | **Partial** |
-| `/institutions/:id` | Scoped staff | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | N/A | Planned | N/A | **Partial** |
-| `/overlaps` | Staff with overlap access | Covered | Covered | Partial | Planned | Planned | **Partial** |
-| `/overlaps/:id` | Staff with overlap access | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/merge-groups/:id` | Staff with overlap access | Covered | Covered | Planned | Planned | N/A | **Partial** |
-| `/reports` | All staff roles | Covered | Covered | Partial | Partial | Planned | **Partial** |
-| `/notifications` | All staff roles | Covered | Covered | Partial | Planned | Planned | **Partial** |
+| `/dashboard` | All staff roles | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/cases` | All staff roles | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/cases/new` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/cases/:id` | Scoped staff | Covered | Covered | Covered | Planned | Planned | **Partial** |
+| `/institutions` | All staff roles | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/institutions/new` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/institutions/:id` | Scoped staff | Covered | Covered | Covered | Planned | Planned | **Partial** |
+| `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/overlaps` | Staff with overlap access | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/overlaps/:id` | Staff with overlap access | Covered | Covered | Covered | Planned | Planned | **Partial** |
+| `/merge-groups/:id` | Staff with overlap access | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/reports` | All staff roles | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/notifications` | All staff roles | Covered | Covered | Covered | Covered | Planned | **Partial** |
 
 ### Admin
 
 | Route | Allowed access | Render | Deny | A11y | Responsive | Visual | Status |
 |---|---|---|---|---|---|---|---|
-| `/admin/users` | `ADMIN` | Covered | Covered | Planned | Planned | Planned | **Partial** |
-| `/admin/organization` | All authenticated staff (read); `ADMIN` (write) | Covered | N/A | Planned | Planned | N/A | **Partial** |
-| `/admin/audit` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `VIEWER` | Covered | Covered | Planned | Planned | N/A | **Partial** |
-| `/admin/verifications` | `ADMIN` | Covered | Covered | Partial | Planned | N/A | **Partial** |
-| `/admin/sla` | `ADMIN` | Covered | Covered | Partial | Planned | N/A | **Partial** |
+| `/admin/users` | `ADMIN` | Covered | Covered | Covered | Covered | Planned | **Partial** |
+| `/admin/organization` | All authenticated staff (read); `ADMIN` (write) | Covered | N/A | Covered | Planned | N/A | **Partial** |
+| `/admin/audit` | `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, `VIEWER` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/admin/verifications` | `ADMIN` | Covered | Covered | Covered | Planned | N/A | **Partial** |
+| `/admin/sla` | `ADMIN` | Covered | Covered | Covered | Planned | N/A | **Partial** |
 
 Route render and direct-URL denial cells were closed by
 `apps/web/e2e/coverage/routes.spec.ts`, which uses cached per-role storage states from
@@ -92,6 +92,17 @@ Two route rows are deliberately asymmetric:
   staff guard and is asserted here.
 - `/admin/audit` is readable by `ADMIN`, `SENIOR_MANAGEMENT`, `COMPETENT_AUTHORITY`, and
   `VIEWER`. Bureau and regional officers receive an `Insufficient permissions` state.
+
+Step 5 closed every current route's **A11y** cell with
+`apps/web/e2e/accessibility.spec.ts`: the shared `fixtures/routes.ts` manifest drives 29
+route scans and 11 denied-state scans, and the spec also covers keyboard sign-in, the
+skip link, route-change focus, the destructive-dialog focus trap/Escape/restore, the
+mobile drawer, and the focusable table scroll region. The **Responsive** cells marked
+Covered are asserted at 375/768/1024/1440 px by `apps/web/e2e/responsive.spec.ts` (staff
+dashboard, cases, institutions, overlaps, reports, notifications, admin users, plus
+`/portal/track` and `/portal/dashboard`) and by the reports/navigation specs. Routes with
+a Planned Responsive cell still need their own breakpoint pass; representative rows remain
+Blocked on Stage 9 Phase 2.
 
 ### Planned representative shell (Stage 9 Phase 2)
 
@@ -222,8 +233,10 @@ login pages.
 
 `apps/web/e2e/coverage/states.spec.ts` adds 12 `@states` tests across loading, empty
 search, error/retry, not-found, pagination, filters/sort, CSV export, dialog cancel,
-pending mutation, failed mutation, session expiry, and the light/dark theme switch. Rows
-below stay **Partial** where only one route or one side of the state is exercised.
+pending mutation, failed mutation, session expiry, and the light/dark theme switch. Step 5
+closed the dialog focus, mobile drawer, reduced-motion, and 200% zoom rows through the
+accessibility and responsive specs. Rows below stay **Partial** where only one route or
+one side of the state is exercised.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -238,16 +251,16 @@ below stay **Partial** where only one route or one side of the state is exercise
 | Filter/search/sort | Cases, institutions, overlaps, reports, audit | **Partial** (cases) |
 | CSV export | Cases, reports | **Partial** (cases) |
 | Confirmation dialog cancel/confirm | Case actions, merge/revert, admin deactivate | **Partial** (cancel and merge confirm) |
-| Dialog focus trap and return | All dialogs | **Planned** (accessibility workstream) |
+| Dialog focus trap and return | All dialogs | **Covered** (cancel/confirm focus cycle, Escape, trigger restore) |
 | Pending/disabled mutation | All mutation forms | **Partial** (case remark) |
 | Success toast | All mutations | **Partial** (mutation suite) |
 | Error toast | Failed mutation | **Partial** (case remark) |
 | Session expiry redirect | Staff and portal shells | **Partial** (staff) |
-| Mobile drawer open/close | Staff and portal shells | **Partial** |
+| Mobile drawer open/close | Staff and portal shells | **Covered** (staff keyboard open and destination visibility) |
 | Notification bell preview | Staff shell | **Partial** |
 | Light/dark theme | Staff and portal shells | **Covered** (staff; persists across reload) |
-| Reduced motion | Dashboard, reports, map routes | **Partial** |
-| 200% zoom | All route groups | **Planned** |
+| Reduced motion | Dashboard, reports, map routes | **Covered** (dashboard and reports transitions collapse) |
+| 200% zoom | All route groups | **Covered** (page zoom and text-only zoom on staff routes) |
 
 Step 4 also fixed a shared pagination bug: choosing a new page size invoked both
 `onPageSizeChange` and `onPageChange`, so the second callback reset the size that the
@@ -258,13 +271,18 @@ first had just applied. `Pagination` now delegates the page reset to
 
 | Width | Required assertions | Status |
 |---|---|---|
-| 375 px | No page overflow; drawer navigation; stacked cards; tables contained; primary action reachable | **Partial** |
-| 768 px | No page overflow; filter wrapping; chart reflow | **Partial** |
-| 1024 px | Full navigation; table density; no overflow | **Partial** |
-| 1440 px | Full layout; map and charts; baseline screenshots | **Partial** |
+| 375 px | No page overflow; drawer navigation; stacked cards; tables contained; primary action reachable | **Covered** |
+| 768 px | No page overflow; filter wrapping; chart reflow | **Covered** |
+| 1024 px | Full navigation; table density; no overflow | **Covered** |
+| 1440 px | Full layout; map and charts; baseline screenshots | **Covered** |
 
-Current coverage proves overflow and drawer behavior on the shell and reports map. Every
-route group still needs its own breakpoint pass.
+`apps/web/e2e/responsive.spec.ts` asserts document-level overflow at all four widths for
+the staff dashboard, cases, institutions, overlaps, reports, notifications, and admin
+users routes, plus `/portal/track` and `/portal/dashboard`. It also proves tables scroll
+inside their container rather than the page, page and text-only 200% zoom reflow, and
+reduced-motion transition collapse. `navigation.spec.ts` covers the staff navigation row
+and mobile drawer, and `reports.spec.ts` covers the reports map at 375 px. Routes with a
+Planned Responsive cell above still need their own breakpoint pass.
 
 ## 5. Visual regression baseline set
 
@@ -290,24 +308,37 @@ pinned CI image, not on developer machines.
 
 | Area | Scan | Keyboard | Focus | Reduced motion | 200% zoom | Status |
 |---|---|---|---|---|---|---|
-| Public/auth routes | Partial | Planned | Planned | N/A | Planned | **Partial** |
-| Complainant portal | Partial | Planned | Planned | Planned | Planned | **Partial** |
-| Staff routes | Partial | Planned | Planned | Partial | Planned | **Partial** |
-| Admin routes | Partial | Planned | Planned | N/A | Planned | **Partial** |
+| Public/auth routes | Covered | Covered | Covered | N/A | Planned | **Partial** |
+| Complainant portal | Covered | Partial | Covered | N/A | Planned | **Partial** |
+| Staff routes | Covered | Partial | Covered | Covered | Covered | **Partial** |
+| Admin routes | Covered | Partial | Covered | N/A | Planned | **Partial** |
 | Representative shell | Blocked | Blocked | Blocked | Blocked | Blocked | **Blocked** |
-| Dialogs and drawer | Partial | Planned | Planned | N/A | N/A | **Partial** |
+| Dialogs and drawer | Planned | Covered | Covered | N/A | N/A | **Partial** |
+
+Every current route has an axe scan for its primary allowed role, and 11 text-based denial
+states are scanned as well. Keyboard and focus coverage now proves sign-in, the skip link,
+route-change heading focus, the destructive-dialog focus cycle and restore, the mobile
+drawer, and the focusable table scroll region. Keyboard-only passes through filters, the
+case action panel, and overlap merge/revert remain Partial. The open-dialog surface and
+manual screen-reader sign-off are still outstanding.
+
+Step 5 fixed four accessibility defects the scans surfaced: the notification bell's
+accessible name now matches its `99+` badge, case-detail tabs use `aria-pressed`, the
+shared confirmation dialog is a semantic `<dialog>` with a focus trap, and route changes
+move focus to the new page heading only after deliberate user navigation. Staff and portal
+shells also expose skip links and a focusable `main#main-content`.
 
 ## 7. Coverage summary
 
 | Area | Covered | Partial | Planned | Blocked | N/A |
 |---|---|---|---|---|---|
-| Routes — public/auth | 0 | 5 | 0 | 0 | 0 |
+| Routes — public/auth | 1 | 4 | 0 | 0 | 0 |
 | Routes — portal | 0 | 5 | 0 | 0 | 0 |
 | Routes — staff | 1 | 13 | 0 | 0 | 0 |
 | Routes — admin | 0 | 5 | 0 | 0 | 0 |
 | Routes — representative | 0 | 0 | 0 | 6 | 0 |
 | Mutations | 30 | 7 | 11 | 0 | 0 |
-| UI states | 2 | 17 | 3 | 0 | 0 |
+| UI states | 6 | 14 | 1 | 0 | 0 |
 | Visual screens | 0 | 0 | 12 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts.

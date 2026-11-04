@@ -25,7 +25,8 @@ export function NotificationBell({
   onMarkAllRead,
   isMarkingAllRead = false,
 }: NotificationBellProps) {
-  const label = unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'
+  const badge = unreadCount > 99 ? '99+' : String(unreadCount)
+  const label = unreadCount > 0 ? `Notifications, ${badge} unread` : 'Notifications'
   const preview = items.slice(0, 5)
 
   return (
@@ -40,7 +41,7 @@ export function NotificationBell({
           <Bell aria-hidden className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-danger-foreground">
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {badge}
             </span>
           )}
         </>

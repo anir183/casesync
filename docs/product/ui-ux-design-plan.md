@@ -122,7 +122,8 @@ touching routes, API calls, permissions, or test assertions.
   empty/error/permission panels; `px-4 sm:px-6` page padding; headers stack and filters
   wrap without awkward gaps at 375/768/1024/1440 px.
 - **Accessibility:** AA contrast in both themes, visible focus rings, reduced-motion
-  behaviour, and axe coverage on desktop routes plus the mobile drawer.
+  behaviour, and axe coverage on every current route plus denial states, the mobile
+  drawer, dialogs, keyboard focus, and 200% zoom.
 
 ## Layout
 ```

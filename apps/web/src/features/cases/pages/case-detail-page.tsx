@@ -212,7 +212,7 @@ export function CaseDetailPage() {
           <button
             key={entry.id}
             type="button"
-            aria-selected={tab === entry.id}
+            aria-pressed={tab === entry.id}
             className={cn(
               'border-b-2 px-3 py-2 text-sm transition-colors',
               tab === entry.id

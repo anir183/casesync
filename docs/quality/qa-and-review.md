@@ -272,14 +272,16 @@ grows. Do not duplicate full integration coverage; test UI behavior and error ha
 
 ## 7. E2E and complete UI coverage (Playwright)
 
-Implemented now: 12 seeded journeys (staff smoke, portal, navigation/bell, accessibility
-including the mobile drawer, map/reflow, reduced motion, and merge/revert), run against
+Implemented now: the seeded Stage 10 suite (160 desktop tests at the time of writing)
+covering staff smoke, portal journeys, navigation/bell, route × role render/denial,
+mutations, UI states, 45 accessibility tests, and 12 responsive tests, run against
 production builds on API port 3100 and web port 4173. The performance test is tagged and
 run separately with the stress seed.
 
 **Stage 10 is the completion path, and work is in progress.** Shared fixtures,
-per-role storage states, current-route render/denial coverage, staff/admin and portal/auth
-mutation coverage, and the first UI-state suite have landed. The decision-complete plan is
+per-role storage states, current-route render/denial coverage, mutation coverage, UI-state
+coverage, and accessibility/responsive expansion have landed. Visual regression and the CI
+split remain. The decision-complete plan is
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
 action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 
