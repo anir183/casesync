@@ -1,5 +1,5 @@
 import { type Browser, type Page, expect, test } from '@playwright/test'
-import { ROLE_KEYS, WEB_URL, type RoleKey } from '../fixtures/accounts'
+import { ROLE_KEYS, type RoleKey, WEB_URL } from '../fixtures/accounts'
 import { authFile } from '../fixtures/auth'
 import { type SeedData, loadSeedData } from '../fixtures/data'
 
@@ -284,7 +284,7 @@ const ROUTES: RouteCase[] = [
 /**
  * Resolve a string or data-dependent value once the seed lookup has finished.
  */
-function valueOf(value: Value, data: SeedData) {
+function resolveValue(value: Value, data: SeedData) {
   return typeof value === 'function' ? value(data) : value
 }
 
@@ -306,14 +306,16 @@ async function newPageFor(browser: Browser, actor: Actor): Promise<Page> {
 async function assertExpectation(page: Page, expectation: Expectation, data: SeedData) {
   if (expectation.url) await expect(page).toHaveURL(expectation.url)
   if (expectation.heading) {
+    // Data-backed pages can sit on their loading skeleton while a cold hosted
+    // database answers the first request, so allow well beyond the default.
     await expect(
-      page.getByRole('heading', { name: valueOf(expectation.heading, data) }).first(),
-    ).toBeVisible()
+      page.getByRole('heading', { name: resolveValue(expectation.heading, data) }).first(),
+    ).toBeVisible({ timeout: 30_000 })
   }
   if (expectation.text) {
     await expect(
-      page.getByText(valueOf(expectation.text, data), { exact: false }).first(),
-    ).toBeVisible()
+      page.getByText(resolveValue(expectation.text, data), { exact: false }).first(),
+    ).toBeVisible({ timeout: 30_000 })
   }
 }
 
@@ -343,14 +345,16 @@ test.describe('@routes route coverage', () => {
           // Query-backed pages retry failed requests before rendering the error, so
           // denial states such as 403/404 can take longer than the default timeout.
           await expect(
-            page.getByText(valueOf(denial.text, data), { exact: false }).first(),
+            page.getByText(resolveValue(denial.text, data), { exact: false }).first(),
           ).toBeVisible({ timeout: 20_000 })
         }
         for (const heading of denial.absentHeadings ?? []) {
-          await expect(page.getByRole('heading', { name: valueOf(heading, data) })).toHaveCount(0)
+          await expect(
+            page.getByRole('heading', { name: resolveValue(heading, data) }),
+          ).toHaveCount(0)
         }
         for (const text of denial.absentText ?? []) {
-          await expect(page.getByText(valueOf(text, data), { exact: false })).toHaveCount(0)
+          await expect(page.getByText(resolveValue(text, data), { exact: false })).toHaveCount(0)
         }
         if (denial.absentTables) await expect(page.getByRole('table')).toHaveCount(0)
       } finally {

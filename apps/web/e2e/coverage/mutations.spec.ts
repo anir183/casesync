@@ -6,7 +6,7 @@ import {
   request,
   test,
 } from '@playwright/test'
-import { API_URL, PASSWORD, WEB_URL, type RoleKey } from '../fixtures/accounts'
+import { API_URL, PASSWORD, type RoleKey, WEB_URL } from '../fixtures/accounts'
 import { signedInApi } from '../fixtures/api'
 import { authFile, signIn } from '../fixtures/auth'
 import { loadSeedData } from '../fixtures/data'
@@ -130,7 +130,9 @@ async function createInstitution(
   })
   if (!response.ok()) {
     const body = await response.text().catch(() => '')
-    throw new Error(`Could not create E2E institution (${response.status()}): ${body.slice(0, 300)}`)
+    throw new Error(
+      `Could not create E2E institution (${response.status()}): ${body.slice(0, 300)}`,
+    )
   }
   return (await response.json()) as InstitutionRow
 }
@@ -316,9 +318,7 @@ test.describe('@mutation staff and admin write paths', () => {
         await viewer.page.goto(`/institutions/${institutionId}`)
         await expect(viewer.page.getByRole('heading', { name })).toBeVisible()
         await expect(viewer.page.getByRole('link', { name: 'Edit institution' })).toHaveCount(0)
-        await expect(
-          viewer.page.getByRole('button', { name: /Mark (un)?verified/ }),
-        ).toHaveCount(0)
+        await expect(viewer.page.getByRole('button', { name: /Mark (un)?verified/ })).toHaveCount(0)
         await expect(
           viewer.page.getByRole('heading', { name: 'Merge duplicate institution' }),
         ).toHaveCount(0)
@@ -388,13 +388,9 @@ test.describe('@mutation staff and admin write paths', () => {
     try {
       await regional.page.goto(`/overlaps/${overlap.id}`)
       await expect(
-        regional.page.getByText(
-          'Your role can view it but cannot confirm or dismiss overlaps.',
-        ),
+        regional.page.getByText('Your role can view it but cannot confirm or dismiss overlaps.'),
       ).toBeVisible()
-      await expect(
-        regional.page.getByRole('button', { name: 'Confirm overlap' }),
-      ).toHaveCount(0)
+      await expect(regional.page.getByRole('button', { name: 'Confirm overlap' })).toHaveCount(0)
       await expect(regional.page.getByRole('button', { name: 'Dismiss' })).toHaveCount(0)
     } finally {
       await regional.context.close()
@@ -513,6 +509,9 @@ test.describe('@mutation staff and admin write paths', () => {
   })
 
   test('an admin invites, deactivates, and resets a staff user', async ({ page }) => {
+    // Account creation performs several sequential writes against the hosted
+    // test database, so allow well beyond the default per-test budget.
+    test.setTimeout(120_000)
     const token = shortToken()
     const email = `e2e.user.${token}@casesync.test`
     const name = `E2E User ${token}`
@@ -523,21 +522,35 @@ test.describe('@mutation staff and admin write paths', () => {
 
     await page.getByLabel('Name', { exact: true }).fill(name)
     await page.getByLabel('Email', { exact: true }).fill(email)
+    const invited = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        new URL(response.url()).pathname === '/api/v1/admin/users',
+    )
     await page.getByRole('button', { name: 'Invite user' }).click()
-    await expect(page.getByText('Temporary password')).toBeVisible()
+    expect((await invited).ok()).toBeTruthy()
+    await expect(page.getByText('Temporary password', { exact: true })).toBeVisible()
 
     const row = page.getByRole('row').filter({ hasText: email })
-    await expect(row).toBeVisible()
+    await expect(row).toBeVisible({ timeout: 20_000 })
 
     page.on('dialog', (dialog) => dialog.accept())
+    const reset = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        /\/api\/v1\/admin\/users\/[^/]+\/reset-password$/.test(new URL(response.url()).pathname),
+    )
     await row.getByRole('button', { name: 'Reset password' }).click()
-    await expect(page.getByText('Temporary password')).toBeVisible()
+    expect((await reset).ok()).toBeTruthy()
+    await expect(page.getByText('Temporary password', { exact: true })).toBeVisible()
 
     await row.getByRole('button', { name: 'Edit' }).click()
     await expect(page.getByRole('heading', { name: 'Edit user' })).toBeVisible()
     await page.getByLabel('Active account').uncheck()
     await page.getByRole('button', { name: 'Save user' }).click()
-    await expect(page.getByRole('row').filter({ hasText: email }).getByText('Inactive')).toBeVisible()
+    await expect(
+      page.getByRole('row').filter({ hasText: email }).getByText('Inactive'),
+    ).toBeVisible()
   })
 
   test('an admin maintains a category master and non-admins receive a server denial', async ({
@@ -583,9 +596,7 @@ test.describe('@mutation staff and admin write paths', () => {
         await viewer.page.locator('#Categories-name').fill(`${name} denied`)
         await viewer.page.getByRole('button', { name: 'Add categories' }).click()
         await expect(viewer.page.getByText('Insufficient permissions')).toBeVisible()
-        await expect(
-          viewer.page.getByRole('row').filter({ hasText: `${code}V` }),
-        ).toHaveCount(0)
+        await expect(viewer.page.getByRole('row').filter({ hasText: `${code}V` })).toHaveCount(0)
       } finally {
         await viewer.context.close()
       }
