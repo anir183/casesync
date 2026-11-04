@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stage 10. Last verified: 2026-11-03.
+Status: living matrix for Stage 10. Last verified: 2026-11-04.
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -116,8 +116,8 @@ not counted in the summary yet.
 
 A browser test must assert the visible result and the denied path for at least one
 disallowed role. Staff and admin mutations were closed by
-`apps/web/e2e/coverage/mutations.spec.ts` (14 tests, `@mutation`); portal mutations
-remain in the next workstream.
+`apps/web/e2e/coverage/mutations.spec.ts` (14 tests, `@mutation`); portal and account
+flows were closed by `apps/web/e2e/coverage/portal-auth.spec.ts` (5 tests, `@mutation`).
 
 Role groups used below come from `@casesync/config`:
 
@@ -197,27 +197,33 @@ Role groups used below come from `@casesync/config`:
 
 | Action | Allowed roles | Denied roles | Status |
 |---|---|---|---|
-| Sign up complainant | Anonymous | N/A | **Planned** |
-| Submit verification documents | Unverified `COMPLAINANT` | Verified or staff account | **Planned** |
-| File complaint | Verified `COMPLAINANT` | Unverified complainant, staff | **Partial** (verified path) |
+| Sign up complainant | Anonymous | N/A | **Covered** |
+| Submit verification documents | Unverified `COMPLAINANT` | Verified or staff account | **Covered** (pending-review and auto-verify paths) |
+| File complaint | Verified `COMPLAINANT` | Unverified complainant, staff | **Covered** |
 | Send public message | Owning `COMPLAINANT`, scoped staff | Other complainant, out-of-scope staff | **Partial** |
-| Upload public attachment | Owning `COMPLAINANT`, scoped staff | Other complainant, out-of-scope staff | **Planned** |
-| Accept resolution / close | Owning `COMPLAINANT` | Other complainant, staff | **Partial** |
-| Reopen complaint | Owning `COMPLAINANT` | Other complainant, staff | **Planned** |
-| Sign out | All roles | N/A | **Partial** |
-| Switch theme | All roles | N/A | **Planned** |
+| Upload public attachment | Owning `COMPLAINANT`, scoped staff | Other complainant, out-of-scope staff | **Partial** (own upload/download; ownership denial covered) |
+| Accept resolution / close | Owning `COMPLAINANT` | Other complainant, staff | **Partial** (verified path) |
+| Reopen complaint | Owning `COMPLAINANT` | Other complainant, staff | **Covered** |
+| Sign out | All roles | N/A | **Covered** |
+| Switch theme | All roles | N/A | **Covered** |
 
 Step 2 also fixed two app bugs surfaced by these tests: the bureau officer case
 registration form now sets the bureau only after the bureau list loads, and
 `POST /cases/:id/actions` now returns a JSON action DTO instead of serialising a raw
 Mongoose document as text.
 
+Step 3 added `apps/web/e2e/coverage/portal-auth.spec.ts` (5 tests). It also fixed a real
+post-sign-up race: the sign-up page navigated through the SPA router while the cached
+anonymous session was still current, so the portal guard bounced new accounts to
+`/portal/login`. Sign-up now uses a full-page assign, matching the staff and portal
+login pages.
+
 ## 3. UI state coverage
 
-`apps/web/e2e/coverage/states.spec.ts` adds 11 `@states` tests across loading, empty
+`apps/web/e2e/coverage/states.spec.ts` adds 12 `@states` tests across loading, empty
 search, error/retry, not-found, pagination, filters/sort, CSV export, dialog cancel,
-pending mutation, failed mutation, and session expiry. Rows below stay **Partial** where
-only one route or one side of the state is exercised.
+pending mutation, failed mutation, session expiry, and the light/dark theme switch. Rows
+below stay **Partial** where only one route or one side of the state is exercised.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -239,6 +245,7 @@ only one route or one side of the state is exercised.
 | Session expiry redirect | Staff and portal shells | **Partial** (staff) |
 | Mobile drawer open/close | Staff and portal shells | **Partial** |
 | Notification bell preview | Staff shell | **Partial** |
+| Light/dark theme | Staff and portal shells | **Covered** (staff; persists across reload) |
 | Reduced motion | Dashboard, reports, map routes | **Partial** |
 | 200% zoom | All route groups | **Planned** |
 
@@ -299,8 +306,8 @@ pinned CI image, not on developer machines.
 | Routes — staff | 1 | 13 | 0 | 0 | 0 |
 | Routes — admin | 0 | 5 | 0 | 0 | 0 |
 | Routes — representative | 0 | 0 | 0 | 6 | 0 |
-| Mutations | 24 | 8 | 16 | 0 | 0 |
-| UI states | 1 | 16 | 3 | 0 | 0 |
+| Mutations | 30 | 7 | 11 | 0 | 0 |
+| UI states | 2 | 17 | 3 | 0 | 0 |
 | Visual screens | 0 | 0 | 12 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts.

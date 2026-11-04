@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody } from '#/components/ui/card'
@@ -11,7 +11,6 @@ import { signIn } from '#/lib/auth-client'
 import { usePublicInstitutions } from '../api'
 
 export function PortalSignupPage() {
-  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -55,7 +54,7 @@ export function PortalSignupPage() {
         setError('Account created, but sign in failed. Please sign in manually.')
         return
       }
-      navigate(
+      window.location.assign(
         result.verificationStatus === 'VERIFIED' ? '/portal/dashboard' : '/portal/verification',
       )
     } catch (signupError) {

@@ -146,9 +146,7 @@ test.describe('@states staff UI states', () => {
   test('cancelling a destructive case dialog leaves the case unchanged', async ({ page }) => {
     const data = await loadSeedData()
     await page.goto(`/cases/${data.cases.pgrc.id}`)
-    await expect(
-      page.getByRole('heading', { name: data.cases.pgrc.caseNumber }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: data.cases.pgrc.caseNumber })).toBeVisible()
 
     await page.getByLabel('Action').selectOption({ label: 'Dispose case' })
     await page.getByRole('button', { name: 'Dispose case' }).click()
@@ -163,9 +161,7 @@ test.describe('@states staff UI states', () => {
   test('a case remark exposes its pending state while saving', async ({ page }) => {
     const data = await loadSeedData()
     await page.goto(`/cases/${data.cases.pgrc.id}`)
-    await expect(
-      page.getByRole('heading', { name: data.cases.pgrc.caseNumber }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: data.cases.pgrc.caseNumber })).toBeVisible()
 
     await page.route(/\/api\/v1\/cases\/[a-f0-9]{24}\/actions$/, async (route) => {
       if (route.request().method() !== 'POST') {
@@ -188,9 +184,7 @@ test.describe('@states staff UI states', () => {
   test('a failed case remark shows the server error and remains retryable', async ({ page }) => {
     const data = await loadSeedData()
     await page.goto(`/cases/${data.cases.pgrc.id}`)
-    await expect(
-      page.getByRole('heading', { name: data.cases.pgrc.caseNumber }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: data.cases.pgrc.caseNumber })).toBeVisible()
 
     await page.route(/\/api\/v1\/cases\/[a-f0-9]{24}\/actions$/, async (route) => {
       if (route.request().method() !== 'POST') {
@@ -219,5 +213,25 @@ test.describe('@states staff UI states', () => {
     await page.goto('/cases')
     await expect(page).toHaveURL(/\/login$/)
     await expect(page.getByRole('heading', { name: 'CaseSync' })).toBeVisible()
+  })
+
+  test('the theme switch applies light and dark and persists across reloads', async ({ page }) => {
+    await page.goto('/cases')
+    await expect(page.getByRole('heading', { name: 'Case registry' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Dark theme' }).click()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+    await page.reload()
+    await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(page.locator('html')).toHaveClass(/dark/)
+
+    await page.getByRole('button', { name: 'Light theme' }).click()
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   })
 })

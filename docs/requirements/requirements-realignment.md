@@ -56,10 +56,10 @@ current-route render/denial coverage have landed.**
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
 - Stage 10 is in progress: fixtures, per-role storage states, current-route render/denial
-  coverage, staff/admin mutation coverage, and the first UI-state suite have landed.
-  Portal/auth mutations, remaining UI states, accessibility, responsive, and visual
-  workstreams remain. The matrix in `docs/quality/ui-test-matrix.md` is the progress
-  measure. Representative-shell rows wait for Stage 9 Phase 2.
+  coverage, staff/admin and portal/auth mutation coverage, and the first UI-state suite
+  have landed. Remaining UI states, accessibility, responsive, and visual workstreams
+  remain. The matrix in `docs/quality/ui-test-matrix.md` is the progress measure.
+  Representative-shell rows wait for Stage 9 Phase 2.
 
 ## 1. Status legend
 
@@ -400,12 +400,11 @@ the audit above predates them. Current facts:
 - Phase 4: design tokens, chart-first dashboard/reports, and a lazy-loaded
   Leaflet/OpenStreetMap region map with keyboard chips and a table fallback.
 - Phase 2 representatives/domains and Phases 5–6 remain planned.
-- Stage 10: in progress. Fixtures, current-route render/denial coverage, staff/admin
-  mutation coverage, and the first UI-state suite have landed; see
+- Stage 10: in progress. Fixtures, current-route render/denial coverage, staff/admin and
+  portal/auth mutation coverage, and the first UI-state suite have landed; see
   `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
-  `docs/plans/todo-tracker.md` for the current checklist. Remaining workstreams are
-  portal/auth mutations, remaining UI states, accessibility, responsive, visual
-  regression, and the CI split.
+  `docs/plans/todo-tracker.md` for the current checklist. Remaining workstreams are the
+  remaining UI states, accessibility, responsive, visual regression, and the CI split.
 
 ## 16. Gap backlog (prioritized)
 

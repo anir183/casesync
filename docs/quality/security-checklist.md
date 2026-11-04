@@ -15,8 +15,8 @@ rate-limits abuse-prone routes, validates uploads, and is clean under
 
 This is not a penetration test. Malware scanning, distributed rate limiting, and a
 formal HTTP security-header review remain production hardening items. Browser-level
-route denial and staff/admin mutation denial coverage has landed in Stage 10, with
-portal/auth mutation and remaining IDOR coverage still in progress
+route denial and staff/admin plus portal/auth mutation denial coverage has landed in
+Stage 10, with remaining IDOR coverage still in progress
 ([`ui-test-matrix.md`](ui-test-matrix.md)); server-side evidence below remains the
 authority for the control itself.
 
