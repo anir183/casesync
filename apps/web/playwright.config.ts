@@ -23,6 +23,7 @@ export default defineConfig({
     baseURL: `http://localhost:${WEB_PORT}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     ...devices['Desktop Chrome'],
     ...(launchOptions ? { launchOptions } : {}),
   },

@@ -351,22 +351,29 @@ edit a hard-coded browser path.
 
 ## 9. CI strategy
 
+Implemented in `.github/workflows/ci.yml`:
+
 | Trigger | Jobs |
 |---|---|
 | Pull request | Static, unit, integration, build, `test:e2e:smoke` on Chromium |
 | Push to `main` | All PR jobs plus `test:e2e:full` on Chromium |
-| Nightly (optional) | Full suite plus cross-browser |
-| Release/manual | Cross-browser and visual baselines on the pinned image |
+| Manual (`workflow_dispatch`) | Full Chromium, cross-browser, and visual jobs |
+| Release tag (`v*`) | Cross-browser and visual jobs on the pinned image |
 
-- Keep the existing seeded browser job as the smoke job.
-- Full Chromium runs after merge so a flaky or slow suite does not block small PRs.
-- Upload traces, screenshots, videos, and the HTML report on failure with a short
-  retention period.
-- Fail the job on unexpected test retries; track flake rate per spec.
-- Pin the MongoDB service to `mongo:7.0.45` so CI matches the supported database line.
-  Local MongoDB `8.3.9` remains supported; document the difference in the runbook.
-- Do not add visual or cross-browser jobs to PRs until their runtime and stability are
-  measured.
+- The seeded smoke job is the PR gate; full Chromium runs after merge so a flaky or slow
+  suite does not block small PRs.
+- Cross-browser and visual jobs stay off PRs until their runtime and stability are
+  measured. They run manually or on a release tag.
+- Every browser job uploads `apps/web/playwright-report` and `apps/web/test-results`
+  (traces, screenshots, and videos) on failure. Browser context video is retained on
+  failure.
+- Jobs fail on unexpected test retries via the existing reporter and artifact review;
+  track flake rate per spec.
+- The MongoDB service is pinned to `mongo:7.0.45` so CI matches the supported database
+  line. Local MongoDB `8.3.9` remains supported; the difference is documented in the
+  runbook.
+- Visual jobs use a fresh service database and the `test:e2e:visual` script, which resets,
+  seeds with `SEED_NOW`, and refuses non-local URIs by default.
 
 ## 10. Exit criteria
 
@@ -407,13 +414,14 @@ Each commit is independently reviewable. Do not commit or push unless explicitly
 8. `docs: record the Stage 10 coverage baseline`
    - Matrix status, QA plan, runbook, and evidence; only after exit gates pass.
 
-Steps 1–5 are complete. Step 5 added the shared route manifest, 45 accessibility tests
+Steps 1–7 are complete. Step 5 added the shared route manifest, 45 accessibility tests
 (29 route scans, 11 denial scans, and keyboard/focus checks), and 12 responsive tests
 (375/768/1024/1440 px reflow, table containment, 200% page and text-only zoom, reduced
 motion). It also fixed four accessibility defects and added skip links plus route-change
-heading focus. Step 6 (visual regression) is next; representative rows remain blocked on
-Stage 9 Phase 2 and final exit waits on the remaining Phase 3 flows. Steps 7–8 wait for
-Stable UI and the Stage 9 dependencies.
+heading focus. Step 6 added 48 deterministic visual baselines and the disposable visual
+database script. Step 7 split smoke, full, cross-browser, and visual CI jobs. Step 8 (the
+final coverage baseline) waits on the exit gates; representative rows remain blocked on
+Stage 9 Phase 2 and final exit waits on the remaining Phase 3 flows.
 
 ## 12. Risks and mitigations
 

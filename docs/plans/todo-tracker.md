@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, accessibility/responsive expansion, and visual regression have landed; the CI split remains. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed; the final coverage baseline and remaining Stage 9 flows remain. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -485,11 +485,11 @@ breakpoints, zoom, and reduced motion. Representative rows stay blocked.
 
 ### CI and documentation
 
-- [ ] Keep smoke on pull requests; full Chromium on `main`.
-- [ ] Add cross-browser and visual jobs to release/manual.
-- [ ] Upload traces, screenshots, videos, and the HTML report on failure.
-- [ ] Pin the CI MongoDB service to `mongo:7.0.45`; document local `8.3.9` compatibility.
-- [ ] Add commands, artifacts, and scope to the runbook and QA plan.
+- [x] Keep smoke on pull requests; full Chromium on `main`.
+- [x] Add cross-browser and visual jobs to manual dispatch and release tags.
+- [x] Upload traces, screenshots, videos, and the HTML report on failure.
+- [x] Pin the CI MongoDB service to `mongo:7.0.45`; document local `8.3.9` compatibility.
+- [x] Add commands, artifacts, and scope to the runbook and QA plan.
 - [ ] Keep the matrix current in the same change as every route or mutation.
 - [ ] Record the Stage 10 baseline only after all exit gates pass.
 

@@ -3,7 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -51,7 +53,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       mongo:
-        image: mongo:7
+        image: mongo:7.0.45
         ports:
           - 27017:27017
         options: >-
@@ -84,12 +86,12 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
 
-  e2e:
+  e2e-smoke:
     name: Seeded browser smoke
     runs-on: ubuntu-24.04
     services:
       mongo:
-        image: mongo:7
+        image: mongo:7.0.45
         ports:
           - 27017:27017
         options: >-
@@ -105,12 +107,107 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
         working-directory: apps/web
-      - run: bun run seed:demo
-      - run: bun run --filter @casesync/web test:e2e
+      - run: bun run test:e2e:smoke
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-smoke-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+
+  e2e-full:
+    name: Full Chromium E2E
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    services:
+      mongo:
+        image: mongo:7.0.45
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: bun run test:e2e:full
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-full-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+
+  e2e-cross-browser:
+    name: Cross-browser E2E
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    services:
+      mongo:
+        image: mongo:7.0.45
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium firefox webkit
+        working-directory: apps/web
+      - run: bun run test:e2e:cross-browser
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-cross-browser-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+
+  e2e-visual:
+    name: Visual regression
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    services:
+      mongo:
+        image: mongo:7.0.45
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: bun run test:e2e:visual
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-visual-report
           path: |
             apps/web/playwright-report
             apps/web/test-results

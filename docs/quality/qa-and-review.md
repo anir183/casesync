@@ -41,15 +41,13 @@ exit criteria.
   attachments, invite/reset, Stage 7 search bounds/regex/operator-notation/rate-limit
   checks, Stage 8 verification/ownership/public-visibility/reopen flows, and Stage 9
   Phase 4 geo scope/date/reconciliation behavior. They are
-  opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7` service (exact `7.0.45` pin planned), while local
+  opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7.0.45` service, while local
   runs use run-scoped records in the configured dev database. Local MongoDB `8.3.9` is
   supported; the CI pin stays on the 7.0 line.
-- **12 seeded Playwright browser tests**: three staff smoke journeys (officer case
-  search/timeline, viewer scope/IDOR, overlap queue/reports), two portal journeys
-  (file/converse/track/resolve/accept, invalid tracking), an axe serious/critical
-  accessibility scan of staff, portal, and verification pages plus the mobile drawer,
-  three navigation journeys (one-row widths, mobile drawer, bell preview), Stage 9 Phase 4
-  map keyboard/mobile-reflow and reduced-motion checks, and a merge-group revert journey.
+- **160 seeded functional browser tests**: staff smoke, portal, navigation/bell, route ×
+  role render/denial, mutation, UI-state, 45 accessibility, and 12 responsive tests,
+  including map/zoom/reduced-motion and merge-group revert journeys.
+- **48 visual comparisons**: 12 routes in light and dark at desktop and mobile widths.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
@@ -57,10 +55,11 @@ exit criteria.
   incl. integration); CI floor is 85% lines/functions.
 - **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks (including web
   tests/e2e), unit/component tests, Mongo-backed integration/coverage, builds, seeded
-  E2E/accessibility, and a high-severity dependency audit. Every job is pinned to
+  smoke on PRs, full Chromium on `main`, and cross-browser/visual jobs on manual dispatch
+  or release tags, plus a high-severity dependency audit. Every job is pinned to
   `ubuntu-24.04` with Bun `1.4.4`, `actions/checkout@v7`, and
-  `actions/upload-artifact@v7`. Exact Node `24.21.0` and MongoDB `7.0.45` pins are
-  Stage 10 follow-ups.
+  `actions/upload-artifact@v7`; MongoDB is pinned to `7.0.45`. Exact Node `24.21.0` remains
+  a Stage 10 follow-up.
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
 - API, web, and web test/e2e typechecks pass; Biome is clean; API and web production
@@ -413,24 +412,31 @@ Implemented in `.github/workflows/ci.yml`:
 
 1. **Static**: Biome check, API typecheck, web typecheck, web tests/e2e typecheck.
 2. **Unit**: API unit tests + web component tests via `bun run test:unit`.
-3. **Integration/coverage**: `mongo:7` service (pin `7.0.45` planned), `bun run
-   test:coverage`, 85% floor, coverage artifact upload.
+3. **Integration/coverage**: `mongo:7.0.45` service, `bun run test:coverage`, 85% floor,
+   coverage artifact upload.
 4. **Build**: API + web production builds.
-5. **E2E smoke**: `mongo:7` service (pin `7.0.45` planned), demo seed, Playwright
-   Chromium, seeded smoke + accessibility; report/artifacts on failure.
-6. **Security**: `bun audit --audit-level=high`.
+5. **E2E smoke**: `mongo:7.0.45` service, demo seed, Playwright Chromium, tagged `@smoke`
+   journeys; report/artifacts on failure.
+6. **E2E full**: runs on `main` and manual dispatch; full desktop plus mobile responsive
+   projects; report/artifacts on failure.
+7. **E2E cross-browser**: manual or `v*` release tag; Chromium, Firefox, and WebKit.
+8. **Visual regression**: manual or `v*` release tag; disposable visual database, pinned
+   timeline, 48 screenshot comparisons.
+9. **Security**: `bun audit --audit-level=high`.
 
-### Stage 10 CI split (target)
+### Stage 10 CI split
 
 | Trigger | Jobs |
 |---|---|
 | Pull request | Static, unit, integration, build, `test:e2e:smoke` on Chromium |
 | Push to `main` | All PR jobs plus `test:e2e:full` on Chromium |
-| Nightly (optional) | Full suite plus cross-browser |
-| Release/manual | Cross-browser and visual baselines on the pinned image |
+| Manual (`workflow_dispatch`) | Full Chromium, cross-browser, and visual jobs |
+| Release tag (`v*`) | Cross-browser and visual jobs on the pinned image |
 
-The split is documented in [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
-Until it lands, the existing seeded browser job remains the smoke gate.
+Every browser job uploads `apps/web/playwright-report` and `apps/web/test-results`
+(traces, screenshots, and videos) on failure. The split is documented in
+[`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the MongoDB service is
+pinned to `7.0.45`.
 
 Actual root scripts:
 
