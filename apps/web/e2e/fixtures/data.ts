@@ -90,7 +90,7 @@ async function findOrCreateComplaint(api: APIRequestContext): Promise<ComplaintR
   if (!profile.institutionId) {
     throw new Error('Seed complainant has no verified institution')
   }
-  const subject = `E2E route coverage ${Date.now()}`
+  const subject = 'Route coverage fixture complaint'
   const response = await api.post('/api/v1/portal/complaints', {
     data: {
       institutionId: profile.institutionId,

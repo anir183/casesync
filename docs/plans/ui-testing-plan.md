@@ -1,8 +1,9 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
 Status: in progress. Step 1 fixtures/current-route render and denial coverage, Step 2
-staff/admin mutation coverage, Step 3 portal/auth flows, Step 4 UI-state coverage, and
-Step 5 accessibility/responsive expansion have landed. Step 6 visual regression is next.
+staff/admin mutation coverage, Step 3 portal/auth flows, Step 4 UI-state coverage,
+Step 5 accessibility/responsive expansion, and Step 6 visual regression have landed.
+Step 7 CI split is next.
 Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
@@ -297,6 +298,22 @@ action. Table-heavy routes must scroll inside their container, not the page.
 - Visual tests run on main or release/manual, not on every PR, until the suite is proven
   stable.
 
+Implementation notes:
+
+- `apps/web/e2e/visual.spec.ts` covers all 12 routes in light and dark at 1440 px and
+  375 px (48 screenshots).
+- `scripts/visual-e2e.sh` resets and seeds a disposable visual database before running
+  either project. It defaults to `mongodb://127.0.0.1:27017/casesync-visual`; set
+  `VISUAL_MONGODB_URI` for another local instance. It refuses non-local URIs unless
+  `VISUAL_ALLOW_REMOTE=1` is set.
+- `SEED_NOW` pins the demo timeline, and `resetDemoData` removes demo merge groups and
+  their notifications so repeated resets do not accumulate state.
+- Dates are replaced with fixed-width placeholders (`Jan 01, 2026`,
+  `Jan 01, 2026, 00:00 AM`, `01/01/2026`) and masked. Map tiles are aborted and the map
+  container is masked.
+- Current baselines are Linux-generated; regenerating them on the pinned CI image remains
+  part of the CI workstream.
+
 ## 8. Commands and configuration
 
 New scripts at the root and in `apps/web`:
@@ -308,7 +325,8 @@ New scripts at the root and in `apps/web`:
 | `test:e2e:full` | All functional, accessibility, responsive, and mutation specs on Chromium |
 | `test:e2e:mobile` | The 375 px responsive project only |
 | `test:e2e:ui` | Playwright UI mode for local debugging |
-| `test:e2e:update-snapshots` | Regenerate visual baselines intentionally (visual workstream, not yet implemented) |
+| `test:e2e:visual` | Reset/seed a disposable visual DB, then run the 48 screenshot checks |
+| `test:e2e:update-snapshots` | Regenerate the visual baselines intentionally, then review the diff |
 | `test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
 | `test:perf` | Unchanged stress-data performance suite |
 

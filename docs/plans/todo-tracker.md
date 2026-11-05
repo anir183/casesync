@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-02  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, and accessibility/responsive expansion have landed; visual regression and CI remain. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, accessibility/responsive expansion, and visual regression have landed; the CI split remains. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -401,10 +401,11 @@ Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
 - [x] Add shared role/auth fixtures, signed-in API helpers, and unique-suffix data factories.
 - [ ] Add reset/isolation for destructive specs (merge, revert, deactivate, dispose).
 - [x] Add Playwright projects for desktop Chromium and mobile Chromium, with Firefox and
-      WebKit available through `PLAYWRIGHT_ALL_BROWSERS=1`. Visual projects remain.
+      WebKit available through `PLAYWRIGHT_ALL_BROWSERS=1`. Visual desktop/mobile projects
+      are added.
 - [ ] Add `@smoke`, `@mutation`, `@a11y`, `@responsive`, `@visual`, and `@performance` tags.
 - [x] Add scripts: `test:e2e:smoke`, `test:e2e:full`, `test:e2e:mobile`, `test:e2e:ui`,
-      `test:e2e:cross-browser`. `test:e2e:update-snapshots` waits for the visual workstream.
+      `test:e2e:cross-browser`, `test:e2e:visual`, and `test:e2e:update-snapshots`.
 
 ### Route and role coverage
 
@@ -469,11 +470,17 @@ breakpoints, zoom, and reduced motion. Representative rows stay blocked.
 
 ### Visual regression
 
-- [ ] Baselines for dashboard, cases, case detail, institutions, institution detail,
+`apps/web/e2e/visual.spec.ts` adds 48 screenshots (12 routes × light/dark × desktop/mobile).
+`scripts/visual-e2e.sh` resets and seeds a disposable visual database, pins the timeline with
+`SEED_NOW`, and refuses non-local URIs unless explicitly allowed.
+
+- [x] Baselines for dashboard, cases, case detail, institutions, institution detail,
       overlaps, overlap detail, reports, notifications, admin users, portal, and portal
       dashboard.
-- [ ] Light/dark at mobile/desktop.
-- [ ] Mask volatile dates, IDs, chart tooltips, and map tiles.
+- [x] Light/dark at mobile/desktop.
+- [x] Mask volatile dates and map tiles; fixed-width date placeholders prevent layout drift.
+- [x] Reset removes demo merge groups and notifications so repeated runs do not accumulate.
+- [x] Visual suite passes twice consecutively.
 - [ ] Generate baselines on the pinned CI image; review every update.
 
 ### CI and documentation
@@ -528,6 +535,6 @@ breakpoints, zoom, and reduced motion. Representative rows stay blocked.
 - [x] Stage 10: axe clean on every current route and primary role.
 - [x] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
 - [x] Stage 10: 375/768/1024/1440 px checks pass on staff and portal route groups.
-- [ ] Stage 10: visual baselines pass twice consecutively.
+- [x] Stage 10: visual baselines pass twice consecutively.
 - [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
 - [ ] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.

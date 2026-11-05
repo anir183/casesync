@@ -25,6 +25,20 @@ function assertSeedAllowed() {
   }
 }
 
+/**
+ * Visual-regression runs pin the demo timeline so date-derived status, SLA, and
+ * chart output stay identical between baseline generation and later runs.
+ */
+function seedNow() {
+  const configured = process.env.SEED_NOW?.trim()
+  if (!configured) return new Date()
+  const parsed = new Date(configured)
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`SEED_NOW must be a valid date, received ${configured}`)
+  }
+  return parsed
+}
+
 async function confirmReset() {
   if (env.NODE_ENV === 'production' && process.env.ALLOW_SEED_RESET !== 'true') {
     throw new Error(
@@ -73,9 +87,10 @@ async function main() {
     )
   }
   if (demo) {
-    const counts = await seedDemoData(masters)
+    const now = seedNow()
+    const counts = await seedDemoData(masters, now)
     console.log(
-      `Demo seed complete. Institutions: ${counts.institutions}, cases: ${counts.cases}, overlaps: ${counts.relationships}, SLA configs: ${counts.slaConfigs}.`,
+      `Demo seed complete. Institutions: ${counts.institutions}, cases: ${counts.cases}, overlaps: ${counts.relationships}, SLA configs: ${counts.slaConfigs}. Anchor: ${now.toISOString()}.`,
     )
   }
   console.log(

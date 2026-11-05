@@ -288,21 +288,25 @@ Planned Responsive cell above still need their own breakpoint pass.
 
 | Screen | Light desktop | Dark desktop | Light mobile | Dark mobile | Status |
 |---|---|---|---|---|---|
-| `/dashboard` | Planned | Planned | Planned | Planned | **Planned** |
-| `/cases` | Planned | Planned | Planned | Planned | **Planned** |
-| `/cases/:id` | Planned | Planned | Planned | Planned | **Planned** |
-| `/institutions` | Planned | Planned | Planned | Planned | **Planned** |
-| `/institutions/:id` | Planned | Planned | Planned | Planned | **Planned** |
-| `/overlaps` | Planned | Planned | Planned | Planned | **Planned** |
-| `/overlaps/:id` | Planned | Planned | Planned | Planned | **Planned** |
-| `/reports` | Planned | Planned | Planned | Planned | **Planned** |
-| `/notifications` | Planned | Planned | Planned | Planned | **Planned** |
-| `/admin/users` | Planned | Planned | Planned | Planned | **Planned** |
-| `/portal` | Planned | Planned | Planned | Planned | **Planned** |
-| `/portal/dashboard` | Planned | Planned | Planned | Planned | **Planned** |
+| `/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
+| `/cases` | Covered | Covered | Covered | Covered | **Covered** |
+| `/cases/:id` | Covered | Covered | Covered | Covered | **Covered** |
+| `/institutions` | Covered | Covered | Covered | Covered | **Covered** |
+| `/institutions/:id` | Covered | Covered | Covered | Covered | **Covered** |
+| `/overlaps` | Covered | Covered | Covered | Covered | **Covered** |
+| `/overlaps/:id` | Covered | Covered | Covered | Covered | **Covered** |
+| `/reports` | Covered | Covered | Covered | Covered | **Covered** |
+| `/notifications` | Covered | Covered | Covered | Covered | **Covered** |
+| `/admin/users` | Covered | Covered | Covered | Covered | **Covered** |
+| `/portal` | Covered | Covered | Covered | Covered | **Covered** |
+| `/portal/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
 
-Baselines mask relative dates, random IDs, chart tooltips, and map tiles. They run on the
-pinned CI image, not on developer machines.
+`apps/web/e2e/visual.spec.ts` adds 48 screenshots (12 routes × light/dark × desktop/mobile).
+Dates are replaced with fixed-width placeholders and masked, map tiles are aborted and the
+map container is masked, and animations and carets are disabled. `SEED_NOW` pins the demo
+timeline; reset removes demo merge groups and notifications so repeated runs do not drift.
+The suite passed twice consecutively on Linux. Baselines still need regeneration on the
+pinned CI image.
 
 ## 6. Accessibility coverage
 
@@ -339,7 +343,7 @@ shells also expose skip links and a focusable `main#main-content`.
 | Routes — representative | 0 | 0 | 0 | 6 | 0 |
 | Mutations | 30 | 7 | 11 | 0 | 0 |
 | UI states | 6 | 14 | 1 | 0 | 0 |
-| Visual screens | 0 | 0 | 12 | 0 | 0 |
+| Visual screens | 12 | 0 | 0 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts.
 

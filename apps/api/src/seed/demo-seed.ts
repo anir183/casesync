@@ -90,7 +90,7 @@ async function seedInstitutions(
   return result
 }
 
-async function seedComplainant(institutions: Map<string, DemoInstitutionState>) {
+async function seedComplainant(institutions: Map<string, DemoInstitutionState>, now: Date) {
   const institution = institutions.get('dit') ?? [...institutions.values()][0]
   if (!institution) throw new Error('Missing institution for complainant seed')
   const { auth } = await import('#/lib/auth')
@@ -118,7 +118,7 @@ async function seedComplainant(institutions: Map<string, DemoInstitutionState>) 
         institutionId: institution.id,
         verificationStatus: COMPLAINANT_VERIFICATION_STATUS.VERIFIED,
         verificationMethod: VERIFICATION_METHOD.AICTE_ID,
-        verifiedAt: new Date(),
+        verifiedAt: now,
         rejectionReason: null,
       },
     },
@@ -134,8 +134,8 @@ async function seedComplainant(institutions: Map<string, DemoInstitutionState>) 
       method: VERIFICATION_METHOD.AICTE_ID,
       status: VERIFICATION_REQUEST_STATUS.APPROVED,
       documents: [],
-      submittedAt: new Date(),
-      reviewedAt: new Date(),
+      submittedAt: now,
+      reviewedAt: now,
       reviewNotes: 'Demo account verified against the seeded AICTE institution.',
     })
   }
@@ -511,18 +511,19 @@ async function seedMergeGroup(
   caseA: DemoCaseState,
   caseB: DemoCaseState,
   masters: SeedMastersResult,
+  now: Date,
 ) {
   const config = demo.mergeGroup
   if (!config) return undefined
   const canonical = config.canonicalCaseKey === demo.caseAKey ? caseA : caseB
-  const mergedAt = addDays(new Date(), -config.mergedDaysAgo)
+  const mergedAt = addDays(now, -config.mergedDaysAgo)
   const mergedBy = config.mergedByEmail
     ? masters.userIdByEmail.get(config.mergedByEmail)
     : OVERLAP.AUTO_MERGE_ACTOR
   if (!mergedBy) throw new Error(`Missing merge actor for ${demo.key}`)
   const snapshot = mergeSnapshot([caseA, caseB], canonical.id)
   const revertedAt =
-    config.revertedDaysAgo === undefined ? undefined : addDays(new Date(), -config.revertedDaysAgo)
+    config.revertedDaysAgo === undefined ? undefined : addDays(now, -config.revertedDaysAgo)
   const memberCaseIds = [caseA.id, caseB.id]
   const groupFields = {
     canonicalCaseId: canonical.id,
@@ -554,7 +555,11 @@ async function seedMergeGroup(
   return CaseMergeGroup.create(groupFields)
 }
 
-async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoCaseState>) {
+async function seedOverlaps(
+  masters: SeedMastersResult,
+  cases: Map<string, DemoCaseState>,
+  now: Date,
+) {
   const adminId = masters.userIdByEmail.get('admin@casesync.test')
   const relationships: Array<{
     id: string
@@ -576,7 +581,7 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
     if (!caseA || !caseB) throw new Error(`Missing overlap case for ${demo.key}`)
     const pair = normalizePairKey(caseA.id, caseB.id)
     const assessedAt =
-      demo.assessmentStatus === JEV_ASSESSMENT_STATUS.ASSESSED ? addDays(new Date(), -2) : undefined
+      demo.assessmentStatus === JEV_ASSESSMENT_STATUS.ASSESSED ? addDays(now, -2) : undefined
     const assessment = await CaseOverlapAssessment.findOneAndUpdate(
       pair,
       {
@@ -618,12 +623,10 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
     const reviewedBy = demo.reviewedByEmail
       ? masters.userIdByEmail.get(demo.reviewedByEmail)
       : undefined
-    const reviewedAt = reviewedBy ? addDays(new Date(), -1) : undefined
-    const group = await seedMergeGroup(demo, caseA, caseB, masters)
+    const reviewedAt = reviewedBy ? addDays(now, -1) : undefined
+    const group = await seedMergeGroup(demo, caseA, caseB, masters, now)
     const mergeStatus = demo.mergeStatus ?? OVERLAP_MERGE_STATUS.CANDIDATE
-    const decidedAt = demo.mergeGroup
-      ? addDays(new Date(), -demo.mergeGroup.mergedDaysAgo)
-      : undefined
+    const decidedAt = demo.mergeGroup ? addDays(now, -demo.mergeGroup.mergedDaysAgo) : undefined
     const relationship = await CaseRelationship.findOneAndUpdate(
       pair,
       {
@@ -649,7 +652,7 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
           ...(demo.mergeGroup?.revertReason ? { revertReason: demo.mergeGroup.revertReason } : {}),
           ...(demo.mergeGroup?.revertedDaysAgo === undefined
             ? {}
-            : { revertedAt: addDays(new Date(), -demo.mergeGroup.revertedDaysAgo) }),
+            : { revertedAt: addDays(now, -demo.mergeGroup.revertedDaysAgo) }),
           ...(demo.mergeGroup?.revertedDaysAgo === undefined
             ? {}
             : { revertedBy: masters.userIdByEmail.get('admin@casesync.test') }),
@@ -669,7 +672,7 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
     )
 
     const relationshipId = String(relationship._id)
-    const linkedAt = addHours(new Date(), -6)
+    const linkedAt = addHours(now, -6)
     for (const item of [caseA, caseB]) {
       const linked = await CaseAction.findOne({
         caseId: item.id,
@@ -700,7 +703,7 @@ async function seedOverlaps(masters: SeedMastersResult, cases: Map<string, DemoC
           actionType: ACTION_TYPE.REVIEWED,
           remarks: demo.reviewNotes ?? 'Overlap reviewed',
           metadata: { demo: true, relationshipId, reviewStatus: demo.reviewStatus },
-          createdAt: reviewedAt ?? new Date(),
+          createdAt: reviewedAt ?? now,
         })
       }
     }
@@ -799,6 +802,7 @@ async function seedNotifications(
   masters: SeedMastersResult,
   relationships: Awaited<ReturnType<typeof seedOverlaps>>,
   cases: Map<string, DemoCaseState>,
+  now: Date,
 ) {
   const oversight = demoOversightUsers(masters)
   for (const [index, relationship] of relationships.entries()) {
@@ -840,7 +844,7 @@ async function seedNotifications(
             : mergeType === 'reverted'
               ? `${relationship.caseANumber} and ${relationship.caseBNumber} returned to human review. Original records are unchanged.`
               : `${relationship.caseANumber} and ${relationship.caseBNumber} concern the same institution but are handled by different Bureaus/Cells. Human review is required.`,
-        ...(recipientIndex >= readOn ? { readAt: addDays(new Date(), -1) } : {}),
+        ...(recipientIndex >= readOn ? { readAt: addDays(now, -1) } : {}),
       })
     }
   }
@@ -859,7 +863,7 @@ async function seedNotifications(
         link: `/cases/${item.id}`,
         title: 'Case escalated',
         message: `${item.caseNumber} has been escalated for senior coordination.`,
-        ...(index === recipients.size - 1 ? {} : { readAt: addDays(new Date(), -1) }),
+        ...(index === recipients.size - 1 ? {} : { readAt: addDays(now, -1) }),
       })
     }
   }
@@ -868,11 +872,11 @@ async function seedNotifications(
 export async function seedDemoData(masters: SeedMastersResult, now = new Date()) {
   const anchor = startOfUtcDay(now)
   const institutions = await seedInstitutions(masters)
-  await seedComplainant(institutions)
+  await seedComplainant(institutions, now)
   await seedSlaConfigs(masters)
   const cases = await seedCases(masters, institutions, anchor)
-  const relationships = await seedOverlaps(masters, cases)
-  await seedNotifications(masters, relationships, cases)
+  const relationships = await seedOverlaps(masters, cases, now)
+  await seedNotifications(masters, relationships, cases, now)
   return {
     institutions: DEMO_INSTITUTIONS.length,
     cases: DEMO_CASES.length,

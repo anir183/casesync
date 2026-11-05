@@ -294,12 +294,16 @@ export function resolvePath(route: RouteCase | Denial, data: SeedData) {
   return typeof path === 'function' ? path(data) : path
 }
 
-export async function newPageFor(browser: Browser, actor: Actor): Promise<Page> {
-  const context = await browser.newContext(
-    actor === 'anonymous'
-      ? { baseURL: WEB_URL }
-      : { baseURL: WEB_URL, storageState: authFile(actor) },
-  )
+export async function newPageFor(
+  browser: Browser,
+  actor: Actor,
+  options?: { colorScheme?: 'light' | 'dark' },
+): Promise<Page> {
+  const context = await browser.newContext({
+    baseURL: WEB_URL,
+    ...(actor === 'anonymous' ? {} : { storageState: authFile(actor) }),
+    ...(options?.colorScheme ? { colorScheme: options.colorScheme } : {}),
+  })
   return context.newPage()
 }
 

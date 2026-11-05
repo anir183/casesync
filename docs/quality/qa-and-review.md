@@ -272,16 +272,16 @@ grows. Do not duplicate full integration coverage; test UI behavior and error ha
 
 ## 7. E2E and complete UI coverage (Playwright)
 
-Implemented now: the seeded Stage 10 suite (160 desktop tests at the time of writing)
-covering staff smoke, portal journeys, navigation/bell, route × role render/denial,
-mutations, UI states, 45 accessibility tests, and 12 responsive tests, run against
-production builds on API port 3100 and web port 4173. The performance test is tagged and
-run separately with the stress seed.
+Implemented now: the seeded Stage 10 suite (160 desktop functional tests plus 48 visual
+comparisons) covering staff smoke, portal journeys, navigation/bell, route × role
+render/denial, mutations, UI states, 45 accessibility tests, 12 responsive tests, and the
+visual regression subset, run against production builds on API port 3100 and web port
+4173. The performance test is tagged and run separately with the stress seed.
 
 **Stage 10 is the completion path, and work is in progress.** Shared fixtures,
 per-role storage states, current-route render/denial coverage, mutation coverage, UI-state
-coverage, and accessibility/responsive expansion have landed. Visual regression and the CI
-split remain. The decision-complete plan is
+coverage, accessibility/responsive expansion, and visual regression have landed. The CI
+split remains. The decision-complete plan is
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
 action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 
@@ -318,6 +318,8 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
 
 - Seed via API/script, not UI, for speed and determinism.
 - Use a dedicated test DB; reset before run.
+- Run visual checks against a disposable database (the script refuses non-local URIs by
+  default); pin the demo timeline with `SEED_NOW` so date-derived status stays stable.
 - Run against a production build (`vite preview` + API) for release gate.
 - Capture trace/video on failure.
 - No real Jev, OpenStreetMap tile, or third-party calls; use `JEV_ENABLED=false` and the
@@ -336,8 +338,9 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
 | `bun run test:e2e:full` | Full Chromium functional, a11y, responsive, and mutation suite plus the mobile responsive project |
 | `bun run test:e2e:mobile` | The mobile Chromium project only |
 | `bun run test:e2e:ui` | Playwright UI mode for local debugging |
+| `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then run the 48 visual comparisons |
 | `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite (`PLAYWRIGHT_ALL_BROWSERS=1`) |
-| `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally (visual workstream, not yet implemented) |
+| `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally and review the diff |
 
 ## 8. Security testing
 
@@ -445,6 +448,8 @@ Actual root scripts:
   "test:e2e:full": "bun run seed:demo && bun run --filter @casesync/web test:e2e:full",
   "test:e2e:mobile": "bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile",
   "test:e2e:ui": "bun run seed:demo && bun run --filter @casesync/web test:e2e:ui",
+  "test:e2e:visual": "./scripts/visual-e2e.sh",
+  "test:e2e:update-snapshots": "./scripts/visual-e2e.sh --update-snapshots",
   "test:e2e:cross-browser": "bun run seed:demo && bun run --filter @casesync/web test:e2e:cross-browser",
   "test:perf": "./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"

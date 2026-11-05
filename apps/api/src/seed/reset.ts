@@ -1,5 +1,6 @@
 import { CaseAction } from '#/models/case-action.model'
 import { CaseAssignment } from '#/models/case-assignment.model'
+import { CaseMergeGroup } from '#/models/case-merge-group.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
@@ -24,14 +25,22 @@ export async function resetDemoData(masters: SeedMastersResult) {
   ])
   const caseIds = cases.map((item) => item._id)
   const institutionIds = institutions.map((item) => item._id)
-  const relationships =
+  const [relationships, mergeGroups] = await Promise.all([
     caseIds.length > 0
-      ? await CaseRelationship.find(
+      ? CaseRelationship.find(
           { $or: [{ caseAId: { $in: caseIds } }, { caseBId: { $in: caseIds } }] },
           { _id: 1 },
         ).lean()
-      : []
-  const referenceIds = [...caseIds.map(String), ...relationships.map((item) => String(item._id))]
+      : [],
+    caseIds.length > 0
+      ? CaseMergeGroup.find({ memberCaseIds: { $in: caseIds } }, { _id: 1 }).lean()
+      : [],
+  ])
+  const referenceIds = [
+    ...caseIds.map(String),
+    ...relationships.map((item) => String(item._id)),
+    ...mergeGroups.map((item) => String(item._id)),
+  ]
   const notifications = await Notification.deleteMany({
     $or: [
       { caseId: { $in: caseIds } },
@@ -42,6 +51,9 @@ export async function resetDemoData(masters: SeedMastersResult) {
     await Promise.all([
       CaseRelationship.deleteMany({
         $or: [{ caseAId: { $in: caseIds } }, { caseBId: { $in: caseIds } }],
+      }),
+      CaseMergeGroup.deleteMany({
+        $or: [{ canonicalCaseId: { $in: caseIds } }, { memberCaseIds: { $in: caseIds } }],
       }),
       CaseOverlapAssessment.deleteMany({
         $or: [{ caseAId: { $in: caseIds } }, { caseBId: { $in: caseIds } }],
