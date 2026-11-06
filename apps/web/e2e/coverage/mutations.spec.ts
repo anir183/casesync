@@ -523,6 +523,10 @@ test.describe('@mutation staff and admin write paths', () => {
     await signIn(page, 'admin')
     await page.goto('/admin/users')
     await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible()
+    // Wait for the first directory load to settle. Invalidating an initial
+    // in-flight fetch does not cancel it, so inviting before this point can
+    // leave the stale pre-invite list on screen.
+    await expect(page.getByRole('region', { name: 'Staff users' })).toBeVisible()
 
     await page.getByLabel('Name', { exact: true }).fill(name)
     await page.getByLabel('Email', { exact: true }).fill(email)

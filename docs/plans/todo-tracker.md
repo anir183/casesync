@@ -530,11 +530,11 @@ breakpoints, zoom, and reduced motion. Representative rows stay blocked.
       warning).
 - [x] Stage 9: merge/revert E2E journey.
 - [ ] Stage 9: representative E2E journey.
-- [ ] Stage 10: every route has render and role-denial coverage.
-- [ ] Stage 10: every user-facing mutation has a browser test and denial path.
+- [x] Stage 10: every route has render and role-denial coverage.
+- [x] Stage 10: every user-facing mutation has a browser test and denial path.
 - [x] Stage 10: axe clean on every current route and primary role.
 - [x] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
 - [x] Stage 10: 375/768/1024/1440 px checks pass on staff and portal route groups.
 - [x] Stage 10: visual baselines pass twice consecutively.
-- [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
-- [ ] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.
+- [x] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
+- [x] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.
