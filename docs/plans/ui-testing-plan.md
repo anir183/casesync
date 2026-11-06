@@ -1,9 +1,10 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
-Status: in progress. Step 1 fixtures/current-route render and denial coverage, Step 2
-staff/admin mutation coverage, Step 3 portal/auth flows, Step 4 UI-state coverage,
-Step 5 accessibility/responsive expansion, and Step 6 visual regression have landed.
-Step 7 CI split is next.
+Status: in progress. Steps 1–7 have landed: fixtures and current-route render/denial
+coverage, staff/admin mutation coverage, portal/auth flows, UI-state coverage,
+accessibility/responsive expansion, visual regression, and the CI job split. The full
+Chromium suite (176 tests) passed twice in a row and the visual suite (48 comparisons)
+passed twice. Step 8 (the final coverage baseline) waits on the Stage 9 exit gates.
 Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
