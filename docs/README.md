@@ -139,8 +139,9 @@ casesync/
 - **Performance** — a tagged stress-data suite run locally before demos and releases.
 
 The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md); the living
-route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). Current
-results and quality gates live in [QA and review](quality/qa-and-review.md).
+route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). Use the
+[testing guide](quality/testing-guide.md) to choose the smallest test set for a change.
+Current results and quality gates live in [QA and review](quality/qa-and-review.md).
 
 ## Documentation
 
@@ -151,7 +152,7 @@ results and quality gates live in [QA and review](quality/qa-and-review.md).
 | UI and UX | [UI/UX design plan](product/ui-ux-design-plan.md) |
 | Architecture | [Stack and architecture](architecture/stack-and-architecture.md) |
 | Requirements | [Traceability](requirements/requirements-traceability.md) · [Realignment audit](requirements/requirements-realignment.md) |
-| Quality | [QA and review](quality/qa-and-review.md) · [Security](quality/security-checklist.md) · [Accessibility](quality/accessibility-audit.md) |
+| Quality | [QA and review](quality/qa-and-review.md) · [Testing guide](quality/testing-guide.md) · [Security](quality/security-checklist.md) · [Accessibility](quality/accessibility-audit.md) |
 | UI test coverage | [Stage 10 plan](plans/ui-testing-plan.md) · [Coverage matrix](quality/ui-test-matrix.md) |
 | Operations | [Runbook](operations/runbook.md) · [Mock data](operations/mock-data.md) · [Demo script](operations/demo-script.md) · [Backup and retention](operations/backup-and-retention.md) |
 | Planning | [Todo tracker](plans/todo-tracker.md) · [Stage 9 plan](plans/next-phase-plan.md) |

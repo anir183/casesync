@@ -275,12 +275,16 @@ Implemented now: the seeded Stage 10 suite (160 desktop functional tests plus 48
 comparisons) covering staff smoke, portal journeys, navigation/bell, route × role
 render/denial, mutations, UI states, 45 accessibility tests, 12 responsive tests, and the
 visual regression subset, run against production builds on API port 3100 and web port
-4173. The performance test is tagged and run separately with the stress seed.
+4173. The performance test is tagged and run separately with the stress seed. The
+[`testing-guide.md`](testing-guide.md) explains which layer to run for a change and which
+E2E specs cover which behavior; the full suite is a merge/release gate, not an inner-loop
+tool.
 
 **Stage 10 is the completion path, and work is in progress.** Shared fixtures,
 per-role storage states, current-route render/denial coverage, mutation coverage, UI-state
-coverage, accessibility/responsive expansion, and visual regression have landed. The CI
-split remains. The decision-complete plan is
+coverage, accessibility/responsive expansion, visual regression, and the CI job split have
+landed. The final coverage baseline and the remaining Stage 9 flows are outstanding. The
+decision-complete plan is
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
 action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 
@@ -329,6 +333,9 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
 - No application behavior changes solely to satisfy a test.
 
 ### Stage 10 commands
+
+Do not run every command for every change. Use [`testing-guide.md`](testing-guide.md) to
+pick the smallest layer; run the full suite at merge/release checkpoints.
 
 | Command | Behavior |
 |---|---|

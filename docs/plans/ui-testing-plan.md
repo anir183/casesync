@@ -8,6 +8,7 @@ passed twice. Step 8 (the final coverage baseline) waits on the Stage 9 exit gat
 Location: `docs/plans/ui-testing-plan.md`.
 Plan date: 2026-11-02.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
+[`../quality/testing-guide.md`](../quality/testing-guide.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
 [`../quality/accessibility-audit.md`](../quality/accessibility-audit.md),
 [`next-phase-plan.md`](next-phase-plan.md),

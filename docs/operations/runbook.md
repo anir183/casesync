@@ -72,7 +72,7 @@ create an institution representative account (planned for Stage 9 Phase 2).
 bun run verify          # Biome, API/web/test typechecks, unit/component tests, builds
 bun run test:integration
 bun run test:coverage   # 85% lines/functions floor; also run in CI
-bun run test:e2e        # seeded staff + portal smoke/accessibility, excludes performance
+bun run test:e2e        # 160 desktop functional tests; excludes performance and visual
 bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
@@ -81,22 +81,27 @@ Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md
 
 ```bash
 bun run test:e2e:smoke             # tagged @smoke PR gate
-bun run test:e2e:full              # desktop functional/a11y/responsive/mutation + mobile responsive
+bun run test:e2e:full              # 176 desktop + mobile functional/a11y/responsive/mutation tests
 bun run test:e2e:mobile            # mobile Chromium responsive project only
 bun run test:e2e:ui                # Playwright UI mode
 bun run test:e2e:cross-browser     # Chromium + Firefox + WebKit (PLAYWRIGHT_ALL_BROWSERS=1)
-bun run test:e2e:update-snapshots  # visual baselines; planned with the visual workstream
+bun run test:e2e:visual            # disposable visual DB, then 48 comparisons
+bun run test:e2e:update-snapshots  # regenerate visual baselines intentionally and review the diff
 ```
+
+Run the full suite at merge/release checkpoints, not after every change. The
+[`../quality/testing-guide.md`](../quality/testing-guide.md) explains which layer and
+spec to run for a given change.
 
 Visual baselines must be generated on the pinned CI image and reviewed before commit.
 Install browsers once per machine with
 `cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
 cross-browser suite).
 
-Current local baseline (2026-11-02): 85 API unit + 25 web tests, 55 integration tests, 73
-desktop browser tests (29-route render/denial matrix, 8 role smoke checks, and the existing
-journeys), 4 responsive checks on the mobile project, and 87.4% lines / 89.7% functions of
-API coverage. The production
+Current local baseline (2026-11-06): 85 API unit + 25 web tests, 55 integration tests, 160
+desktop browser tests plus 16 mobile-project tests (176 total), including 45
+accessibility checks, 12 responsive checks, and 48 visual comparisons, plus 87.4% lines /
+89.7% functions of API coverage. The production
 web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
 was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
 new runtime.
@@ -106,10 +111,9 @@ personal `.env`; integration, seed, and E2E commands do need real DB/auth env.
 
 CI (`.github/workflows/ci.yml`) pins every job to `ubuntu-24.04`, Bun `1.4.4`, and
 `actions/checkout@v7` / `actions/upload-artifact@v7`. It runs static analysis,
-unit/component tests, integration + coverage with `mongo:7`, builds, seeded staff/portal
-browser smoke and accessibility, and dependency audit. Exact Node `24.21.0` and MongoDB
-`7.0.45` pins are Stage 10 follow-ups. Stage 10 splits this into PR smoke, `main` full Chromium, and
-release/manual cross-browser and visual jobs.
+unit/component tests, integration + coverage with `mongo:7.0.45`, builds, seeded PR smoke,
+full Chromium on `main`, and release/manual cross-browser and visual jobs, plus dependency
+audit. The exact Node `24.21.0` pin remains a Stage 10 follow-up.
 
 ## 4.1 Stage 8 portal operations
 

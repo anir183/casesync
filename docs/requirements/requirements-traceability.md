@@ -251,9 +251,11 @@ Status legend:
 - Stage 10 baseline: 28 current concrete routes plus the root redirect, 8 seeded accounts
   across 7 roles plus the planned representative role, and the planned representative
   shell (5 screens plus the `/institution` redirect). Current-route render/denial,
-  mutation, UI-state, and accessibility/responsive coverage is delivered; remaining rows
-  are visual regression and the CI split. Use
-  `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count.
+  mutation, UI-state, accessibility/responsive, visual regression, and CI coverage is
+  delivered; remaining rows are the final coverage baseline and the blocked
+  representative shell/Stage 9 flows. Use
+  `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count, and
+  `docs/quality/testing-guide.md` for run cadence.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
   7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
   staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
