@@ -47,4 +47,16 @@ describe('rate limiting', () => {
     expect(rateLimitDecision(assess, 1)).toMatchObject({ allowed: true, limit: 10 })
     expect(rateLimitDecision(health, 1)).toBeUndefined()
   })
+
+  test('limits representative sign-up and domain suggestions', () => {
+    const signup = new Request('http://localhost/api/v1/public/institution/sign-up', {
+      method: 'POST',
+    })
+    const suggestion = new Request('http://localhost/api/v1/public/institution/domain-suggestion', {
+      method: 'POST',
+    })
+
+    expect(rateLimitDecision(signup, 1)).toMatchObject({ allowed: true, limit: 5 })
+    expect(rateLimitDecision(suggestion, 1)).toMatchObject({ allowed: true, limit: 30 })
+  })
 })

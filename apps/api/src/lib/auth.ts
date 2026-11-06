@@ -62,6 +62,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      representativeEvidence: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
       representativeReviewedBy: {
         type: 'string',
         required: false,

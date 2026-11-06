@@ -38,6 +38,18 @@ const RULES: RateLimitRule[] = [
   },
   {
     method: 'POST',
+    pattern: /^\/api\/v1\/public\/institution\/sign-up$/,
+    limit: 5,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/public\/institution\/domain-suggestion$/,
+    limit: 30,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
     pattern: /^\/api\/v1\/public\/track$/,
     limit: 10,
     windowMs: WINDOW_MS,
@@ -58,6 +70,12 @@ const RULES: RateLimitRule[] = [
     method: 'POST',
     pattern:
       /^\/api\/v1\/portal\/complaints\/[^/]+\/(messages|attachments|accept-resolution|reopen)$/,
+    limit: 20,
+    windowMs: WINDOW_MS,
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/institution\/cases\/[^/]+\/(messages|attachments)$/,
     limit: 20,
     windowMs: WINDOW_MS,
   },

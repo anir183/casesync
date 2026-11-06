@@ -12,6 +12,7 @@ export interface IUser {
   institutionId?: string
   representativeStatus?: string
   representativeRequestedAt?: Date
+  representativeEvidence?: string
   representativeReviewedBy?: string
   representativeReviewedAt?: Date
   representativeRejectionReason?: string
@@ -40,6 +41,7 @@ const UserSchema = new Schema<IUser>(
     institutionId: { type: String },
     representativeStatus: { type: String },
     representativeRequestedAt: { type: Date },
+    representativeEvidence: { type: String },
     representativeReviewedBy: { type: String },
     representativeReviewedAt: { type: Date },
     representativeRejectionReason: { type: String },

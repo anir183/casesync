@@ -281,21 +281,21 @@ function statusLabel(status: string) {
   return COMPLAINT_STATUS_LABELS[status] ?? status.replace(/_/g, ' ').toLowerCase()
 }
 
-async function loadInstitutionNames(ids: unknown[]) {
+export async function loadInstitutionNames(ids: unknown[]) {
   const valid = [...new Set(ids.filter(Boolean).map((id) => String(id)))]
   if (valid.length === 0) return new Map<string, string>()
   const items = await Institution.find({ _id: { $in: valid } }, { name: 1 }).lean()
   return new Map(items.map((item) => [String(item._id), item.name]))
 }
 
-async function loadBureauNames(ids: unknown[]) {
+export async function loadBureauNames(ids: unknown[]) {
   const valid = [...new Set(ids.filter(Boolean).map((id) => String(id)))]
   if (valid.length === 0) return new Map<string, string>()
   const items = await Bureau.find({ _id: { $in: valid } }, { name: 1 }).lean()
   return new Map(items.map((item) => [String(item._id), item.name]))
 }
 
-function toPublicSummary(
+export function toPublicSummary(
   item: CaseLike,
   maps: { institutions: Map<string, string>; bureaus: Map<string, string> },
   includeId: boolean,
@@ -319,15 +319,22 @@ function toPublicSummary(
   }
 }
 
-function toPublicMessage(item: MessageLike, viewer: 'COMPLAINANT' | 'PUBLIC') {
+export function toPublicMessage(
+  item: MessageLike,
+  viewer: 'COMPLAINANT' | 'PUBLIC' | 'REPRESENTATIVE',
+) {
   const author =
-    item.authorRole === ROLES.COMPLAINANT
-      ? viewer === 'COMPLAINANT'
-        ? 'You'
-        : 'Complainant'
-      : item.authorRole === 'SYSTEM'
-        ? item.authorName || 'CaseSync'
-        : 'AICTE'
+    item.authorRole === ROLES.INSTITUTION_REPRESENTATIVE
+      ? viewer === 'REPRESENTATIVE'
+        ? 'Your institution'
+        : 'Institution representative'
+      : item.authorRole === ROLES.COMPLAINANT
+        ? viewer === 'COMPLAINANT'
+          ? 'You'
+          : 'Complainant'
+        : item.authorRole === 'SYSTEM'
+          ? item.authorName || 'CaseSync'
+          : 'AICTE'
   return {
     id: String(item._id),
     body: item.body,
@@ -336,7 +343,7 @@ function toPublicMessage(item: MessageLike, viewer: 'COMPLAINANT' | 'PUBLIC') {
   }
 }
 
-function toPublicDocument(item: AttachmentLike) {
+export function toPublicDocument(item: AttachmentLike) {
   return {
     id: String(item._id),
     filename: item.filename,
@@ -358,9 +365,9 @@ function toStaffMessage(item: MessageLike) {
   }
 }
 
-async function loadPublicDetail(
+export async function loadPublicDetail(
   item: CaseLike,
-  viewer: 'COMPLAINANT' | 'PUBLIC',
+  viewer: 'COMPLAINANT' | 'PUBLIC' | 'REPRESENTATIVE',
   includeId: boolean,
 ): Promise<PublicComplaintDetail> {
   const [institutions, bureaus, rawMessages, actions, documents] = await Promise.all([
@@ -372,14 +379,15 @@ async function loadPublicDetail(
     CaseAction.find({ caseId: item._id, toStatus: { $exists: true } })
       .sort({ createdAt: 1, _id: 1 })
       .lean(),
-    viewer === 'COMPLAINANT'
-      ? Attachment.find({ caseId: item._id, visibility: ATTACHMENT_VISIBILITY.PUBLIC })
+    viewer === 'PUBLIC'
+      ? Promise.resolve([])
+      : Attachment.find({ caseId: item._id, visibility: ATTACHMENT_VISIBILITY.PUBLIC })
           .sort({ createdAt: 1, _id: 1 })
-          .lean()
-      : Promise.resolve([]),
+          .lean(),
   ])
   const now = Date.now()
   const canReopen =
+    viewer === 'COMPLAINANT' &&
     item.status === CASE_STATUS.DISPOSED &&
     (!item.reopenDeadline || item.reopenDeadline.getTime() >= now)
   return {

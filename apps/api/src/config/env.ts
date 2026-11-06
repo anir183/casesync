@@ -30,6 +30,7 @@ const envSchema = z.object({
   OVERLAP_AUTO_MERGE_TEXT_THRESHOLD: z.coerce.number().min(0).max(1).default(0.75),
   STAFF_SIGNUP_ENABLED: booleanFromEnv.default(false),
   COMPLAINANT_SIGNUP_ENABLED: booleanFromEnv.default(true),
+  REPRESENTATIVE_SIGNUP_ENABLED: booleanFromEnv.default(true),
   COMPLAINT_REOPEN_DAYS: z.coerce.number().int().positive().default(30),
   DEFAULT_SLA_DAYS: z.coerce.number().int().positive().default(30),
   SLA_REMINDER_DAYS: z.string().default('7,3,1'),

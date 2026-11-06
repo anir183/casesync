@@ -23,6 +23,11 @@ import { notificationsRoutes } from '#/modules/notifications/routes'
 import { mergeGroupsRoutes, overlapsRoutes } from '#/modules/overlaps/routes'
 import { regionsRoutes } from '#/modules/regions/routes'
 import { reportsRoutes } from '#/modules/reports/routes'
+import {
+  adminRepresentativeRoutes,
+  institutionRoutes,
+  publicRepresentativeRoutes,
+} from '#/modules/representatives/routes'
 import { slaRoutes } from '#/modules/sla/routes'
 import { usersRoutes } from '#/modules/users/routes'
 
@@ -82,6 +87,9 @@ export const app = new Elysia()
       .use(staffComplaintRoutes)
       .use(publicComplaintRoutes)
       .use(portalComplaintRoutes)
+      .use(publicRepresentativeRoutes)
+      .use(institutionRoutes)
+      .use(adminRepresentativeRoutes)
       .use(verificationRoutes)
       .use(attachmentsRoutes)
       .use(overlapsRoutes)
