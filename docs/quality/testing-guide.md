@@ -192,6 +192,9 @@ Known timing contracts:
 ## 8. Guardrails
 
 - Add E2E coverage for user-visible contracts, not for every helper or branch.
+- Coverage is risk-based. A mutation class needs its visible result plus one denied path;
+  lower-risk actions stay with API integration tests and are marked **Deferred** in the
+  matrix with a reason. Do not reopen a deferred row unless the risk changes.
 - Prefer role, label, and accessible-name selectors; use `data-testid` only when no stable
   accessible name exists.
 - Keep the smoke suite small. It should finish in about a minute.

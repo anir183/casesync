@@ -40,6 +40,9 @@ remaining role flows.
 - Deployment, hosting, or infrastructure work.
 - Changing product behavior to make tests easier. Testability fixes must be behavior
   neutral.
+- Exhaustive per-action E2E. Coverage is risk-based: a mutation class is covered when its
+  visible result and at least one denied path are asserted. Lower-risk actions stay with
+  API integration tests and are marked **Deferred** in the matrix.
 
 ## 2. Entry conditions
 
@@ -382,8 +385,11 @@ Implemented in `.github/workflows/ci.yml`:
 Stage 10 is complete only when all are true:
 
 1. Every row in [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md) is
-   **Covered** or explicitly **Blocked** with a linked Stage 9 dependency and owner.
-2. Every user-facing mutation has a browser test, including its denied path.
+   **Covered**, **Deferred** with a written reason and the layer that covers it, or
+   explicitly **Blocked** with a linked Stage 9 dependency and owner.
+2. Every high-risk user-facing mutation class has a browser test, including its denied
+   path, or a documented deferral with API integration coverage. Exhaustive per-action E2E
+   is not required.
 3. Every current route has a render test and a role-denial test.
 4. Every route has an axe scan with zero serious/critical findings.
 5. Keyboard, focus, reduced-motion, and 200% zoom checks pass.

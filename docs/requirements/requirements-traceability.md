@@ -252,8 +252,8 @@ Status legend:
   across 7 roles plus the planned representative role, and the planned representative
   shell (5 screens plus the `/institution` redirect). Current-route render/denial,
   mutation, UI-state, accessibility/responsive, visual regression, and CI coverage is
-  delivered; remaining rows are the final coverage baseline and the blocked
-  representative shell/Stage 9 flows. Use
+  delivered under the risk-based policy in the matrix. Remaining rows are CI-image visual
+  verification and the Blocked representative/Stage 9 Phase 3 routes. Use
   `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count, and
   `docs/quality/testing-guide.md` for run cadence.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and

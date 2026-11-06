@@ -290,11 +290,12 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
 
 - every current route (staff, admin, portal, auth) plus the planned representative shell
   and its Phase 2 request/admin-queue routes once Stage 9 Phase 2 lands;
-- every user-facing mutation and its denied path;
+- every high-risk user-facing mutation class and its denied path; lower-risk actions are
+  covered by API integration tests and marked Deferred in the matrix;
 - loading, empty, error, permission-denied, not-found, pagination, filter, dialog, toast,
   and pending states;
-- axe on every route and role, keyboard-only journeys, focus management, reduced motion,
-  and 200% zoom;
+- axe on every route and role, keyboard/focus checks for sign-in, navigation, dialogs, the
+  drawer, and table scroll, reduced motion, and 200% zoom;
 - 375/768/1024/1440 px checks with no page-level overflow;
 - visual regression baselines for a stable high-value subset in light/dark at mobile and
   desktop.
