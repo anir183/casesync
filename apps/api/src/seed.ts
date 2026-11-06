@@ -94,7 +94,7 @@ async function main() {
     )
   }
   console.log(
-    `Master seed complete. Staff users: 7, complainant users: 1. Password: ${SEED_PASSWORD}`,
+    `Master seed complete. Staff users: 7, complainant users: 1, representatives: 2. Password: ${SEED_PASSWORD}`,
   )
 
   const { default: mongoose } = await import('mongoose')

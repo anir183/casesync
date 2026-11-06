@@ -8,6 +8,7 @@ import {
   OVERLAP,
   OVERLAP_MERGE_STATUS,
   RELATIONSHIP_MATCH_TYPE,
+  REPRESENTATIVE_STATUS,
   ROLES,
   VERIFICATION_METHOD,
   VERIFICATION_REQUEST_STATUS,
@@ -21,6 +22,7 @@ import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
 import { ComplainantVerification } from '#/models/complainant-verification.model'
+import { InstitutionEmailDomain } from '#/models/institution-email-domain.model'
 import { Institution } from '#/models/institution.model'
 import { Notification } from '#/models/notification.model'
 import { Region } from '#/models/region.model'
@@ -140,6 +142,102 @@ async function seedComplainant(institutions: Map<string, DemoInstitutionState>, 
     })
   }
   return 1
+}
+
+export const DEMO_REPRESENTATIVE_EMAILS = {
+  approved: 'representative@casesync.test',
+  pending: 'pending.representative@casesync.test',
+} as const
+
+const DEMO_DOMAINS = [
+  { domain: 'dit.edu.in', institutionKey: 'dit', verified: true },
+  { domain: 'mie.edu.in', institutionKey: 'mie', verified: true },
+] as const
+
+async function seedRepresentatives(
+  institutions: Map<string, DemoInstitutionState>,
+  masters: SeedMastersResult,
+  now: Date,
+) {
+  const { auth } = await import('#/lib/auth')
+  const approvedInstitution = institutions.get('dit')
+  const pendingInstitution = institutions.get('mie') ?? approvedInstitution
+  if (!approvedInstitution || !pendingInstitution) {
+    throw new Error('Missing institution for representative seed')
+  }
+  const reviewerId = masters.userIdByEmail.get('admin@casesync.test')
+
+  const accounts = [
+    {
+      email: DEMO_REPRESENTATIVE_EMAILS.approved,
+      name: 'Demo Institution Representative',
+      institutionId: approvedInstitution.id,
+      status: REPRESENTATIVE_STATUS.APPROVED,
+      requestedAt: addDays(now, -10),
+      reviewedAt: addDays(now, -9),
+      reason: null,
+    },
+    {
+      email: DEMO_REPRESENTATIVE_EMAILS.pending,
+      name: 'Pending Institution Representative',
+      institutionId: pendingInstitution.id,
+      status: REPRESENTATIVE_STATUS.PENDING,
+      requestedAt: addDays(now, -1),
+      reviewedAt: null,
+      reason: null,
+    },
+  ]
+
+  for (const account of accounts) {
+    const existing = await User.findOne({ email: account.email }).lean()
+    if (!existing) {
+      try {
+        await auth.api.signUpEmail({
+          body: { email: account.email, password: SEED_PASSWORD, name: account.name },
+        })
+      } catch (error) {
+        console.warn(`Could not create ${account.email}:`, error)
+      }
+    }
+    await User.updateOne(
+      { email: account.email },
+      {
+        $set: {
+          role: ROLES.INSTITUTION_REPRESENTATIVE,
+          active: true,
+          institutionId: account.institutionId,
+          representativeStatus: account.status,
+          representativeRequestedAt: account.requestedAt,
+          representativeReviewedBy: account.reviewedAt ? (reviewerId ?? null) : null,
+          representativeReviewedAt: account.reviewedAt,
+          representativeRejectionReason: account.reason,
+        },
+      },
+    )
+  }
+
+  for (const entry of DEMO_DOMAINS) {
+    const institution = institutions.get(entry.institutionKey)
+    if (!institution) continue
+    await InstitutionEmailDomain.updateOne(
+      { domainNormalized: entry.domain },
+      {
+        $set: {
+          domain: entry.domain,
+          domainNormalized: entry.domain,
+          institutionId: institution.id,
+          verified: entry.verified,
+          active: true,
+          addedBy: reviewerId ?? null,
+          addedAt: addDays(now, -20),
+          notes: 'Demo allowlist entry; suggestion only.',
+        },
+      },
+      { upsert: true },
+    )
+  }
+
+  return accounts.length
 }
 
 async function seedSlaConfigs(masters: SeedMastersResult) {
@@ -872,6 +970,7 @@ async function seedNotifications(
 export async function seedDemoData(masters: SeedMastersResult, now = new Date()) {
   const anchor = startOfUtcDay(now)
   const institutions = await seedInstitutions(masters)
+  const representatives = await seedRepresentatives(institutions, masters, now)
   await seedComplainant(institutions, now)
   await seedSlaConfigs(masters)
   const cases = await seedCases(masters, institutions, anchor)
@@ -883,6 +982,7 @@ export async function seedDemoData(masters: SeedMastersResult, now = new Date())
     relationships: DEMO_OVERLAPS.length,
     slaConfigs: DEMO_SLA_CONFIGS.length,
     complainants: 1,
+    representatives,
     bureaus: await Bureau.countDocuments({ code: { $in: ['PGRC', 'RB', 'ACAD', 'FIN'] } }),
     regions: await Region.countDocuments({}),
   }

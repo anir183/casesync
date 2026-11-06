@@ -12,6 +12,11 @@ export interface SessionUser {
   active?: boolean
   phone?: string
   institutionId?: string
+  representativeStatus?: string
+  representativeRequestedAt?: Date
+  representativeReviewedBy?: string
+  representativeReviewedAt?: Date
+  representativeRejectionReason?: string
   verificationStatus?: string
   verificationMethod?: string
   verifiedAt?: Date

@@ -6,6 +6,7 @@ export const ROLES = {
   REGIONAL_OFFICER: 'REGIONAL_OFFICER',
   VIEWER: 'VIEWER',
   COMPLAINANT: 'COMPLAINANT',
+  INSTITUTION_REPRESENTATIVE: 'INSTITUTION_REPRESENTATIVE',
 } as const
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]
@@ -37,6 +38,12 @@ export const ROLE_GROUPS = {
     ROLES.BUREAU_OFFICER,
   ],
   MERGE_SUPPRESSION_CLEAR: [ROLES.ADMIN, ROLES.SENIOR_MANAGEMENT, ROLES.COMPETENT_AUTHORITY],
+  /**
+   * Representative access is intentionally its own group. It must never be added
+   * to CASE_WRITE or any staff group: representatives can only read the public
+   * projection of their own institution's cases and add public responses/evidence.
+   */
+  REPRESENTATIVE: [ROLES.INSTITUTION_REPRESENTATIVE],
 } as const
 
 export function hasAnyRole(role: string | undefined, allowed: readonly string[]): boolean {

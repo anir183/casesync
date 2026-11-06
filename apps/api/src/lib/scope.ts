@@ -9,12 +9,15 @@ export interface ScopeUser {
   bureauId?: string
   regionId?: string
   active?: boolean
+  institutionId?: string
+  representativeStatus?: string
 }
 
 export type Scope =
   | { kind: 'all' }
   | { kind: 'bureau'; bureauId: mongoose.Types.ObjectId }
   | { kind: 'region'; regionId: mongoose.Types.ObjectId }
+  | { kind: 'institution'; institutionId: mongoose.Types.ObjectId }
 
 const ALL_SCOPE_ROLES: string[] = [
   ROLES.ADMIN,
@@ -47,6 +50,17 @@ export function resolveScope(user: ScopeUser): Scope {
   if (ALL_SCOPE_ROLES.includes(user.role)) {
     return { kind: 'all' }
   }
+  if (user.role === ROLES.INSTITUTION_REPRESENTATIVE) {
+    if (user.representativeStatus !== 'APPROVED') {
+      throw new AppError(
+        HTTP_STATUS.FORBIDDEN,
+        'Representative access is not approved',
+        'REPRESENTATIVE_NOT_APPROVED',
+      )
+    }
+    if (!user.institutionId) throw scopeNotConfigured('institution')
+    return { kind: 'institution', institutionId: toObjectId(user.institutionId) }
+  }
   if (BUREAU_SCOPE_ROLES.includes(user.role)) {
     if (!user.bureauId) throw scopeNotConfigured('bureau')
     return { kind: 'bureau', bureauId: toObjectId(user.bureauId) }
@@ -73,6 +87,7 @@ export function caseScopeFilterFor(
 ): Record<string, unknown> {
   if (scope.kind === 'all') return {}
   if (scope.kind === 'bureau') return { bureauId: scope.bureauId }
+  if (scope.kind === 'institution') return { institutionId: scope.institutionId }
   const institutionIds = regionInstitutionIds.map(toObjectId)
   if (institutionIds.length === 0) return { regionId: scope.regionId }
   return {
@@ -97,6 +112,7 @@ export async function caseRegionFilter(regionId: string): Promise<Record<string,
 export function institutionScopeFilterFor(scope: Scope): Record<string, unknown> {
   if (scope.kind === 'all') return {}
   if (scope.kind === 'bureau') return {}
+  if (scope.kind === 'institution') return { _id: scope.institutionId }
   return { regionId: scope.regionId }
 }
 
@@ -141,12 +157,35 @@ export function assertBureauAssignment(user: ScopeUser, bureauId?: string): Scop
 
 export function caseMatchesScope(
   scope: Scope,
-  item: { bureauId?: unknown; regionId?: unknown },
+  item: { bureauId?: unknown; regionId?: unknown; institutionId?: unknown },
 ): boolean {
   if (scope.kind === 'all') return true
   if (scope.kind === 'bureau') return String(item.bureauId ?? '') === String(scope.bureauId)
+  if (scope.kind === 'institution') {
+    return String(item.institutionId ?? '') === String(scope.institutionId)
+  }
   if (item.regionId && String(item.regionId) === String(scope.regionId)) return true
   return false
+}
+
+export function isRepresentative(user: ScopeUser): boolean {
+  return user.role === ROLES.INSTITUTION_REPRESENTATIVE
+}
+
+/**
+ * Representative endpoints must be called by an approved representative. Staff
+ * and complainant accounts are rejected even when they could resolve another
+ * scope, so the representative surface never becomes a back door.
+ */
+export function assertRepresentative(user: ScopeUser): Extract<Scope, { kind: 'institution' }> {
+  if (!isRepresentative(user)) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, 'Insufficient permissions', 'FORBIDDEN')
+  }
+  const scope = resolveScope(user)
+  if (scope.kind !== 'institution') {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, 'Insufficient permissions', 'FORBIDDEN')
+  }
+  return scope
 }
 
 export function canWriteInstitution(user: ScopeUser): boolean {

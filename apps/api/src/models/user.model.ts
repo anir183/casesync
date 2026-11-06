@@ -10,6 +10,11 @@ export interface IUser {
   active?: boolean
   phone?: string
   institutionId?: string
+  representativeStatus?: string
+  representativeRequestedAt?: Date
+  representativeReviewedBy?: string
+  representativeReviewedAt?: Date
+  representativeRejectionReason?: string
   verificationStatus?: string
   verificationMethod?: string
   verifiedAt?: Date
@@ -33,6 +38,11 @@ const UserSchema = new Schema<IUser>(
     active: { type: Boolean },
     phone: { type: String },
     institutionId: { type: String },
+    representativeStatus: { type: String },
+    representativeRequestedAt: { type: Date },
+    representativeReviewedBy: { type: String },
+    representativeReviewedAt: { type: Date },
+    representativeRejectionReason: { type: String },
     verificationStatus: { type: String },
     verificationMethod: { type: String },
     verifiedAt: { type: Date },

@@ -52,6 +52,31 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      representativeStatus: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      representativeRequestedAt: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
+      representativeReviewedBy: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      representativeReviewedAt: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
+      representativeRejectionReason: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
       verificationStatus: {
         type: 'string',
         required: false,

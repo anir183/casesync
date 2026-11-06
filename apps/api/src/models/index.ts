@@ -1,4 +1,5 @@
 export * from './institution.model'
+export * from './institution-email-domain.model'
 export * from './region.model'
 export * from './category.model'
 export * from './user.model'

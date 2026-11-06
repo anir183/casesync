@@ -4,8 +4,10 @@ import { AppError } from '#/lib/errors'
 import {
   assertBureauAssignment,
   assertInstitutionWrite,
+  assertRepresentative,
   caseMatchesScope,
   caseScopeFilterFor,
+  institutionScopeFilterFor,
   mergeFilters,
   resolveScope,
 } from '#/lib/scope'
@@ -61,6 +63,40 @@ describe('resolveScope', () => {
     )
   })
 
+  test('requires an institution assignment and approval for representatives', () => {
+    expect(
+      resolveScope({
+        id: 'u1',
+        role: ROLES.INSTITUTION_REPRESENTATIVE,
+        institutionId: INSTITUTION_ID,
+        representativeStatus: 'APPROVED',
+      }),
+    ).toEqual({ kind: 'institution', institutionId: expect.anything() })
+
+    for (const status of [undefined, 'PENDING', 'REJECTED', 'REVOKED']) {
+      expectAppError(
+        () =>
+          resolveScope({
+            id: 'u1',
+            role: ROLES.INSTITUTION_REPRESENTATIVE,
+            institutionId: INSTITUTION_ID,
+            representativeStatus: status,
+          }),
+        'REPRESENTATIVE_NOT_APPROVED',
+      )
+    }
+
+    expectAppError(
+      () =>
+        resolveScope({
+          id: 'u1',
+          role: ROLES.INSTITUTION_REPRESENTATIVE,
+          representativeStatus: 'APPROVED',
+        }),
+      'SCOPE_NOT_CONFIGURED',
+    )
+  })
+
   test('rejects unknown and missing roles', () => {
     expectAppError(() => resolveScope({ id: 'u1' }), 'FORBIDDEN')
     expectAppError(() => resolveScope({ id: 'u1', role: 'SUPERUSER' }), 'FORBIDDEN')
@@ -91,6 +127,39 @@ describe('caseScopeFilterFor', () => {
     const scope = resolveScope({ id: 'u1', role: ROLES.REGIONAL_OFFICER, regionId: REGION_ID })
     const filter = caseScopeFilterFor(scope) as { regionId: { toString(): string } }
     expect(String(filter.regionId)).toBe(REGION_ID)
+  })
+
+  test('filters representatives by their single institution', () => {
+    const scope = resolveScope({
+      id: 'u1',
+      role: ROLES.INSTITUTION_REPRESENTATIVE,
+      institutionId: INSTITUTION_ID,
+      representativeStatus: 'APPROVED',
+    })
+    const filter = caseScopeFilterFor(scope) as { institutionId: { toString(): string } }
+    expect(String(filter.institutionId)).toBe(INSTITUTION_ID)
+  })
+})
+
+describe('institutionScopeFilterFor', () => {
+  test('limits representative reads to their institution record', () => {
+    const scope = resolveScope({
+      id: 'u1',
+      role: ROLES.INSTITUTION_REPRESENTATIVE,
+      institutionId: INSTITUTION_ID,
+      representativeStatus: 'APPROVED',
+    })
+    const filter = institutionScopeFilterFor(scope) as { _id: { toString(): string } }
+    expect(String(filter._id)).toBe(INSTITUTION_ID)
+  })
+
+  test('keeps staff institution visibility unchanged', () => {
+    expect(institutionScopeFilterFor(resolveScope({ id: 'u1', role: ROLES.ADMIN }))).toEqual({})
+    expect(
+      institutionScopeFilterFor(
+        resolveScope({ id: 'u1', role: ROLES.BUREAU_OFFICER, bureauId: BUREAU_ID }),
+      ),
+    ).toEqual({})
   })
 })
 
@@ -127,6 +196,25 @@ describe('write guards', () => {
     expect(() => assertInstitutionWrite(user, REGION_ID)).not.toThrow()
     expectAppError(() => assertInstitutionWrite(user, OTHER_REGION_ID), 'FORBIDDEN')
   })
+
+  test('representatives can only use representative endpoints when approved', () => {
+    const approved = {
+      id: 'u1',
+      role: ROLES.INSTITUTION_REPRESENTATIVE,
+      institutionId: INSTITUTION_ID,
+      representativeStatus: 'APPROVED',
+    }
+    expect(assertRepresentative(approved).institutionId).toBeDefined()
+    expectAppError(
+      () =>
+        assertRepresentative({
+          ...approved,
+          representativeStatus: 'PENDING',
+        }),
+      'REPRESENTATIVE_NOT_APPROVED',
+    )
+    expectAppError(() => assertRepresentative({ id: 'u2', role: ROLES.ADMIN }), 'FORBIDDEN')
+  })
 })
 
 describe('caseMatchesScope', () => {
@@ -149,5 +237,14 @@ describe('caseMatchesScope', () => {
 
     const allScope = resolveScope({ id: 'u1', role: ROLES.ADMIN })
     expect(caseMatchesScope(allScope, {})).toBe(true)
+
+    const institutionScope = resolveScope({
+      id: 'u1',
+      role: ROLES.INSTITUTION_REPRESENTATIVE,
+      institutionId: INSTITUTION_ID,
+      representativeStatus: 'APPROVED',
+    })
+    expect(caseMatchesScope(institutionScope, { institutionId: INSTITUTION_ID })).toBe(true)
+    expect(caseMatchesScope(institutionScope, { institutionId: OTHER_REGION_ID })).toBe(false)
   })
 })

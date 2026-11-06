@@ -4,6 +4,7 @@ import { CaseMergeGroup } from '#/models/case-merge-group.model'
 import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
+import { InstitutionEmailDomain } from '#/models/institution-email-domain.model'
 import { Institution } from '#/models/institution.model'
 import { Notification } from '#/models/notification.model'
 import { SlaConfig } from '#/models/sla-config.model'
@@ -68,6 +69,8 @@ export async function resetDemoData(masters: SeedMastersResult) {
     const remaining = await Case.countDocuments({ institutionId })
     if (remaining === 0) await Institution.deleteOne({ _id: institutionId })
   }
+
+  await InstitutionEmailDomain.deleteMany({ institutionId: { $in: institutionIds } })
 
   await SlaConfig.deleteMany({
     $or: DEMO_SLA_CONFIGS.map((config) => slaFilter(config, masters)),
