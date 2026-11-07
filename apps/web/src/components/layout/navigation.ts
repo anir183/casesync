@@ -25,6 +25,12 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const OVERFLOW_NAV: readonly NavItem[] = [
   { to: '/notifications', label: 'Notifications' },
   { to: '/admin/users', label: 'Users', roles: [ROLES.ADMIN] },
+  {
+    to: '/admin/institution-representatives',
+    label: 'Representatives',
+    roles: [ROLES.ADMIN],
+  },
+  { to: '/admin/institution-domains', label: 'Email domains', roles: [ROLES.ADMIN] },
   { to: '/admin/verifications', label: 'Verifications', roles: [ROLES.ADMIN] },
   { to: '/admin/organization', label: 'Organization', roles: [ROLES.ADMIN] },
   { to: '/admin/sla', label: 'SLA rules', roles: [ROLES.ADMIN] },

@@ -24,6 +24,15 @@ export function PortalLoginPage() {
         return
       }
       const role = (result.data?.user as { role?: string } | undefined)?.role
+      const representativeStatus = (
+        result.data?.user as { representativeStatus?: string } | undefined
+      )?.representativeStatus
+      if (role === 'INSTITUTION_REPRESENTATIVE') {
+        window.location.assign(
+          representativeStatus === 'APPROVED' ? '/institution/dashboard' : '/institution/profile',
+        )
+        return
+      }
       window.location.assign(role === 'COMPLAINANT' ? '/portal/dashboard' : '/dashboard')
     } catch {
       setError('Sign in failed. Please try again.')

@@ -14,7 +14,20 @@ export function PortalGuard() {
     )
   }
   if (!session) return <Navigate to="/portal/login" replace />
-  if ((session.user as { role?: string }).role !== 'COMPLAINANT') {
+  const user = session.user as { role?: string; representativeStatus?: string }
+  if (user.role === 'INSTITUTION_REPRESENTATIVE') {
+    return (
+      <Navigate
+        to={
+          user.representativeStatus === 'APPROVED'
+            ? '/institution/dashboard'
+            : '/institution/profile'
+        }
+        replace
+      />
+    )
+  }
+  if (user.role !== 'COMPLAINANT') {
     return <Navigate to="/dashboard" replace />
   }
   return <Outlet />

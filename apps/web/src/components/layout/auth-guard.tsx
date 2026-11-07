@@ -22,5 +22,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <Navigate to="/portal/dashboard" replace />
   }
 
+  if ((session.user as { role?: string }).role === 'INSTITUTION_REPRESENTATIVE') {
+    const approved =
+      (session.user as { representativeStatus?: string }).representativeStatus === 'APPROVED'
+    return <Navigate to={approved ? '/institution/dashboard' : '/institution/profile'} replace />
+  }
+
   return <>{children}</>
 }

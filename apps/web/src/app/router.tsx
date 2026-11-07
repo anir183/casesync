@@ -5,6 +5,8 @@ import { AuthGuard } from '#/components/layout/auth-guard'
 import { LoginPage } from '#/features/auth/pages/login-page'
 import { PortalGuard } from '#/features/portal/components/portal-guard'
 import { PortalLayout } from '#/features/portal/components/portal-layout'
+import { InstitutionGuard } from '#/features/representatives/components/institution-guard'
+import { InstitutionLayout } from '#/features/representatives/components/institution-layout'
 
 const AdminAuditPage = lazy(() =>
   import('#/features/admin/pages/admin-audit-page').then((module) => ({
@@ -14,6 +16,16 @@ const AdminAuditPage = lazy(() =>
 const AdminOrganizationPage = lazy(() =>
   import('#/features/admin/pages/admin-organization-page').then((module) => ({
     default: module.AdminOrganizationPage,
+  })),
+)
+const AdminRepresentativesPage = lazy(() =>
+  import('#/features/representatives/pages/admin-representatives-page').then((module) => ({
+    default: module.AdminRepresentativesPage,
+  })),
+)
+const AdminDomainsPage = lazy(() =>
+  import('#/features/representatives/pages/admin-domains-page').then((module) => ({
+    default: module.AdminDomainsPage,
   })),
 )
 const AdminUsersPage = lazy(() =>
@@ -34,6 +46,31 @@ const CaseDetailPage = lazy(() =>
 const CaseRegistrationPage = lazy(() =>
   import('#/features/cases/pages/case-registration-page').then((module) => ({
     default: module.CaseRegistrationPage,
+  })),
+)
+const InstitutionCaseDetailPage = lazy(() =>
+  import('#/features/representatives/pages/institution-case-detail-page').then((module) => ({
+    default: module.InstitutionCaseDetailPage,
+  })),
+)
+const InstitutionCasesPage = lazy(() =>
+  import('#/features/representatives/pages/institution-cases-page').then((module) => ({
+    default: module.InstitutionCasesPage,
+  })),
+)
+const InstitutionDashboardPage = lazy(() =>
+  import('#/features/representatives/pages/institution-dashboard-page').then((module) => ({
+    default: module.InstitutionDashboardPage,
+  })),
+)
+const InstitutionProfilePage = lazy(() =>
+  import('#/features/representatives/pages/institution-profile-page').then((module) => ({
+    default: module.InstitutionProfilePage,
+  })),
+)
+const InstitutionSignupPage = lazy(() =>
+  import('#/features/representatives/pages/institution-signup-page').then((module) => ({
+    default: module.InstitutionSignupPage,
   })),
 )
 const CasesPage = lazy(() =>
@@ -158,6 +195,24 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/institution',
+    element: <InstitutionLayout />,
+    children: [
+      { index: true, element: <Navigate to="/institution/dashboard" replace /> },
+      { path: 'sign-up', element: <InstitutionSignupPage /> },
+      {
+        element: <InstitutionGuard />,
+        children: [
+          { path: 'dashboard', element: <InstitutionDashboardPage /> },
+          { path: 'cases', element: <InstitutionCasesPage /> },
+          { path: 'cases/:id', element: <InstitutionCaseDetailPage /> },
+          { path: 'profile', element: <InstitutionProfilePage /> },
+          { path: 'notifications', element: <NotificationsPage /> },
+        ],
+      },
+    ],
+  },
+  {
     path: '/',
     element: (
       <AuthGuard>
@@ -181,6 +236,8 @@ export const router = createBrowserRouter([
       { path: 'notifications', element: <NotificationsPage /> },
       { path: 'admin/users', element: <AdminUsersPage /> },
       { path: 'admin/organization', element: <AdminOrganizationPage /> },
+      { path: 'admin/institution-representatives', element: <AdminRepresentativesPage /> },
+      { path: 'admin/institution-domains', element: <AdminDomainsPage /> },
       { path: 'admin/audit', element: <AdminAuditPage /> },
       { path: 'admin/verifications', element: <AdminVerificationsPage /> },
       { path: 'admin/sla', element: <SlaConfigPage /> },

@@ -40,6 +40,7 @@ export interface RepresentativeProfileDto {
   id: string
   name: string
   email: string
+  phone?: string
   role?: string
   active: boolean
   status?: string
@@ -56,6 +57,7 @@ function toProfile(
     _id: unknown
     name?: string
     email?: string
+    phone?: string
     role?: string
     active?: boolean
     institutionId?: string
@@ -71,6 +73,7 @@ function toProfile(
     id: String(user._id),
     name: user.name ?? '',
     email: user.email ?? '',
+    phone: user.phone,
     role: user.role,
     active: user.active !== false,
     status: user.representativeStatus,

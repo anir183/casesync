@@ -22,6 +22,14 @@ export function LoginPage() {
         return
       }
       const role = (res.data?.user as { role?: string } | undefined)?.role
+      const representativeStatus = (res.data?.user as { representativeStatus?: string } | undefined)
+        ?.representativeStatus
+      if (role === 'INSTITUTION_REPRESENTATIVE') {
+        window.location.assign(
+          representativeStatus === 'APPROVED' ? '/institution/dashboard' : '/institution/profile',
+        )
+        return
+      }
       window.location.assign(role === 'COMPLAINANT' ? '/portal/dashboard' : '/')
     } catch (err) {
       setError('Login failed')

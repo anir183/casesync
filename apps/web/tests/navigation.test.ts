@@ -21,6 +21,8 @@ describe('staff navigation', () => {
     expect(admin.generalOverflow.map((item) => item.label)).toEqual(['Notifications'])
     expect(admin.adminOverflow.map((item) => item.label)).toEqual([
       'Users',
+      'Representatives',
+      'Email domains',
       'Verifications',
       'Organization',
       'SLA rules',
