@@ -20,6 +20,23 @@ export async function signIn(page: Page, roleOrEmail: RoleKey | string) {
     return
   }
 
+  if (account.role === 'INSTITUTION_REPRESENTATIVE') {
+    await page.goto('/login')
+    await page.getByLabel('Email').fill(account.email)
+    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    // Approved representatives land on their dashboard; pending, rejected, and
+    // revoked accounts can only reach the access-status page.
+    if (account.home === '/institution/profile') {
+      await expect(page).toHaveURL(/\/institution\/profile$/)
+      await expect(page.getByRole('heading', { name: 'Profile and access' })).toBeVisible()
+    } else {
+      await expect(page).toHaveURL(/\/institution\/dashboard$/)
+      await expect(page.getByText('Public complaint activity')).toBeVisible()
+    }
+    return
+  }
+
   await page.goto('/login')
   await page.getByLabel('Email').fill(account.email)
   await page.getByLabel('Password').fill(PASSWORD)

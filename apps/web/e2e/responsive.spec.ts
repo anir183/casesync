@@ -26,6 +26,14 @@ async function signInAs(page: Page, email: string) {
   await expect(page).toHaveURL(/\/dashboard$/)
 }
 
+async function signInAsRepresentative(page: Page, email: string) {
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL(/\/institution\/(dashboard|profile)$/)
+}
+
 async function documentOverflow(page: Page) {
   return page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -74,6 +82,29 @@ test.describe('@responsive portal reflow', () => {
   }
 })
 
+test.describe('@responsive institution reflow', () => {
+  for (const { width, height } of BREAKPOINTS) {
+    test(`institution routes reflow at ${width}px without page overflow`, async ({ page }) => {
+      test.setTimeout(180_000)
+      await page.setViewportSize({ width, height })
+      await signInAsRepresentative(page, 'representative@casesync.test')
+
+      for (const route of [
+        { path: '/institution/dashboard', heading: 'Delhi Institute of Technology' },
+        { path: '/institution/cases', heading: 'Institution cases' },
+        { path: '/institution/profile', heading: 'Profile and access' },
+      ]) {
+        await page.goto(route.path)
+        await expect(page.getByRole('heading', { name: route.heading }).first()).toBeVisible({
+          timeout: 30_000,
+        })
+        await page.waitForLoadState('networkidle')
+        expect(await documentOverflow(page), `${route.path} at ${width}px`).toBeLessThanOrEqual(1)
+      }
+    })
+  }
+})
+
 test.describe('@responsive table containment', () => {
   test('table-heavy routes scroll inside their container at 375px', async ({ page }) => {
     test.setTimeout(180_000)
@@ -84,6 +115,7 @@ test.describe('@responsive table containment', () => {
       { path: '/cases', label: 'Case registry table' },
       { path: '/institutions', label: 'Institution registry' },
       { path: '/admin/users', label: 'Staff users' },
+      { path: '/admin/institution-representatives', label: 'Institution representatives' },
     ]) {
       await page.goto(route.path)
       const region = page.getByRole('region', { name: route.label })

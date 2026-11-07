@@ -4,6 +4,7 @@ import { signedInApi } from './api'
 interface CaseRow {
   id: string
   caseNumber: string
+  subject?: string
 }
 
 interface InstitutionRow {
@@ -45,6 +46,7 @@ export interface SeedData {
   }
   overlap: OverlapRow & { mergeGroupId: string }
   complaint: ComplaintRow
+  representativeCase: CaseRow
 }
 
 let seedDataPromise: Promise<SeedData> | undefined
@@ -65,6 +67,19 @@ async function findCase(api: APIRequestContext, caseNumber: string): Promise<Cas
   )
   const item = page.items.find((row) => row.caseNumber === caseNumber)
   if (!item) throw new Error(`Seed case ${caseNumber} was not found`)
+  return item
+}
+
+async function findRepresentativeCase(
+  api: APIRequestContext,
+  caseNumber: string,
+): Promise<CaseRow> {
+  const page = await getJson<PageResponse<CaseRow>>(
+    api,
+    `/api/v1/institution/cases?q=${encodeURIComponent(caseNumber)}&pageSize=20`,
+  )
+  const item = page.items.find((row) => row.caseNumber === caseNumber)
+  if (!item) throw new Error(`Seed representative case ${caseNumber} was not found`)
   return item
 }
 
@@ -112,19 +127,22 @@ async function findOrCreateComplaint(api: APIRequestContext): Promise<ComplaintR
 async function fetchSeedData(): Promise<SeedData> {
   const admin = await signedInApi('admin')
   const complainant = await signedInApi('complainant')
+  const representative = await signedInApi('representative')
   try {
-    const [pgrc, rb, east, north, west, overlaps, complaint] = await Promise.all([
-      findCase(admin, 'PGRC-2026-001'),
-      findCase(admin, 'RB-2026-001'),
-      findCase(admin, 'PGRC-2026-004'),
-      findInstitution(admin, 'Delhi Institute of Technology'),
-      findInstitution(admin, 'Mumbai Institute of Engineering'),
-      getJson<PageResponse<OverlapRow>>(
-        admin,
-        '/api/v1/overlaps?status=CONFIRMED&mergeStatus=auto_merged&pageSize=100',
-      ),
-      findOrCreateComplaint(complainant),
-    ])
+    const [pgrc, rb, east, north, west, overlaps, complaint, representativeCase] =
+      await Promise.all([
+        findCase(admin, 'PGRC-2026-001'),
+        findCase(admin, 'RB-2026-001'),
+        findCase(admin, 'PGRC-2026-004'),
+        findInstitution(admin, 'Delhi Institute of Technology'),
+        findInstitution(admin, 'Mumbai Institute of Engineering'),
+        getJson<PageResponse<OverlapRow>>(
+          admin,
+          '/api/v1/overlaps?status=CONFIRMED&mergeStatus=auto_merged&pageSize=100',
+        ),
+        findOrCreateComplaint(complainant),
+        findRepresentativeCase(representative, 'PGRC-2026-001'),
+      ])
 
     const overlap = overlaps.items.find((row) =>
       row.cases.some((item) => item.caseNumber === east.caseNumber),
@@ -138,9 +156,10 @@ async function fetchSeedData(): Promise<SeedData> {
       institutions: { north, west },
       overlap: { ...overlap, mergeGroupId: overlap.mergeGroupId },
       complaint,
+      representativeCase,
     }
   } finally {
-    await Promise.all([admin.dispose(), complainant.dispose()])
+    await Promise.all([admin.dispose(), complainant.dispose(), representative.dispose()])
   }
 }
 

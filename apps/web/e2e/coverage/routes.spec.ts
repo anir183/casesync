@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { ROLE_KEYS } from '../fixtures/accounts'
+import { ROLE_KEYS, accountFor } from '../fixtures/accounts'
 import { loadSeedData } from '../fixtures/data'
 import {
   ROUTES,
@@ -57,14 +57,20 @@ test.describe('@routes route coverage', () => {
 test.describe('@smoke @routes seeded role sessions', () => {
   for (const role of ROLE_KEYS) {
     test(`${role} has a usable cached session`, async ({ browser }) => {
+      const account = accountFor(role)
+      const data = await loadSeedData()
       const page = await newPageFor(browser, role)
       try {
-        await page.goto(role === 'complainant' ? '/portal/dashboard' : '/dashboard')
-        await assertExpectation(
-          page,
-          role === 'complainant' ? { heading: 'My complaints' } : { heading: 'Dashboard' },
-          await loadSeedData(),
-        )
+        await page.goto(account.home)
+        const expected =
+          role === 'complainant'
+            ? { heading: 'My complaints' }
+            : role === 'representative'
+              ? { heading: data.institutions.north.name }
+              : role === 'pendingRepresentative'
+                ? { heading: 'Profile and access' }
+                : { heading: 'Dashboard' }
+        await assertExpectation(page, expected, data)
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
         )

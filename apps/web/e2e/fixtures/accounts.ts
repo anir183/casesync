@@ -58,12 +58,27 @@ export const ACCOUNTS = {
     label: 'Complainant',
     home: '/portal/dashboard',
   },
+  representative: {
+    email: 'representative@casesync.test',
+    role: 'INSTITUTION_REPRESENTATIVE',
+    label: 'Approved institution representative',
+    home: '/institution/dashboard',
+  },
+  pendingRepresentative: {
+    email: 'pending.representative@casesync.test',
+    role: 'INSTITUTION_REPRESENTATIVE',
+    label: 'Pending institution representative',
+    home: '/institution/profile',
+  },
 } as const satisfies Record<string, Account>
 
 export type RoleKey = keyof typeof ACCOUNTS
 
 export const ROLE_KEYS = Object.keys(ACCOUNTS) as RoleKey[]
-export const STAFF_ROLE_KEYS = ROLE_KEYS.filter((key) => ACCOUNTS[key].role !== 'COMPLAINANT')
+export const STAFF_ROLE_KEYS = ROLE_KEYS.filter(
+  (key) =>
+    ACCOUNTS[key].role !== 'COMPLAINANT' && ACCOUNTS[key].role !== 'INSTITUTION_REPRESENTATIVE',
+)
 
 export function isRoleKey(value: string): value is RoleKey {
   return value in ACCOUNTS
