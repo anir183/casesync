@@ -32,10 +32,10 @@ Status legend:
 | Reports | **Done** | Bureau/region/institution/status/category/ageing/overlap/monthly/quarterly, filters, region names, CSV export, shared metric definitions. |
 | Innovation | Done (core) | Rules-first matching + Jev pairwise + human decision. |
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
-| Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Planned** for Stage 9. |
+| Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Done** (Stage 9 Phase 2). |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
-| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; Phase 2, remaining Phase 3 flows, and Phases 5–6 remain planned. See §11.2. |
-| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage, UI states, and accessibility/responsive expansion have landed; remaining workstreams are visual regression, the CI split, and uncovered UI-state rows. Representative rows wait for Stage 9 Phase 2. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
+| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; the remaining Phase 3 flows and Phases 5–6 remain planned. See §11.2. |
+| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage (staff/admin, portal/auth, representative), UI states, accessibility/responsive expansion, visual regression, and the CI split have landed. Remaining: the Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 
@@ -49,7 +49,7 @@ Status legend:
 | "Pending" | Show pending/unassigned, assigned-not-started, under process, overdue separately | Stage 4 dashboard/reports complete |
 | SLA defaults | 30-day resolution; reminders 7/3/1 days; overdue daily, deduped | Stage 5 config/jobs implemented; manual escalation only |
 | Stage 9 auto-merge | Exact AICTE ID, cross-bureau, both non-disposed, combined `0.85`, text `0.75`, no JEV veto; flat reversible group; revert suppresses re-merge | **Implemented** (Phase 1); fuzzy/manual paths unchanged |
-| Stage 9 representatives | Separate `INSTITUTION_REPRESENTATIVE`, admin approval/revocation, institution scope, public projection only; domain suggestion never grants access | **Planned** Phase 2 |
+| Stage 9 representatives | Separate `INSTITUTION_REPRESENTATIVE`, admin approval/revocation, institution scope, public projection only; domain suggestion never grants access | **Implemented** Phase 2 |
 | Stage 9 GIS/charts | Local SVG chart primitives + lazy-loaded Leaflet/OpenStreetMap map (configurable tile URL, keyboard region chips, table fallback) | **Implemented** Phase 4 |
 | Target users | Authorized AICTE officials = MVP | Role/scope matrix |
 
@@ -214,7 +214,7 @@ Status legend:
 | EXT-08 | Public tracking without account enumeration | **Done** | `/public/track`, case number + email, generic 404, rate limit | — |
 | EXT-09 | Ownership/IDOR protection and portal rate limits | **Done** | Complainant-scoped queries; signup/track/write limits | — |
 | EXT-10 | Admin verification queue and staff complaint workflow | **Done** | `/admin/verifications`, case Conversation tab, acknowledge/request-info/resolve | — |
-| EXT-11 | Institution representative accounts | **Planned** | Stage 9 Phase 2 scope | Separate role, institution scoping, approval model, and suggestion-only domain allowlist. |
+| EXT-11 | Institution representative accounts | **Done** | `INSTITUTION_REPRESENTATIVE` role, `/institution/*` shell, admin approve/reject/revoke, institution scope, suggestion-only domain allowlist; `apps/api/tests/integration/stage9-phase2.integration.test.ts` and `apps/web/e2e/coverage/representative.spec.ts` | Pending/rejected/revoked accounts reach only the profile/status page; case routes return 403 `REPRESENTATIVE_NOT_APPROVED`. |
 
 ## 12. Non-functional requirements
 
@@ -230,30 +230,29 @@ Status legend:
 | Observability | **Partial** | Logger and admin audit exist; request IDs, metrics, and readiness remain. |
 | Rate limiting | **Done** | Fixed-window limits on auth/search/manual assessment/uploads plus complainant signup/track/portal writes with 429 + retry headers; in-memory per process. |
 | File security | **Done** | Scoped upload/download, MIME/size/empty checks, UUID filenames, path containment, `nosniff`/`no-store`, SHA-256 checksum; malware scanning/rate limits remain. |
-| Accessibility | **Done (automated)** | axe WCAG A/AA scan covers every current staff, admin, auth, and portal route plus denial states; keyboard/focus, reduced motion, and 200% zoom are automated; manual screen-reader pass remains. |
+| Accessibility | **Done (automated)** | axe WCAG A/AA scan covers every current staff, admin, auth, portal, and institution route plus denial states; keyboard/focus, reduced motion, and 200% zoom are automated; manual screen-reader pass remains. |
 | Backup/retention | **Done** | `docs/operations/backup-and-retention.md` covers Atlas, attachments, RPO/RTO, restore, retention, legal hold, and gaps. |
 | Deployment | **Partial** | CI workflow, runbook, build/start commands, and backup/restore docs exist; hosting/Docker and remote-green CI remain. |
 
-## 13. Test and ops baseline (verified 2026-11-02)
+## 13. Test and ops baseline (verified 2026-11-07)
 
-- 85 API unit tests, 25 web component/URL tests, and 55 database-backed integration
+- 97 API unit tests, 25 web component/URL tests, and 62 database-backed integration
   tests; Jev is mocked and a fetch guard blocks real calls.
 - Integration coverage includes signup blocking, scoping/IDOR, dashboard/report
   reconciliation, overlap correctness/coordination, SLA jobs, admin/master CRUD,
-  attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, and Stage 8
-  verification/ownership/public-visibility/reopen flows. `RUN_INTEGRATION=1` runs
-  locally against run-scoped records; CI uses `mongo:7` (exact `7.0.45` pin planned).
+  attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, Stage 8
+  verification/ownership/public-visibility/reopen flows, and Stage 9 Phase 2
+  representative/domain contracts. `RUN_INTEGRATION=1` runs locally against run-scoped
+  records; CI uses `mongo:7` (exact `7.0.45` pin planned).
 - Coverage is 87.4% lines / 89.7% functions with an 85% floor.
-- 12 seeded Playwright tests: 3 staff smoke journeys, 2 portal journeys, an axe
-  accessibility scan (including the mobile drawer), 3 navigation/bell journeys,
-  map/reflow and reduced-motion checks, and a merge/revert journey; plus a tagged
-  5,000-case performance test.
-- Stage 10 baseline: 28 current concrete routes plus the root redirect, 8 seeded accounts
-  across 7 roles plus the planned representative role, and the planned representative
-  shell (5 screens plus the `/institution` redirect). Current-route render/denial,
-  mutation, UI-state, accessibility/responsive, visual regression, and CI coverage is
-  delivered under the risk-based policy in the matrix. Remaining rows are CI-image visual
-  verification and the Blocked representative/Stage 9 Phase 3 routes. Use
+- Playwright: 193 desktop functional tests (213 with the mobile project), 13 smoke, 55
+  accessibility (37 route scans, 13 denial scans, 5 keyboard/focus), 16 responsive-spec
+  tests, and 48 visual comparisons; the tagged 5,000-case performance test stays separate.
+- Stage 10 baseline: 37 manifest routes, 8 seeded roles across 10 accounts (including
+  approved and pending representatives), and the landed representative shell plus admin
+  queues. Current-route render/denial, mutation, UI-state, accessibility/responsive, visual
+  regression, and CI coverage is delivered under the risk-based policy in the matrix.
+  Remaining rows are CI-image visual verification and the Stage 9 Phase 3 flows. Use
   `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count, and
   `docs/quality/testing-guide.md` for run cadence.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
@@ -262,9 +261,10 @@ Status legend:
 - API/web/test typechecks, Biome, and production builds pass; the web build is
   warning-free with every route lazy-loaded and a 483.90 kB main chunk (137.86 kB gzip).
   `bun audit --audit-level=high` reports no vulnerabilities. Stage 8 local gates passed
-  (50 integration tests, 6 seeded browser tests); Stage 9 Phase 0/1/3/4 local gates pass
-  (55 integration tests, 12 seeded browser tests). CI is green on Stage 7 (`4abd2f3`) and
-  Stage 8 (`5666cad`); the Stage 9 workflow changes are committed but not pushed.
+  (50 integration tests, 6 seeded browser tests); Stage 9 Phase 0/1/2/3/4 local gates pass
+  (62 integration tests; the representative journey passed on a targeted run). CI is green
+  on Stage 7 (`4abd2f3`) and Stage 8 (`5666cad`); the Stage 9 workflow changes are committed
+  but not pushed.
 
 ## 14. Documentation corrections applied
 
@@ -303,8 +303,9 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
 7. ~~Integration/E2E/UI tests, CI, security/a11y/performance, runbook, demo.~~ Done in
    Stage 7; observe CI green on a pushed commit.
 8. ~~Optional public complainant portal.~~ Done in Stage 8; institution representative
-   accounts are planned for Stage 9 Phase 2.
+   accounts landed in Stage 9 Phase 2.
 9. Stage 10: complete the Playwright route/role/mutation/state/accessibility/responsive
-   matrix and add visual regression baselines. Start on current routes; finish after
-   Stage 9 Phase 2 and the remaining Phase 3 flows. See
+   matrix and add visual regression baselines. Representative-shell coverage landed with
+   Stage 9 Phase 2; finish after the remaining Phase 3 flows and CI-image visual
+   verification. See
    [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).

@@ -3,12 +3,12 @@
 Status: implemented design plus partial Stage 9 delivery. Internal-official MVP is the
 committed scope; the public complainant experience is an **optional Stage 8 extension**
 and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency), Phase 1
-(reversible exact-institution auto-merge), the Phase 3 navigation refresh (primary links
-+ More, notification bell, mobile drawer), and Phase 4 (visual tokens, chart-first
-dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Stage 9 Phase 2
-(representatives/domains), the remaining Phase 3 flows, and Phases 5–6 remain planned.
-Stage 10 (complete Playwright UI coverage) is in progress, with fixtures, current-route
-coverage, mutations, UI states, and accessibility/responsive expansion landed; see
+(reversible exact-institution auto-merge), Phase 2 (representatives/domains), the Phase 3
+navigation refresh (primary links + More, notification bell, mobile drawer), and Phase 4
+(visual tokens, chart-first dashboard/reports, Leaflet/OpenStreetMap map) are implemented.
+The remaining Phase 3 flows and Phases 5–6 remain planned. Stage 10 (complete Playwright UI
+coverage) is in progress, with fixtures, current-route coverage, mutations, UI states,
+accessibility/responsive expansion, visual regression, and the CI split landed; see
 `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
@@ -18,9 +18,9 @@ coverage, mutations, UI states, and accessibility/responsive expansion landed; s
 > (RB, PGRC, other bureaus/cells, regional offices, senior management, competent
 > authority, admin). **Stage 8 is implemented** as a separate public complainant portal,
 > with self-signup verified by AICTE institution ID and a document-review/admin-approval
-> fallback. Stage 9 plans institution representative accounts as a separate external
-> shell. Public/representative sections describe extensions; do not use them as MVP
-> acceptance criteria.
+> fallback. Stage 9 Phase 2 implements institution representative accounts as a separate
+> external shell. Public/representative sections describe extensions; do not use them as
+> MVP acceptance criteria.
 
 ## 1. Purpose
 
@@ -71,9 +71,8 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 - Public/internal note and attachment separation enforced server-side.
 - Public notifications, complainant ownership/IDOR checks, dedicated rate limits, and
   public projections with no internal notes, findings, actor IDs, or Jev data.
-- Institution representative accounts are **planned for Stage 9**, not deferred: a
-  separate role, approval lifecycle, institution scope, and suggestion-only email-domain
-  allowlist. They are not implemented today.
+- Institution representative accounts are **implemented in Stage 9 Phase 2**: a separate
+  role, approval lifecycle, institution scope, and suggestion-only email-domain allowlist.
 
 ## 3. Personas and roles
 
@@ -82,7 +81,7 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 | Role | Who | Primary job |
 |---|---|---|
 | `COMPLAINANT` (Stage 8, optional) | Student, faculty, institution staff, public | File/track complaints, respond, upload evidence, accept/reopen. Self-signup verified by AICTE institution ID; otherwise document review + admin approval |
-| `INSTITUTION_REPRESENTATIVE` (planned Stage 9) | Authorised institution contact | See institution-scoped complaints, post public replies, attach public evidence; no internal data or status changes |
+| `INSTITUTION_REPRESENTATIVE` (Stage 9 Phase 2) | Authorised institution contact | See institution-scoped complaints, post public replies, attach public evidence; no internal data or status changes |
 | `BUREAU_OFFICER` | PGRC/RB/other cell officer | Triage, assign, work, reply, escalate, recommend disposal |
 | `REGIONAL_OFFICER` | Regional office | Regional queue, escalate, monitor SLAs |
 | `SENIOR_MANAGEMENT` | Senior AICTE management | Cross-bureau oversight, dispose, confirm overlaps, reports |
@@ -91,7 +90,7 @@ screens, journeys, data changes, APIs, and a phased delivery plan.
 | `VIEWER` | Auditor/read-only internal user | Read-only reports and audit |
 
 Mapping: keep existing internal roles; `COMPLAINANT` is the public role; `VIEWER`
-remains a read-only internal/auditor role. Stage 9 plans a separate
+remains a read-only internal/auditor role. Stage 9 Phase 2 adds a separate
 `INSTITUTION_REPRESENTATIVE` role with institution scope.
 
 ### Sign-up rules
@@ -103,14 +102,14 @@ approves. Unverified accounts can sign in but cannot file. Public staff sign-up 
 blocked (`STAFF_SIGNUP_ENABLED=false`, HTTP 403 `SIGNUP_DISABLED`); the complainant flow
 never grants a staff role and does not reuse the `VIEWER` default.
 
-Planned Stage 9 representative signup is separate: an email-domain allowlist may suggest
+Stage 9 representative signup is separate: an email-domain allowlist may suggest
 an institution, but a suggestion never verifies the user or grants access. The account
 stays pending until an admin approves it, and a client cannot self-assign the
 representative role or institution.
 
 ## 4. Permission matrix
 
-| Action | Complainant | Institution rep (planned) | Bureau officer | Regional officer | Senior mgmt | Competent authority | Admin | Viewer |
+| Action | Complainant | Institution rep | Bureau officer | Regional officer | Senior mgmt | Competent authority | Admin | Viewer |
 |---|---|---|---|---|---|---|---|---|
 | File complaint | own | — | on behalf | on behalf | on behalf | on behalf | on behalf | — |
 | View own complaints | yes | — | — | — | — | — | — | — |
@@ -132,7 +131,7 @@ representative role or institution.
 Notes:
 - "Scoped" means server-side filtering, not just hidden UI.
 - Ownership checks are mandatory for every complainant endpoint.
-- Planned Stage 9 representative access comes from the authenticated user's institution;
+- Representative access comes from the authenticated user's institution;
   a query parameter cannot widen it. Out-of-scope detail returns 404.
 - Representatives cannot request information, change status/assignment, read internal
   notes/findings/Jev data, or see complainant PII beyond the public projection.
@@ -182,7 +181,7 @@ Edge cases:
 - Audit user and case actions; export reports.
 - Configure feature flags and notification channels.
 
-### 5.5 Institution representative (planned Stage 9)
+### 5.5 Institution representative (Stage 9 Phase 2)
 - Request access with institution selection; an email-domain match may suggest the
   institution but never verifies or grants access.
 - An admin approves, rejects, or revokes the request. Pending/rejected/revoked users see
@@ -227,26 +226,26 @@ Edge cases:
 - `/admin/institutions`
 - `/admin/verifications`
 - `/admin/audit`
-- Planned Stage 9: `/admin/institution-domains`,
+- Stage 9 Phase 2: `/admin/institution-domains`,
   `/admin/institution-representatives`
 
-### Representative shell (planned Stage 9)
+### Representative shell (Stage 9 Phase 2)
+- `/institution` (redirect to `/institution/dashboard`)
+- `/institution/sign-up`
 - `/institution/dashboard`
 - `/institution/cases`
 - `/institution/cases/:id`
 - `/institution/notifications`
 - `/institution/profile`
-- Public request path: `/institution/sign-up` (or a clearly separated
-  `/portal/institution/request`)
 
-### Navigation target (planned Stage 9)
+### Navigation target (Stage 9 Phase 3)
 - Staff primary: Dashboard · Cases · Institutions · Overlaps · Reports.
-- More: Notifications, Admin users, Admin verification, Organization, SLA, Audit
-  (role-filtered).
+- More: Notifications, Admin users, Admin verification, Organization, SLA, Audit,
+  Institution domains, Institution representatives (role-filtered).
 - Persistent notification bell with unread count and a five-item preview; “View all” goes
   to `/notifications`.
 - Mobile uses a drawer/sheet with the same grouping.
-- Planned merge-group route: `/merge-groups/:id`.
+- Merge-group route: `/merge-groups/:id`.
 
 Navigation is role-filtered. Route guards must mirror server permissions in both
 directions: staff/complainants cannot enter the representative shell, and representatives
@@ -310,8 +309,8 @@ Additional fields:
 ### `user` (Better Auth)
 - `role` default `COMPLAINANT`
 - `phone`
-- `institutionId` (planned Stage 9, for institution representatives)
-- Planned Stage 9 representative fields: `representativeStatus` (`PENDING`, `APPROVED`,
+- `institutionId` (Stage 9 Phase 2, for institution representatives)
+- Representative fields: `representativeStatus` (`PENDING`, `APPROVED`,
   `REJECTED`, `REVOKED`), `representativeRequestedAt`, reviewed-by/at, and rejection/
   revocation reason
 - `active` enforced on every request
@@ -564,13 +563,14 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - Implemented Phase 4: chart/table parity, keyboard-accessible GIS map, mobile reflow,
   and reduced-motion checks.
 - Implemented Stage 9 Phase 1: exact pair auto-merges, merge group is visible, and revert
-  restores manual review. Planned Stage 9: representative approval/revocation and
-  institution isolation; notification bell.
+  restores manual review. Implemented Stage 9 Phase 2: representative approval/revocation,
+  institution isolation, and the notification bell.
 - Stage 10 (in progress): make the browser suite the authoritative proof of the UI. The
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
-  state × accessibility × responsive × visual coverage. Route, mutation, state, and
-  accessibility/responsive rows are covered for current routes; visual regression and CI
-  remain, and representative rows stay blocked until Stage 9 Phase 2.
+  state × accessibility × responsive × visual coverage. Route, mutation, state,
+  accessibility/responsive, visual, and CI rows are covered for current routes including
+  the representative shell; final exit waits on the remaining Stage 9 Phase 3 flows and
+  CI-image visual verification.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,

@@ -17,10 +17,11 @@ external intake surface with separate ownership and public-projection controls.
 
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
 (`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency, Phase 1 reversible
-auto-merge, the Phase 3 navigation refresh, and Phase 4 UI/charts/GIS are implemented,
-while Phase 2, the remaining Phase 3 flows, and Phases 5–6 remain planned. Stage 10
-(complete Playwright UI coverage) is in progress: fixtures, per-role sessions, and
-current-route render/denial coverage have landed.**
+auto-merge, Phase 2 representatives/domains, the Phase 3 navigation refresh, and Phase 4
+UI/charts/GIS are implemented, while the remaining Phase 3 flows and Phases 5–6 remain
+planned. Stage 10 (complete Playwright UI coverage) is in progress: fixtures, per-role
+sessions, current-route render/denial coverage, mutations, UI states,
+accessibility/responsive, visual regression, and the CI split have landed.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -51,16 +52,15 @@ current-route render/denial coverage have landed.**
 - Stage 8 is implemented: public complainant signup/login, exact-AICTE verification with
   document-review approval, filing/tracking, public/internal conversation and documents,
   ownership checks, portal rate limits, staff complaint workflow, and admin verification
-  queue. Institution representative accounts are planned for Stage 9 Phase 2.
+  queue. Institution representative accounts landed in Stage 9 Phase 2.
 - Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
 - Stage 10 is in progress: fixtures, per-role storage states, current-route render/denial
-  coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, and
-  accessibility/responsive expansion have landed. Remaining workstreams are visual
-  regression, the CI split, and the uncovered UI-state rows. The matrix in
-  `docs/quality/ui-test-matrix.md` is the progress measure. Representative-shell rows wait
-  for Stage 9 Phase 2.
+  coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
+  suite, accessibility/responsive expansion, visual regression, and the CI split have
+  landed. Remaining are the Stage 9 Phase 3 flows and CI-image visual verification. The
+  matrix in `docs/quality/ui-test-matrix.md` is the progress measure.
 
 ## 1. Status legend
 
@@ -400,12 +400,14 @@ the audit above predates them. Current facts:
   work is planned.
 - Phase 4: design tokens, chart-first dashboard/reports, and a lazy-loaded
   Leaflet/OpenStreetMap region map with keyboard chips and a table fallback.
-- Phase 2 representatives/domains and Phases 5–6 remain planned.
+- Phase 2: representative role, approval/revocation, institution scope, representative
+  shell, and suggestion-only email-domain allowlist with admin queues.
+- Phases 5–6 remain planned.
 - Stage 10: in progress. Fixtures, current-route render/denial coverage, mutations, UI
-  states, and accessibility/responsive expansion have landed; see
-  `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
-  `docs/plans/todo-tracker.md` for the current checklist. Remaining workstreams are the
-  uncovered UI-state rows, visual regression, and the CI split.
+  states, accessibility/responsive expansion, visual regression, and the CI split have
+  landed; see `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
+  `docs/plans/todo-tracker.md` for the current checklist. Remaining is the final exit
+  baseline after the Stage 9 Phase 3 flows and CI-image visual verification.
 
 ## 16. Gap backlog (prioritized)
 
@@ -450,7 +452,7 @@ the audit above predates them. Current facts:
 17. Advanced analytics/trends/export PDF.
 18. Fuzzy matching at scale (Atlas Search/indexed blocking).
 19. ~~Public complainant portal extension (see §17).~~ Done in Stage 8; institution
-    representative accounts are planned for Stage 9 Phase 2.
+    representative accounts landed in Stage 9 Phase 2.
 
 ## 17. Optional extension — public complainant portal
 
@@ -464,7 +466,7 @@ acceptance. It is a separate product surface, now implemented as Stage 8:
 - Public projection rules (no internal notes, findings, actor IDs, Jev raw data) — done.
 - Ownership/IDOR checks, generic public tracking, and portal rate limits — done.
 - Staff conversation/acknowledge/request-info/resolve and admin verification queue — done.
-- Institution representative accounts — planned for Stage 9 Phase 2; separate
+- Institution representative accounts — done in Stage 9 Phase 2; separate
   role/scoping/approval model and suggestion-only email domains.
 - Separate integration, portal E2E, component, and accessibility coverage — added.
 
@@ -526,5 +528,5 @@ The MVP is accepted only when all of these are true:
 8. **Auth**: keep Better Auth email/password; no SSO requirement for MVP.
 
 Still open: case-numbering ownership, automatic vs manual escalation, deployment
-target, anonymous complaints, reopen window/auto-close, and institution representatives
-(planned for Stage 9 Phase 2).
+target, anonymous complaints, and reopen window/auto-close. Institution representatives
+landed in Stage 9 Phase 2.

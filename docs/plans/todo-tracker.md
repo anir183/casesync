@@ -1,9 +1,9 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-02  
+**Last verified:** 2026-11-07  
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phase 0 baseline/UI consistency, Phases 1 and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the remaining Phase 3 flows, and 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed; the final coverage baseline and remaining Stage 9 flows remain. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 9:** Phase 0 baseline/UI consistency, Phases 1, 2, and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. The remaining Phase 3 flows and Phases 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. Final exit waits on the remaining Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -239,8 +239,7 @@ Demo script smoke journeys and security/a11y/performance gates pass.
 - [x] File/track complaint, public status timeline, accept/reopen
 - [x] Public/internal message separation
 - [x] Attachments with public/internal visibility
-- [ ] Institution representative accounts (planned for Stage 9; not required for Stage 8
-      exit)
+- [x] Institution representative accounts (delivered in Stage 9 Phase 2)
 - [x] Ownership/IDOR checks + public rate limits
 - [x] Public projection rules (no internal notes/Jev/actor IDs)
 - [x] Separate integration, E2E, and accessibility coverage
@@ -248,14 +247,14 @@ Demo script smoke journeys and security/a11y/performance gates pass.
 - [x] Demo complainant seed and portal runbook
 
 **Exit:** met in implementation and test coverage. Institution representative accounts were
-not needed to prove the complainant flow and are now planned for Stage 9 with a dedicated
-external role, institution-side scoping, an approval model, and an email-domain allowlist.
-The portal remains an extension outside MVP acceptance.
+not needed to prove the complainant flow; they were delivered in Stage 9 Phase 2 with a
+dedicated external role, institution-side scoping, an approval model, and an email-domain
+allowlist. The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PARTIAL — Phase 0, Phases 1, 3 navigation, and 4 implemented)
+## Stage 9 — Next phase (PARTIAL — Phases 0–2, Phases 3 navigation, and 4 implemented)
 
 Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
-Phase 0 baseline, the final UI consistency pass, Phases 1 and 4, and the Phase 3
+Phase 0 baseline, the final UI consistency pass, Phases 1, 2, and 4, and the Phase 3
 navigation refresh implemented). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
 that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
@@ -335,16 +334,16 @@ indigo/teal language.
       reverted pairs, plus a reversible merge group.
 - [x] Update OVR-07/INV-03 and the “no auto-merge” statements to the bounded exception.
 
-### Phase 2 — Institution representatives and email domains
+### Phase 2 — Institution representatives and email domains (complete)
 
-- [ ] Add `INSTITUTION_REPRESENTATIVE` role, seeds, role groups, and route guards.
-- [ ] Add institution scope to the central scope helper and apply it everywhere.
-- [ ] Approval workflow (request → admin approve/reject → active/deactivate).
-- [ ] `institution_email_domains` allowlist plus admin UI.
-- [ ] Signup domain inference as a suggestion only; no auto-verification.
-- [ ] Representative dashboard, institution queue, public reply/evidence only.
-- [ ] Deny information requests, status changes, internal notes, and complainant PII.
-- [ ] Integration/E2E isolation and denied-action tests.
+- [x] Add `INSTITUTION_REPRESENTATIVE` role, seeds, role groups, and route guards.
+- [x] Add institution scope to the central scope helper and apply it everywhere.
+- [x] Approval workflow (request → admin approve/reject → active/deactivate).
+- [x] `institution_email_domains` allowlist plus admin UI.
+- [x] Signup domain inference as a suggestion only; no auto-verification.
+- [x] Representative dashboard, institution queue, public reply/evidence only.
+- [x] Deny information requests, status changes, internal notes, and complainant PII.
+- [x] Integration/E2E isolation and denied-action tests.
 
 ### Phase 3 — Information architecture and user flows
 
@@ -393,8 +392,9 @@ indigo/teal language.
 
 Full plan: `docs/plans/ui-testing-plan.md`. Living matrix:
 `docs/quality/ui-test-matrix.md`. Stage 10 is a separate cross-cutting stage, not another
-Stage 9 phase. Current routes are coverable now; representative-shell rows are blocked by
-Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
+Stage 9 phase. All current routes, including the representative shell and the admin
+representative/domain queues, are coverable now. Final exit waits on the remaining Stage 9
+Phase 3 flows and visual baselines verified on the pinned CI image.
 
 ### Foundation
 
@@ -412,20 +412,22 @@ Stage 9 Phase 2 and final exit is blocked by the remaining Phase 3 flows.
 
 ### Route and role coverage
 
-- [x] Render and direct-URL denial tests for every public, auth, portal, staff, and admin route.
-- [x] Cover all eight seeded roles. The institution representative stays blocked on Stage 9
-      Phase 2.
+- [x] Render and direct-URL denial tests for every public, auth, portal, staff, admin, and
+      institution route.
+- [x] Cover all eight seeded roles across ten accounts, including approved and pending
+      institution representatives.
 - [x] Assert denied access without data leakage for cases, institutions, overlaps, admin
-      routes, and portal complaints.
-- [ ] Add the five representative-shell routes when Stage 9 Phase 2 lands.
+      routes, portal complaints, and institution cases.
+- [x] Add the institution sign-up, representative-shell, and admin representative/domain
+      queue routes to the render, denial, accessibility, and responsive manifests.
 
 ### Mutations
 
 Staff/admin paths landed in `apps/web/e2e/coverage/mutations.spec.ts`; portal/auth paths
-landed in `coverage/portal-auth.spec.ts`. Coverage is risk-based, not exhaustive: a
-mutation class is covered when a browser test asserts its visible result and at least one
-denied path. Rows left to API integration are recorded as Deferred with a reason, not as
-open work.
+landed in `coverage/portal-auth.spec.ts`; the representative journey landed in
+`coverage/representative.spec.ts`. Coverage is risk-based, not exhaustive: a mutation class
+is covered when a browser test asserts its visible result and at least one denied path. Rows
+left to API integration are recorded as Deferred with a reason, not as open work.
 
 Covered:
 
@@ -436,6 +438,8 @@ Covered:
 - [x] Admin: invite/reset/deactivate user, categories, SLA rules, verification
       approve/reject, audit route.
 - [x] Portal: signup, verification, file, accept/close, reopen, upload/download.
+- [x] Institution representatives: request access from a domain suggestion, approval,
+      public reply, revocation, session loss, and revoked-account redirect.
 - [x] Account: sign out, theme.
 
 Deferred, with the layer that covers the risk instead:
@@ -482,16 +486,19 @@ Deferred, with rationale:
 
 ### Accessibility and responsive
 
-`apps/web/e2e/accessibility.spec.ts` adds 45 tests (29 route scans, 11 denial scans, and
-keyboard/focus checks); `apps/web/e2e/responsive.spec.ts` adds 12 tests across the four
-breakpoints, zoom, and reduced motion. Representative rows stay blocked.
+`apps/web/e2e/accessibility.spec.ts` adds 55 tests (37 route scans, 13 denial scans, and 5
+keyboard/focus checks); `apps/web/e2e/responsive.spec.ts` adds 16 tests across the four
+breakpoints, table containment, zoom, and reduced motion. The `@a11y`/`@responsive` tags also
+pick up the reports reduced-motion and navigation/reports responsive checks in the other
+specs.
 
 - [x] axe on every current route and primary role; zero serious/critical findings.
 - [x] Keyboard-only sign-in, navigation, dialog, drawer, and table-scroll checks.
 - [x] Focus management on route change and dialogs (trap, Escape, trigger restore).
 - [x] Reduced motion on chart and map routes.
 - [x] 200% page and text-only zoom reflow.
-- [x] 375/768/1024/1440 px with no page-level overflow on the staff and portal route groups.
+- [x] 375/768/1024/1440 px with no page-level overflow on the staff, portal, and
+      institution route groups.
 
 Deferred:
 
@@ -526,10 +533,12 @@ Deferred:
 - [x] Keep the matrix current in the same change as every route or mutation. Enforced as a
       review guardrail in `docs/quality/testing-guide.md`; the matrix is now the single
       status source.
-- [x] Record the functional Stage 10 baseline: 160 desktop functional tests, 176 desktop +
-      mobile, 11 smoke, 45 accessibility, 12 responsive, and 48 visual comparisons.
-- [ ] Record the final Stage 10 exit baseline after the representative rows unblock, the
-      remaining Stage 9 Phase 3 flows land, and the visual baselines are verified on CI.
+- [x] Record the functional Stage 10 test inventory: 193 desktop functional tests, 213
+      desktop + mobile, 13 smoke, 55 accessibility (37 route + 13 denial + 5 keyboard/focus),
+      16 responsive-spec tests, and 48 visual comparisons.
+- [ ] Record the final Stage 10 exit baseline after the remaining Stage 9 Phase 3 flows land
+      and the visual baselines are verified on CI. The representative rows are covered;
+      rerun the full suite once more for the exit record.
 
 ## Testing Definition of Done
 
@@ -561,21 +570,23 @@ Deferred:
     warning-free (483.90 kB main chunk / 137.86 kB gzip), and the high-severity
     dependency audit is clean.
 - [x] Stage 9: merge threshold/veto/idempotency/revert/audit tests.
-- [ ] Stage 9: representative institution isolation and denied-action tests.
-- [ ] Stage 9: domain suggestion-only tests and admin allowlist tests.
+- [x] Stage 9: representative institution isolation and denied-action tests.
+- [x] Stage 9: domain suggestion-only tests and admin allowlist tests.
 - [x] Stage 9: dashboard/report/map reconciliation and accessible fallback.
 - [x] Stage 9: bundle gate (main chunk 483.90 kB / 137.86 kB gzip; no chunk-size
       warning).
 - [x] Stage 9: merge/revert E2E journey.
-- [ ] Stage 9: representative E2E journey.
-- [x] Stage 10: every current route has render and role-denial coverage; the six
-      representative routes stay blocked on Stage 9 Phase 2.
+- [x] Stage 9: representative E2E journey.
+- [x] Stage 10: every current route has render and role-denial coverage, including the
+      institution representative shell and the admin representative/domain queues.
 - [x] Stage 10: every high-risk user-facing mutation class has a browser test and denied
       path, or a documented deferral with API-level coverage. The mutation split lives in
       the matrix, not in this checklist.
 - [x] Stage 10: axe clean on every current route and primary role.
 - [x] Stage 10: keyboard, focus, reduced-motion, and 200% zoom checks pass.
-- [x] Stage 10: 375/768/1024/1440 px checks pass on staff and portal route groups.
+- [x] Stage 10: 375/768/1024/1440 px checks pass on staff, portal, and institution route
+      groups.
 - [x] Stage 10: visual baselines pass twice consecutively.
-- [x] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
+- [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
+      Previously passed; rerun after the representative slice for the final exit record.
 - [x] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.

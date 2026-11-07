@@ -44,15 +44,16 @@ exit criteria.
   opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7.0.45` service, while local
   runs use run-scoped records in the configured dev database. Local MongoDB `8.3.9` is
   supported; the CI pin stays on the 7.0 line.
-- **160 seeded functional browser tests**: staff smoke, portal, navigation/bell, route ×
-  role render/denial, mutation, UI-state, 45 accessibility, and 12 responsive tests,
-  including map/zoom/reduced-motion and merge-group revert journeys.
+- **193 seeded functional browser tests** (213 with the mobile project): staff smoke, portal,
+  navigation/bell, route × role render/denial, staff/admin, portal/auth, and representative
+  mutations, UI-state, 55 accessibility, and 16 responsive-spec tests, including
+  map/zoom/reduced-motion and merge-group revert journeys.
 - **48 visual comparisons**: 12 routes in light and dark at desktop and mobile widths.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
-- **Coverage gate**: 87.4% lines and 89.7% functions from the full API suite (140 tests
-  incl. integration); CI floor is 85% lines/functions.
+- **Coverage gate**: 87.4% lines and 89.7% functions from the full API suite (97 unit + 62
+  integration source tests); CI floor is 85% lines/functions.
 - **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks (including web
   tests/e2e), unit/component tests, Mongo-backed integration/coverage, builds, seeded
   smoke on PRs, full Chromium on `main`, and cross-browser/visual jobs on manual dispatch
@@ -271,25 +272,26 @@ grows. Do not duplicate full integration coverage; test UI behavior and error ha
 
 ## 7. E2E and complete UI coverage (Playwright)
 
-Implemented now: the seeded Stage 10 suite (160 desktop functional tests plus 48 visual
-comparisons) covering staff smoke, portal journeys, navigation/bell, route × role
-render/denial, mutations, UI states, 45 accessibility tests, 12 responsive tests, and the
-visual regression subset, run against production builds on API port 3100 and web port
-4173. The performance test is tagged and run separately with the stress seed. The
+Implemented now: the seeded Stage 10 suite (193 desktop functional tests, 213 with the
+mobile project, plus 48 visual comparisons) covering staff smoke, portal journeys,
+navigation/bell, route × role render/denial, staff/admin, portal/auth, and representative
+mutations, UI states, 55 accessibility tests, 16 responsive-spec tests, and the visual
+regression subset, run against production builds on API port 3100 and web port 4173. The
+performance test is tagged and run separately with the stress seed. The
 [`testing-guide.md`](testing-guide.md) explains which layer to run for a change and which
 E2E specs cover which behavior; the full suite is a merge/release gate, not an inner-loop
 tool.
 
-**Stage 10 is the completion path, and work is in progress.** Shared fixtures,
-per-role storage states, current-route render/denial coverage, mutation coverage, UI-state
-coverage, accessibility/responsive expansion, visual regression, and the CI job split have
-landed. The final coverage baseline and the remaining Stage 9 flows are outstanding. The
-decision-complete plan is
-[`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route × role ×
-action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
+**Stage 10 is the completion path, and work is in progress.** Shared fixtures, per-role
+storage states, current-route render/denial coverage, mutation coverage (including the
+representative journey), UI-state coverage, accessibility/responsive expansion, visual
+regression, and the CI job split have landed. The final coverage baseline waits on the
+remaining Stage 9 Phase 3 flows and CI-image visual verification. The decision-complete
+plan is [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route ×
+role × action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 
-- every current route (staff, admin, portal, auth) plus the planned representative shell
-  and its Phase 2 request/admin-queue routes once Stage 9 Phase 2 lands;
+- every current route (staff, admin, portal, auth, and the institution representative
+  shell with its sign-up and admin queue routes);
 - every high-risk user-facing mutation class and its denied path; lower-risk actions are
   covered by API integration tests and marked Deferred in the matrix;
 - loading, empty, error, permission-denied, not-found, pagination, filter, dialog, toast,
@@ -315,8 +317,10 @@ action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 add
 7. **Admin**: create officer, assign bureau → officer can sign in and sees queue.
 8. **Institution**: search by AICTE ID → profile → consolidated history.
 9. **Portal**: signup → verify → file → converse → resolve → accept/reopen.
-10. **Representative** (blocked until Stage 9 Phase 2): institution scope and denied
-    internal actions.
+10. **Representative**: domain suggestion → pending gate → approval → institution scope and
+    denied internal actions → revocation → status-page redirect. Covered by the
+    representative journey; deeper approval/rejection button clicks stay Deferred to API
+    integration.
 
 ### E2E rules
 
@@ -617,8 +621,10 @@ change description.
 - [x] Seed runs idempotently; guarded reset/stress helpers work.
 - [x] `verify`, integration, coverage, E2E, accessibility, and performance suites pass locally.
 - [ ] Stage 10 matrix complete: every route, role, mutation, state, a11y check, breakpoint,
-      and visual baseline covered or explicitly blocked.
-- [ ] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`.
+      and visual baseline covered, deferred with a reason, or blocked by a named Stage 9
+      flow.
+- [ ] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`
+      after the representative slice.
 - [ ] CI green on a pushed commit.
 - [ ] Independent runbook walkthrough by someone other than the author.
 - [x] Security checklist complete.

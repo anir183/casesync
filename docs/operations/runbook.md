@@ -63,8 +63,10 @@ Stress records use `STRESS-` / `AICTE-STRESS-` prefixes and are safe to remove.
 
 The demo seed includes a verified complainant: `complainant@casesync.test` /
 `Passw0rd!123`, linked to the `dit` institution. It also seeds auto-merged,
-manual-review, vetoed, and reverted overlap scenarios for the Phase 1 demo. It does not
-create an institution representative account (planned for Stage 9 Phase 2).
+manual-review, vetoed, and reverted overlap scenarios for the Phase 1 demo, plus approved
+and pending institution representative accounts (`representative@casesync.test`,
+`pending.representative@casesync.test`) and the `dit.edu.in` / `mie.edu.in` suggestion-only
+domains.
 
 ## 4. Verification gates
 
@@ -72,7 +74,7 @@ create an institution representative account (planned for Stage 9 Phase 2).
 bun run verify          # Biome, API/web/test typechecks, unit/component tests, builds
 bun run test:integration
 bun run test:coverage   # 85% lines/functions floor; also run in CI
-bun run test:e2e        # 160 desktop functional tests; excludes performance and visual
+bun run test:e2e        # 193 desktop functional tests; excludes performance and visual
 bun run test:perf       # stress seed, performance budgets, automatic reset
 bun audit --audit-level=high
 ```
@@ -81,7 +83,7 @@ Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md
 
 ```bash
 bun run test:e2e:smoke             # tagged @smoke PR gate
-bun run test:e2e:full              # 176 desktop + mobile functional/a11y/responsive/mutation tests
+bun run test:e2e:full              # 213 desktop + mobile functional/a11y/responsive/mutation tests
 bun run test:e2e:mobile            # mobile Chromium responsive project only
 bun run test:e2e:ui                # Playwright UI mode
 bun run test:e2e:cross-browser     # Chromium + Firefox + WebKit (PLAYWRIGHT_ALL_BROWSERS=1)
@@ -98,10 +100,11 @@ Install browsers once per machine with
 `cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
 cross-browser suite).
 
-Current local baseline (2026-11-06): 85 API unit + 25 web tests, 55 integration tests, 160
-desktop browser tests plus 16 mobile-project tests (176 total), including 45
-accessibility checks, 12 responsive checks, and 48 visual comparisons, plus 87.4% lines /
-89.7% functions of API coverage. The production
+Current local baseline (2026-11-07): 97 API unit + 25 web tests, 62 integration tests, 193
+desktop browser tests plus 20 mobile-project tests (213 total), including 55 accessibility
+checks, 16 responsive-spec checks, and 48 visual comparisons, plus 87.4% lines / 89.7%
+functions of API coverage. The representative journey passed on a targeted run; rerun the
+full suite for the final exit record. The production
 web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
 was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
 new runtime.

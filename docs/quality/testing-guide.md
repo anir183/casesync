@@ -15,7 +15,7 @@ full suites only at the checkpoints below.
 | An API route, service, query, RBAC rule, or Mongoose model | `bun run test:integration` (or `bun run test:coverage` before merge) | Proves contracts, scoping, IDOR, and persistence against Mongo |
 | A React component, hook, form, or client-side condition | Component test in `apps/web/tests/`, then the relevant Playwright spec | Tests UI behavior without the cost of a full journey |
 | A route, guard, role gate, shell, navigation, or sign-in flow | `coverage/routes.spec.ts` plus the matching `@smoke`/`@a11y` test | Proves render, denial, and accessible shell behavior |
-| One mutation flow (create/update/transition) | The matching test in `coverage/mutations.spec.ts` or `coverage/portal-auth.spec.ts` | Asserts the visible result and denied path without the whole suite |
+| One mutation flow (create/update/transition) | The matching test in `coverage/mutations.spec.ts`, `coverage/portal-auth.spec.ts`, or `coverage/representative.spec.ts` | Asserts the visible result and denied path without the whole suite |
 | Loading, empty, error, pagination, filter, dialog, toast, or pending state | The matching test in `coverage/states.spec.ts` | Focused UI-state contract |
 | Layout, breakpoint, zoom, or reduced motion | `responsive.spec.ts` on the affected project(s) | Catches overflow and reflow regressions |
 | Styling, theme, spacing, or a shared visual component | `bun run test:e2e:visual` | Compares the stable 12-route subset |
@@ -46,12 +46,13 @@ Counts are for the desktop project unless noted.
 | Spec | Tags | Tests | What it covers | Run it when |
 |---|---|---|---|---|
 | `smoke.spec.ts` | `@smoke` | 3 | Officer case search/filter/audit timeline; viewer read-only and cross-bureau denial; overlap queue and reports load | Auth, shell, registry, or reporting changes |
-| `coverage/routes.spec.ts` | `@routes`, `@smoke` | 61 | 29 route renders, 24 role denials, and 8 cached-role session checks | Adding/moving a route, changing guards, or touching role scope |
-| `accessibility.spec.ts` | `@a11y` | 45 | 29 route scans, 11 denial scans, and 5 keyboard/focus checks | New route, new dialog, focus/skip-link change, or shell change |
+| `coverage/routes.spec.ts` | `@routes`, `@smoke` | 78 | 37 route renders, 31 role denials, and 10 cached-role session checks | Adding/moving a route, changing guards, or touching role scope |
+| `accessibility.spec.ts` | `@a11y` | 55 | 37 route scans, 13 denial scans, and 5 keyboard/focus checks | New route, new dialog, focus/skip-link change, or shell change |
 | `coverage/mutations.spec.ts` | `@mutation` | 14 | Case register/remark/transition, institution CRUD/merge, overlap review/merge/revert, admin invite/reset/deactivate, masters, SLA, verification, notifications | Any staff/admin write path or denial change |
 | `coverage/portal-auth.spec.ts` | `@mutation` | 5 | Portal signup/verification, unverified filing limits, ownership denial, document download, reopen | Portal auth, verification, filing, or documents |
+| `coverage/representative.spec.ts` | `@mutation` | 1 | Exact-domain sign-up suggestion, pending gate, approval, public reply, revocation, session loss, revoked redirect | Representative role, institution scope, or domain allowlist |
 | `coverage/states.spec.ts` | `@states` | 12 | Loading, empty, pagination, filters/sort, CSV export, error recovery, not-found, dialog cancel, pending/failed save, session expiry, theme persistence | Touching a list, table, filter, dialog, toast, or session state |
-| `responsive.spec.ts` | `@responsive` | 12 | Staff/portal reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
+| `responsive.spec.ts` | `@responsive` | 16 | Staff/portal/institution reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
 | `navigation.spec.ts` | `@responsive` | 3 | One-row staff nav, mobile drawer destinations, notification bell preview | Header, nav, drawer, or notification changes |
 | `reports.spec.ts` | `@responsive`, `@a11y` | 2 | Reports map keyboard focus/mobile reflow; chart-heavy reduced motion | Map, chart, or reports changes |
 | `merge.spec.ts` | `@mutation` | 1 | Auto-merged overlap group is visible and reverts to human review | Overlap merge/revert changes |
@@ -71,9 +72,9 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:unit` | API unit tests and web component tests |
 | `bun run test:integration` | Mongo-backed API integration tests |
 | `bun run test:coverage` | Integration tests plus the coverage floor |
-| `bun run test:e2e:smoke` | 11 tagged `@smoke` journeys |
-| `bun run test:e2e` | 160 desktop functional tests, excluding `@performance` and `@visual` |
-| `bun run test:e2e:full` | 176 desktop + mobile functional tests |
+| `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys |
+| `bun run test:e2e` | 193 desktop functional tests, excluding `@performance` and `@visual` |
+| `bun run test:e2e:full` | 213 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally, then review the diff |

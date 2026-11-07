@@ -336,8 +336,8 @@ planned); local MongoDB `8.3.9` remains supported.
 Stage 10 defines the complete UI coverage contract in
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and tracks it in
 [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Do not infer whole-product
-coverage from the seeded suite: representative rows are blocked and visual/CI work is
-still in progress.
+coverage from the seeded suite: the representative shell is covered, while the remaining
+Stage 9 Phase 3 flows and CI-image visual verification are still outstanding.
 
 **Priority:** utils (pair/normalize/similarity), overlap orchestration with DB
 (exact/fuzzy, Jev enabled/disabled/failure/timeout, base relationship always created),

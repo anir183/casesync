@@ -104,9 +104,9 @@ Rate-limited responses use HTTP `429` with `error: "RATE_LIMITED"`,
   (for example Redis) or edge/WAF limits.
 - Malware scanning for uploaded documents is not implemented.
 - CSP, HSTS, and a broader HTTP security-header review are deployment follow-ups.
-- Institution representative accounts are planned for Stage 9 Phase 2; adding them
-  requires a second external role, institution scoping, an approval model, and a
-  suggestion-only email-domain allowlist that never grants access.
+- Institution representative accounts are implemented in Stage 9 Phase 2: a second
+  external role, institution scoping, an approval model, and a suggestion-only
+  email-domain allowlist that never grants access.
 - A third-party penetration test and secret-scanning tool are not part of this pass.
 - Search query-object notation is inert rather than explicitly rejected; schema
   validation should remain the guard if the query parser changes.

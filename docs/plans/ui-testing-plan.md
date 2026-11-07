@@ -1,12 +1,14 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
 Status: in progress. Steps 1–7 have landed: fixtures and current-route render/denial
-coverage, staff/admin mutation coverage, portal/auth flows, UI-state coverage,
-accessibility/responsive expansion, visual regression, and the CI job split. The full
-Chromium suite (176 tests) passed twice in a row and the visual suite (48 comparisons)
-passed twice. Step 8 (the final coverage baseline) waits on the Stage 9 exit gates.
+coverage, staff/admin mutation coverage, portal/auth flows, the institution representative
+journey, UI-state coverage, accessibility/responsive expansion, visual regression, and the
+CI job split. The desktop functional suite is now 193 tests (213 with the mobile project)
+and the visual suite is 48 comparisons; both passed before the representative slice and the
+representative tests passed on a targeted run. Step 8 (the final coverage baseline) waits
+on the remaining Stage 9 Phase 3 flows and CI-image visual verification.
 Location: `docs/plans/ui-testing-plan.md`.
-Plan date: 2026-11-02.
+Plan date: 2026-11-02. Last updated: 2026-11-07.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/testing-guide.md`](../quality/testing-guide.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -23,8 +25,7 @@ integration tests or manual checks, and there is no visual regression baseline.
 
 Stage 10 closes that gap. It is a separate stage rather than another Stage 9 phase
 because it is cross-cutting UI quality work that spans every feature area, and because
-its final exit gate depends on Stage 9 finishing the representative shell and the
-remaining role flows.
+its final exit gate depends on the remaining Stage 9 Phase 3 role flows.
 
 ### Goal
 
@@ -51,8 +52,8 @@ on unfinished Stage 9 work.
 
 | Condition | Effect |
 |---|---|
-| Current routes (staff, admin, portal, auth) | Coverable now |
-| Stage 9 Phase 2 representative shell (5 routes, plus sign-up and admin queues) | Rows marked **Blocked** until Phase 2 lands |
+| Current routes (staff, admin, portal, auth, institution) | Covered |
+| Stage 9 Phase 2 representative shell and admin queues | Landed and covered |
 | Stage 9 Phase 3 remaining role flows and consolidated case tabs | Rows marked **Blocked** until Phase 3 lands |
 | Stage 9 Phase 5 hardening (headers, request IDs) | Not a blocker; add assertions when it lands |
 | Seeded demo data | Required; `seed:demo` must stay deterministic |
@@ -67,7 +68,7 @@ affected row is explicitly accepted as out of scope with a written reason.
 
 | Workstream | Deliverable |
 |---|---|
-| Inventory | Living route × role × action × state matrix covering all current routes and the future representative shell |
+| Inventory | Living route × role × action × state matrix covering all current routes, including the institution representative shell and admin queues |
 | Fixtures | Shared auth/role fixtures, API helpers, deterministic per-test data, reset/isolation for destructive specs |
 | Route coverage | Every page renders for an allowed role; direct URL access is denied for a disallowed role |
 | Mutations | Every user-facing create/update/delete/transition has a browser test |
@@ -80,7 +81,7 @@ affected row is explicitly accepted as out of scope with a written reason.
 
 ### 3.2 Route inventory
 
-Current concrete routes (28) plus the root redirect (1):
+Current route manifest (37 entries, including the root redirect):
 
 **Public and auth**
 
@@ -122,20 +123,21 @@ Current concrete routes (28) plus the root redirect (1):
 - `/admin/audit`
 - `/admin/verifications`
 - `/admin/sla`
+- `/admin/institution-representatives`
+- `/admin/institution-domains`
 
-**Planned representative shell (Stage 9 Phase 2)**
+**Institution representative**
 
 - `/institution` (redirect to `/institution/dashboard`)
+- `/institution/sign-up`
 - `/institution/dashboard`
 - `/institution/cases`
 - `/institution/cases/:id`
 - `/institution/notifications`
 - `/institution/profile`
 
-Stage 9 Phase 2 also adds the representative request/sign-up entry point and the
-`/admin/institution-domains` and `/admin/institution-representatives` admin queues. Their
-rows are added to the matrix when the final paths land; they are blocked on the same
-Phase 2 work.
+The representative shell, request/sign-up entry point, and admin queues landed with Stage 9
+Phase 2 and are covered by the route, accessibility, responsive, and mutation suites.
 
 The detailed role and action mapping lives in
 [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). That matrix is the
@@ -155,7 +157,8 @@ Seed accounts (password from `SEED_PASSWORD`, default `Passw0rd!123`):
 | `REGIONAL_OFFICER` | `regional.north@casesync.test` | North-region cases and institutions |
 | `VIEWER` | `viewer@casesync.test` | Read-only scoped or all per policy |
 | `COMPLAINANT` | `complainant@casesync.test` | Own complaints and public data |
-| `INSTITUTION_REPRESENTATIVE` | Not seeded yet | Own institution, public projection only (Stage 9 Phase 2) |
+| `INSTITUTION_REPRESENTATIVE` (approved) | `representative@casesync.test` | Own institution, public projection only (Stage 9 Phase 2) |
+| `INSTITUTION_REPRESENTATIVE` (pending) | `pending.representative@casesync.test` | Profile/status page only until approved |
 
 Every route gets two assertions: the allowed role can render it, and at least one
 disallowed role is denied without leaking data.
@@ -173,6 +176,8 @@ disallowed role is denied without leaking data.
 | SLA | Create/edit rule, toggle active, override bureau/category/region |
 | Admin audit | Verify merge/revert and admin actions appear |
 | Verification queue | Approve, reject, request more evidence |
+| Institution representatives | Request access, approve, reject, revoke |
+| Institution email domains | Create, edit, verify, delete |
 | Portal complaint | Sign up, verify, file, message, attach, accept resolution, reopen |
 | Account | Sign out, switch session, theme change |
 
@@ -204,26 +209,23 @@ apps/web/e2e/
 │   ├── accounts.ts      # seed accounts, role keys, URLs, password
 │   ├── auth.ts          # role storage states and sign-in helpers
 │   ├── data.ts          # unique-suffix factories and seed lookups
+│   ├── routes.ts        # route × role render/denial manifest
 │   └── api.ts           # signed-in request contexts and reset helpers
 ├── global-setup.ts      # caches one storage state per seeded role in .auth/
-├── journeys/
-│   ├── auth.spec.ts
-│   ├── dashboard.spec.ts
-│   ├── cases.spec.ts
-│   ├── institutions.spec.ts
-│   ├── overlaps.spec.ts
-│   ├── reports.spec.ts
-│   ├── notifications.spec.ts
-│   ├── admin.spec.ts
-│   └── portal.spec.ts
 ├── coverage/
 │   ├── routes.spec.ts   # route × role render/deny
 │   ├── states.spec.ts   # loading, empty, error, pagination, dialogs
-│   └── mutations.spec.ts
-├── quality/
-│   ├── accessibility.spec.ts
-│   ├── responsive.spec.ts
-│   └── visual.spec.ts
+│   ├── mutations.spec.ts
+│   ├── portal-auth.spec.ts
+│   └── representative.spec.ts
+├── accessibility.spec.ts
+├── responsive.spec.ts
+├── visual.spec.ts
+├── smoke.spec.ts
+├── navigation.spec.ts
+├── merge.spec.ts
+├── portal.spec.ts
+├── reports.spec.ts
 ├── performance.spec.ts  # tagged @performance, local/release only
 └── helpers.ts
 ```
@@ -422,14 +424,16 @@ Each commit is independently reviewable. Do not commit or push unless explicitly
 8. `docs: record the Stage 10 coverage baseline`
    - Matrix status, QA plan, runbook, and evidence; only after exit gates pass.
 
-Steps 1–7 are complete. Step 5 added the shared route manifest, 45 accessibility tests
-(29 route scans, 11 denial scans, and keyboard/focus checks), and 12 responsive tests
-(375/768/1024/1440 px reflow, table containment, 200% page and text-only zoom, reduced
-motion). It also fixed four accessibility defects and added skip links plus route-change
-heading focus. Step 6 added 48 deterministic visual baselines and the disposable visual
-database script. Step 7 split smoke, full, cross-browser, and visual CI jobs. Step 8 (the
-final coverage baseline) waits on the exit gates; representative rows remain blocked on
-Stage 9 Phase 2 and final exit waits on the remaining Phase 3 flows.
+Steps 1–7 are complete. Step 5 added the shared 37-entry route manifest, 55 accessibility
+tests (37 route scans, 13 denial scans, and 5 keyboard/focus checks), and 16 responsive
+tests (375/768/1024/1440 px reflow, table containment, 200% page and text-only zoom,
+reduced motion). It also fixed four accessibility defects and added skip links plus
+route-change heading focus. Step 6 added 48 deterministic visual baselines and the
+disposable visual database script. Step 7 split smoke, full, cross-browser, and visual CI
+jobs. The representative shell adds `coverage/representative.spec.ts` (domain suggestion,
+pending gate, approval, public reply, revocation) plus its route, accessibility, and
+responsive rows. Step 8 (the final coverage baseline) waits on the remaining Stage 9 Phase 3
+flows and CI-image visual verification.
 
 ## 12. Risks and mitigations
 
@@ -440,7 +444,7 @@ Stage 9 Phase 2 and final exit waits on the remaining Phase 3 flows.
 | Long runtime | Slow PR feedback | Tagged smoke on PR; full suite on main |
 | Visual flake from fonts/maps | False failures | Pin CI image and browser, mask volatile content, run visuals off PRs |
 | Dynamic dates and counts | Brittle assertions | Fixed clocks, relative assertions, stable seed, masked dynamic values |
-| Route churn during Stage 9 | Repeated rewrites | Derive the matrix from the router; block dependent rows instead of guessing |
+| Route churn during Stage 9 | Repeated rewrites | Derive the matrix from the router; mark dependent rows as blocked instead of guessing |
 | Accessibility debt discovered late | Rework | Run axe per route as each spec lands, not at the end |
 | Over-testing trivial UI | Maintenance cost | Focus on user-visible behavior and contract-critical states |
 | Hidden test-only behavior | Production risk | No behavior changes for tests; test through public UI and API |

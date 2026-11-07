@@ -18,12 +18,15 @@ build with seeded demo data. Stage 10's `accessibility.spec.ts` drives the share
   `/institutions/new`, `/institutions/:id`, `/institutions/:id/edit`, `/overlaps`,
   `/overlaps/:id`, `/merge-groups/:id`, `/reports`, `/notifications`.
 - Admin: `/admin/users`, `/admin/organization`, `/admin/audit`,
-  `/admin/verifications`, `/admin/sla`.
+  `/admin/verifications`, `/admin/sla`, `/admin/institution-representatives`,
+  `/admin/institution-domains`.
+- Institution representative: `/institution` (redirect), `/institution/sign-up`,
+  `/institution/dashboard`, `/institution/cases`, `/institution/cases/:id`,
+  `/institution/notifications`, `/institution/profile`.
 
-Each route is scanned for its primary allowed role, and 11 text-based denial states are
+Each route is scanned for its primary allowed role, and 13 text-based denial states are
 scanned where the shell is visible. The assertion fails on serious or critical violations.
-The planned representative shell is blocked on Stage 9 Phase 2 and is not scanned yet. Run
-with:
+Run with:
 
 ```bash
 bun run test:e2e
@@ -38,8 +41,9 @@ and 375/768/1024/1440 px reflow. The living coverage status is tracked in
 ## 2. Result
 
 Pass: no serious or critical accessibility violations were reported on every current
-route as of 2026-11-05, including the mobile navigation drawer and authenticated
-complainant pages. The check runs as part of the seeded browser suite and CI. Stage 10 also
+route as of 2026-11-07, including the mobile navigation drawer, authenticated complainant
+pages, and the institution representative shell. The check runs as part of the seeded
+browser suite and CI. Stage 10 also
 added automated checks that the reports map reaches each region chip by keyboard,
 announces its text summary, reflows at 375 px, and that chart-heavy routes honour
 `prefers-reduced-motion`. Step 5 fixed four defects the scans surfaced: the notification
@@ -71,5 +75,5 @@ Automated scanning does not prove full accessibility. Before a public release, p
 These manual checks are follow-ups, not blockers for the internal MVP demo. The
 authenticated portal-detail axe scan now lands with Stage 10. Stage 10 makes the automated
 portion exhaustive per current route and primary role; the manual screen-reader pass
-remains a release checklist item, and representative-shell scans wait for Stage 9
-Phase 2.
+remains a release checklist item, and representative-shell scans are now part of the
+automated suite.

@@ -15,10 +15,11 @@ admin user/organization/SLA/audit/verification screens, the public complainant p
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
 **Stage 9 status:** Phase 0 baseline plus the final UI consistency pass, Phase 1
-auto-merge, Phase 4 visual redesign/chart-first dashboard/reports/Leaflet map, and the
-Phase 3 navigation refresh (primary/More, notification bell, mobile drawer) are
-implemented. The representative shell and the remaining Phase 3 flows remain planned. The
-decision-complete plan is [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
+auto-merge, Phase 2 representative shell/admin screens, Phase 4 visual redesign/chart-first
+dashboard/reports/Leaflet map, and the Phase 3 navigation refresh (primary/More,
+notification bell, mobile drawer) are implemented. The remaining Phase 3 flows remain
+planned. The decision-complete plan is
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
 - **Simple, minimal, modern** - Clean layout, no visual clutter
@@ -154,7 +155,7 @@ the More group.
 Notifications · Track complaint · Sign out. Staff navigation is not shown to
 complainants, and portal routes are not shown to staff.
 
-**Representative shell (planned Stage 9):** Dashboard · Cases · Notifications · Profile.
+**Representative shell (Stage 9 Phase 2):** Dashboard · Cases · Notifications · Profile.
 No staff/admin links and no internal case tabs.
 
 ## Core Screens
@@ -184,11 +185,11 @@ No staff/admin links and no internal case tabs.
 | **Portal Complaint Detail** | Track/respond | Public status stepper, conversation, public documents, accept resolution, reopen |
 | **Portal Track** | Anonymous lookup | Case number + email; generic not-found state; no attachments |
 | **Portal Notifications** | Complainant updates | Public deep links only, no internal references |
-| **Representative Signup (planned Stage 9)** | Institution access request | Institution selection, role, optional evidence; email-domain suggestion is labelled “suggested, not verified” |
-| **Representative Shell (planned Stage 9)** | Institution queue | Dashboard, scoped cases, public thread/documents, public reply/evidence only, notifications, profile; pending/rejected/revoked landing states |
+| **Representative Signup (Stage 9 Phase 2)** | Institution access request | Institution selection, role, optional evidence; email-domain suggestion is labelled “suggested, not verified” |
+| **Representative Shell (Stage 9 Phase 2)** | Institution queue | Dashboard, scoped cases, public thread/documents, public reply/evidence only, notifications, profile; pending/rejected/revoked landing states |
 | **GIS Region Map (Phase 4)** | Regional overview | Leaflet region bubbles over OpenStreetMap tiles; tooltip, keyboard region chips, live text summary, table fallback; tile URL configurable |
-| **Admin — Institution Domains (planned Stage 9)** | Email allowlist | Add/verify/activate domains; suggestion-only explanation |
-| **Admin — Representatives (planned Stage 9)** | Access approvals | Pending/approved/rejected/revoked queue; approve/reject/revoke with reason |
+| **Admin — Institution Domains (Stage 9 Phase 2)** | Email allowlist | Add/verify/activate domains; suggestion-only explanation |
+| **Admin — Representatives (Stage 9 Phase 2)** | Access approvals | Pending/approved/rejected/revoked queue; approve/reject/revoke with reason |
 
 ## Staff Workflow Screens
 
@@ -224,8 +225,8 @@ No staff/admin links and no internal case tabs.
 - SLA: default + overrides, acknowledge/resolve days, reminder windows; preview the
   computed deadline before saving.
 - Institutions: verify, edit, merge/alias with duplicate warnings (Stage 6).
-- Institution domains (planned Stage 9): admin-managed allowlist; suggestion-only.
-- Institution representatives (planned Stage 9): pending/approved/rejected/revoked queue;
+- Institution domains (Stage 9 Phase 2): admin-managed allowlist; suggestion-only.
+- Institution representatives (Stage 9 Phase 2): pending/approved/rejected/revoked queue;
   approve/reject/revoke with reason and session invalidation on revoke.
 - Audit: read-only list; no edit/delete affordance; Stage 9 adds merge/revert and
   representative actions.
@@ -268,7 +269,7 @@ Every data screen defines four states:
   region bubble is keyboard-focusable and has a text summary; the notification bell has
   an accessible unread count and preview; mobile drawer/sheet parity.
 
-## Optional extension — public complainant portal (Stage 8 implemented; representative shell planned)
+## Optional extension — public complainant portal (Stage 8 implemented; representative shell implemented in Stage 9 Phase 2)
 
 The public complainant portal is implemented as Stage 8. It remains outside MVP
 acceptance:
@@ -280,8 +281,8 @@ acceptance:
 - Ownership/IDOR checks, rate limits, CAPTCHA/abuse controls, and a separate security
   suite.
 
-Stage 9 plans the separate institution representative shell and admin approval/domain
-screens described above. Do not present them as implemented before their gates pass.
+Stage 9 Phase 2 implements the separate institution representative shell and admin
+approval/domain screens described above.
 
 
 ## Components (shadcn/ui based)
@@ -336,12 +337,12 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 8. **Polish** - Spacing, empty/loading/error/permission states, responsive tables
 9. **Test UX** - Keyboard nav, focus trapping, contrast, theme switch
 
-### Stage 9 planned implementation order
+### Stage 9 implementation order
 
 1. Primary/More navigation and notification bell (done); role landing refinements and
    case-tab consolidation remain.
 2. Merge queue/detail/group controls and neutral banner (done).
-3. Representative shell plus admin representative/domain screens (planned).
+3. Representative shell plus admin representative/domain screens (done).
 4. Design tokens/primitives, chart-first dashboard/reports, and the Leaflet map (done).
 5. Accessibility re-scan, keyboard/zoom/reduced-motion checks, and bundle budget
    (automated checks done; manual pass remains).
@@ -365,7 +366,7 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 - [ ] Keyboard-only pass and AA contrast verified
 - [ ] Public portal designs live only in the optional-extension section
 
-Stage 9 planned additions to this DoD:
+Stage 9 additions to this DoD:
 
 - [ ] Notification bell is the only unread indicator and reaches `/notifications`.
 - [ ] Every role, including `INSTITUTION_REPRESENTATIVE`, has a clear landing and empty

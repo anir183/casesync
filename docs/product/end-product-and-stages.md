@@ -71,8 +71,8 @@ The internal dashboard remains the source of truth.
 | `/admin/organization` | Org configuration | Bureaus, regions, categories. |
 | `/admin/sla` | SLA rules | Defaults + bureau/category/region overrides; reminder offsets; active flag. |
 | `/admin/institutions` | Institution data quality | Create/edit/verify/merge/alias; duplicate warnings. |
-| `/admin/institution-domains` | Email-domain allowlist (planned Stage 9) | Add/verify/activate institution email domains; suggestions only. |
-| `/admin/institution-representatives` | Representative approvals (planned Stage 9) | Approve/reject/revoke institution representative access. |
+| `/admin/institution-domains` | Email-domain allowlist | Add/verify/activate institution email domains; suggestions only. |
+| `/admin/institution-representatives` | Representative approvals | Approve/reject/revoke institution representative access. |
 | `/admin/audit` | Admin audit | User/role/bureau/SLA changes; Stage 9 adds merge/revert and representative audit actions. |
 
 #### Role-aware behavior
@@ -84,7 +84,7 @@ The internal dashboard remains the source of truth.
 | `SENIOR_MANAGEMENT` | Cross-bureau dashboard | All cases/reports/overlaps | Transfer, escalate, dispose, confirm/dismiss overlaps |
 | `COMPETENT_AUTHORITY` | Cross-bureau dashboard | All | Sensitive disposal, reopen, overlap decisions |
 | `COMPLAINANT` (Stage 8, optional) | Portal dashboard | Own complaints and public data | File/track, respond, accept/reopen; no internal data |
-| `INSTITUTION_REPRESENTATIVE` (planned Stage 9) | Institution dashboard | Only their institution's complaints and public data | Public responses and evidence only; no information requests, status changes, internal notes, or complainant PII |
+| `INSTITUTION_REPRESENTATIVE` (Stage 9 Phase 2) | Institution dashboard | Only their institution's complaints and public data | Public responses and evidence only; no information requests, status changes, internal notes, or complainant PII |
 | `ADMIN` | Dashboard + admin | All | All case actions + admin configuration + representative/domain approval |
 | `VIEWER` | Dashboard | Read-only scoped/all per policy | Nothing |
 
@@ -95,9 +95,10 @@ The Stage 8 complainant portal is implemented at `/portal` and related routes
 `/portal/complaints/new`, `/portal/complaints/:id`, `/portal/notifications`,
 `/portal/track`). These are not part of MVP acceptance.
 
-Stage 9 Phase 2 plans a separate representative shell at `/institution` with dashboard, scoped
-cases, notifications, profile, and a public response/evidence-only case view. It remains
-outside MVP acceptance.
+Stage 9 Phase 2 implements a separate representative shell at `/institution` with sign-up,
+dashboard, scoped cases, notifications, profile, and a public response/evidence-only case
+view, plus the admin representative and email-domain queues. It remains outside MVP
+acceptance.
 
 ## 3. End-state data model
 
@@ -195,12 +196,12 @@ Optional extension adds `ACKNOWLEDGED`, `AWAITING_COMPLAINANT`, `CLOSED`.
 1. Create/deactivate a user; assign role, bureau, region.
 2. Create a bureau/region/category; configure SLA.
 3. Verify/merge an institution; resolve duplicates.
-4. Planned Stage 9: approve/reject/revoke institution representative access and manage
-   institution email-domain suggestions.
-5. Audit log records every admin change, including planned merge/revert and
-   representative approval actions.
+4. Approve/reject/revoke institution representative access and manage institution
+   email-domain suggestions.
+5. Audit log records every admin change, including merge/revert and representative
+   approval actions.
 
-### J6 — Institution representative responds (planned Stage 9)
+### J6 — Institution representative responds (Stage 9 Phase 2)
 
 1. A representative requests access with institution selection; an email-domain match
    may prefill a suggestion but never verifies the account.
@@ -228,8 +229,8 @@ layout.
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
-| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
-| 10 | Complete Playwright UI coverage | **Planned** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered or blocked; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
+| 10 | Complete Playwright UI coverage | **Partial** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
 
 ### Current position (honest)
 
@@ -256,22 +257,23 @@ layout.
 - Stage 8 is implemented: complainant signup/login, exact-AICTE verification, document
   review fallback with admin approval, filing/tracking, ownership checks, public/internal
   messages and attachments, staff conversation/actions, and dedicated security/E2E
-  coverage. Institution representative accounts are planned for Stage 9; they were not
-  required for Stage 8 acceptance.
+  coverage. Institution representative accounts were delivered in Stage 9 Phase 2; they
+  were not required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
 - Stage 9 is partial: Phase 0 baseline/UI consistency, Phase 1 (reversible exact-institution
-  overlap auto-merge), the Phase 3 navigation refresh, and Phase 4 (visual redesign,
-  chart-first dashboard/reports, Leaflet/OpenStreetMap map) are implemented. Institution
-  representatives and email-domain suggestions, the remaining Phase 3 flows, production
+  overlap auto-merge), Phase 2 (representatives and email-domain allowlists), the Phase 3
+  navigation refresh, and Phase 4 (visual redesign, chart-first dashboard/reports,
+  Leaflet/OpenStreetMap map) are implemented. The remaining Phase 3 flows, production
   hardening, and documentation polish remain planned. See
   [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 - Stage 10 is in progress: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable
   visual-regression subset. Fixtures, per-role sessions, current-route render/denial
-  coverage, staff/admin and portal/auth mutation coverage, the UI-state suite, and
-  accessibility/responsive expansion have landed; representative-shell rows stay blocked
-  until Stage 9 Phase 2, and final exit waits for the remaining Phase 3 flows. See
+  coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
+  suite, accessibility/responsive expansion, visual regression, and the CI split have
+  landed; final exit waits for the remaining Phase 3 flows and CI-image visual
+  verification. See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
 
@@ -597,8 +599,9 @@ edit DB" from operations.
 - Complaint filing/tracking, public status mapping, public messages.
 - Public vs internal visibility enforced server-side.
 - Attachments with visibility.
-- Institution representative accounts were not required for Stage 8; they are planned for
-  Stage 9 with a separate role, approval lifecycle, and institution scope.
+- Institution representative accounts were not required for Stage 8; Stage 9 Phase 2
+  delivered a separate role, approval lifecycle, institution scope, and suggestion-only
+  email-domain allowlist.
 - Rate limits, abuse controls, PII redaction, public projections.
 - Separate E2E/security suite.
 
@@ -677,12 +680,13 @@ the living coverage matrix is [`../quality/ui-test-matrix.md`](../quality/ui-tes
 
 **Scope**
 
-- Route × role coverage for every current route (staff, admin, portal, auth), plus the
-  planned representative shell and its request/admin-queue routes once Stage 9 Phase 2
-  lands.
+- Route × role coverage for every current route (staff, admin, portal, auth, and the
+  institution representative shell) plus the representative sign-up and admin queue
+  routes.
 - Every user-facing mutation, including its denied path: cases, institutions, overlaps and
   merge/revert, notifications, admin users/organization/SLA/audit/verifications, portal
-  complaint flow, and attachments.
+  complaint flow, representative access/reply/revocation, institution email domains, and
+  attachments.
 - Loading, empty, error, permission-denied, not-found, pagination, filter, dialog, toast,
   and pending-state coverage.
 - axe on every route and role, keyboard-only journeys, focus management, reduced motion,
@@ -696,8 +700,8 @@ the living coverage matrix is [`../quality/ui-test-matrix.md`](../quality/ui-tes
 **Dependencies**
 
 - Current routes are coverable now.
-- Representative-shell rows are **blocked** until Stage 9 Phase 2.
-- Final exit is **blocked** until the remaining Stage 9 Phase 3 role flows land.
+- Representative-shell rows are covered; final exit is **blocked** until the remaining
+  Stage 9 Phase 3 role flows and CI-image visual verification land.
 
 **Exit criteria**
 
@@ -756,16 +760,16 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 3 navigation, and Phase 4 UI/GIS done; representatives, remaining flows, hardening, docs remain)
+Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS done; remaining Phase 3 flows, hardening, docs remain)
    ↓
-Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, and accessibility/responsive checks landed, visual/CI remain, exits after Stage 9 Phase 2/3)
+Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, accessibility/responsive, visual, and CI checks landed, exits after the remaining Stage 9 Phase 3 flows and CI-image visual verification)
 ```
 
 Parallelizable in Stage 9:
 - Phase 1 (auto-merge) and Phase 2 (representatives/domains) can run in parallel after
-  Phase 0.
-- The remaining Phase 3 role flows need the Phase 2 role model and routes; the
-  navigation refresh is already done.
+  Phase 0; both are complete.
+- The remaining Phase 3 role flows build on the landed Phase 2 role model and routes; the
+  navigation refresh is done.
 - Phase 4 needs the Phase 3 navigation and screen inventory.
 - Phases 5–6 run continuously and close the stage.
 
@@ -773,9 +777,9 @@ Stage 8 followed Stage 7 so the public portal could reuse the hardened security,
 and CI foundation instead of delaying the MVP. Stage 9 keeps deployment out of scope.
 
 Stage 10 overlaps Stage 9 by design: fixtures, current-route route/role coverage,
-mutations, UI states, and accessibility/responsive checks have landed, while visual
-regression and the CI split can proceed, and the representative-shell rows and the final
-exit gate wait for Stage 9 Phase 2 and the remaining Phase 3 flows.
+mutations, UI states, accessibility/responsive checks, visual regression, and the CI split
+have landed, while the final exit gate waits for the remaining Stage 9 Phase 3 flows and
+CI-image visual verification.
 
 ## 9. Risks and mitigations
 

@@ -128,8 +128,9 @@ All sections below are demoable; do not fake missing behaviour.
    complainant view.
 5. At `/portal/track`, show case number + email tracking; wrong pairs return a generic
    404. Acknowledge/resolve as staff, then accept resolution as the complainant.
-6. Mention: ownership checks, public projections, unverified filing block, and portal
-   rate limits. Institution representative accounts are planned for Stage 9 Phase 2.
+6. Mention: ownership checks, public projections, unverified filing block, portal rate
+   limits, and the separate institution representative shell (`representative@casesync.test`
+   for approved access; `pending.representative@casesync.test` for the status gate).
 
 ## 3. Reset and repeatability
 
