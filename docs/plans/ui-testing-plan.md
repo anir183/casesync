@@ -343,6 +343,12 @@ New scripts at the root and in `apps/web`:
 | `test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
 | `test:perf` | Unchanged stress-data performance suite |
 
+The `e2e-visual` CI job verifies baselines by default. Dispatching the workflow with
+`update_visual_snapshots` enabled runs the update command on the pinned runner and uploads
+`apps/web/e2e/__screenshots__` as the `visual-baselines` artifact. Commit the downloaded
+images, then dispatch once more with the flag off to prove the baseline is stable on the
+same image.
+
 Playwright projects:
 
 - `chromium-desktop` — required CI browser, 1440 px.

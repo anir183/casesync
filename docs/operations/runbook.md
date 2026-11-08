@@ -96,6 +96,10 @@ Run the full suite at merge/release checkpoints, not after every change. The
 spec to run for a given change.
 
 Visual baselines must be generated on the pinned CI image and reviewed before commit.
+Dispatch the CI workflow with `update_visual_snapshots` enabled to regenerate them on
+`ubuntu-24.04`, download the `visual-baselines` artifact, commit the images, then dispatch
+again with the flag off to verify the same baseline. Do not generate authoritative
+baselines on a developer host.
 Install browsers once per machine with
 `cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
 cross-browser suite).

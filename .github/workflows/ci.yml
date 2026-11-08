@@ -6,6 +6,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      update_visual_snapshots:
+        description: Regenerate and upload visual baselines instead of verifying them
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -203,7 +208,18 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
         working-directory: apps/web
-      - run: bun run test:e2e:visual
+      - name: Verify visual baselines
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.update_visual_snapshots }}
+        run: bun run test:e2e:visual
+      - name: Regenerate visual baselines
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_visual_snapshots }}
+        run: bun run test:e2e:update-snapshots
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.update_visual_snapshots }}
+        with:
+          name: visual-baselines
+          path: apps/web/e2e/__screenshots__
+          if-no-files-found: error
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

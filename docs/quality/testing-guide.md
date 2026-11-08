@@ -170,6 +170,13 @@ every changed image. Do not update baselines to hide an unexpected diff. The vis
 resets a disposable local database, pins the demo timeline with `SEED_NOW`, and refuses
 non-local URIs unless `VISUAL_ALLOW_REMOTE=1` is set.
 
+Baselines are host-dependent, so the authoritative set comes from the pinned CI runner.
+Dispatch the CI workflow with **update_visual_snapshots** enabled to run
+`test:e2e:update-snapshots` on `ubuntu-24.04` with `mongo:7.0.45` and Bun 1.4.4, then
+download the `visual-baselines` artifact and commit the regenerated images. Re-dispatch
+with the flag off to verify the same baseline on the same runner image. Never mix local
+and CI-generated baselines.
+
 ## 6. Data, isolation, and local setup
 
 - Root E2E scripts seed demo data, but `seed:demo` does not delete extra records created

@@ -542,9 +542,11 @@ Deferred:
 - [ ] Regenerate the dashboard, case-detail, and portal-dashboard baselines after the
       Phase 3 UI changes, then rerun the visual suite twice. **Pending regeneration and
       review.**
-- [ ] Generate baselines on the pinned CI image; review every update. **Pending a CI or
-      manual-dispatch run** — the pinned image is not available locally, so this is an open
-      exit gate, not a covered row.
+- [ ] Generate baselines on the pinned CI image; review every update. Dispatch the workflow
+      with `update_visual_snapshots` enabled, download the `visual-baselines` artifact,
+      commit the images, then dispatch with the flag off to verify. **Pending the first
+      dispatch** — the pinned image is not available locally, so this is an open exit gate,
+      not a covered row.
 
 ### CI and documentation
 
