@@ -94,6 +94,7 @@ jobs:
   e2e-smoke:
     name: Seeded browser smoke
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     services:
       mongo:
         image: mongo:7.0.45
@@ -126,6 +127,7 @@ jobs:
     name: Full Chromium E2E
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     services:
       mongo:
         image: mongo:7.0.45
@@ -155,9 +157,14 @@ jobs:
           if-no-files-found: ignore
 
   e2e-cross-browser:
-    name: Cross-browser E2E
+    name: Cross-browser E2E (${{ matrix.browser }})
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     services:
       mongo:
         image: mongo:7.0.45
@@ -174,13 +181,21 @@ jobs:
         with:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps chromium firefox webkit
+      - run: bunx playwright install --with-deps ${{ matrix.browser }}
         working-directory: apps/web
-      - run: bun run test:e2e:cross-browser
+      # Each browser gets its own service container and seed. Running all three
+      # projects against one database lets the first project's mutation specs
+      # destroy state the next project's fixtures expect.
+      - run: bun run seed:demo
+      - name: Run the functional suite in ${{ matrix.browser }}
+        working-directory: apps/web
+        env:
+          PLAYWRIGHT_ALL_BROWSERS: '1'
+        run: bunx playwright test --project=${{ matrix.browser }}-desktop --grep-invert "@performance|@visual"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-cross-browser-report
+          name: playwright-cross-browser-${{ matrix.browser }}-report
           path: |
             apps/web/playwright-report
             apps/web/test-results
@@ -190,6 +205,7 @@ jobs:
     name: Visual regression
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     services:
       mongo:
         image: mongo:7.0.45

@@ -386,6 +386,11 @@ Implemented in `.github/workflows/ci.yml`:
 - Every browser job uploads `apps/web/playwright-report` and `apps/web/test-results`
   (traces, screenshots, and videos) on failure. Browser context video is retained on
   failure.
+- Cross-browser runs as a `chromium`/`firefox`/`webkit` matrix, one job per browser with
+  its own Mongo service and fresh demo seed. Sharing one database across the three
+  projects let the first project's mutation specs break the next project's fixtures.
+- E2E jobs have `timeout-minutes` so an exhausted seed or a retry storm fails fast instead
+  of occupying a runner.
 - Jobs fail on unexpected test retries via the existing reporter and artifact review;
   track flake rate per spec.
 - The MongoDB service is pinned to `mongo:7.0.45` so CI matches the supported database

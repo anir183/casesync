@@ -457,7 +457,8 @@ Implemented in `.github/workflows/ci.yml`:
    journeys; report/artifacts on failure.
 6. **E2E full**: runs on `main` and manual dispatch; full desktop plus mobile responsive
    projects; report/artifacts on failure.
-7. **E2E cross-browser**: manual or `v*` release tag; Chromium, Firefox, and WebKit.
+7. **E2E cross-browser**: manual or `v*` release tag; Chromium, Firefox, and WebKit as
+   separate matrix jobs, each with its own Mongo service and fresh demo seed.
 8. **Visual regression**: manual or `v*` release tag; disposable visual database, pinned
    timeline, 48 screenshot comparisons.
 9. **Security**: `bun audit --audit-level=high`.
@@ -472,7 +473,9 @@ Implemented in `.github/workflows/ci.yml`:
 | Release tag (`v*`) | Cross-browser and visual jobs on the pinned image |
 
 Every browser job uploads `apps/web/playwright-report` and `apps/web/test-results`
-(traces, screenshots, and videos) on failure. The split is documented in
+(traces, screenshots, and videos) on failure. Cross-browser is a per-browser matrix so
+each job reseeds its own database, and every E2E job sets `timeout-minutes`. The split is
+documented in
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the MongoDB service is
 pinned to `7.0.45`.
 
@@ -494,7 +497,7 @@ Actual root scripts:
   "test:e2e:ui": "bun run seed:demo && bun run --filter @casesync/web test:e2e:ui",
   "test:e2e:visual": "./scripts/visual-e2e.sh",
   "test:e2e:update-snapshots": "./scripts/visual-e2e.sh --update-snapshots",
-  "test:e2e:cross-browser": "bun run seed:demo && bun run --filter @casesync/web test:e2e:cross-browser",
+  "test:e2e:cross-browser": "./scripts/cross-browser-e2e.sh",
   "test:perf": "./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"
 }

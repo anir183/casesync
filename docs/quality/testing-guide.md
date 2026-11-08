@@ -55,7 +55,7 @@ change crosses a boundary.
 | E2E desktop functional | `apps/web/e2e` minus `@performance`/`@visual` | Routes, roles, mutations, states, a11y, responsive | About 11 minutes | Before merge when the change is broad; CI on `main` |
 | E2E full | Desktop + mobile projects | Adds the 375 px responsive project | About 12 minutes | Merge/release checkpoint only |
 | Visual | `apps/web/e2e/visual.spec.ts` | 12 routes × light/dark × desktop/mobile | About 1.5 minutes | Intentional UI changes and release |
-| Cross-browser | Chromium, Firefox, WebKit | Browser-specific behavior | Long (about 3× desktop) | Manual dispatch or release tag |
+| Cross-browser | Chromium, Firefox, WebKit | Browser-specific behavior | Parallel matrix, about one desktop run | Manual dispatch or release tag |
 | Performance | `apps/web/e2e/performance.spec.ts` | Stress-data budgets | Local only | Before a demo or release |
 
 ## 3. E2E spec inventory
@@ -97,7 +97,7 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally, then review the diff |
-| `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite |
+| `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite (CI runs one browser per matrix job) |
 | `bun run test:e2e:ui` | Playwright UI mode for debugging |
 | `bun run test:perf` | Stress seed, performance budgets, and reset (local only) |
 
