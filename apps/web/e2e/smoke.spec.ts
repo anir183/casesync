@@ -16,7 +16,7 @@ test.describe('@smoke critical staff smoke journeys', () => {
 
     await expect(page.getByRole('heading', { name: 'PGRC-2026-001' })).toBeVisible()
     await expect(page.getByText('Case actions')).toBeVisible()
-    await page.getByRole('button', { name: 'Actions' }).click()
+    await page.getByRole('button', { name: 'Timeline' }).click()
     await expect(page.getByRole('heading', { name: 'Action history' })).toBeVisible()
     await expect(page.getByText('REGISTERED').first()).toBeVisible()
   })

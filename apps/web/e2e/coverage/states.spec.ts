@@ -215,6 +215,34 @@ test.describe('@states staff UI states', () => {
     await expect(page.getByRole('heading', { name: 'CaseSync' })).toBeVisible()
   })
 
+  test('the case workspace consolidates action and assignment history into one timeline', async ({
+    page,
+  }) => {
+    const data = await loadSeedData()
+    await page.goto(`/cases/${data.cases.pgrc.id}`)
+    await expect(page.getByRole('heading', { name: data.cases.pgrc.caseNumber })).toBeVisible()
+
+    await expect(page.getByRole('button', { name: 'Actions', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Assignments', exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Timeline', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Action history' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Assignment history' })).toBeVisible()
+  })
+
+  test('the case overflow menu opens a secondary action in the action panel', async ({ page }) => {
+    const data = await loadSeedData()
+    await page.goto(`/cases/${data.cases.pgrc.id}`)
+    await expect(page.getByRole('heading', { name: data.cases.pgrc.caseNumber })).toBeVisible()
+
+    await page.getByRole('button', { name: 'More actions' }).click()
+    const menu = page.getByRole('menu', { name: 'More actions' })
+    await expect(menu).toBeVisible()
+    await menu.getByRole('menuitem', { name: /Transfer to another bureau/ }).click()
+
+    await expect(page.getByRole('heading', { name: 'Case actions' })).toBeVisible()
+    await expect(page.getByLabel('Action')).toHaveValue('transfer')
+  })
+
   test('the theme switch applies light and dark and persists across reloads', async ({ page }) => {
     await page.goto('/cases')
     await expect(page.getByRole('heading', { name: 'Case registry' })).toBeVisible()
@@ -233,5 +261,26 @@ test.describe('@states staff UI states', () => {
     await page.getByRole('button', { name: 'Light theme' }).click()
     await expect(page.locator('html')).not.toHaveClass(/dark/)
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  })
+
+  test('the administrator landing surfaces escalations and admin queues', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Escalations needing attention' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Representatives' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Institution domains' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Audit log' })).toBeVisible()
+  })
+})
+
+test.describe('@states read-only role landing', () => {
+  test.use({ storageState: authFile('viewer') })
+
+  test('the viewer landing explains read-only access and hides case actions', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Your access is read-only' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Case registry' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Register case' })).toHaveCount(0)
   })
 })

@@ -30,6 +30,7 @@ test.describe('@mutation public complainant portal', () => {
     const verified = page.getByText(/Verified institution:/)
     await expect(verified).toBeVisible()
     await expect(verified).toContainText(account.institutionName)
+    await expect(page.getByRole('heading', { name: 'Your next step' })).toBeVisible()
     await page.getByRole('link', { name: 'File a complaint', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'File a complaint' })).toBeVisible()
 
@@ -46,6 +47,8 @@ test.describe('@mutation public complainant portal', () => {
 
     await expect(page).toHaveURL(/\/portal\/complaints\/[a-f\d]{24}$/)
     const complaintPath = new URL(page.url()).pathname
+    await expect(page.getByRole('heading', { name: 'Resolution loop' })).toBeVisible()
+    await expect(page.getByText('Owner')).toBeVisible()
     const complaintId = complaintPath.split('/').pop() as string
     const caseNumber = (
       await page

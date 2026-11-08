@@ -179,7 +179,7 @@ test.describe('@mutation portal and account flows', () => {
     await signInPortal(page, account.email)
     await page.goto(`/portal/complaints/${complaint.id}`)
     await expect(page.getByRole('heading', { name: subject })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Resolution' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Resolution', exact: true })).toBeVisible()
 
     await page.getByRole('button', { name: 'Reopen complaint' }).click()
     await page

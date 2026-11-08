@@ -202,6 +202,34 @@ function verificationCard(page: Page, name: string) {
   })
 }
 
+interface VerificationRow {
+  id: string
+  userEmail?: string
+  status: string
+  rejectionReason?: string
+}
+
+/**
+ * The admin verification list renders the oldest page first. Test records
+ * accumulate on the shared dev database, so the request created by this test may
+ * not be on page 1 once earlier runs have produced enough rejected rows. Read the
+ * pages directly to prove the review persisted; the UI mutation above proves the
+ * visible pending-list result.
+ */
+async function findRejectedVerification(api: APIRequestContext, email: string) {
+  for (let page = 1; page <= 20; page += 1) {
+    const result = await getJson<{
+      items: VerificationRow[]
+      total: number
+      pageSize: number
+    }>(api, `/api/v1/admin/complainant-verifications?status=REJECTED&page=${page}&pageSize=100`)
+    const match = result.items.find((item) => item.userEmail === email)
+    if (match) return match
+    if (page * result.pageSize >= result.total) break
+  }
+  throw new Error(`Rejected verification for ${email} was not found`)
+}
+
 test.describe('@mutation staff and admin write paths', () => {
   test('a bureau officer registers a case and lands on the new record', async ({ page }) => {
     const caseNumber = unique('E2E-REG').toUpperCase()
@@ -694,11 +722,14 @@ test.describe('@mutation staff and admin write paths', () => {
     await card.getByRole('button', { name: 'Confirm rejection' }).click()
     await expect(page.getByText(requestUser.email)).toHaveCount(0)
 
-    await page.getByLabel('Status').selectOption('REJECTED')
-    await expect(page.getByText(requestUser.email)).toBeVisible()
-    await expect(
-      verificationCard(page, requestUser.name).getByText('Reason: E2E rejection reason'),
-    ).toBeVisible()
+    const adminApi = await signedInApi('admin')
+    try {
+      const rejected = await findRejectedVerification(adminApi, requestUser.email)
+      expect(rejected.status).toBe('REJECTED')
+      expect(rejected.rejectionReason).toBe('E2E rejection reason')
+    } finally {
+      await adminApi.dispose()
+    }
   })
 
   test('notifications mark one and all read for the recipient only', async ({ page }) => {
