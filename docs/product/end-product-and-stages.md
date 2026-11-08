@@ -263,19 +263,19 @@ layout.
   were not required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
-- Stage 9 is partial: Phase 0 baseline/UI consistency, Phase 1 (reversible exact-institution
-  overlap auto-merge), Phase 2 (representatives and email-domain allowlists), the Phase 3
-  navigation refresh, and Phase 4 (visual redesign, chart-first dashboard/reports,
-  Leaflet/OpenStreetMap map) are implemented. The remaining Phase 3 flows, production
-  hardening, and documentation polish remain planned. See
-  [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
+- Stage 9 is partial: Phase 0 baseline/UI consistency and Phases 1–4 (reversible
+  exact-institution overlap auto-merge, representatives and email-domain allowlists, the
+  navigation/role-landing/case-workspace/resolution-loop work, and the visual redesign with
+  chart-first dashboard/reports and the Leaflet/OpenStreetMap map) are implemented. Manual
+  screen-reader sign-off, production hardening, and documentation polish remain planned.
+  See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 - Stage 10 is in progress: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable
   visual-regression subset. Fixtures, per-role sessions, current-route render/denial
   coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
-  suite, accessibility/responsive expansion, visual regression, and the CI split have
-  landed; final exit waits for the remaining Phase 3 flows and CI-image visual
-  verification. See
+  and Phase 3 flow suite, accessibility/responsive expansion, visual regression, and the
+  CI split have landed; final exit waits for CI-image visual verification and the final
+  two-run full-suite record. See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
 - Stage 11 is planned, not started. It begins only after Stage 10 exits. The read-only
@@ -655,8 +655,8 @@ Stages 0–8. The decision-complete plan is
 |---|---|---|
 | 0 | **Implemented** | Warning-free baseline: pin CI/Bun/runner, clear build warnings, enable unused-symbol checks, typecheck web tests/e2e, shared fixtures, docs truth pass. |
 | 1 | **Implemented** | Reversible auto-merge for exact-institution high-confidence pairs; explainable score, flat merge group, revert/suppression, audit, queue/detail UI, neutral banner. |
-| 2 | Planned | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
-| 3 | **Partial** | Navigation refresh implemented: primary links + More, persistent notification bell, account menu, mobile drawer. Role landing refinements, consolidated case tabs, and the explicit resolution loop remain planned. |
+| 2 | **Implemented** | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
+| 3 | **Implemented** | Navigation refresh (primary links + More, notification bell, account menu, mobile drawer), role-specific dashboard briefings/queues/empty states, consolidated case workspace (Overview · Conversation · Documents · Timeline · Related) with an overflow action menu, and a shared authority ↔ complainant resolution loop with next-action ownership and SLA context. |
 | 4 | **Implemented** | Visual redesign with local SVG charts, chart-first dashboard/reports, region coordinates, `/reports/geo`, lazy-loaded Leaflet/OpenStreetMap map, region chips, accessible table fallback. |
 | 5 | Planned | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. |
 | 6 | Planned | Documentation/ADR/polish pass and final QA matrix without a deployment step. |
@@ -713,8 +713,8 @@ the living coverage matrix is [`../quality/ui-test-matrix.md`](../quality/ui-tes
 **Dependencies**
 
 - Current routes are coverable now.
-- Representative-shell rows are covered; final exit is **blocked** until the remaining
-  Stage 9 Phase 3 role flows and CI-image visual verification land.
+- Representative-shell and Phase 3 flow rows are covered; final exit is **blocked** until
+  CI-image visual verification and the final two-run full-suite record land.
 
 **Exit criteria**
 
@@ -875,9 +875,9 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS done; remaining Phase 3 flows, hardening, docs remain)
+Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–4 implemented; manual screen-reader sign-off, hardening, and docs remain)
    ↓
-Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, accessibility/responsive, visual, and CI checks landed, exits after the remaining Stage 9 Phase 3 flows and CI-image visual verification)
+Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, Phase 3 flows, accessibility/responsive, visual, and CI checks landed, exits after CI-image visual verification and the final two-run record)
    ↓
 Stage 11 (planned — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; exits after the full suite and visual baseline pass unchanged)
    ↓
@@ -887,8 +887,7 @@ Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin
 Parallelizable in Stage 9:
 - Phase 1 (auto-merge) and Phase 2 (representatives/domains) can run in parallel after
   Phase 0; both are complete.
-- The remaining Phase 3 role flows build on the landed Phase 2 role model and routes; the
-  navigation refresh is done.
+- Phases 1–3 are complete; Phase 3 was built on the Phase 2 role model and routes.
 - Phase 4 needs the Phase 3 navigation and screen inventory.
 - Phases 5–6 run continuously and close the stage.
 
@@ -896,9 +895,9 @@ Stage 8 followed Stage 7 so the public portal could reuse the hardened security,
 and CI foundation instead of delaying the MVP. Stage 9 keeps deployment out of scope.
 
 Stage 10 overlaps Stage 9 by design: fixtures, current-route route/role coverage,
-mutations, UI states, accessibility/responsive checks, visual regression, and the CI split
-have landed, while the final exit gate waits for the remaining Stage 9 Phase 3 flows and
-CI-image visual verification.
+mutations, UI states, Phase 3 flows, accessibility/responsive checks, visual regression,
+and the CI split have landed, while the final exit gate waits for CI-image visual
+verification and the final two-run full-suite record.
 
 Stage 11 and Stage 12 are sequential and follow Stage 10. Stage 11 may begin the read-only
 inventory and guardrail design while Stage 10 finishes, but no refactor starts until Stage

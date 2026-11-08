@@ -92,8 +92,8 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:integration` | Mongo-backed API integration tests |
 | `bun run test:coverage` | Integration tests plus the coverage floor |
 | `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys |
-| `bun run test:e2e` | 193 desktop functional tests, excluding `@performance` and `@visual` |
-| `bun run test:e2e:full` | 213 desktop + mobile functional tests |
+| `bun run test:e2e` | 196 desktop functional tests, excluding `@performance` and `@visual` |
+| `bun run test:e2e:full` | 216 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally, then review the diff |

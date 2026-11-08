@@ -44,9 +44,10 @@ exit criteria.
   opt-in via `RUN_INTEGRATION=1`; CI uses a disposable `mongo:7.0.45` service, while local
   runs use run-scoped records in the configured dev database. Local MongoDB `8.3.9` is
   supported; the CI pin stays on the 7.0 line.
-- **193 seeded functional browser tests** (213 with the mobile project): staff smoke, portal,
+- **196 seeded functional browser tests** (216 with the mobile project): staff smoke, portal,
   navigation/bell, route × role render/denial, staff/admin, portal/auth, and representative
-  mutations, UI-state, 55 accessibility, and 16 responsive-spec tests, including
+  mutations, UI-state and Phase 3 flow checks, 55 accessibility, and 16 responsive-spec
+  tests, including
   map/zoom/reduced-motion and merge-group revert journeys.
 - **48 visual comparisons**: 12 routes in light and dark at desktop and mobile widths.
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
@@ -272,10 +273,11 @@ grows. Do not duplicate full integration coverage; test UI behavior and error ha
 
 ## 7. E2E and complete UI coverage (Playwright)
 
-Implemented now: the seeded Stage 10 suite (193 desktop functional tests, 213 with the
+Implemented now: the seeded Stage 10 suite (196 desktop functional tests, 216 with the
 mobile project, plus 48 visual comparisons) covering staff smoke, portal journeys,
 navigation/bell, route × role render/denial, staff/admin, portal/auth, and representative
-mutations, UI states, 55 accessibility tests, 16 responsive-spec tests, and the visual
+mutations, UI states, Phase 3 role landings/timeline/overflow/resolution loop, 55
+accessibility tests, 16 responsive-spec tests, and the visual
 regression subset, run against production builds on API port 3100 and web port 4173. The
 performance test is tagged and run separately with the stress seed. The
 [`testing-guide.md`](testing-guide.md) explains which layer to run for a change and which
@@ -284,9 +286,10 @@ tool.
 
 **Stage 10 is the completion path, and work is in progress.** Shared fixtures, per-role
 storage states, current-route render/denial coverage, mutation coverage (including the
-representative journey), UI-state coverage, accessibility/responsive expansion, visual
-regression, and the CI job split have landed. The final coverage baseline waits on the
-remaining Stage 9 Phase 3 flows and CI-image visual verification. The decision-complete
+representative journey), UI-state and Phase 3 flow coverage, accessibility/responsive
+expansion, visual regression, and the CI job split have landed. The final coverage
+baseline waits on CI-image visual verification and the final two-run full-suite record.
+The decision-complete
 plan is [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route ×
 role × action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
 

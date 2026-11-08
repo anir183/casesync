@@ -3,8 +3,8 @@
 **Last verified:** 2026-11-07 (test baseline); Stage 11/12 plans added 2026-11-08.
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phase 0 baseline/UI consistency, Phases 1, 2, and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. The remaining Phase 3 flows and Phases 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. Final exit waits on the remaining Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 9:** Phase 0 baseline/UI consistency, Phases 1–4 implemented; manual screen-reader sign-off and Phases 5–6 remain. See `docs/plans/next-phase-plan.md`.
+**Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. Final exit waits on CI-image visual verification and a final two-run full-suite record. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** planned, not started. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Begins after Stage 10 exits. See `docs/plans/code-audit-plan.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
@@ -259,11 +259,11 @@ not needed to prove the complainant flow; they were delivered in Stage 9 Phase 2
 dedicated external role, institution-side scoping, an approval model, and an email-domain
 allowlist. The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PARTIAL — Phases 0–2, Phases 3 navigation, and 4 implemented)
+## Stage 9 — Next phase (PARTIAL — Phases 0–4 implemented)
 
 Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
-Phase 0 baseline, the final UI consistency pass, Phases 1, 2, and 4, and the Phase 3
-navigation refresh implemented). Locked
+Phase 0 baseline, the final UI consistency pass, and Phases 1–4 implemented; manual
+screen-reader sign-off and Phases 5–6 remain). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
 that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
 review and suppresses automatic re-merge; the merge group is flat with one canonical case;
@@ -353,15 +353,23 @@ indigo/teal language.
 - [x] Deny information requests, status changes, internal notes, and complainant PII.
 - [x] Integration/E2E isolation and denied-action tests.
 
-### Phase 3 — Information architecture and user flows
+### Phase 3 — Information architecture and user flows (complete)
 
 - [x] Replace the flat 11-link navbar with primary links + “More”.
 - [x] Add notification bell/unread preview + “View all” → `/notifications` on staff and
       portal shells.
-- [ ] Consolidate tabs and move secondary actions into overflow menus.
-- [ ] Define role-specific landing pages and empty states.
-- [ ] Make the authority ↔ complainant loop explicit (request, respond, acknowledge,
-      escalate, resolve, reopen, close) with next-action ownership and SLA context.
+- [x] Consolidate tabs and move secondary actions into overflow menus. The case workspace
+      is Overview · Conversation · Documents · Timeline · Related, with transfer, escalate,
+      dispose, and reopen behind an accessible “More actions” menu that preselects the
+      request in the existing action panel.
+- [x] Define role-specific landing pages and empty states. The staff dashboard adds a
+      role briefing, quick links, and a scoped work queue for admin, senior management,
+      competent authority, bureau officer, regional officer, and viewer; every queue has an
+      explicit empty state. The portal dashboard adds a “Your next step” card.
+- [x] Make the authority ↔ complainant loop explicit (request, respond, acknowledge,
+      escalate, resolve, reopen, close) with next-action ownership and SLA context. The
+      shared `ResolutionLoop` renders the lifecycle, current step, owner, and target
+      decision/reopen deadline on staff case detail and the complainant portal.
 - [x] Mobile navigation parity and keyboard checks.
 
 ### Phase 4 — Visual redesign, dashboard/reports, and GIS
@@ -401,8 +409,9 @@ indigo/teal language.
 Full plan: `docs/plans/ui-testing-plan.md`. Living matrix:
 `docs/quality/ui-test-matrix.md`. Stage 10 is a separate cross-cutting stage, not another
 Stage 9 phase. All current routes, including the representative shell and the admin
-representative/domain queues, are coverable now. Final exit waits on the remaining Stage 9
-Phase 3 flows and visual baselines verified on the pinned CI image.
+representative/domain queues, are coverable now. The Stage 9 Phase 3 flows are implemented
+and covered. Final exit waits on visual baselines verified on the pinned CI
+image and a final two-run full-suite record.
 
 ### Foundation
 
@@ -470,7 +479,7 @@ E2E is not a Stage 10 gate; a new high-risk mutation or a regression reopens its
 
 ### UI states
 
-`apps/web/e2e/coverage/states.spec.ts` adds 12 `@states` tests. It also fixed a shared
+`apps/web/e2e/coverage/states.spec.ts` adds 16 `@states` tests. It also fixed a shared
 pagination bug where changing page size reset the size through a second callback.
 
 - [x] Loading, empty search, error with retry, and not-found states on the case and
@@ -481,6 +490,10 @@ pagination bug where changing page size reset the size through a second callback
 - [x] Dialog focus trap and trigger restore; mobile drawer open/close.
 - [x] Notification bell preview.
 - [x] Success and error toasts across the covered mutation groups.
+- [x] Consolidated case timeline and the overflow action preselect.
+- [x] Administrator and viewer role-specific landings, including the viewer read-only
+      empty state.
+- [x] Portal “Your next step” card and complainant resolution loop.
 
 Deferred, with rationale:
 
@@ -526,7 +539,9 @@ Deferred:
 - [x] Light/dark at mobile/desktop.
 - [x] Mask volatile dates and map tiles; fixed-width date placeholders prevent layout drift.
 - [x] Reset removes demo merge groups and notifications so repeated runs do not accumulate.
-- [x] Visual suite passes twice consecutively.
+- [ ] Regenerate the dashboard, case-detail, and portal-dashboard baselines after the
+      Phase 3 UI changes, then rerun the visual suite twice. **Pending regeneration and
+      review.**
 - [ ] Generate baselines on the pinned CI image; review every update. **Pending a CI or
       manual-dispatch run** — the pinned image is not available locally, so this is an open
       exit gate, not a covered row.
@@ -541,12 +556,11 @@ Deferred:
 - [x] Keep the matrix current in the same change as every route or mutation. Enforced as a
       review guardrail in `docs/quality/testing-guide.md`; the matrix is now the single
       status source.
-- [x] Record the functional Stage 10 test inventory: 193 desktop functional tests, 213
+- [x] Record the functional Stage 10 test inventory: 196 desktop functional tests, 216
       desktop + mobile, 13 smoke, 55 accessibility (37 route + 13 denial + 5 keyboard/focus),
-      16 responsive-spec tests, and 48 visual comparisons.
-- [ ] Record the final Stage 10 exit baseline after the remaining Stage 9 Phase 3 flows land
-      and the visual baselines are verified on CI. The representative rows are covered;
-      rerun the full suite once more for the exit record.
+      16 responsive-spec tests, 16 state tests, and 48 visual comparisons.
+- [ ] Record the final Stage 10 exit baseline once the visual baselines are verified on CI.
+      The Phase 3 rows are covered; rerun the full suite twice more for the exit record.
 
 ## Stage 11 — Codebase audit, cleanup & convention hardening (PLANNED)
 

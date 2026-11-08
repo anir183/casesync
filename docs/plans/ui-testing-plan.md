@@ -2,13 +2,13 @@
 
 Status: in progress. Steps 1–7 have landed: fixtures and current-route render/denial
 coverage, staff/admin mutation coverage, portal/auth flows, the institution representative
-journey, UI-state coverage, accessibility/responsive expansion, visual regression, and the
-CI job split. The desktop functional suite is now 193 tests (213 with the mobile project)
-and the visual suite is 48 comparisons; both passed before the representative slice and the
-representative tests passed on a targeted run. Step 8 (the final coverage baseline) waits
-on the remaining Stage 9 Phase 3 flows and CI-image visual verification.
+journey, UI-state and Phase 3 flow coverage, accessibility/responsive expansion, visual
+regression, and the CI job split. The desktop functional suite is now 196 tests (216 with
+the mobile project) and the visual suite is 48 comparisons; the updated suites pass locally
+against fresh builds. Step 8 (the final coverage baseline) waits on CI-image visual
+verification and a final two-run full-suite record.
 Location: `docs/plans/ui-testing-plan.md`.
-Plan date: 2026-11-02. Last updated: 2026-11-07.
+Plan date: 2026-11-02. Last updated: 2026-11-08.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/testing-guide.md`](../quality/testing-guide.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -31,7 +31,7 @@ integration tests or manual checks, and there is no visual regression baseline.
 
 Stage 10 closes that gap. It is a separate stage rather than another Stage 9 phase
 because it is cross-cutting UI quality work that spans every feature area, and because
-its final exit gate depends on the remaining Stage 9 Phase 3 role flows.
+its final exit gate depends on the Stage 9 UI dependencies being closed.
 
 ### Goal
 
@@ -60,7 +60,7 @@ on unfinished Stage 9 work.
 |---|---|
 | Current routes (staff, admin, portal, auth, institution) | Covered |
 | Stage 9 Phase 2 representative shell and admin queues | Landed and covered |
-| Stage 9 Phase 3 remaining role flows and consolidated case tabs | Rows marked **Blocked** until Phase 3 lands |
+| Stage 9 Phase 3 role flows and consolidated case tabs | Landed and covered |
 | Stage 9 Phase 5 hardening (headers, request IDs) | Not a blocker; add assertions when it lands |
 | Seeded demo data | Required; `seed:demo` must stay deterministic |
 | Production builds | Required; tests run against built API and web, matching CI |
@@ -438,8 +438,9 @@ route-change heading focus. Step 6 added 48 deterministic visual baselines and t
 disposable visual database script. Step 7 split smoke, full, cross-browser, and visual CI
 jobs. The representative shell adds `coverage/representative.spec.ts` (domain suggestion,
 pending gate, approval, public reply, revocation) plus its route, accessibility, and
-responsive rows. Step 8 (the final coverage baseline) waits on the remaining Stage 9 Phase 3
-flows and CI-image visual verification.
+responsive rows, and the Phase 3 flows add timeline, overflow, role-landing, and portal
+next-step assertions. Step 8 (the final coverage baseline) waits on CI-image visual
+verification and the final two-run full-suite record.
 
 ## 12. Risks and mitigations
 

@@ -2,13 +2,14 @@
 
 Status: implemented design plus partial Stage 9 delivery. Internal-official MVP is the
 committed scope; the public complainant experience is an **optional Stage 8 extension**
-and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency), Phase 1
-(reversible exact-institution auto-merge), Phase 2 (representatives/domains), the Phase 3
-navigation refresh (primary links + More, notification bell, mobile drawer), and Phase 4
-(visual tokens, chart-first dashboard/reports, Leaflet/OpenStreetMap map) are implemented.
-The remaining Phase 3 flows and Phases 5–6 remain planned. Stage 10 (complete Playwright UI
+and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency) and Phases 1–4
+(reversible exact-institution auto-merge, representatives/domains, navigation/role
+landings/case workspace/resolution loop, and visual tokens, chart-first dashboard/reports,
+Leaflet/OpenStreetMap map) are implemented. Manual screen-reader sign-off and Phases 5–6
+remain. Stage 10 (complete Playwright UI
 coverage) is in progress, with fixtures, current-route coverage, mutations, UI states,
-accessibility/responsive expansion, visual regression, and the CI split landed; see
+Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI split
+landed; see
 `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. Stage 11
 ([code audit](../plans/code-audit-plan.md)) and Stage 12
 ([UI modernization](../plans/ui-modernization-plan.md)) are planned after Stage 10. See
@@ -464,8 +465,11 @@ Expose:
   fallback.
 - Implemented Phase 3 navigation: primary/More navigation, persistent notification bell,
   account menu, and mobile drawer on staff and portal shells.
-- Planned Stage 9: role landing refinements, consolidated case tabs, and the explicit
-  complaint-resolution loop.
+- Implemented Phase 3: role-specific dashboard briefings/queues/empty states, the case
+  workspace consolidated to Overview · Conversation · Documents · Timeline · Related with
+  an overflow action menu, and the shared authority ↔ complainant resolution loop with
+  next-action ownership and SLA context on staff and portal detail.
+- Planned Stage 9: manual screen-reader sign-off and Phases 5–6.
 
 ## 13. Delivery phases
 
@@ -514,8 +518,9 @@ Expose:
 - Phase 1 (done): reversible exact-institution auto-merge, queue/detail/group controls,
   revert and suppression, audit.
 - Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
-- Phase 3 (partial): primary/More navigation, notification bell, and mobile drawer done;
-  role landing refinements, case tabs, and resolution loop remain.
+- Phase 3 (done): primary/More navigation, notification bell, mobile drawer, role-specific
+  landings and empty states, consolidated case workspace, overflow actions, and the
+  authority ↔ complainant resolution loop.
 - Phase 4 (done): visual refresh, local SVG charts, region coordinates, `/reports/geo`,
   lazy-loaded Leaflet/OpenStreetMap map, region chips, table fallback.
 - Phase 5: CSP/headers, distributed rate-limit path, request IDs, readiness,
@@ -571,8 +576,8 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
   state × accessibility × responsive × visual coverage. Route, mutation, state,
   accessibility/responsive, visual, and CI rows are covered for current routes including
-  the representative shell; final exit waits on the remaining Stage 9 Phase 3 flows and
-  CI-image visual verification.
+  the representative shell and the Phase 3 flows; final exit waits for CI-image visual
+  verification and the final two-run full-suite record.
 - Stage 11 (planned): the existing suite is the no-behavior-change oracle for the code
   audit; the visual baseline must not move.
 - Stage 12 (planned): the UI modernization refreshes selectors only where accessible names

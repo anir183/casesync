@@ -16,11 +16,11 @@ and detail with filters/pagination and manual link/unlink, reports, notification
 admin user/organization/SLA/audit/verification screens, the public complainant portal,
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
-**Stage 9 status:** Phase 0 baseline plus the final UI consistency pass, Phase 1
-auto-merge, Phase 2 representative shell/admin screens, Phase 4 visual redesign/chart-first
-dashboard/reports/Leaflet map, and the Phase 3 navigation refresh (primary/More,
-notification bell, mobile drawer) are implemented. The remaining Phase 3 flows remain
-planned. The decision-complete plan is
+**Stage 9 status:** Phase 0 baseline plus the final UI consistency pass and Phases 1–4 are
+implemented: reversible auto-merge, the representative shell/admin screens, the visual
+redesign/chart-first dashboard/reports/Leaflet map, and the Phase 3 navigation, role
+landings, consolidated case workspace, and resolution loop. Manual screen-reader sign-off
+and Phases 5–6 remain. The decision-complete plan is
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals
@@ -341,8 +341,8 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
 
 ### Stage 9 implementation order
 
-1. Primary/More navigation and notification bell (done); role landing refinements and
-   case-tab consolidation remain.
+1. Primary/More navigation and notification bell (done); role landings, case-workspace
+   consolidation, and the resolution loop (done).
 2. Merge queue/detail/group controls and neutral banner (done).
 3. Representative shell plus admin representative/domain screens (done).
 4. Design tokens/primitives, chart-first dashboard/reports, and the Leaflet map (done).

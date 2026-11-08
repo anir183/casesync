@@ -34,8 +34,8 @@ Status legend:
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Done** (Stage 9 Phase 2). |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
-| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; the remaining Phase 3 flows and Phases 5–6 remain planned. See §11.2. |
-| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage (staff/admin, portal/auth, representative), UI states, accessibility/responsive expansion, visual regression, and the CI split have landed. Remaining: the Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
+| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency and Phases 1–4 (auto-merge, representatives/domains, navigation/role landings/case workspace/resolution loop, and UI/GIS) are implemented; manual screen-reader sign-off and Phases 5–6 remain planned. See §11.2. |
+| Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage (staff/admin, portal/auth, representative), UI states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI split have landed. Remaining: CI-image visual verification and the final two-run full-suite record. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
 | Stage 11 code audit | **Planned** | Import/alias normalization, shared contracts (`Page<T>`, DTOs, error shape), per-feature query keys, service decomposition, duplication removal, and convention guardrails. No behavior change; the full suite and visual baseline must pass unchanged. See `docs/plans/code-audit-plan.md`. |
 | Stage 12 UI modernization | **Planned** | Tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core work surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed Stage 10 baselines. Keeps routes, permissions, data, and product scope fixed. See `docs/plans/ui-modernization-plan.md`. |
 
@@ -247,14 +247,16 @@ Status legend:
   representative/domain contracts. `RUN_INTEGRATION=1` runs locally against run-scoped
   records; CI uses `mongo:7` (exact `7.0.45` pin planned).
 - Coverage is 87.4% lines / 89.7% functions with an 85% floor.
-- Playwright: 193 desktop functional tests (213 with the mobile project), 13 smoke, 55
+- Playwright: 196 desktop functional tests (216 with the mobile project), 13 smoke, 55
   accessibility (37 route scans, 13 denial scans, 5 keyboard/focus), 16 responsive-spec
-  tests, and 48 visual comparisons; the tagged 5,000-case performance test stays separate.
+  tests, 16 state tests, and 48 visual comparisons; the tagged 5,000-case performance test
+  stays separate.
 - Stage 10 baseline: 37 manifest routes, 8 seeded roles across 10 accounts (including
   approved and pending representatives), and the landed representative shell plus admin
   queues. Current-route render/denial, mutation, UI-state, accessibility/responsive, visual
   regression, and CI coverage is delivered under the risk-based policy in the matrix.
-  Remaining rows are CI-image visual verification and the Stage 9 Phase 3 flows. Use
+  Remaining rows are CI-image visual verification and the final two-run full-suite record.
+  Use
   `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count, and
   `docs/quality/testing-guide.md` for run cadence.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
@@ -308,6 +310,6 @@ Priority order (detailed in `docs/requirements/requirements-realignment.md`):
    accounts landed in Stage 9 Phase 2.
 9. Stage 10: complete the Playwright route/role/mutation/state/accessibility/responsive
    matrix and add visual regression baselines. Representative-shell coverage landed with
-   Stage 9 Phase 2; finish after the remaining Phase 3 flows and CI-image visual
-   verification. See
+   Stage 9 Phase 2; finish after CI-image visual verification and the final two-run
+   record. See
    [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).

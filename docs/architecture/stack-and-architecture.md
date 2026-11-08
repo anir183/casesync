@@ -2,14 +2,15 @@
 
 Status: active reference. Location: `docs/architecture/stack-and-architecture.md`.
 
-> Stages 0–8 are complete. Stage 9 is partial: Phase 0 baseline/UI consistency, Phase 1
-> reversible overlap auto-merge, the Phase 3 navigation refresh, and Phase 4 visual
-> redesign/charts/GIS are implemented and tested. Phase 2 (representatives/domains), the
-> remaining Phase 3 flows, Phase 5 (hardening), and Phase 6 (polish) remain planned.
+> Stages 0–8 are complete. Stage 9 is partial: Phase 0 baseline/UI consistency and
+> Phases 1–4 (reversible overlap auto-merge, representatives/domains, navigation/role
+> landings/case workspace/resolution loop, and visual redesign/charts/GIS) are implemented
+> and tested. Manual screen-reader sign-off, Phase 5 (hardening), and Phase 6 (polish)
+> remain planned.
 > Stage 10 (complete Playwright UI coverage) is in progress: fixtures, current-route
-> render/denial coverage, mutation coverage, UI states, accessibility/responsive
-> expansion, visual regression, and the CI job split have landed. The final coverage
-> baseline and the remaining Stage 9 flows remain.
+> render/denial coverage, mutation coverage, UI states, Phase 3 flows,
+> accessibility/responsive expansion, visual regression, and the CI job split have landed.
+> The CI-image visual baseline and the final two-run record remain.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
@@ -378,8 +379,8 @@ planned); local MongoDB `8.3.9` remains supported.
 Stage 10 defines the complete UI coverage contract in
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and tracks it in
 [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Do not infer whole-product
-coverage from the seeded suite: the representative shell is covered, while the remaining
-Stage 9 Phase 3 flows and CI-image visual verification are still outstanding.
+coverage from the seeded suite: the representative shell and Phase 3 flows are covered,
+while CI-image visual verification and the final two-run record are still outstanding.
 
 **Priority:** utils (pair/normalize/similarity), overlap orchestration with DB
 (exact/fuzzy, Jev enabled/disabled/failure/timeout, base relationship always created),

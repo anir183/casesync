@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stage 10. Last verified: 2026-11-07.
+Status: living matrix for Stage 10. Last verified: 2026-11-08.
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
@@ -284,12 +284,14 @@ login pages.
 
 ## 3. UI state coverage
 
-`apps/web/e2e/coverage/states.spec.ts` adds 12 `@states` tests across loading, empty
+`apps/web/e2e/coverage/states.spec.ts` adds 16 `@states` tests across loading, empty
 search, error/retry, not-found, pagination, filters/sort, CSV export, dialog cancel,
-pending mutation, failed mutation, session expiry, and the light/dark theme switch. Step 5
-closed the dialog focus, mobile drawer, reduced-motion, and 200% zoom rows through the
-accessibility and responsive specs. Rows below stay **Partial** where only one route or
-one side of the state is exercised.
+pending mutation, failed mutation, session expiry, the light/dark theme switch, the
+consolidated case timeline, the overflow action preselect, the admin and viewer role
+landings, and the portal next-step/resolution-loop surfaces. Step 5 closed the dialog
+focus, mobile drawer, reduced-motion, and 200% zoom rows through the accessibility and
+responsive specs. Rows below stay **Partial** where only one route or one side of the
+state is exercised.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -311,6 +313,10 @@ one side of the state is exercised.
 | Session expiry redirect | Staff and portal shells | **Partial** (staff) |
 | Mobile drawer open/close | Staff and portal shells | **Covered** (staff keyboard open and destination visibility) |
 | Notification bell preview | Staff shell | **Partial** |
+| Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
+| Consolidated case timeline | `/cases/:id` | **Covered** (action + assignment history in one Timeline tab) |
+| Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |
+| Resolution loop ownership | `/cases/:id`, `/portal/complaints/:id` | **Covered** (lifecycle, owner, and target date render) |
 | Light/dark theme | Staff and portal shells | **Covered** (staff; persists across reload) |
 | Reduced motion | Dashboard, reports, map routes | **Covered** (dashboard and reports transitions collapse) |
 | 200% zoom | All route groups | **Covered** (page zoom and text-only zoom on staff routes) |
@@ -343,9 +349,9 @@ route introduces a new layout.
 
 | Screen | Light desktop | Dark desktop | Light mobile | Dark mobile | Status |
 |---|---|---|---|---|---|
-| `/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
+| `/dashboard` | Covered | Covered | Covered | Covered | **Partial** — role landing changed; baseline regeneration pending |
 | `/cases` | Covered | Covered | Covered | Covered | **Covered** |
-| `/cases/:id` | Covered | Covered | Covered | Covered | **Covered** |
+| `/cases/:id` | Covered | Covered | Covered | Covered | **Partial** — resolution loop/timeline changed; baseline regeneration pending |
 | `/institutions` | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions/:id` | Covered | Covered | Covered | Covered | **Covered** |
 | `/overlaps` | Covered | Covered | Covered | Covered | **Covered** |
@@ -354,14 +360,16 @@ route introduces a new layout.
 | `/notifications` | Covered | Covered | Covered | Covered | **Covered** |
 | `/admin/users` | Covered | Covered | Covered | Covered | **Covered** |
 | `/portal` | Covered | Covered | Covered | Covered | **Covered** |
-| `/portal/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
+| `/portal/dashboard` | Covered | Covered | Covered | Covered | **Partial** — next-step card changed; baseline regeneration pending |
 
 `apps/web/e2e/visual.spec.ts` adds 48 screenshots (12 routes × light/dark × desktop/mobile).
 Dates are replaced with fixed-width placeholders and masked, map tiles are aborted and the
 map container is masked, and animations and carets are disabled. `SEED_NOW` pins the demo
 timeline; reset removes demo merge groups and notifications so repeated runs do not drift.
-The suite passed twice consecutively on Linux. **Baselines have not been regenerated on the
-pinned CI image**; that remains an open exit gate, not a covered row.
+The visual subset has not been rerun since the Phase 3 UI changes. The dashboard, case
+detail, and portal dashboard baselines need regeneration and review, and none of the
+baselines has been verified on the pinned CI image. That remains an open Stage 10 exit
+gate, not a covered row.
 
 ## 6. Accessibility coverage
 
@@ -399,8 +407,8 @@ shells also expose skip links and a focusable `main#main-content`.
 | Routes — admin | 1 | 6 | 0 | 0 | 0 |
 | Routes — representative | 0 | 6 | 1 | 0 | 0 |
 | Mutations | 33 | 7 | 15 | 0 | 0 |
-| UI states | 6 | 14 | 1 | 0 | 0 |
-| Visual screens | 12 | 0 | 0 | 0 | 0 |
+| UI states | 9 | 14 | 1 | 0 | 0 |
+| Visual screens | 9 | 3 | 0 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts. A Partial
 route row is not a failure: it means the render and denial contracts pass while one

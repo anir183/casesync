@@ -1,8 +1,8 @@
 # CaseSync — Stage 9 Next-Phase Plan
 
-Status: **Phase 0 (baseline + final UI consistency pass), Phase 1, Phase 4, and the Phase 3
-navigation refresh implemented; manual screen-reader sign-off pending. Phase 2, the
-remaining Phase 3 flows, and Phases 5–6 remain planned.** Phase 4 was pulled forward at
+Status: **Phase 0 (baseline + final UI consistency pass) and Phases 1–4 implemented;
+manual screen-reader sign-off pending. Phases 5–6 remain planned.** Phase 4 was pulled
+forward at
 product-owner request. Phase 0 cleared the baseline debt on 2026-11-01; the shared
 integration-fixture extraction is a recorded follow-up rather than a Phase 0 exit gate.
 This is the decision-complete execution plan for Stage 9 and defines the work,
@@ -25,9 +25,10 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
 > Stage 9: [`ui-testing-plan.md`](ui-testing-plan.md) with the living matrix at
 > [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 is in progress:
 > fixtures, route render/denial coverage, mutations (including the representative journey),
-> UI states, accessibility/responsive expansion, visual regression, and the CI split have
-> landed. Its final exit gate waits for the remaining Phase 3 role flows and CI-image
-> visual verification.
+> UI states, role landings, consolidated case tabs, the complaint-resolution loop,
+> accessibility/responsive expansion, visual regression, and the CI split have
+> landed. Its final exit gate waits for CI-image visual verification and the final
+> two-run full-suite record.
 >
 > **Stage 11–12 sequencing.** After Stage 10 exits, Stage 11
 > ([`code-audit-plan.md`](code-audit-plan.md)) cleans up imports, shared contracts,
@@ -166,8 +167,7 @@ Phase 5 (hardening) ── Phase 6 (docs/polish)
 - Phase 1 and Phase 2 can run in parallel after Phase 0.
 - Phase 0's UI consistency pass is CSS/markup-only and lands before the docs truth pass;
   it does not change routes, API calls, permissions, or assertions.
-- The remaining Phase 3 role flows need the role model and routes from Phase 2; the
-  navigation refresh is already implemented.
+- Phase 3 built on the Phase 2 role model and routes; it is complete.
 - Phase 4 needs the navigation and screen inventory from Phase 3.
 - Phases 5–6 run continuously and close the stage.
 - Every phase must leave the previous stages’ tests green. No phase may bundle unrelated
@@ -665,8 +665,15 @@ and semantically.
 **Implemented 2026-10-31:** primary links + More/Admin overflow on staff, primary links on
 the portal shell, notification bell with five-item preview and mark-all-read, account
 menu, mobile drawers, route-change close, Escape/click-outside handling, and one-row
-width checks at 375/768/1024/1440 px. Role landing refinements, consolidated case tabs,
-and the explicit resolution loop remain open.
+width checks at 375/768/1024/1440 px.
+
+**Implemented 2026-11-08:** role-specific dashboard briefings, quick links, and empty
+states for admin, senior management, competent authority, bureau officer, regional officer,
+and viewer; the case workspace consolidated to Overview · Conversation · Documents ·
+Timeline · Related with rare actions in an accessible overflow menu; a shared
+authority ↔ complainant resolution loop with next-action ownership and SLA context on staff
+and portal detail; and a portal “Your next step” card. Covered by `@states` E2E for the
+timeline, overflow preselect, admin landing, viewer landing, and portal resolution loop.
 
 ## 9. Phase 4 — Visual redesign, dashboard/reports, and GIS
 

@@ -16,11 +16,12 @@ security, accessibility, performance, stress-seed, and runbook gates; Stage 8 ad
 external intake surface with separate ownership and public-projection controls.
 
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
-(`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency, Phase 1 reversible
-auto-merge, Phase 2 representatives/domains, the Phase 3 navigation refresh, and Phase 4
-UI/charts/GIS are implemented, while the remaining Phase 3 flows and Phases 5–6 remain
+(`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency and Phases 1–4
+(reversible auto-merge, representatives/domains, navigation/role landings/case
+workspace/resolution loop, and UI/charts/GIS) are implemented, while manual screen-reader
+sign-off and Phases 5–6 remain
 planned. Stage 10 (complete Playwright UI coverage) is in progress: fixtures, per-role
-sessions, current-route render/denial coverage, mutations, UI states,
+sessions, current-route render/denial coverage, mutations, UI states, Phase 3 flows,
 accessibility/responsive, visual regression, and the CI split have landed.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
@@ -58,9 +59,9 @@ accessibility/responsive, visual regression, and the CI split have landed.**
   not MVP blockers.
 - Stage 10 is in progress: fixtures, per-role storage states, current-route render/denial
   coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
-  suite, accessibility/responsive expansion, visual regression, and the CI split have
-  landed. Remaining are the Stage 9 Phase 3 flows and CI-image visual verification. The
-  matrix in `docs/quality/ui-test-matrix.md` is the progress measure.
+  and Phase 3 flow suite, accessibility/responsive expansion, visual regression, and the
+  CI split have landed. Remaining is CI-image visual verification and the final two-run
+  full-suite record. The matrix in `docs/quality/ui-test-matrix.md` is the progress measure.
 
 ## 1. Status legend
 
@@ -402,12 +403,15 @@ the audit above predates them. Current facts:
   Leaflet/OpenStreetMap region map with keyboard chips and a table fallback.
 - Phase 2: representative role, approval/revocation, institution scope, representative
   shell, and suggestion-only email-domain allowlist with admin queues.
+- Phase 3 (done): role-specific landings, consolidated case workspace, overflow actions,
+  and the resolution loop.
 - Phases 5–6 remain planned.
 - Stage 10: in progress. Fixtures, current-route render/denial coverage, mutations, UI
-  states, accessibility/responsive expansion, visual regression, and the CI split have
+  states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI
+  split have
   landed; see `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
   `docs/plans/todo-tracker.md` for the current checklist. Remaining is the final exit
-  baseline after the Stage 9 Phase 3 flows and CI-image visual verification.
+  baseline after CI-image visual verification and the final two-run full-suite record.
 
 ## 16. Gap backlog (prioritized)
 
