@@ -1,3 +1,4 @@
+import { CASE_STATUS, ROLES } from '@casesync/config'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, FolderOpen, Layers } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
@@ -12,15 +13,18 @@ import { PageHeader } from '#/components/shared/page-header'
 import { StatCard } from '#/components/shared/stat-card'
 import { StatusBadge } from '#/components/shared/status-badge'
 import { Badge } from '#/components/ui/badge'
-import { Button } from '#/components/ui/button'
+import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
+import { type CaseFilters, useCases } from '#/features/cases/api'
+import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { matchTypeLabel } from '#/features/overlaps/labels'
 import { useReports, useReportsGeo } from '#/features/reports/api'
 import { RegionMap } from '#/features/reports/components/region-map'
 import { apiClient } from '#/lib/api-client'
-import { formatDate } from '#/lib/utils'
+import { useCurrentUser } from '#/lib/session'
+import { formatDate, formatDateOnly } from '#/lib/utils'
 
 interface StatusCounts {
   total: number
@@ -69,6 +73,168 @@ interface DashboardFilters {
 
 const CELL = 'px-4 py-3 text-sm'
 const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+
+interface RoleLanding {
+  kicker: string
+  queueTitle: string
+  summary: string
+  emptyTitle: string
+  emptyDescription: string
+  queueFilters: CaseFilters | null
+  links: Array<{ to: string; label: string }>
+}
+
+function landingForRole(
+  role: string | undefined,
+  scope: { bureauId?: string; regionId?: string },
+): RoleLanding {
+  switch (role) {
+    case ROLES.ADMIN:
+      return {
+        kicker: 'Administrator',
+        queueTitle: 'Escalations needing attention',
+        summary:
+          'Platform-wide operations. Review escalated complaints, then work the representative, domain, verification, and audit queues.',
+        emptyTitle: 'No escalations waiting',
+        emptyDescription:
+          'No case is escalated right now. The admin queues remain available below.',
+        queueFilters: {
+          status: CASE_STATUS.ESCALATED,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
+          { to: '/admin/institution-representatives', label: 'Representatives' },
+          { to: '/admin/institution-domains', label: 'Institution domains' },
+          { to: '/admin/verifications', label: 'Verifications' },
+          { to: '/admin/audit', label: 'Audit log' },
+        ],
+      }
+    case ROLES.SENIOR_MANAGEMENT:
+      return {
+        kicker: 'Senior management',
+        queueTitle: 'Escalations awaiting a decision',
+        summary:
+          'Review escalated cases, disposal decisions, and overlap coordination. Use reports to compare disposal performance across regions.',
+        emptyTitle: 'No escalations waiting',
+        emptyDescription:
+          'No case is escalated right now. Continue monitoring disposal performance in reports.',
+        queueFilters: {
+          status: CASE_STATUS.ESCALATED,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
+          { to: '/overlaps', label: 'Overlap queue' },
+          { to: '/reports', label: 'Reports' },
+        ],
+      }
+    case ROLES.COMPETENT_AUTHORITY:
+      return {
+        kicker: 'Competent authority',
+        queueTitle: 'Complaints awaiting complainant input',
+        summary:
+          'Close the loop on information requests, then move assigned cases through review and disposal. SLA dates are shown on each case.',
+        emptyTitle: 'No complaints awaiting input',
+        emptyDescription:
+          'Every active complaint has what it needs. Review cases under process for the next disposal decision.',
+        queueFilters: {
+          status: CASE_STATUS.AWAITING_COMPLAINANT,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          { to: '/cases?status=AWAITING_COMPLAINANT', label: 'Awaiting complainant' },
+          { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
+          { to: '/reports', label: 'Reports' },
+        ],
+      }
+    case ROLES.BUREAU_OFFICER:
+      return {
+        kicker: 'Bureau officer',
+        queueTitle: 'Assigned to your bureau',
+        summary:
+          'Work assigned complaints first, record the next action and due date, then respond to the complainant before the target decision date.',
+        emptyTitle: 'No newly assigned cases',
+        emptyDescription:
+          'Your bureau has no newly assigned cases. Check cases under process for follow-up work.',
+        queueFilters: {
+          status: CASE_STATUS.ASSIGNED,
+          bureauId: scope.bureauId,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          {
+            to: scope.bureauId ? `/cases?bureauId=${scope.bureauId}` : '/cases',
+            label: 'My bureau cases',
+          },
+          { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
+          { to: '/cases/new', label: 'Register case' },
+          { to: '/overlaps', label: 'Overlap queue' },
+        ],
+      }
+    case ROLES.REGIONAL_OFFICER:
+      return {
+        kicker: 'Regional officer',
+        queueTitle: 'Transfers in your region',
+        summary:
+          'Review transfers and regional workload. Confirm ownership or escalate cases that need senior management attention.',
+        emptyTitle: 'No transfers waiting',
+        emptyDescription:
+          'No case is waiting for a transfer decision in your region. Review regional workload in reports.',
+        queueFilters: {
+          status: CASE_STATUS.TRANSFERRED,
+          regionId: scope.regionId,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          {
+            to: scope.regionId ? `/cases?regionId=${scope.regionId}` : '/cases',
+            label: 'Regional cases',
+          },
+          { to: '/cases?status=TRANSFERRED', label: 'Transfers' },
+          { to: '/reports', label: 'Reports' },
+        ],
+      }
+    case ROLES.VIEWER:
+      return {
+        kicker: 'Read-only oversight',
+        queueTitle: 'Your access is read-only',
+        summary:
+          'You can review cases, overlaps, and reports. Case actions, registration, and administrative changes stay hidden for this role.',
+        emptyTitle: 'Read-only oversight',
+        emptyDescription:
+          'Use the case registry and reports to review activity. No action queue is assigned to this role.',
+        queueFilters: null,
+        links: [
+          { to: '/cases', label: 'Case registry' },
+          { to: '/overlaps', label: 'Overlap queue' },
+          { to: '/reports', label: 'Reports' },
+        ],
+      }
+    default:
+      return {
+        kicker: 'Operations',
+        queueTitle: 'Cases needing attention',
+        summary: 'Review the active complaint posture across institutions, bureaus, and regions.',
+        emptyTitle: 'Nothing needs attention',
+        emptyDescription: 'No case is currently waiting on an escalation or complainant response.',
+        queueFilters: {
+          status: CASE_STATUS.ESCALATED,
+          pageSize: 5,
+          sort: 'lastActionAt:asc',
+        },
+        links: [
+          { to: '/cases', label: 'Case registry' },
+          { to: '/reports', label: 'Reports' },
+        ],
+      }
+  }
+}
 
 function titleCase(value: string) {
   return value
@@ -165,6 +331,12 @@ export function DashboardPage() {
   })
   const reports = useReports(filters)
   const geo = useReportsGeo(filters)
+  const { user } = useCurrentUser()
+  const landing = landingForRole(user?.role, {
+    bureauId: user?.bureauId,
+    regionId: user?.regionId,
+  })
+  const queue = useCases(landing.queueFilters ?? {}, { enabled: Boolean(landing.queueFilters) })
 
   const institutionRows = data?.institutionWise ?? []
   const bureauRows =
@@ -210,6 +382,82 @@ export function DashboardPage() {
           ) : null
         }
       />
+
+      <Card>
+        <CardBody className="space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                {landing.kicker}
+              </p>
+              <h2 className="text-lg font-semibold">{landing.queueTitle}</h2>
+              <p className="text-sm text-muted-foreground">{landing.summary}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {landing.links.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {landing.queueFilters ? (
+            <div className="space-y-2 border-t border-border pt-3">
+              {queue.isLoading && (
+                <div className="space-y-2" aria-busy="true" aria-label="Loading role work queue">
+                  {['a', 'b', 'c'].map((row) => (
+                    <Skeleton key={row} className="h-14 w-full" />
+                  ))}
+                </div>
+              )}
+              {queue.isError && (
+                <p className="text-sm text-danger">Unable to load the work queue for your role.</p>
+              )}
+              {queue.data && queue.data.items.length === 0 && (
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  title={landing.emptyTitle}
+                  description={landing.emptyDescription}
+                />
+              )}
+              {queue.data?.items.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/cases/${item.id}`}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm transition-colors hover:bg-muted/40"
+                >
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="font-medium">{item.caseNumber}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.subject ?? item.institutionName ?? 'Complaint'}
+                      {item.bureauName ? ` · ${item.bureauName}` : ''}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CaseStatusBadge status={item.status} />
+                    {item.nextActionDueAt ? (
+                      <span className="text-xs text-muted-foreground">
+                        Due {formatDateOnly(item.nextActionDueAt)}
+                      </span>
+                    ) : null}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              className="border-0 bg-transparent"
+              title={landing.emptyTitle}
+              description={landing.emptyDescription}
+            />
+          )}
+        </CardBody>
+      </Card>
 
       <Card>
         <CardBody>

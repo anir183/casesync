@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
+import { ResolutionLoop } from '#/components/shared/resolution-loop'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
@@ -101,6 +102,15 @@ export function PortalComplaintDetailPage() {
           </>
         }
         actions={<ComplaintStatusBadge status={item.status} label={item.statusLabel} />}
+      />
+
+      <ResolutionLoop
+        audience="complainant"
+        status={item.status}
+        history={item.statusHistory.map((entry) => entry.status)}
+        expectedDisposalAt={item.expectedDisposalAt}
+        reopenDeadline={item.reopenDeadline}
+        closedAt={item.closedAt}
       />
 
       {item.status === 'DISPOSED' && (

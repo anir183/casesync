@@ -142,6 +142,7 @@ export interface PublicComplaintSummary {
   acknowledgedAt?: Date
   resolvedAt?: Date
   closedAt?: Date
+  expectedDisposalAt?: Date
   reopenDeadline?: Date
   updatedAt: Date
 }
@@ -314,6 +315,7 @@ export function toPublicSummary(
     acknowledgedAt: item.acknowledgedAt,
     resolvedAt: item.resolvedAt,
     closedAt: item.closedAt,
+    expectedDisposalAt: item.expectedDisposalAt,
     reopenDeadline: item.reopenDeadline,
     updatedAt: item.updatedAt,
   }

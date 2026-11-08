@@ -1,19 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
+import { ResolutionLoop } from '#/components/shared/resolution-loop'
 import { Badge } from '#/components/ui/badge'
+import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { OverflowMenu } from '#/components/ui/overflow-menu'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { AttachmentsPanel } from '#/features/attachments/components/attachments-panel'
 import { CaseLinkPanel } from '#/features/overlaps/components/case-link-panel'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { cn, formatDate, formatDateOnly } from '#/lib/utils'
+import { type ActionKind, useCaseActionOptions } from '../actions'
 import { type CaseDetail, useCaseDetail } from '../api'
 import { CaseActionPanel } from '../components/case-action-panel'
 import { CaseConversationPanel } from '../components/case-conversation-panel'
 
-type Tab = 'overview' | 'actions' | 'assignments' | 'conversation' | 'documents' | 'related'
+type Tab = 'overview' | 'conversation' | 'documents' | 'timeline' | 'related'
 
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
@@ -21,10 +25,9 @@ const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'overview', label: 'Overview' },
-  { id: 'actions', label: 'Actions' },
-  { id: 'assignments', label: 'Assignments' },
   { id: 'conversation', label: 'Conversation' },
   { id: 'documents', label: 'Documents' },
+  { id: 'timeline', label: 'Timeline' },
   { id: 'related', label: 'Related' },
 ]
 
@@ -124,7 +127,23 @@ function AssignmentHistory({ item }: { item: CaseDetail }) {
 export function CaseDetailPage() {
   const { id = '' } = useParams()
   const { data: item, isLoading, isError, error } = useCaseDetail(id)
+  const { canWrite, secondary } = useCaseActionOptions(item)
   const [tab, setTab] = useState<Tab>('overview')
+  const [requestedAction, setRequestedAction] = useState<{
+    kind: ActionKind
+    nonce: number
+  } | null>(null)
+
+  useEffect(() => {
+    if (!requestedAction) return
+    const node = document.getElementById('case-actions')
+    node?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [requestedAction])
+
+  function requestAction(kind: ActionKind) {
+    setTab('overview')
+    setRequestedAction((current) => ({ kind, nonce: (current?.nonce ?? 0) + 1 }))
+  }
 
   if (isLoading) {
     return (
@@ -181,6 +200,25 @@ export function CaseDetailPage() {
               </p>
             </div>
           }
+          actions={
+            canWrite ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => requestAction('remark')}>
+                  Record action
+                </Button>
+                {secondary.length > 0 ? (
+                  <OverflowMenu
+                    label="More actions"
+                    items={secondary.map((option) => ({
+                      label: option.label,
+                      destructive: option.value === 'dispose',
+                      onSelect: () => requestAction(option.value),
+                    }))}
+                  />
+                ) : null}
+              </>
+            ) : null
+          }
         />
       </div>
 
@@ -228,6 +266,16 @@ export function CaseDetailPage() {
 
       {tab === 'overview' && (
         <div className="space-y-4">
+          <ResolutionLoop
+            audience="staff"
+            status={item.status}
+            history={item.actions.map((action) => action.toStatus).filter(Boolean) as string[]}
+            nextAction={item.nextAction}
+            nextActionDueAt={item.nextActionDueAt}
+            expectedDisposalAt={item.expectedDisposalAt}
+            closedAt={item.closedAt}
+          />
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -323,30 +371,29 @@ export function CaseDetailPage() {
             </Card>
           )}
 
-          <CaseActionPanel item={item} />
+          <CaseActionPanel item={item} requestedAction={requestedAction} />
         </div>
       )}
 
-      {tab === 'actions' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Action history</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Timeline item={item} />
-          </CardContent>
-        </Card>
-      )}
-
-      {tab === 'assignments' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Assignment history</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AssignmentHistory item={item} />
-          </CardContent>
-        </Card>
+      {tab === 'timeline' && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Action history</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Timeline item={item} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Assignment history</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AssignmentHistory item={item} />
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {tab === 'conversation' && <CaseConversationPanel item={item} />}

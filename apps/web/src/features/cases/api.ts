@@ -265,10 +265,11 @@ function invalidateCaseData(queryClient: ReturnType<typeof useQueryClient>, id?:
   if (id) void queryClient.invalidateQueries({ queryKey: caseKeys.detail(id) })
 }
 
-export function useCases(filters: CaseFilters) {
+export function useCases(filters: CaseFilters, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: caseKeys.list(filters),
     queryFn: () => fetchCases(filters),
+    enabled: options?.enabled ?? true,
   })
 }
 

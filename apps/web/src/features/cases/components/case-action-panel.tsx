@@ -1,5 +1,5 @@
-import { CASE_STATUS, CASE_TRANSITIONS, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
-import { useEffect, useMemo, useState } from 'react'
+import { CASE_STATUS } from '@casesync/config'
+import { useEffect, useState } from 'react'
 import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -7,44 +7,23 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { useBureaus } from '#/features/organization/api'
-import { useCurrentUser } from '#/lib/session'
+import {
+  ACTION_LABELS,
+  type ActionKind,
+  CONFIRM_ACTIONS,
+  REMARK_ACTIONS,
+  useCaseActionOptions,
+} from '../actions'
 import { type CaseActionInput, type CaseDetail, useCaseAction, useOfficerDirectory } from '../api'
 
-type ActionKind =
-  | 'assign'
-  | 'transfer'
-  | 'startProcessing'
-  | 'escalate'
-  | 'dispose'
-  | 'reopen'
-  | 'remark'
-  | 'nextAction'
-
-const CONFIRM_ACTIONS: ActionKind[] = ['transfer', 'dispose']
-
-const ACTION_LABELS: Record<ActionKind, string> = {
-  assign: 'Assign / reassign',
-  transfer: 'Transfer to another bureau',
-  startProcessing: 'Start processing',
-  escalate: 'Escalate to senior management',
-  dispose: 'Dispose case',
-  reopen: 'Reopen case',
-  remark: 'Add remark',
-  nextAction: 'Set next action',
-}
-
-const REMARK_ACTIONS: ActionKind[] = [
-  'assign',
-  'transfer',
-  'startProcessing',
-  'escalate',
-  'dispose',
-  'reopen',
-  'remark',
-]
-
-export function CaseActionPanel({ item }: { item: CaseDetail }) {
-  const { user } = useCurrentUser()
+export function CaseActionPanel({
+  item,
+  requestedAction,
+}: {
+  item: CaseDetail
+  requestedAction?: { kind: ActionKind; nonce: number } | null
+}) {
+  const { canWrite, options } = useCaseActionOptions(item)
   const { data: bureaus } = useBureaus()
   const action = useCaseAction(item.id)
   const [kind, setKind] = useState<ActionKind>('remark')
@@ -57,53 +36,11 @@ export function CaseActionPanel({ item }: { item: CaseDetail }) {
   const [error, setError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
 
-  const transitions = CASE_TRANSITIONS[item.status] ?? []
-  const canWrite = hasAnyRole(user?.role, ROLE_GROUPS.CASE_WRITE)
-  const canTransfer = hasAnyRole(user?.role, ROLE_GROUPS.CASE_SENSITIVE)
-  const canDispose = hasAnyRole(user?.role, ROLE_GROUPS.CASE_DISPOSAL)
   const { data: officers } = useOfficerDirectory(bureauId || undefined)
 
-  const options = useMemo(() => {
-    const definitions: Array<{ value: ActionKind; label: string; enabled: boolean }> = [
-      {
-        value: 'assign',
-        label: ACTION_LABELS.assign,
-        enabled:
-          canWrite &&
-          (item.status === CASE_STATUS.ASSIGNED || transitions.includes(CASE_STATUS.ASSIGNED)),
-      },
-      {
-        value: 'transfer',
-        label: ACTION_LABELS.transfer,
-        enabled: canTransfer && transitions.includes(CASE_STATUS.TRANSFERRED),
-      },
-      {
-        value: 'startProcessing',
-        label: ACTION_LABELS.startProcessing,
-        enabled: canWrite && transitions.includes(CASE_STATUS.UNDER_PROCESS),
-      },
-      {
-        value: 'escalate',
-        label: ACTION_LABELS.escalate,
-        enabled: canWrite && transitions.includes(CASE_STATUS.ESCALATED),
-      },
-      {
-        value: 'dispose',
-        label: ACTION_LABELS.dispose,
-        enabled: canDispose && transitions.includes(CASE_STATUS.DISPOSED),
-      },
-      {
-        value: 'reopen',
-        label: ACTION_LABELS.reopen,
-        enabled: canWrite && transitions.includes(CASE_STATUS.REOPENED),
-      },
-      { value: 'remark', label: ACTION_LABELS.remark, enabled: canWrite },
-      { value: 'nextAction', label: ACTION_LABELS.nextAction, enabled: canWrite },
-    ]
-    return definitions
-      .filter((option) => option.enabled)
-      .map(({ value, label }) => ({ value, label }))
-  }, [item.status, transitions, canWrite, canTransfer, canDispose])
+  useEffect(() => {
+    if (requestedAction) setKind(requestedAction.kind)
+  }, [requestedAction])
 
   useEffect(() => {
     if (!options.some((option) => option.value === kind)) {
@@ -201,7 +138,7 @@ export function CaseActionPanel({ item }: { item: CaseDetail }) {
   const showNextAction = kind === 'nextAction'
 
   return (
-    <Card>
+    <Card id="case-actions" className="scroll-mt-24">
       <CardHeader>
         <CardTitle>Case actions</CardTitle>
       </CardHeader>

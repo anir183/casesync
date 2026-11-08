@@ -41,6 +41,7 @@ export interface ComplaintSummary {
   acknowledgedAt?: string
   resolvedAt?: string
   closedAt?: string
+  expectedDisposalAt?: string
   reopenDeadline?: string
   updatedAt: string
 }
