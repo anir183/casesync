@@ -11,8 +11,8 @@ Status legend:
   usable end-to-end or is materially incomplete.
 - **Gap** — not implemented, or only a placeholder/model exists.
 - **Extension** — beyond the original requirement set (optional public portal).
-- **Planned** — Stage 9 or Stage 10 scope is agreed and documented but **not implemented**;
-  do not treat it as delivered evidence.
+- **Planned** — Stage 9–12 scope is agreed and documented but **not implemented**; do not
+  treat it as delivered evidence.
 
 > This matrix is intentionally conservative. Do not mark an item Done until its
 > acceptance path works in the UI/API and has test evidence.
@@ -36,6 +36,8 @@ Status legend:
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
 | Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, docs. Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, the Phase 3 navigation refresh, and Phase 4 UI/GIS are implemented; the remaining Phase 3 flows and Phases 5–6 remain planned. See §11.2. |
 | Stage 10 UI coverage | **Partial** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage (staff/admin, portal/auth, representative), UI states, accessibility/responsive expansion, visual regression, and the CI split have landed. Remaining: the Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
+| Stage 11 code audit | **Planned** | Import/alias normalization, shared contracts (`Page<T>`, DTOs, error shape), per-feature query keys, service decomposition, duplication removal, and convention guardrails. No behavior change; the full suite and visual baseline must pass unchanged. See `docs/plans/code-audit-plan.md`. |
+| Stage 12 UI modernization | **Planned** | Tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core work surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed Stage 10 baselines. Keeps routes, permissions, data, and product scope fixed. See `docs/plans/ui-modernization-plan.md`. |
 
 ## 0.1 Locked product decisions (2026-10-28)
 

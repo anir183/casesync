@@ -10,6 +10,14 @@ This matrix is the progress measure for Stage 10. A row is **Covered** only when
 route or action has a Playwright test asserting its visible behavior and its denied path.
 Test count is not progress; closed rows are.
 
+> **Stage 11–12 note.** Stage 11 (code audit) must leave this matrix and the visual
+> baselines unchanged. Stage 12 (UI modernization) intentionally changes the UI, so it
+> refreshes selectors only where accessible names changed, regenerates the visual
+> baselines after sign-off, reviews every diff, and reruns the full suite twice. The
+> matrix remains the single status source; do not mark a row covered from a screenshot or
+> a manual check. See [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md) and
+> [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
 ## Coverage policy
 
 Coverage is risk-based, not exhaustive. A mutation row is **Covered** when a browser test
@@ -404,7 +412,8 @@ sampled cell (usually responsive or visual) is intentionally outside the current
 2. Update the matching row here in the same change.
 3. Mark a row **Covered** only when its spec lands and passes.
 4. Mark a row **Deferred** only with a written reason and the layer that covers it instead.
-5. Mark a row **Blocked** only with a named Stage 9 dependency.
+5. Mark a row **Blocked** only with a named dependency (for example a Stage 9 flow, a
+   Stage 11 refactor, or a Stage 12 design change).
 6. Keep commands and status aligned with
    [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md),
    [`testing-guide.md`](testing-guide.md), and

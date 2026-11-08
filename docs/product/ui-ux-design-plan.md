@@ -5,7 +5,9 @@ refresh are implemented on the existing screens: reversible overlap auto-merge, 
 score/group/revert controls, theme tokens, shared primitives, chart-first
 dashboard/reports, primary/More navigation with a notification bell and mobile drawer,
 and the Leaflet/OpenStreetMap map. Representative and remaining flow targets remain
-planned. Location:
+planned. Stage 12 (UI/UX modernization) is planned after the Stage 11 code audit; its
+decision-complete plan is
+[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md). Location:
 `docs/product/ui-ux-design-plan.md`.
 
 The implemented shell has login, scoped dashboard, case registry and detail, case
@@ -348,6 +350,48 @@ Use these primitives: `Button`, `Card`, `Table`, `Badge`, `Input`, `Select`, `Te
    (automated checks done; manual pass remains).
 6. Final UI consistency pass: cards, notifications, page headers, tables/forms, states,
    and responsive spacing (Phase 0.5, done).
+
+## Stage 12 — UI/UX modernization target (planned)
+
+Stage 12 starts after the Stage 11 code audit. It keeps the route tree, permissions, data,
+and product scope fixed while replacing the current “functional cards plus explanatory
+text” feel with a fluid, action-first operational product. Full plan:
+[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
+**Direction**
+
+- Calm operational confidence: quiet surfaces, strong hierarchy, obvious primary actions,
+  data that reads at a glance.
+- Action-first, not documentation-first: the first screen answers “what needs attention?”
+  and “what can I do now?”.
+- Fluid layout with a sensible maximum width, reflowing grids, and no page-level overflow.
+- Text-light: labels, counts, status words, and inline help replace paragraphs; long
+  explanations move to tooltips, popovers, or a help surface.
+- Progressive disclosure: common actions visible, rare actions in overflow/drawers.
+- Purposeful motion only; reduced-motion is a first-class state.
+
+**Target surfaces**
+
+- **Shell:** desktop rail + context top bar, global command/search (`Ctrl/Cmd+K`),
+  notification center, quick-create, read-only scope indicator, mobile drawer parity.
+- **Role landings:** officer queue, senior/regional oversight, viewer read-only, admin
+  health, representative work, complainant status.
+- **Admin hub:** people/access, masters, operations, and data-quality groups with real
+  counts/health and direct actions.
+- **Core work:** cases registry with saved views and row actions; case detail with a sticky
+  summary and consolidated tabs; institution profile; keyboard-first overlap triage;
+  reports with drill-down; actionable notifications.
+- **GIS:** bundled region/catchment GeoJSON, choropleth, institution points/drill-down,
+  legend, keyboard chips, table fallback, no-tiles state, existing Leaflet stack only.
+- **Portal landing:** focused hero, inline track form, three-step flow, trust strip,
+  concise FAQ, clear verification state.
+- **Motion:** tokenized 120/180/240 ms transitions, transform/opacity only, reduced-motion
+  overrides, no animation library.
+- **Coverage:** Stage 10 selectors and visual baselines are refreshed intentionally,
+  reviewed, and run twice.
+
+**Non-goals:** new product capability, permissions, roles, routes, data fields, API
+contracts, or a new animation/chart/GIS library.
 
 ## DoD
 - [ ] Dark/light mode works, no flash of wrong theme

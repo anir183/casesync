@@ -9,7 +9,9 @@ navigation refresh (primary links + More, notification bell, mobile drawer), and
 The remaining Phase 3 flows and Phases 5–6 remain planned. Stage 10 (complete Playwright UI
 coverage) is in progress, with fixtures, current-route coverage, mutations, UI states,
 accessibility/responsive expansion, visual regression, and the CI split landed; see
-`docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. See
+`docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. Stage 11
+([code audit](../plans/code-audit-plan.md)) and Stage 12
+([UI modernization](../plans/ui-modernization-plan.md)) are planned after Stage 10. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
@@ -571,6 +573,11 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   accessibility/responsive, visual, and CI rows are covered for current routes including
   the representative shell; final exit waits on the remaining Stage 9 Phase 3 flows and
   CI-image visual verification.
+- Stage 11 (planned): the existing suite is the no-behavior-change oracle for the code
+  audit; the visual baseline must not move.
+- Stage 12 (planned): the UI modernization refreshes selectors only where accessible names
+  changed, regenerates the visual baselines intentionally, reviews every diff, and reruns
+  the full suite twice. See `docs/plans/ui-modernization-plan.md`.
 
 ### Frontend component tests
 - Use React Testing Library + MSW for form validation, visibility labels,

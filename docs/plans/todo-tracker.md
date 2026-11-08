@@ -1,9 +1,12 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-07  
+**Last verified:** 2026-11-07 (test baseline); Stage 11/12 plans added 2026-11-08.
+
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1, 2, and 4, and the Phase 3 navigation refresh implemented; manual screen-reader sign-off pending. The remaining Phase 3 flows and Phases 5–6 remain planned. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** in progress. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. Final exit waits on the remaining Stage 9 Phase 3 flows and CI-image visual verification. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 11:** planned, not started. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Begins after Stage 10 exits. See `docs/plans/code-audit-plan.md`.
+**Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -47,6 +50,11 @@
       `docs/plans/next-phase-plan.md` and realign the docs to it (2026-10-30).
 - [ ] Keep `docs/` links and status current as each stage resumes; no doc may claim a
       stage is done before its exit criteria pass.
+- [x] Record the Stage 11 code audit plan and the Stage 12 UI modernization plan, and
+      cross-link them from the stage map, tracker, README, UI/UX, QA, testing, matrix, and
+      architecture docs (2026-11-08).
+- [ ] Do not start Stage 11 until Stage 10 exit evidence is recorded, and do not start
+      Stage 12 until Stage 11 exits.
 
 ## Stage 0 — Foundation & guardrails (DONE)
 
@@ -539,6 +547,192 @@ Deferred:
 - [ ] Record the final Stage 10 exit baseline after the remaining Stage 9 Phase 3 flows land
       and the visual baselines are verified on CI. The representative rows are covered;
       rerun the full suite once more for the exit record.
+
+## Stage 11 — Codebase audit, cleanup & convention hardening (PLANNED)
+
+Full plan: `docs/plans/code-audit-plan.md`. Begins after Stage 10 exits. No product
+capability, route, permission, response shape, transition, seed output, or visual behavior
+changes. The Stage 10 suite and visual baseline are the no-behavior-change oracle.
+
+### Phase 0 — Baseline inventory and guardrail design
+
+- [x] Record the read-only audit evidence in the plan (2026-11-08): 40 parent-relative
+      imports across 29 web files, 44 same-directory API imports alongside 316 `#/*`
+      imports, 4 duplicate web `Page<T>` definitions, 5 `window.confirm` call sites, and
+      the largest service/page files.
+- [ ] Confirm the final Stage 10 exit baseline and freeze it as the Stage 11 comparison.
+- [ ] Classify every candidate as mechanical, structural, or contract.
+- [ ] Write ADRs for imports, shared-contract ownership, service size/split criteria, and
+      the frontend extraction threshold.
+- [ ] Decide which rules Biome can enforce and which need a small repository script.
+
+### Phase 1 — Import and mechanical hygiene
+
+- [ ] Replace parent-relative `../` imports with `#/*` in both apps; keep sibling `./`.
+- [ ] Normalize type-only imports and remove unused exports/dead helpers.
+- [ ] Replace all 5 `window.confirm` call sites with `ConfirmDialog`, preserving intent.
+- [ ] Tokenize repeated arbitrary text sizes and static inline styles; keep dynamic values.
+- [ ] Move repeated magic values to `packages/config` only at three real uses.
+- [ ] Biome, typechecks, unit tests, and smoke suite pass with no behavior change.
+
+### Phase 2 — Shared contracts and frontend seams
+
+- [ ] Move `Page<T>` to `packages/types` and delete the four web copies.
+- [ ] Classify the 30 local web interfaces as shared, feature-local, or duplicate.
+- [ ] Consolidate the API error shape and request helpers.
+- [ ] Add per-feature query-key objects; remove ad-hoc key arrays.
+- [ ] Extract repeated session/role guard skeletons at three real uses.
+- [ ] Centralize duplicated status/role/match-type label maps.
+- [ ] Add a contract/type test for shared DTO drift.
+
+### Phase 3 — Service decomposition
+
+- [ ] Split `complaint.service.ts` (1698) into intake/verification, conversation/projection,
+      and shared query/authorization seams.
+- [ ] Split `case.service.ts` (1077) into query/listing, lifecycle/assignment, and audit.
+- [ ] Split the representatives service (884) into approval/revocation and institution scope.
+- [ ] Split `overlap.scoring.ts` (856) and `overlap.service.ts` (636) into pure scoring and
+      orchestration/queue projection.
+- [ ] Extract only repeated query/metric helpers from reports (586) and SLA (505).
+- [ ] Split `demo-seed.ts` (989) into fixtures, persistence, and reset guards; seed output
+      stays deterministic.
+- [ ] Keep one facade per module; no route/job/test imports a private internal helper.
+- [ ] Characterization tests and full integration suite pass after each split.
+
+### Phase 4 — Duplication and UI structure
+
+- [ ] Consolidate repeated table/filter/CSV/pagination wiring at three real uses.
+- [ ] Consolidate repeated form field/label/error patterns where mechanically identical.
+- [ ] Extract sub-trees from reports, dashboard, and case-detail pages.
+- [ ] Normalize feature API module exports and date/status formatting helpers.
+- [ ] Remove copy-paste empty/loading/error/permission variants in favor of shared states.
+- [ ] Component tests cover the extracted seams; smoke/visual baselines unchanged.
+
+### Phase 5 — Convention enforcement and documentation
+
+- [ ] Update architecture §5 with import, contract, service, frontend, styling, and test
+      rules.
+- [ ] Add the Phase 0 ADRs.
+- [ ] Add safe Biome rules and, if needed, `scripts/check-imports.ts` to `check:ci`.
+- [ ] Add review-checklist items for shared types, size exceptions, dialogs, query keys,
+      and no-behavior-change refactors.
+- [ ] Update the testing guide with the refactor cadence.
+- [ ] Record the final file-size and duplication baseline for Stage 12.
+
+### Phase 6 — Verification and exit evidence
+
+- [ ] Run `check:ci`, typechecks, unit/integration/component tests, smoke, full Chromium,
+      visual suite, and production builds.
+- [ ] Compare routes, response fixtures, permissions, and seed output to the Stage 10
+      baseline.
+- [ ] Record the after-state audit: 0 parent-relative imports, 1 `Page<T>`, 0
+      `window.confirm`, and a disposition for every remaining local type/large file.
+- [ ] Confirm coverage is at or above baseline and the visual baseline is unchanged.
+- [ ] Update the stage map, QA evidence, and tracker.
+
+## Stage 12 — UI/UX modernization (PLANNED)
+
+Full plan: `docs/plans/ui-modernization-plan.md`. Begins after Stage 11 exits. Keeps the
+route tree, permissions, data, and product scope fixed. The Stage 10 visual baseline is
+expected to change and is refreshed intentionally.
+
+### Phase 0 — Audit, direction, and baselines
+
+- [ ] Inventory every screen/component: route, role, primary action, states, text density,
+      and friction.
+- [ ] Capture current shell, dashboard, admin, portal, and GIS at 375/768/1024/1440 px in
+      light/dark.
+- [ ] Record bundle, route-chunk, axe, and time-to-primary-action baselines.
+- [ ] Lock the rail/top-bar shell, type/spacing/surface direction, motion limits, GIS
+      approach, and portal hero direction.
+- [ ] Produce the keep/refine/replace/delete component inventory.
+- [ ] Confirm Stage 11 exit and the Stage 10 coverage baseline.
+
+### Phase 1 — Tokens and primitives
+
+- [ ] Add type, spacing, surface, focus, density, and motion tokens.
+- [ ] Replace one-off text sizes and static inline styles.
+- [ ] Refine Button, Input/Select/Textarea/Field, Card, Badge/StatusBadge, Table, Tabs,
+      Dialog/Sheet, Dropdown/Tooltip/Popover, Skeleton/Empty/Error/Permission, StatCard,
+      KpiStrip, SectionHeader, FilterBar, and SavedViewMenu.
+- [ ] Add focus-visible, dark-mode, and reduced-motion behavior to every interactive
+      primitive.
+- [ ] Add component/visual coverage for behavior-bearing primitives.
+- [ ] Prove the system on one reference page with axe, zoom, and reflow checks.
+
+### Phase 2 — Shell and navigation
+
+- [ ] Build the desktop rail + context top bar; keep routes and role filtering.
+- [ ] Add global command/search (`Ctrl/Cmd+K`) for cases, institutions, overlaps, and
+      common actions.
+- [ ] Build the notification center (unread count, grouping, filters, mark all read).
+- [ ] Add quick-create and a read-only scope indicator.
+- [ ] Add breadcrumb/context and rework the mobile drawer for thumb reach.
+- [ ] Preserve active nav, focus return, route-change focus, and keyboard access.
+
+### Phase 3 — Dashboard and admin command surfaces
+
+- [ ] Rebuild the dashboard as role-aware sections with a “Needs attention” queue, KPI
+      strip, one primary chart, map preview, recent activity, and quick actions.
+- [ ] Replace equal-weight card grids with primary/secondary/tertiary hierarchy.
+- [ ] Move explanatory prose into labels, inline help, and empty states.
+- [ ] Build the admin hub with people/access, masters, operations, and data-quality groups
+      plus real counts/health and direct actions.
+- [ ] Add a system-health strip for jobs, failed runs, and pending approvals where allowed.
+- [ ] Add saved views for the case registry and overlap queue.
+- [ ] Keep metric reconciliation unchanged; cover role-aware sections with component tests.
+
+### Phase 4 — Core work surfaces
+
+- [ ] Cases registry: sticky toolbar, saved views, filter chips, density, row actions,
+      multi-select export/assignment where permitted.
+- [ ] Case detail: sticky summary header, consolidated tabs, primary action bar, overflow
+      for rare actions, readable timeline.
+- [ ] Institution profile: summary header, health signals, cross-bureau history, merge/alias
+      context.
+- [ ] Overlap queue: triage-first layout, keyboard next/previous/confirm/dismiss, visible
+      score/evidence, clear compare view.
+- [ ] Reports: saved filters, chart/table toggle, fewer default charts, drill-down.
+- [ ] Notifications: grouped, filterable, actionable, non-colour-only unread state.
+- [ ] Forms: one field pattern, inline validation, sticky submit/cancel, change summary for
+      destructive actions.
+
+### Phase 5 — GIS and data visualization
+
+- [ ] Bundle simplified region/catchment GeoJSON with a documented source and license.
+- [ ] Render Leaflet GeoJSON polygons with choropleth by a selectable metric, legend, and
+      hover/click states.
+- [ ] Keep region chips and the data table as the keyboard and no-tile fallback.
+- [ ] Add institution points/drill-down when coordinates exist; avoid a new clustering
+      dependency or defer with a reason.
+- [ ] Add a no-data/no-tiles state and a metric switcher.
+- [ ] Lazy-load the map/GeoJSON and keep the reports route within budget.
+- [ ] Make polygons, points, tooltips, and drill-down keyboard reachable and announced.
+
+### Phase 6 — Portal landing and public experience
+
+- [ ] Rebuild `/portal` with a hero, one supporting sentence, and primary file/track
+      actions.
+- [ ] Put an inline track form above the fold.
+- [ ] Add a three-step visual flow, trust/privacy strip, and concise FAQ.
+- [ ] Replace long explanatory cards with concise feature rows and progressive disclosure.
+- [ ] Keep public projections/privacy unchanged; keep staff sign-in out of the primary path.
+- [ ] Align portal sign-in/signup/dashboard/detail with the staff visual language without
+      exposing staff navigation.
+- [ ] Add a clear verification-status explanation and next action.
+
+### Phase 7 — Motion, accessibility, performance, and coverage refresh
+
+- [ ] Apply motion tokens to shell, lists, dialogs, drawers, charts, and map.
+- [ ] Add reduced-motion overrides for every non-essential transform/animation.
+- [ ] Add skeleton-to-content transitions without layout shift.
+- [ ] Review contrast, focus order/return, 44 px targets, 200% zoom, all four breakpoints,
+      and screen-reader names for icons/charts/map/command results.
+- [ ] Audit the bundle; lazy-load heavy surfaces; add no animation/chart/GIS dependency.
+- [ ] Update selectors only where accessible names changed; prefer roles/labels.
+- [ ] Regenerate the 48 visual baselines after sign-off, review every diff, and run twice.
+- [ ] Run the full Chromium suite twice against fresh builds and `seed:demo`.
+- [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker.
 
 ## Testing Definition of Done
 

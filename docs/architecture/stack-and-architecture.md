@@ -161,6 +161,48 @@ cannot belong to two active groups.
 - **Frontend**: feature folders, shadcn/ui, TanStack Query, RHF+Zod
 - **Naming**: kebab-case files (modules), PascalCase components/types, camelCase vars, UPPER_SNAKE_CASE constants
 
+**Imports and module boundaries**
+
+- Cross-directory imports use `#/*` in both apps.
+- Same-directory sibling imports may use `./`; keep them shallow.
+- Parent-relative imports (`../`) are not allowed in `apps/*/src`.
+- Shared packages are imported as `@casesync/config`, `@casesync/types`, and
+  `@casesync/utils`.
+- A feature exposes its public API through its `api.ts`; import another feature’s internals
+  only through that surface.
+
+**Shared contracts**
+
+- `packages/types` owns contracts used by both apps or by two or more features: `Page<T>`
+  and pagination metadata, cross-boundary DTOs, and shared Zod schemas.
+- A type used by one feature stays feature-local.
+- One definition per concept: no duplicate `Page<T>`, error envelope, status map, or query
+  key. Query keys are declared once per feature.
+
+**Services and size**
+
+- Services expose intent-shaped operations, not a generic repository.
+- Split by change reason, not line count. Soft budget: 500 lines; a file above 700 lines
+  needs a written review reason.
+- Pure calculations move to `packages/utils` only when they are genuinely pure and shared.
+- Refactors must not change routes, permissions, response shapes, transitions, seed output,
+  or visual behavior.
+
+**Frontend and styling**
+
+- Feature code is grouped by domain; large pages compose feature components instead of
+  owning every sub-tree.
+- Destructive actions use `ConfirmDialog`; `window.confirm` is not allowed.
+- Use semantic tokens from `apps/web/src/index.css` before arbitrary values; inline styles
+  are reserved for genuinely dynamic values.
+- Motion uses CSS/Tailwind transitions and respects `prefers-reduced-motion`; no animation
+  library.
+- The GIS view uses the existing Leaflet stack plus bundled GeoJSON; no new GIS dependency.
+
+The Stage 11 audit records the current drift and the cleanup plan in
+[`../plans/code-audit-plan.md`](../plans/code-audit-plan.md). The Stage 12 UI target is in
+[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
 ## 6) Jev Integration
 
 - **Endpoint**: `POST https://jevmodel.org/v1/systemone` (backend-only, never from frontend)

@@ -353,6 +353,29 @@ pick the smallest layer; run the full suite at merge/release checkpoints.
 | `bun run test:e2e:cross-browser` | Chromium, Firefox, and WebKit functional suite (`PLAYWRIGHT_ALL_BROWSERS=1`) |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally and review the diff |
 
+### Stage 11–12 quality gates
+
+Stage 11 (code audit) and Stage 12 (UI modernization) have different oracles:
+
+- **Stage 11 — structure changes, behavior does not.** Add a characterization test before
+  extracting a large service or page. After every phase run the focused unit/integration
+  tests, then the smoke suite. At the exit gate run `check:ci`, typechecks, unit,
+  integration, component, full Chromium, visual, and builds. The visual baseline must
+  **not** change; a diff is an accidental visual regression. Coverage must not fall below
+  the Stage 10 baseline. Do not regenerate snapshots in Stage 11.
+- **Stage 12 — visuals change, behavior does not.** Refresh selectors only where the
+  redesign changed an accessible name, preferring roles/labels over `data-testid`. After
+  design sign-off, regenerate the 48 visual baselines, review every diff, and run the
+  visual suite twice. Run the full Chromium suite twice against fresh production builds
+  and `seed:demo`. Every route must pass axe, keyboard/focus, reduced-motion, 200% zoom,
+  and the four breakpoints. No product behavior changes solely to satisfy a test.
+- Use the smallest layer from [`testing-guide.md`](testing-guide.md) while working and the
+  full suites at the stage boundary. Keep the
+  [`ui-test-matrix.md`](ui-test-matrix.md) and tracker current in the same change.
+
+Plans: [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md) and
+[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
 ## 8. Security testing
 
 Detailed evidence and residual risks: [`security-checklist.md`](security-checklist.md).

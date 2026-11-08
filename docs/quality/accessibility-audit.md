@@ -5,6 +5,12 @@ expansion. Last verified: 2026-11-05.
 Tests: `apps/web/e2e/accessibility.spec.ts`, `apps/web/e2e/responsive.spec.ts`,
 `apps/web/e2e/reports.spec.ts`.
 
+> **Stage 11–12 note.** Stage 11 must leave the accessibility evidence unchanged. Stage 12
+> adds new shell, command/search, dashboard, admin, GIS, and portal surfaces; every one
+> must pass axe, keyboard/focus, reduced-motion, 200% zoom, and the four breakpoints before
+> the stage exits. The map keeps its keyboard chips/table fallback, and motion must have a
+> reduced-motion path. See [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
 ## 1. Scope and method
 
 Automated WCAG 2.0/2.1 A and AA checks use `@axe-core/playwright` against a production

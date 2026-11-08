@@ -16,6 +16,12 @@ Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`next-phase-plan.md`](next-phase-plan.md),
 [`../product/end-product-and-stages.md`](../product/end-product-and-stages.md).
 
+> **Downstream stages.** Stage 11 (code audit) must leave this suite and the visual
+> baselines unchanged. Stage 12 (UI modernization) intentionally changes the UI and
+> refreshes selectors/baselines under the rules in
+> [`ui-modernization-plan.md`](ui-modernization-plan.md); it does not bypass this suite.
+> See also [`code-audit-plan.md`](code-audit-plan.md).
+
 ## 1. Why this stage exists
 
 The Playwright suite proves the highest-value journeys: staff smoke, portal, navigation,

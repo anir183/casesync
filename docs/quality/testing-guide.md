@@ -20,11 +20,30 @@ full suites only at the checkpoints below.
 | Layout, breakpoint, zoom, or reduced motion | `responsive.spec.ts` on the affected project(s) | Catches overflow and reflow regressions |
 | Styling, theme, spacing, or a shared visual component | `bun run test:e2e:visual` | Compares the stable 12-route subset |
 | Seed data, shared fixtures, auth, or a broad app-shell change | `bun run test:e2e:full` once, then the visual suite if appearance is affected | These changes can move many specs at once |
+| An import alias, shared type, query key, or service extraction | Matching unit/integration test, then `bun run check:ci` and the smoke suite; full integration/coverage before merge | Proves the refactor preserved contracts; the full suite is the no-behavior-change oracle |
+| A design token, layout, shell, or shared visual primitive | `bun run test:e2e:visual`, `responsive.spec.ts`, and the matching `@a11y` test | Catches visual, reflow, focus, and contrast regressions |
+| A GIS/map layer, geometry, or legend change | `reports.spec.ts`, `responsive.spec.ts`, the visual suite, and the map keyboard/a11y checks | Proves the map still works without tiles and stays keyboard-accessible |
+| An intentional visual redesign | Update the affected visual baselines, review every diff, run the visual suite twice, then the full Chromium suite once | Baseline churn is expected, but it must be reviewed and stable |
+| A destructive-action dialog change | The matching mutation/component test plus the dialog focus/restore checks | Confirms the action intent, focus trap, and accessibility still hold |
 | Performance-sensitive lists, reports, or details | `bun run test:perf` locally before a demo | Uses the stress seed and resets afterward |
 | Docs, comments, or a dependency bump with no runtime change | Lint and typecheck only | E2E would not add meaningful signal |
 
 When in doubt, start one layer lower than you think you need. Escalate only when the
 change crosses a boundary.
+
+### Stage 11–12 cadence
+
+- **Stage 11 (code audit):** characterization test first, then the focused integration
+  test after each extraction, then the smoke suite at each phase boundary. At the exit
+  gate run the full suite and the visual suite; the visual baseline must be unchanged.
+  Never regenerate snapshots in Stage 11.
+- **Stage 12 (UI modernization):** use the smallest layer while building a component,
+  then run visual + responsive + a11y on the affected surface. At the exit gate refresh
+  the deliberately changed baselines, review every diff, and run the visual suite twice
+  and the full Chromium suite twice against fresh builds and `seed:demo`.
+- Both stages keep the route matrix and tracker current in the same change. See
+  [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md) and
+  [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
 
 ## 2. Test layers and cost
 

@@ -231,6 +231,8 @@ layout.
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
 | 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
 | 10 | Complete Playwright UI coverage | **Partial** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
+| 11 | Codebase audit, cleanup & convention hardening | **Planned** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard, one shared `Page<T>`, decomposed services, documented conventions, full suite and visual baseline pass unchanged; see `../plans/code-audit-plan.md` |
+| 12 | UI/UX modernization | **Planned** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
 
 ### Current position (honest)
 
@@ -276,6 +278,17 @@ layout.
   verification. See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
+- Stage 11 is planned, not started. It begins only after Stage 10 exits. The read-only
+  audit found 40 parent-relative imports across 29 web files, 44 same-directory relative
+  API imports alongside 316 alias imports, four duplicate web `Page<T>` definitions, five
+  `window.confirm` call sites, and five API services or seed files above 800 lines. The
+  plan is [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md).
+- Stage 12 is planned, not started. It begins only after Stage 11 exits so the UI pass
+  builds on clean imports, shared contracts, and decomposed services. It covers design
+  tokens and primitives, a rail/top-bar shell with command search, role-specific dashboards,
+  an admin hub, faster core work surfaces, bundled GIS geometry, a focused portal landing,
+  and a deliberate refresh of the Stage 10 selectors and visual baselines. The plan is
+  [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
 
 ## 6. Stage details and expectations
 
@@ -719,6 +732,108 @@ the living coverage matrix is [`../quality/ui-test-matrix.md`](../quality/ui-tes
 **Contribution:** converts the UI from "the critical journeys are tested" to "the product
 is proven", which is the last quality gap before a credible release or handover.
 
+---
+
+### Stage 11 — Codebase audit, cleanup & convention hardening
+
+**Goal:** remove accumulated structural debt before the UI modernization, without adding
+product capability or changing behavior. The decision-complete plan is
+[`../plans/code-audit-plan.md`](../plans/code-audit-plan.md).
+
+**Scope**
+
+- Import and module-boundary normalization: `#/*` for cross-directory imports, sibling
+  `./` imports only, no parent-relative imports in application source.
+- Shared contracts: one `Page<T>`, one API error shape, shared DTOs in `packages/types`
+  where they cross the API/web boundary or serve two or more features.
+- Per-feature query keys, shared session/role guards, and single label mappings.
+- Destructive actions move from `window.confirm` to the existing `ConfirmDialog`.
+- Service decomposition for the largest modules: complaints, cases, representatives,
+  overlap scoring/orchestration, reports/SLA, and the demo seed.
+- Large page components compose feature components instead of owning every sub-tree.
+- Convention enforcement: Biome rules where practical, a small import-boundary check where
+  not, and a review checklist that matches the written rules.
+- Token-first styling cleanup for repeated arbitrary text sizes and static inline styles.
+
+**Dependencies**
+
+- Stage 10 exit evidence must be recorded first; the Stage 10 suite and visual baseline are
+  the “no behavior change” oracle.
+- Stage 12 must not start until Stage 11 exits, or the UI diff will mix refactor noise with
+  design review.
+
+**Exit criteria**
+
+1. No parent-relative imports in `apps/*/src`.
+2. One shared `Page<T>` and one shared API error shape.
+3. Shared DTOs have one owner; feature-local types are explicitly local.
+4. Query keys, guards, and label maps are declared once per concept.
+5. No `window.confirm` remains; destructive actions use `ConfirmDialog`.
+6. The named large services/pages are within the documented budget or have a written
+   exception.
+7. Conventions are documented and enforced where practical.
+8. No route, permission, response shape, transition, seed output, or visual behavior
+   changed; the full suite and visual baseline pass unchanged.
+9. Coverage is at or above the Stage 10 baseline.
+
+**Contribution:** makes the UI modernization reviewable and prevents the new UI from
+inheriting import drift, duplicate contracts, and oversized modules.
+
+---
+
+### Stage 12 — UI/UX modernization
+
+**Goal:** turn the functional interface into a fluid, action-first operational product
+without changing permissions, data, or product scope. The decision-complete plan is
+[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+
+**Scope**
+
+- Design tokens for type, spacing, surfaces, focus, density, and motion, plus refined
+  shared primitives.
+- A desktop rail + context top bar, a global command/search surface, a notification center,
+  quick-create, a read-only scope indicator, and mobile parity.
+- Role-specific landing surfaces: officer queue, senior/regional oversight, viewer
+  read-only, admin health, representative work, and complainant status.
+- An admin hub that groups people/access, masters, operations, and data-quality jobs with
+  real signals and direct actions.
+- Faster core work surfaces: cases registry, case detail, institution profile, overlap
+  triage, reports, notifications, and forms; saved views and keyboard-friendly actions.
+- A real GIS view: bundled region/catchment GeoJSON, choropleth, institution points,
+  drill-down, legend, keyboard chips, table fallback, and a no-tiles state.
+- A focused portal landing: hero, inline track form, three-step flow, trust strip, concise
+  FAQ, and a clear verification state.
+- Tokenized motion with reduced-motion overrides; accessibility, responsive, zoom, and
+  contrast gates; bundle/performance budget.
+- An intentional refresh of Stage 10 selectors, coverage matrix, and visual baselines.
+
+**Dependencies**
+
+- Stage 11 exit (imports, shared contracts, services, conventions).
+- Stage 10 coverage baseline and visual suite; Stage 12 changes the visuals, so the
+  baseline refresh is part of the stage.
+- No new animation, chart, GIS, or UI library; use CSS/Tailwind motion and the existing
+  Leaflet stack.
+
+**Exit criteria**
+
+1. The token system, primitives, shell, role dashboards, admin hub, core surfaces, GIS,
+   and portal landing are implemented.
+2. Every route passes axe, keyboard/focus, reduced-motion, 200% zoom, and
+   375/768/1024/1440 px reflow.
+3. The GIS shows bundled geometry and a readable metric, works without tiles, and keeps
+   the region chips/table as an equal path.
+4. The portal primary action is visible without scrolling and the track path is one form
+   away.
+5. The bundle stays within budget; no new animation/chart/GIS dependency is added.
+6. Visual baselines are regenerated intentionally, reviewed, and pass twice.
+7. The full Chromium suite passes twice against fresh production builds and `seed:demo`.
+8. The coverage matrix, testing guide, QA doc, UI/UX plan, and tracker agree.
+9. No product behavior changed solely to satisfy a test.
+
+**Contribution:** removes the “functional but text-heavy” feel and makes the product’s
+daily actions, exceptions, and geographic context visible before explanation.
+
 ## 7. Definition of Done (applies to every stage)
 
 A stage is done only when all are true:
@@ -763,6 +878,10 @@ Stage 8 (done — optional public portal)
 Stage 9 (partial — Phase 0 baseline/UI consistency, Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS done; remaining Phase 3 flows, hardening, docs remain)
    ↓
 Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, accessibility/responsive, visual, and CI checks landed, exits after the remaining Stage 9 Phase 3 flows and CI-image visual verification)
+   ↓
+Stage 11 (planned — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; exits after the full suite and visual baseline pass unchanged)
+   ↓
+Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin hub, core surfaces, GIS, portal landing, motion/a11y; exits after refreshed coverage passes twice)
 ```
 
 Parallelizable in Stage 9:
@@ -781,6 +900,12 @@ mutations, UI states, accessibility/responsive checks, visual regression, and th
 have landed, while the final exit gate waits for the remaining Stage 9 Phase 3 flows and
 CI-image visual verification.
 
+Stage 11 and Stage 12 are sequential and follow Stage 10. Stage 11 may begin the read-only
+inventory and guardrail design while Stage 10 finishes, but no refactor starts until Stage
+10's exit evidence is recorded. Stage 12 must not start until Stage 11 exits: the UI pass
+would otherwise mix structural and visual diffs, and the Stage 10 visual baseline would be
+refreshed against a moving codebase.
+
 ## 9. Risks and mitigations
 
 | Risk | Impact | Mitigation |
@@ -795,6 +920,10 @@ CI-image visual verification.
 | Analytics computed ad hoc | Numbers disagree | Single SLA/overdue helper; reconcile dashboard/report/job tests. |
 | Fuzzy scan in memory | Slow at scale | Cap for demo; background sweep/indexed blocking later. |
 | Large diff / uncommitted work | Hard review/recovery | Small stage-sized commits only when explicitly requested; review checklist. |
+| Refactor silently changes behavior | Regressions in official workflows | Stage 11 characterization tests, response fixtures, no mixed feature/refactor commits, visual baseline must not move. |
+| UI churn invalidates coverage | False failures or lost regression signal | Stage 12 refreshes selectors and baselines intentionally, reviews every diff, and runs the full suite twice. |
+| Shared types become a dumping ground | Worse coupling than before | Require a real consumer and a domain name; keep feature-local types local. |
+| Modernization becomes a feature rewrite | Scope explosion | Keep routes, permissions, data, and behavior fixed; new features need a separate decision. |
 | Solo development review blind spots | Bugs/security gaps | Structured self-review + subagent/human review + automated gates. |
 
 ## 10. What "done" means for the whole MVP

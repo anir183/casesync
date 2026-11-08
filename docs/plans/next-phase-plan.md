@@ -28,6 +28,12 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
 > UI states, accessibility/responsive expansion, visual regression, and the CI split have
 > landed. Its final exit gate waits for the remaining Phase 3 role flows and CI-image
 > visual verification.
+>
+> **Stage 11–12 sequencing.** After Stage 10 exits, Stage 11
+> ([`code-audit-plan.md`](code-audit-plan.md)) cleans up imports, shared contracts,
+> services, duplication, and conventions without changing behavior. Stage 12
+> ([`ui-modernization-plan.md`](ui-modernization-plan.md)) then modernizes the UI and
+> intentionally refreshes the Stage 10 selectors and visual baselines.
 
 ## 1. Purpose
 
