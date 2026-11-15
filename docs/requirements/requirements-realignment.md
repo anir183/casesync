@@ -410,8 +410,9 @@ the audit above predates them. Current facts:
   states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI
   split have
   landed; see `docs/plans/ui-testing-plan.md`, `docs/quality/ui-test-matrix.md`, and
-  `docs/plans/todo-tracker.md` for the current checklist. Remaining is the final exit
-  baseline after CI-image visual verification and the final two-run full-suite record.
+  `docs/plans/todo-tracker.md` for the current checklist. The 48 visual baselines are
+  regenerated on the pinned CI image and the two-run full-suite record is green (216/216
+  twice); the flag-off verification dispatch is the remaining exit gate.
 
 ## 16. Gap backlog (prioritized)
 

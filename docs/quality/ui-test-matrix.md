@@ -349,9 +349,9 @@ route introduces a new layout.
 
 | Screen | Light desktop | Dark desktop | Light mobile | Dark mobile | Status |
 |---|---|---|---|---|---|
-| `/dashboard` | Covered | Covered | Covered | Covered | **Partial** — role landing changed; baseline regeneration pending |
+| `/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
 | `/cases` | Covered | Covered | Covered | Covered | **Covered** |
-| `/cases/:id` | Covered | Covered | Covered | Covered | **Partial** — resolution loop/timeline changed; baseline regeneration pending |
+| `/cases/:id` | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions` | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions/:id` | Covered | Covered | Covered | Covered | **Covered** |
 | `/overlaps` | Covered | Covered | Covered | Covered | **Covered** |
@@ -360,16 +360,17 @@ route introduces a new layout.
 | `/notifications` | Covered | Covered | Covered | Covered | **Covered** |
 | `/admin/users` | Covered | Covered | Covered | Covered | **Covered** |
 | `/portal` | Covered | Covered | Covered | Covered | **Covered** |
-| `/portal/dashboard` | Covered | Covered | Covered | Covered | **Partial** — next-step card changed; baseline regeneration pending |
+| `/portal/dashboard` | Covered | Covered | Covered | Covered | **Covered** |
 
 `apps/web/e2e/visual.spec.ts` adds 48 screenshots (12 routes × light/dark × desktop/mobile).
 Dates are replaced with fixed-width placeholders and masked, map tiles are aborted and the
 map container is masked, and animations and carets are disabled. `SEED_NOW` pins the demo
 timeline; reset removes demo merge groups and notifications so repeated runs do not drift.
-The visual subset has not been rerun since the Phase 3 UI changes. The dashboard, case
-detail, and portal dashboard baselines need regeneration and review, and none of the
-baselines has been verified on the pinned CI image. That remains an open Stage 10 exit
-gate, not a covered row.
+The visual set was regenerated on the pinned CI image on 2026-11-15 (run `43736570234`:
+`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4), after the Stage 9 Phase 3 dashboard, case
+workspace, and portal dashboard changes. All 48 images were reviewed and committed in
+`a44f9d3`. Re-dispatch with `update_visual_snapshots` off verifies the same baseline on the
+same runner image; that flag-off run is the final Stage 10 exit gate.
 
 ## 6. Accessibility coverage
 
@@ -408,7 +409,7 @@ shells also expose skip links and a focusable `main#main-content`.
 | Routes — representative | 0 | 6 | 1 | 0 | 0 |
 | Mutations | 33 | 7 | 15 | 0 | 0 |
 | UI states | 9 | 14 | 1 | 0 | 0 |
-| Visual screens | 9 | 3 | 0 | 0 | 0 |
+| Visual screens | 12 | 0 | 0 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts. A Partial
 route row is not a failure: it means the render and denial contracts pass while one
