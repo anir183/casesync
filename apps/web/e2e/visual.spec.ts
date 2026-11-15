@@ -95,43 +95,54 @@ const THEMES = ['light', 'dark'] as const
 const DATE_SOURCE =
   '\\b[A-Z][a-z]{2} \\d{1,2}, \\d{4}(?:, \\d{1,2}:\\d{2}\\s?(?:AM|PM))?\\b|\\b\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\b'
 
-async function markVolatileDates(page: Page) {
-  await page.evaluate((source) => {
-    const placeholder = (value: string) => {
-      if (value.includes('/')) return '01/01/2026'
-      if (value.includes(':')) return 'Jan 01, 2026, 00:00 AM'
-      return 'Jan 01, 2026'
-    }
+/** Width-stable stand-in for the route fixture complaint's generated case number. */
+const FIXTURE_CASE_NUMBER_PLACEHOLDER = 'CMP-0000-000000'
 
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
-    const nodes: Text[] = []
-    while (walker.nextNode()) {
-      const node = walker.currentNode as Text
-      const parent = node.parentElement
-      if (!parent || parent.closest('script, style, [data-visual-volatile]')) continue
-      if (new RegExp(source).test(node.textContent ?? '')) nodes.push(node)
-    }
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-    for (const node of nodes) {
-      const text = node.textContent ?? ''
-      const pattern = new RegExp(source, 'g')
-      const fragment = document.createDocumentFragment()
-      let cursor = 0
-      let match = pattern.exec(text)
-      while (match) {
-        if (match.index > cursor) fragment.append(text.slice(cursor, match.index))
-        const span = document.createElement('span')
-        span.dataset.visualVolatile = ''
-        span.textContent = placeholder(match[0])
-        fragment.append(span)
-        cursor = match.index + match[0].length
-        match = pattern.exec(text)
+async function markVolatile(page: Page, source: string, mode: 'date' | 'literal', literal = '') {
+  await page.evaluate(
+    ({ source, mode, literal }) => {
+      const placeholder = (value: string) => {
+        if (mode === 'literal') return literal
+        if (value.includes('/')) return '01/01/2026'
+        if (value.includes(':')) return 'Jan 01, 2026, 00:00 AM'
+        return 'Jan 01, 2026'
       }
-      if (cursor === 0) continue
-      if (cursor < text.length) fragment.append(text.slice(cursor))
-      node.replaceWith(fragment)
-    }
-  }, DATE_SOURCE)
+
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      const nodes: Text[] = []
+      while (walker.nextNode()) {
+        const node = walker.currentNode as Text
+        const parent = node.parentElement
+        if (!parent || parent.closest('script, style, [data-visual-volatile]')) continue
+        if (new RegExp(source).test(node.textContent ?? '')) nodes.push(node)
+      }
+
+      for (const node of nodes) {
+        const text = node.textContent ?? ''
+        const pattern = new RegExp(source, 'g')
+        const fragment = document.createDocumentFragment()
+        let cursor = 0
+        let match = pattern.exec(text)
+        while (match) {
+          if (match.index > cursor) fragment.append(text.slice(cursor, match.index))
+          const span = document.createElement('span')
+          span.dataset.visualVolatile = ''
+          span.textContent = placeholder(match[0])
+          fragment.append(span)
+          cursor = match.index + match[0].length
+          match = pattern.exec(text)
+        }
+        if (cursor === 0) continue
+        if (cursor < text.length) fragment.append(text.slice(cursor))
+        node.replaceWith(fragment)
+      }
+    },
+    { source, mode, literal },
+  )
 }
 
 async function settleVisualPage(page: Page, route: VisualRoute) {
@@ -158,7 +169,15 @@ test.describe('@visual visual regression', () => {
           await page.goto(path)
           await assertExpectation(page, route.render, data)
           await settleVisualPage(page, route)
-          await markVolatileDates(page)
+          await markVolatile(page, DATE_SOURCE, 'date')
+          // The route coverage fixture creates a complaint whose case number is
+          // generated per run, so normalise it before comparing pixels.
+          await markVolatile(
+            page,
+            escapeRegExp(data.complaint.caseNumber),
+            'literal',
+            FIXTURE_CASE_NUMBER_PLACEHOLDER,
+          )
           await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
             fullPage: true,
             animations: 'disabled',
