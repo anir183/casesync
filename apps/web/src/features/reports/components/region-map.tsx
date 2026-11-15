@@ -33,7 +33,10 @@ export function RegionMap({
   showMap?: boolean
 }) {
   const [activeId, setActiveId] = useState<string | undefined>(selectedRegionId)
-  const active = regions.find((item) => item.regionId === activeId)
+  const [hoveredId, setHoveredId] = useState<string | undefined>()
+  // Keyboard focus outranks a resting pointer: scrolling a chip into view can
+  // otherwise fire mouseenter on a different chip and replace the summary.
+  const active = regions.find((item) => item.regionId === (activeId ?? hoveredId))
 
   useEffect(() => {
     if (selectedRegionId) setActiveId(selectedRegionId)
@@ -65,8 +68,8 @@ export function RegionMap({
                 aria-label={regionLabel(region)}
                 aria-pressed={selected}
                 onClick={() => onSelect?.(region)}
-                onMouseEnter={() => setActiveId(region.regionId)}
-                onMouseLeave={() => setActiveId(undefined)}
+                onMouseEnter={() => setHoveredId(region.regionId)}
+                onMouseLeave={() => setHoveredId(undefined)}
                 onFocus={() => setActiveId(region.regionId)}
                 onBlur={() => setActiveId(undefined)}
                 className={cn(
