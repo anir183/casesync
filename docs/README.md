@@ -51,8 +51,8 @@ assessment data.
 | Accessibility | [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) | `4.14.0` |
 
 Node `24.21.0` is the Playwright tooling target. `mise.toml` tracks the Bun `1.4` and
-Node `24` lines; CI pins Bun `1.4.4` and currently uses the runner's Node. Exact Node
-`24.21.0` and MongoDB `7.0.45` pins are Stage 10 follow-ups.
+Node `24` lines; CI pins Bun `1.4.4`, MongoDB `7.0.45`, and currently uses the runner's
+Node. The exact Node `24.21.0` pin remains an open follow-up.
 
 ## Quick start
 
@@ -138,10 +138,11 @@ casesync/
 - **Accessibility** — automated WCAG 2.0/2.1 A/AA scans with axe.
 - **Performance** — a tagged stress-data suite run locally before demos and releases.
 
-The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md); the living
-route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). Stage 11
-[code audit](plans/code-audit-plan.md) and Stage 12
-[UI modernization](plans/ui-modernization-plan.md) are planned after Stage 10; the UI pass
+The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md), complete as of
+2026-11-16; the living
+route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). [Stage 11 code
+audit](plans/code-audit-plan.md) is next, followed by
+[Stage 12 UI modernization](plans/ui-modernization-plan.md); the UI pass
 will intentionally refresh the Stage 10 selectors and visual baselines. Use the
 [testing guide](quality/testing-guide.md) to choose the smallest test set for a change.
 Current results and quality gates live in [QA and review](quality/qa-and-review.md).

@@ -284,11 +284,13 @@ performance test is tagged and run separately with the stress seed. The
 E2E specs cover which behavior; the full suite is a merge/release gate, not an inner-loop
 tool.
 
-**Stage 10 is the completion path, and work is in progress.** Shared fixtures, per-role
+**Stage 10 completed on 2026-11-16.** Shared fixtures, per-role
 storage states, current-route render/denial coverage, mutation coverage (including the
 representative journey), UI-state and Phase 3 flow coverage, accessibility/responsive
-expansion, visual regression, and the CI job split have landed. The final coverage
-baseline waits on CI-image visual verification and the final two-run full-suite record.
+expansion, visual regression, and the CI job split have landed. The 48 visual baselines
+were regenerated on the pinned CI image, two consecutive local full-suite runs passed
+216/216, and flag-off dispatch `43750576126` on `f882bd1` passed all 11 CI jobs, including
+visual verification and the three cross-browser projects.
 The decision-complete
 plan is [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the living route ×
 role × action × state matrix is [`ui-test-matrix.md`](ui-test-matrix.md). Stage 10 adds:
@@ -649,12 +651,12 @@ change description.
 - [x] `.env.example` complete; demo `.env` documented.
 - [x] Seed runs idempotently; guarded reset/stress helpers work.
 - [x] `verify`, integration, coverage, E2E, accessibility, and performance suites pass locally.
-- [ ] Stage 10 matrix complete: every route, role, mutation, state, a11y check, breakpoint,
-      and visual baseline covered, deferred with a reason, or blocked by a named Stage 9
-      flow.
-- [ ] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`
-      after the representative slice.
-- [ ] CI green on a pushed commit.
+- [x] Stage 10 matrix complete: every route, role, mutation, state, a11y check, breakpoint,
+      and visual baseline is covered, deferred with a reason, or blocked by a named Stage 9
+      flow. Exit recorded on 2026-11-16.
+- [x] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`
+      after the representative slice (216/216 twice, 2026-11-15).
+- [x] CI green on a pushed commit (flag-off dispatch `43750576126` on `f882bd1`).
 - [ ] Independent runbook walkthrough by someone other than the author.
 - [x] Security checklist complete.
 - [x] Dashboard/report numbers reconciled with seeded fixtures.

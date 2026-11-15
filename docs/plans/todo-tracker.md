@@ -1,10 +1,10 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-15 (Stage 10 exit baseline); Stage 11/12 plans added 2026-11-08.
+**Last verified:** 2026-11-16 (Stage 10 exit); Stage 11/12 plans added 2026-11-08.
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1–4 implemented; manual screen-reader sign-off and Phases 5–6 remain. See `docs/plans/next-phase-plan.md`.
-**Stage 10:** exiting 2026-11-15. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Final exit waits only on a flag-off verification dispatch of the regenerated baselines. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
+**Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** planned, not started. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Begins after Stage 10 exits. See `docs/plans/code-audit-plan.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
@@ -404,14 +404,14 @@ indigo/teal language.
 - [ ] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
 - [ ] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment).
 
-## Stage 10 — Complete Playwright UI coverage (EXITING)
+## Stage 10 — Complete Playwright UI coverage (DONE)
 
 Full plan: `docs/plans/ui-testing-plan.md`. Living matrix:
 `docs/quality/ui-test-matrix.md`. Stage 10 is a separate cross-cutting stage, not another
 Stage 9 phase. All current routes, including the representative shell and the admin
 representative/domain queues, are covered. The Stage 9 Phase 3 flows are implemented and
-covered. The visual baselines are regenerated on the pinned CI image and the two-run
-full-suite record is green; a flag-off verification dispatch is the last exit gate.
+covered. The visual baselines are regenerated on the pinned CI image, the two-run full-suite
+record is green, and the flag-off verification dispatch passed on 2026-11-16.
 
 ### Foundation
 
@@ -537,17 +537,20 @@ Deferred:
       overlaps, overlap detail, reports, notifications, admin users, portal, and portal
       dashboard.
 - [x] Light/dark at mobile/desktop.
-- [x] Mask volatile dates and map tiles; fixed-width date placeholders prevent layout drift.
+- [x] Mask volatile dates, map tiles, and the route fixture's generated complaint number;
+      fixed-width placeholders prevent layout drift.
 - [x] Reset removes demo merge groups and notifications so repeated runs do not accumulate.
 - [x] Regenerate the dashboard, case-detail, and portal-dashboard baselines after the
       Phase 3 UI changes, then rerun the visual suite twice. Done on 2026-11-15 together
       with the full-set regeneration; reviewed against the pre-Phase-3 set.
 - [x] Generate baselines on the pinned CI image; review every update. Dispatch the workflow
       with `update_visual_snapshots` enabled, download the `visual-baselines` artifact,
-      commit the images, then dispatch with the flag off to verify. The 48 baselines came
-      from run `43736570234` (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4); every image was
-      checked non-blank and reviewed, and committed in `a44f9d3`. The flag-off verification
-      dispatch is the remaining exit gate.
+      commit the images, then dispatch with the flag off to verify. The first pinned set
+      (run `43736570234`, committed in `a44f9d3`) failed verification because the shared
+      route fixture creates a portal complaint whose case number is generated per run;
+      `dd6dfcd` masks that number, run `43748957167` regenerated the set, and only the 12
+      affected cases, institution-detail, and portal-dashboard images changed (`f882bd1`).
+      Flag-off dispatch `43750576126` verified the full set green on 2026-11-16.
 
 ### CI and documentation
 
@@ -562,12 +565,12 @@ Deferred:
 - [x] Record the functional Stage 10 test inventory: 196 desktop functional tests, 216
       desktop + mobile, 13 smoke, 55 accessibility (37 route + 13 denial + 5 keyboard/focus),
       16 responsive-spec tests, 16 state tests, and 48 visual comparisons.
-- [x] Record the final Stage 10 exit baseline once the visual baselines are verified on CI.
-      Two consecutive local full-suite runs against a freshly reset database passed
-      216/216 each (2026-11-15, runs of 8.5 and 11.7 minutes). Snapshot: 196 desktop
-      functional, 216 desktop + mobile, 13 smoke, 55 accessibility, 16 responsive-spec,
-      16 state, and 48 visual comparisons. The regenerated baselines are committed; the
-      flag-off verification dispatch closes the exit.
+- [x] Record the final Stage 10 exit baseline. Two consecutive local full-suite runs against
+      a freshly reset database passed 216/216 each (2026-11-15, runs of 8.5 and 11.7
+      minutes). Snapshot: 196 desktop functional, 216 desktop + mobile, 13 smoke, 55
+      accessibility, 16 responsive-spec, 16 state, and 48 visual comparisons. Flag-off
+      dispatch `43750576126` on `f882bd1` passed all 11 jobs on 2026-11-16, including visual
+      regression (48/48) and the three cross-browser projects.
 
 ## Stage 11 — Codebase audit, cleanup & convention hardening (PLANNED)
 

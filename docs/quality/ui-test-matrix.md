@@ -364,13 +364,15 @@ route introduces a new layout.
 
 `apps/web/e2e/visual.spec.ts` adds 48 screenshots (12 routes × light/dark × desktop/mobile).
 Dates are replaced with fixed-width placeholders and masked, map tiles are aborted and the
-map container is masked, and animations and carets are disabled. `SEED_NOW` pins the demo
-timeline; reset removes demo merge groups and notifications so repeated runs do not drift.
-The visual set was regenerated on the pinned CI image on 2026-11-15 (run `43736570234`:
+map container is masked, and animations and carets are disabled. The shared route fixture's
+generated complaint number is masked the same way, because it sorts to the top of the case
+registry and changes on every run (`dd6dfcd`). `SEED_NOW` pins the demo timeline; reset
+removes demo merge groups and notifications so repeated runs do not drift.
+The visual set was regenerated on the pinned CI image on 2026-11-15 (run `43748957167`:
 `ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4), after the Stage 9 Phase 3 dashboard, case
 workspace, and portal dashboard changes. All 48 images were reviewed and committed in
-`a44f9d3`. Re-dispatch with `update_visual_snapshots` off verifies the same baseline on the
-same runner image; that flag-off run is the final Stage 10 exit gate.
+`f882bd1`. Flag-off dispatch `43750576126` verified the same baseline on the same runner
+image on 2026-11-16; Stage 10 exited on that run.
 
 ## 6. Accessibility coverage
 

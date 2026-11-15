@@ -11,7 +11,7 @@ Companions: [`backup-and-retention.md`](backup-and-retention.md),
 - Bun 1.4.4 (pinned in CI; `mise.toml` tracks the `1.4` line). Node 24.21.0 is the
   Playwright tooling target (`mise.toml` tracks the `24` line); CI currently uses the
   runner's Node.
-- MongoDB production/CI line 7.0. CI uses the `mongo:7` image; pin `7.0.45` in Stage 10.
+- MongoDB production/CI line 7.0. CI pins the `mongo:7.0.45` image.
   Local MongoDB 8.3.9 is supported for development and integration runs; do not silently
   change the CI major without a migration pass.
 - `apps/api/.env` with `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
@@ -108,8 +108,9 @@ Current local baseline (2026-11-08): 97 API unit + 26 web tests, 62 integration 
 desktop browser tests plus 20 mobile-project tests (216 total), including 55 accessibility
 checks, 16 responsive-spec checks, 16 state checks, and 48 visual comparisons, plus 87.4%
 lines / 89.7%
-functions of API coverage. The Phase 3 state and portal suites passed on targeted runs;
-rerun the full suite for the final exit record. The production
+functions of API coverage. The full suite passed twice consecutively for the Stage 10
+exit record (216/216, 2026-11-15) and the flag-off CI verification passed on
+2026-11-16. The production
 web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
 was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
 new runtime.
@@ -121,7 +122,7 @@ CI (`.github/workflows/ci.yml`) pins every job to `ubuntu-24.04`, Bun `1.4.4`, a
 `actions/checkout@v7` / `actions/upload-artifact@v7`. It runs static analysis,
 unit/component tests, integration + coverage with `mongo:7.0.45`, builds, seeded PR smoke,
 full Chromium on `main`, and release/manual cross-browser and visual jobs, plus dependency
-audit. The exact Node `24.21.0` pin remains a Stage 10 follow-up.
+audit. The exact Node `24.21.0` pin remains an open follow-up.
 
 ## 4.1 Stage 8 portal operations
 

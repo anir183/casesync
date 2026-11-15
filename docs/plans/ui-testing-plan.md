@@ -1,14 +1,15 @@
 # CaseSync — Stage 10: Complete Playwright UI Coverage
 
-Status: in progress. Steps 1–7 have landed: fixtures and current-route render/denial
-coverage, staff/admin mutation coverage, portal/auth flows, the institution representative
-journey, UI-state and Phase 3 flow coverage, accessibility/responsive expansion, visual
-regression, and the CI job split. The desktop functional suite is now 196 tests (216 with
-the mobile project) and the visual suite is 48 comparisons; the updated suites pass locally
-against fresh builds. Step 8 (the final coverage baseline) waits on CI-image visual
-verification and a final two-run full-suite record.
+Status: complete (2026-11-16). Steps 1–8 have landed: fixtures and current-route
+render/denial coverage, staff/admin mutation coverage, portal/auth flows, the institution
+representative journey, UI-state and Phase 3 flow coverage, accessibility/responsive
+expansion, visual regression, and the CI job split. The desktop functional suite is 196
+tests (216 with the mobile project) and the visual suite is 48 comparisons; the suites pass
+locally against fresh builds. The 48 baselines were regenerated on the pinned CI image and
+flag-off dispatch `43750576126` verified them green alongside the three cross-browser
+projects.
 Location: `docs/plans/ui-testing-plan.md`.
-Plan date: 2026-11-02. Last updated: 2026-11-08.
+Plan date: 2026-11-02. Last updated: 2026-11-16.
 Companions: [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md),
 [`../quality/testing-guide.md`](../quality/testing-guide.md),
 [`../quality/qa-and-review.md`](../quality/qa-and-review.md),
@@ -323,9 +324,10 @@ Implementation notes:
   their notifications so repeated resets do not accumulate state.
 - Dates are replaced with fixed-width placeholders (`Jan 01, 2026`,
   `Jan 01, 2026, 00:00 AM`, `01/01/2026`) and masked. Map tiles are aborted and the map
-  container is masked.
-- Current baselines are Linux-generated; regenerating them on the pinned CI image remains
-  part of the CI workstream.
+  container is masked. The route fixture's generated complaint number is masked with a
+  fixed-width placeholder because it changes on every run.
+- Baselines are generated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun
+  1.4.4).
 
 ## 8. Commands and configuration
 
