@@ -6,8 +6,3 @@ export async function connectDb() {
   await mongoose.connect(env.MONGODB_URI)
   console.log('[db] connected')
 }
-
-export async function disconnectDb() {
-  if (mongoose.connection.readyState === 0) return
-  await mongoose.disconnect()
-}

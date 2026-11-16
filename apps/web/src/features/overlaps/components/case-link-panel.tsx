@@ -1,4 +1,4 @@
-import { PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { OVERLAP, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -96,7 +96,7 @@ export function CaseLinkPanel({ caseId }: { caseId: string }) {
             <Textarea
               id="link-notes"
               rows={2}
-              maxLength={2000}
+              maxLength={OVERLAP.MAX_NOTES_LENGTH}
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Why are these cases related?"

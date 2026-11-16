@@ -6,13 +6,13 @@ import { Card, CardBody, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel } from '#/components/ui/textarea'
-import { formatDate } from '#/lib/utils'
 import {
   type RepresentativeProfile,
   type RepresentativeStatus,
   useRepresentativeProfile,
   useUpdateRepresentativeProfile,
-} from '../api'
+} from '#/features/representatives/api'
+import { formatDate } from '#/lib/utils'
 
 const STATUS_COPY: Record<
   RepresentativeStatus,

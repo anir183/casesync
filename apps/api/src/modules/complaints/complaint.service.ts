@@ -38,14 +38,6 @@ const COMPLAINT_PREFIX = 'CMP'
 const CASE_NUMBER_ATTEMPTS = 5
 const TRIAGE_ROLES = [ROLES.ADMIN, ROLES.SENIOR_MANAGEMENT, ROLES.COMPETENT_AUTHORITY]
 
-export interface ComplainantUser extends ScopeUser {
-  name?: string
-  email?: string
-  phone?: string
-  institutionId?: string
-  verificationStatus?: string
-}
-
 export interface SignupInput {
   name: string
   email: string
@@ -64,11 +56,6 @@ export interface ComplaintInput {
   desiredResolution?: string
   contactPreference?: string
   consentGiven: boolean
-}
-
-export interface MessageInput {
-  body: string
-  visibility?: string
 }
 
 export interface VerificationInput {
@@ -1693,8 +1680,4 @@ export async function resolveComplaint(
     status: CASE_STATUS.DISPOSED,
     reopenDeadline: item.reopenDeadline,
   }
-}
-
-export function isComplainantRole(role?: string) {
-  return role === ROLES.COMPLAINANT
 }

@@ -5,9 +5,9 @@ import { Button } from '#/components/ui/button'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
+import { downloadAttachment, useAttachments, useUploadAttachment } from '#/features/attachments/api'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate } from '#/lib/utils'
-import { downloadAttachment, useAttachments, useUploadAttachment } from '../api'
 
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`

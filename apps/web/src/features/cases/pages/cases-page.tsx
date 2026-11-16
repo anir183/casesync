@@ -15,11 +15,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
+import { type CaseFilters, downloadCases, useCases } from '#/features/cases/api'
+import { CaseTable } from '#/features/cases/components/case-table'
+import {
+  caseFiltersToSearchParams,
+  cleanCaseFilters,
+  readCaseFilters,
+} from '#/features/cases/filters'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
-import { type CaseFilters, downloadCases, useCases } from '../api'
-import { CaseTable } from '../components/case-table'
-import { caseFiltersToSearchParams, cleanCaseFilters, readCaseFilters } from '../filters'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
 const SORT_OPTIONS = [

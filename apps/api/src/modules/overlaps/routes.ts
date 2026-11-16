@@ -208,7 +208,7 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
     {
       body: t.Object({
         action: t.Union([t.Literal(REVIEW_ACTION.CONFIRM), t.Literal(REVIEW_ACTION.DISMISS)]),
-        notes: t.Optional(t.String({ maxLength: 2000 })),
+        notes: t.Optional(t.String({ maxLength: OVERLAP.MAX_NOTES_LENGTH })),
       }),
     },
   )

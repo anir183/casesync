@@ -6,15 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
-import { useBureaus } from '#/features/organization/api'
 import {
   ACTION_LABELS,
   type ActionKind,
   CONFIRM_ACTIONS,
   REMARK_ACTIONS,
   useCaseActionOptions,
-} from '../actions'
-import { type CaseActionInput, type CaseDetail, useCaseAction, useOfficerDirectory } from '../api'
+} from '#/features/cases/actions'
+import {
+  type CaseActionInput,
+  type CaseDetail,
+  useCaseAction,
+  useOfficerDirectory,
+} from '#/features/cases/api'
+import { useBureaus } from '#/features/organization/api'
 
 export function CaseActionPanel({
   item,

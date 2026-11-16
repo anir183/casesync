@@ -9,14 +9,14 @@ import { Button } from '#/components/ui/button'
 import { Card, CardBody } from '#/components/ui/card'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { cn, formatDate } from '#/lib/utils'
 import {
   type NotificationFilters,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
-} from '../api'
-import { notificationHref, notificationTypeLabel } from '../links'
+} from '#/features/notifications/api'
+import { notificationHref, notificationTypeLabel } from '#/features/notifications/links'
+import { cn, formatDate } from '#/lib/utils'
 
 const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
 const DEFAULT_FILTERS: NotificationFilters = {

@@ -7,7 +7,6 @@ import { Bureau } from '#/models/bureau.model'
 import { Region } from '#/models/region.model'
 import { User } from '#/models/user.model'
 
-const USER_COLLECTION = 'user'
 const SESSION_COLLECTION = 'session'
 const TEMP_PASSWORD_LENGTH = 14
 const PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'
@@ -318,5 +317,3 @@ export async function deleteUserSessions(id: string) {
   const result = await db.collection(SESSION_COLLECTION).deleteMany(sessionUserFilter(id))
   return result.deletedCount
 }
-
-export const USER_TABLE = USER_COLLECTION

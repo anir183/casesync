@@ -1,4 +1,4 @@
-import { ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { COMPLAINT, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -11,11 +11,11 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { useCreateCase, useOfficerDirectory } from '#/features/cases/api'
 import { useInstitution, useInstitutions } from '#/features/institutions/api'
 import { useBureaus, useCategories } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
-import { useCreateCase, useOfficerDirectory } from '../api'
 
 const registrationSchema = z.object({
   institutionId: z.string().min(1, 'Select an institution'),
@@ -307,7 +307,7 @@ export function CaseRegistrationPage() {
               <Textarea
                 id="description"
                 rows={5}
-                maxLength={5000}
+                maxLength={COMPLAINT.MAX_DESCRIPTION_LENGTH}
                 placeholder="Summarise the complaint without personal data beyond what is necessary."
                 {...register('description')}
               />

@@ -181,7 +181,7 @@ export function MergeDecisionPanel({ overlap }: { overlap: Overlap }) {
             <Textarea
               id="merge-reason"
               rows={2}
-              maxLength={2000}
+              maxLength={OVERLAP.MAX_NOTES_LENGTH}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               placeholder={

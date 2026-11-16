@@ -1,6 +1,7 @@
 import { PAGINATION, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
@@ -9,10 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
 import { CaseTable } from '#/features/cases/components/case-table'
+import {
+  useInstitution,
+  useInstitutions,
+  useMergeInstitution,
+  useUpdateInstitution,
+} from '#/features/institutions/api'
 import { useCurrentUser } from '#/lib/session'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
 import { formatDate } from '#/lib/utils'
-import { useInstitution, useInstitutions, useMergeInstitution, useUpdateInstitution } from '../api'
 
 function DetailRow({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
@@ -32,17 +38,14 @@ function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
   )
   const mergeInstitution = useMergeInstitution(institutionId)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [mergeTarget, setMergeTarget] = useState<{ id: string; name: string } | null>(null)
   const navigate = useNavigate()
   const candidates = (data?.items ?? []).filter((item) => item.id !== institutionId)
 
-  function merge(targetId: string, targetName: string) {
-    if (
-      !window.confirm(
-        `Merge this institution into “${targetName}”? Its cases and aliases will move to the target.`,
-      )
-    ) {
-      return
-    }
+  function confirmMerge() {
+    if (!mergeTarget) return
+    const targetId = mergeTarget.id
+    setMergeTarget(null)
     setFeedback(null)
     mergeInstitution.mutate(targetId, {
       onSuccess: (merged) => navigate(`/institutions/${merged.id}`),
@@ -52,54 +55,65 @@ function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Merge duplicate institution</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Find the authoritative record. This record’s cases, aliases, and search identity will move
-          to the target, then this record will be removed.
-        </p>
-        <Input
-          aria-label="Find merge target"
-          placeholder="Search target institution by name or AICTE ID"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        {isFetching && <p className="text-sm text-muted-foreground">Searching...</p>}
-        {debouncedQuery.trim().length >= 2 && !isFetching && candidates.length === 0 && (
-          <p className="text-sm text-muted-foreground">No matching target found.</p>
-        )}
-        {candidates.length > 0 && (
-          <div className="divide-y divide-border rounded-md border border-border">
-            {candidates.map((candidate) => (
-              <div
-                key={candidate.id}
-                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium">{candidate.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {candidate.aictePermanentId ?? 'No AICTE ID'} ·{' '}
-                    {candidate.regionName ?? 'No region'}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={mergeInstitution.isPending}
-                  onClick={() => merge(candidate.id, candidate.name)}
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Merge duplicate institution</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Find the authoritative record. This record’s cases, aliases, and search identity will
+            move to the target, then this record will be removed.
+          </p>
+          <Input
+            aria-label="Find merge target"
+            placeholder="Search target institution by name or AICTE ID"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          {isFetching && <p className="text-sm text-muted-foreground">Searching...</p>}
+          {debouncedQuery.trim().length >= 2 && !isFetching && candidates.length === 0 && (
+            <p className="text-sm text-muted-foreground">No matching target found.</p>
+          )}
+          {candidates.length > 0 && (
+            <div className="divide-y divide-border rounded-md border border-border">
+              {candidates.map((candidate) => (
+                <div
+                  key={candidate.id}
+                  className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
                 >
-                  Merge into this
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-        {feedback && <p className="text-sm text-danger">{feedback}</p>}
-      </CardContent>
-    </Card>
+                  <div>
+                    <p className="text-sm font-medium">{candidate.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {candidate.aictePermanentId ?? 'No AICTE ID'} ·{' '}
+                      {candidate.regionName ?? 'No region'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={mergeInstitution.isPending}
+                    onClick={() => setMergeTarget({ id: candidate.id, name: candidate.name })}
+                  >
+                    Merge into this
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          {feedback && <p className="text-sm text-danger">{feedback}</p>}
+        </CardContent>
+      </Card>
+      <ConfirmDialog
+        open={mergeTarget !== null}
+        title="Merge this institution?"
+        description={`Merge this institution into “${mergeTarget?.name ?? ''}”? Its cases and aliases will move to the target.`}
+        confirmLabel="Merge institution"
+        destructive
+        onCancel={() => setMergeTarget(null)}
+        onConfirm={confirmMerge}
+      />
+    </>
   )
 }
 

@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -8,7 +9,6 @@ import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
-import { formatDate } from '#/lib/utils'
 import {
   type SlaConfig,
   type SlaConfigInput,
@@ -18,7 +18,8 @@ import {
   useRunSlaJob,
   useSlaConfigs,
   useUpdateSlaConfig,
-} from '../api'
+} from '#/features/sla/api'
+import { formatDate } from '#/lib/utils'
 
 interface FormState {
   bureauId: string
@@ -69,6 +70,7 @@ export function SlaConfigPage() {
   const runJob = useRunSlaJob()
   const [editingId, setEditingId] = useState<string>()
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [deleteTarget, setDeleteTarget] = useState<SlaConfig | null>(null)
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -115,10 +117,12 @@ export function SlaConfigPage() {
     }
   }
 
-  async function handleDelete(item: SlaConfig) {
-    if (!window.confirm(`Delete the SLA rule for ${scopeLabel(item)}?`)) return
-    await deleteConfig.mutateAsync(item.id).catch(() => undefined)
-    if (editingId === item.id) resetForm()
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    await deleteConfig.mutateAsync(target.id).catch(() => undefined)
+    if (editingId === target.id) resetForm()
+    setDeleteTarget(null)
   }
 
   const mutationError =
@@ -338,7 +342,7 @@ export function SlaConfigPage() {
                           variant="ghost"
                           size="sm"
                           disabled={deleteConfig.isPending}
-                          onClick={() => void handleDelete(item)}
+                          onClick={() => setDeleteTarget(item)}
                         >
                           Delete
                         </Button>
@@ -383,6 +387,17 @@ export function SlaConfigPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete this SLA rule?"
+        description={deleteTarget ? `Delete the SLA rule for ${scopeLabel(deleteTarget)}?` : ''}
+        confirmLabel="Delete rule"
+        destructive
+        pending={deleteConfig.isPending}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+      />
     </div>
   )
 }

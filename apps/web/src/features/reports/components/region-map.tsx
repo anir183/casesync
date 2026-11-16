@@ -1,8 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { ChartTable } from '#/components/charts/chart-table'
 import { Skeleton } from '#/components/ui/skeleton'
+import type { GeoRegionRow } from '#/features/reports/api'
 import { cn } from '#/lib/utils'
-import type { GeoRegionRow } from '../api'
 
 const LazyLeafletRegionMap = lazy(() => import('./leaflet-region-map'))
 

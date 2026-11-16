@@ -10,9 +10,9 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
+import { type InstitutionFilters, useInstitutions } from '#/features/institutions/api'
 import { useRegions } from '#/features/organization/api'
 import { useCurrentUser } from '#/lib/session'
-import { type InstitutionFilters, useInstitutions } from '../api'
 
 const DEFAULT_FILTERS: InstitutionFilters = {
   page: PAGINATION.DEFAULT_PAGE,

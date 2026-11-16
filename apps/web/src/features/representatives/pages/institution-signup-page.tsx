@@ -7,8 +7,8 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { usePublicInstitutions } from '#/features/portal/api'
+import { signUpRepresentative, suggestInstitutionForEmail } from '#/features/representatives/api'
 import { signIn } from '#/lib/auth-client'
-import { signUpRepresentative, suggestInstitutionForEmail } from '../api'
 
 export function InstitutionSignupPage() {
   const [name, setName] = useState('')

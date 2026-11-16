@@ -72,11 +72,6 @@ export function resolveScope(user: ScopeUser): Scope {
   throw new AppError(HTTP_STATUS.FORBIDDEN, 'Insufficient permissions', 'FORBIDDEN')
 }
 
-export function isAllScope(user: ScopeUser): boolean {
-  const scope = resolveScope(user)
-  return scope.kind === 'all'
-}
-
 /**
  * Pure case-scope filter builder. Region scoping also accepts institution IDs so
  * legacy cases without a denormalized `regionId` remain visible to their region.
@@ -186,8 +181,4 @@ export function assertRepresentative(user: ScopeUser): Extract<Scope, { kind: 'i
     throw new AppError(HTTP_STATUS.FORBIDDEN, 'Insufficient permissions', 'FORBIDDEN')
   }
   return scope
-}
-
-export function canWriteInstitution(user: ScopeUser): boolean {
-  return Boolean(user.role && INSTITUTION_WRITE_ROLES.includes(user.role))
 }

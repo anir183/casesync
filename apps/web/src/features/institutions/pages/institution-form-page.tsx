@@ -12,15 +12,15 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
-import { useRegions } from '#/features/organization/api'
-import { useCurrentUser } from '#/lib/session'
-import { useDebouncedValue } from '#/lib/use-debounced-value'
 import {
   useCreateInstitution,
   useInstitution,
   useInstitutionDuplicates,
   useUpdateInstitution,
-} from '../api'
+} from '#/features/institutions/api'
+import { useRegions } from '#/features/organization/api'
+import { useCurrentUser } from '#/lib/session'
+import { useDebouncedValue } from '#/lib/use-debounced-value'
 
 const institutionSchema = z.object({
   name: z.string().min(1, 'Institution name is required'),

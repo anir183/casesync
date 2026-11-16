@@ -376,11 +376,14 @@ test.describe('@mutation staff and admin write paths', () => {
 
     const admin = await newPageAs(browser, 'admin')
     try {
-      admin.page.on('dialog', (dialog) => dialog.accept())
       await admin.page.goto(`/institutions/${source.id}`)
       await expect(admin.page.getByRole('heading', { name: sourceName })).toBeVisible()
       await admin.page.getByLabel('Find merge target').fill(targetName)
       await admin.page.getByRole('button', { name: 'Merge into this' }).first().click()
+      await admin.page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Merge institution' })
+        .click()
 
       await expect(admin.page).toHaveURL(new RegExp(`/institutions/${target.id}$`))
       await expect(admin.page.getByRole('heading', { name: targetName })).toBeVisible()
@@ -570,13 +573,13 @@ test.describe('@mutation staff and admin write paths', () => {
     const row = page.getByRole('row').filter({ hasText: email })
     await expect(row).toBeVisible({ timeout: 20_000 })
 
-    page.on('dialog', (dialog) => dialog.accept())
     const reset = page.waitForResponse(
       (response) =>
         response.request().method() === 'POST' &&
         /\/api\/v1\/admin\/users\/[^/]+\/reset-password$/.test(new URL(response.url()).pathname),
     )
     await row.getByRole('button', { name: 'Reset password' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Reset password' }).click()
     expect((await reset).ok()).toBeTruthy()
     await expect(page.getByText('Temporary password', { exact: true })).toBeVisible()
 
@@ -617,12 +620,12 @@ test.describe('@mutation staff and admin write paths', () => {
         admin.page.getByRole('row').filter({ hasText: code }).getByText(editedName),
       ).toBeVisible()
 
-      admin.page.on('dialog', (dialog) => dialog.accept())
       await admin.page
         .getByRole('row')
         .filter({ hasText: code })
         .getByRole('button', { name: 'Delete' })
         .click()
+      await admin.page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
       await expect(admin.page.getByRole('row').filter({ hasText: code })).toHaveCount(0)
 
       const viewer = await newPageAs(browser, 'viewer')
@@ -671,12 +674,12 @@ test.describe('@mutation staff and admin write paths', () => {
         admin.page.getByRole('row').filter({ hasText: 'Category: OTHER' }),
       ).toContainText('Inactive')
 
-      admin.page.on('dialog', (dialog) => dialog.accept())
       await admin.page
         .getByRole('row')
         .filter({ hasText: 'Category: OTHER' })
         .getByRole('button', { name: 'Delete' })
         .click()
+      await admin.page.getByRole('dialog').getByRole('button', { name: 'Delete rule' }).click()
       await expect(admin.page.getByRole('row').filter({ hasText: 'Category: OTHER' })).toHaveCount(
         0,
       )

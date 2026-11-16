@@ -4,8 +4,8 @@ import { PageHeader } from '#/components/shared/page-header'
 import { Card, CardBody, CardHeader, CardTitle } from '#/components/ui/card'
 import { Skeleton } from '#/components/ui/skeleton'
 import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
+import { useRepresentativeDashboard } from '#/features/representatives/api'
 import { formatDate } from '#/lib/utils'
-import { useRepresentativeDashboard } from '../api'
 
 export function InstitutionDashboardPage() {
   const dashboard = useRepresentativeDashboard()

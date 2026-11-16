@@ -1,12 +1,10 @@
-import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet'
+import type { LatLngBoundsExpression } from 'leaflet'
 
 /** India-wide view used by the reports map, including island territories. */
 export const INDIA_MAP_BOUNDS: LatLngBoundsExpression = [
   [6.5, 68],
   [36.5, 97.5],
 ]
-
-export const INDIA_MAP_CENTER: LatLngExpression = [22.5, 80]
 
 /**
  * OpenStreetMap raster tiles are the default. Deployments can point this at a

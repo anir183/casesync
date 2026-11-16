@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
@@ -10,13 +11,13 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { useInstitutions } from '#/features/institutions/api'
-import { formatDate } from '#/lib/utils'
 import {
   useCreateInstitutionDomain,
   useDeleteInstitutionDomain,
   useInstitutionDomains,
   useUpdateInstitutionDomain,
-} from '../api'
+} from '#/features/representatives/api'
+import { formatDate } from '#/lib/utils'
 
 const CELL_CLASS = 'px-4 py-3 text-sm align-top'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
@@ -34,6 +35,7 @@ export function AdminDomainsPage() {
   const [active, setActive] = useState(true)
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; domain: string } | null>(null)
 
   const domains = useInstitutionDomains({
     q: domainQuery || undefined,
@@ -113,18 +115,21 @@ export function AdminDomainsPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm('Remove this email domain from the allowlist?')) return
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    const target = deleteTarget
     setError(null)
     try {
-      await remove.mutateAsync(id)
-      if (editingId === id) resetForm()
+      await remove.mutateAsync(target.id)
+      if (editingId === target.id) resetForm()
     } catch (mutationError) {
       setError(
         mutationError instanceof Error
           ? mutationError.message
           : 'The email domain could not be deleted.',
       )
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -349,7 +354,9 @@ export function AdminDomainsPage() {
                             size="sm"
                             variant="destructive"
                             disabled={busy}
-                            onClick={() => void handleDelete(item.id)}
+                            onClick={() =>
+                              setDeleteTarget({ id: item.id, domain: item.domainNormalized })
+                            }
                           >
                             Delete
                           </Button>
@@ -363,6 +370,17 @@ export function AdminDomainsPage() {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Remove this email domain?"
+        description={`Remove ${deleteTarget?.domain ?? 'this domain'} from the allowlist?`}
+        confirmLabel="Remove domain"
+        destructive
+        pending={remove.isPending}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+      />
     </div>
   )
 }

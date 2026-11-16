@@ -4,10 +4,10 @@ import { PageHeader } from '#/components/shared/page-header'
 import { buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Skeleton } from '#/components/ui/skeleton'
+import { usePortalComplaints, usePortalProfile } from '#/features/portal/api'
+import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
 import { useCurrentUser } from '#/lib/session'
 import { formatDateOnly } from '#/lib/utils'
-import { usePortalComplaints, usePortalProfile } from '../api'
-import { ComplaintStatusBadge } from '../components/complaint-status-badge'
 
 function ownershipFor(status: string) {
   switch (status) {

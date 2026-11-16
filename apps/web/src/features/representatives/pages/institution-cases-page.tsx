@@ -10,8 +10,8 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
+import { useRepresentativeCases } from '#/features/representatives/api'
 import { formatDate } from '#/lib/utils'
-import { useRepresentativeCases } from '../api'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
 

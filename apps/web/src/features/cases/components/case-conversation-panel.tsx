@@ -1,4 +1,4 @@
-import { ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { COMPLAINT, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -7,16 +7,16 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
-import { useCurrentUser } from '#/lib/session'
-import { formatDate } from '#/lib/utils'
-import type { CaseDetail } from '../api'
+import type { CaseDetail } from '#/features/cases/api'
 import {
   useAcknowledgeComplaint,
   useCaseMessages,
   useRequestInformation,
   useResolveComplaint,
   useSendCaseMessage,
-} from '../complaint-api'
+} from '#/features/cases/complaint-api'
+import { useCurrentUser } from '#/lib/session'
+import { formatDate } from '#/lib/utils'
 
 export function CaseConversationPanel({ item }: { item: CaseDetail }) {
   const { user } = useCurrentUser()
@@ -164,7 +164,7 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
               <Textarea
                 id="staff-message"
                 rows={3}
-                maxLength={3000}
+                maxLength={COMPLAINT.MAX_MESSAGE_LENGTH}
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
               />
@@ -226,7 +226,7 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
                 aria-label="Information request message"
                 rows={3}
                 required
-                maxLength={3000}
+                maxLength={COMPLAINT.MAX_MESSAGE_LENGTH}
                 placeholder="Tell the complainant what is needed"
                 value={requestMessage}
                 onChange={(event) => setRequestMessage(event.target.value)}
@@ -261,7 +261,7 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
                 aria-label="Resolution summary"
                 rows={3}
                 required
-                maxLength={4000}
+                maxLength={COMPLAINT.MAX_RESOLUTION_LENGTH}
                 placeholder="Resolution summary shown to the complainant"
                 value={resolutionSummary}
                 onChange={(event) => setResolutionSummary(event.target.value)}
@@ -269,7 +269,7 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
               <Textarea
                 aria-label="Internal findings"
                 rows={2}
-                maxLength={6000}
+                maxLength={COMPLAINT.MAX_INTERNAL_FINDINGS_LENGTH}
                 placeholder="Internal findings (staff only)"
                 value={internalFindings}
                 onChange={(event) => setInternalFindings(event.target.value)}
@@ -277,7 +277,7 @@ export function CaseConversationPanel({ item }: { item: CaseDetail }) {
               <Textarea
                 aria-label="Public message"
                 rows={2}
-                maxLength={3000}
+                maxLength={COMPLAINT.MAX_MESSAGE_LENGTH}
                 placeholder="Optional public message"
                 value={publicMessage}
                 onChange={(event) => setPublicMessage(event.target.value)}

@@ -1,5 +1,6 @@
 import { ROLES } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -9,8 +10,6 @@ import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { FieldLabel } from '#/components/ui/textarea'
-import { useBureaus, useRegions } from '#/features/organization/api'
-import { useCurrentUser } from '#/lib/session'
 import {
   type AdminUser,
   type UserInput,
@@ -18,7 +17,9 @@ import {
   useCreateAdminUser,
   useResetAdminPassword,
   useUpdateAdminUser,
-} from '../api'
+} from '#/features/admin/api'
+import { useBureaus, useRegions } from '#/features/organization/api'
+import { useCurrentUser } from '#/lib/session'
 
 interface FormState {
   name: string
@@ -59,6 +60,7 @@ export function AdminUsersPage() {
   const [editingId, setEditingId] = useState<string>()
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null)
+  const [resetTarget, setResetTarget] = useState<AdminUser | null>(null)
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -113,11 +115,12 @@ export function AdminUsersPage() {
     }
   }
 
-  async function handleReset(item: AdminUser) {
-    if (!window.confirm(`Reset ${item.name}'s password and revoke active sessions?`)) return
+  async function confirmReset() {
+    if (!resetTarget) return
     setTemporaryPassword(null)
-    const result = await resetPassword.mutateAsync(item.id).catch(() => undefined)
+    const result = await resetPassword.mutateAsync(resetTarget.id).catch(() => undefined)
     if (result) setTemporaryPassword(result.temporaryPassword)
+    setResetTarget(null)
   }
 
   const mutationError = createUser.error ?? updateUser.error ?? resetPassword.error
@@ -309,7 +312,7 @@ export function AdminUsersPage() {
                               variant="outline"
                               size="sm"
                               disabled={resetPassword.isPending}
-                              onClick={() => void handleReset(item)}
+                              onClick={() => setResetTarget(item)}
                             >
                               Reset password
                             </Button>
@@ -324,6 +327,17 @@ export function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={resetTarget !== null}
+        title="Reset this user's password?"
+        description={`Reset ${resetTarget?.name ?? 'this user'}'s password and revoke active sessions?`}
+        confirmLabel="Reset password"
+        destructive
+        pending={resetPassword.isPending}
+        onCancel={() => setResetTarget(null)}
+        onConfirm={() => void confirmReset()}
+      />
     </div>
   )
 }

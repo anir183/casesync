@@ -21,9 +21,3 @@ export function niceMax(values: number[]) {
   const rounded = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10
   return rounded * magnitude
 }
-
-export function compactNumber(value: number) {
-  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(
-    value,
-  )
-}

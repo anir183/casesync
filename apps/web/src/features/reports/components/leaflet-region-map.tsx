@@ -1,6 +1,6 @@
 import 'leaflet/dist/leaflet.css'
 import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet'
-import type { GeoRegionRow } from '../api'
+import type { GeoRegionRow } from '#/features/reports/api'
 import {
   DEFAULT_MAP_TILE_URL,
   INDIA_MAP_BOUNDS,

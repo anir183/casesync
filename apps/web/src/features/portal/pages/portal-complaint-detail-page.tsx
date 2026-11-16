@@ -1,3 +1,4 @@
+import { COMPLAINT } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
@@ -14,8 +15,8 @@ import {
   usePortalComplaint,
   useReopenComplaint,
   useUploadComplaintAttachment,
-} from '../api'
-import { ComplaintStatusBadge } from '../components/complaint-status-badge'
+} from '#/features/portal/api'
+import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
 
 export function PortalComplaintDetailPage() {
   const { id = '' } = useParams()
@@ -220,7 +221,7 @@ export function PortalComplaintDetailPage() {
                   <Textarea
                     id="portal-message"
                     rows={3}
-                    maxLength={3000}
+                    maxLength={COMPLAINT.MAX_MESSAGE_LENGTH}
                     value={body}
                     onChange={(event) => setBody(event.target.value)}
                   />

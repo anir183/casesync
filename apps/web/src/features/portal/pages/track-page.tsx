@@ -5,9 +5,9 @@ import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { FieldLabel } from '#/components/ui/textarea'
+import type { ComplaintDetail } from '#/features/portal/api'
+import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
 import { apiClient } from '#/lib/api-client'
-import type { ComplaintDetail } from '../api'
-import { ComplaintStatusBadge } from '../components/complaint-status-badge'
 
 export function TrackPage() {
   const [caseNumber, setCaseNumber] = useState('')

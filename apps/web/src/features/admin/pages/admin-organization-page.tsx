@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
@@ -84,6 +85,7 @@ function MasterSection({
   const [latitude, setLatitude] = useState('')
   const [longitude, setLongitude] = useState('')
   const [active, setActive] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<MasterRow | null>(null)
 
   function reset() {
     setEditingId(undefined)
@@ -127,163 +129,176 @@ function MasterSection({
       .catch(() => undefined)
   }
 
-  async function handleDelete(item: MasterRow) {
-    if (!window.confirm(`Delete ${item.name}? Referenced records must be deactivated instead.`)) {
-      return
-    }
-    await remove.mutateAsync(item.id).catch(() => undefined)
-    if (editingId === item.id) reset()
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    await remove.mutateAsync(target.id).catch(() => undefined)
+    if (editingId === target.id) reset()
+    setDeleteTarget(null)
   }
 
   const mutationError = save.error ?? remove.error
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form className="grid gap-3 md:grid-cols-5" onSubmit={handleSubmit}>
-          <div className="space-y-1">
-            <FieldLabel htmlFor={`${title}-code`}>Code</FieldLabel>
-            <Input
-              id={`${title}-code`}
-              required
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1 md:col-span-2">
-            <FieldLabel htmlFor={`${title}-name`}>Name</FieldLabel>
-            <Input
-              id={`${title}-name`}
-              required
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
-          {withOfficeCity && (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{title}</CardTitle>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form className="grid gap-3 md:grid-cols-5" onSubmit={handleSubmit}>
             <div className="space-y-1">
-              <FieldLabel htmlFor={`${title}-city`}>Office city</FieldLabel>
+              <FieldLabel htmlFor={`${title}-code`}>Code</FieldLabel>
               <Input
-                id={`${title}-city`}
-                value={officeCity}
-                onChange={(event) => setOfficeCity(event.target.value)}
+                id={`${title}-code`}
+                required
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
               />
             </div>
-          )}
-          {withCoordinates && (
-            <>
+            <div className="space-y-1 md:col-span-2">
+              <FieldLabel htmlFor={`${title}-name`}>Name</FieldLabel>
+              <Input
+                id={`${title}-name`}
+                required
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </div>
+            {withOfficeCity && (
               <div className="space-y-1">
-                <FieldLabel htmlFor={`${title}-latitude`}>Latitude</FieldLabel>
+                <FieldLabel htmlFor={`${title}-city`}>Office city</FieldLabel>
                 <Input
-                  id={`${title}-latitude`}
-                  type="number"
-                  step="any"
-                  min="-90"
-                  max="90"
-                  value={latitude}
-                  onChange={(event) => setLatitude(event.target.value)}
+                  id={`${title}-city`}
+                  value={officeCity}
+                  onChange={(event) => setOfficeCity(event.target.value)}
                 />
               </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor={`${title}-longitude`}>Longitude</FieldLabel>
-                <Input
-                  id={`${title}-longitude`}
-                  type="number"
-                  step="any"
-                  min="-180"
-                  max="180"
-                  value={longitude}
-                  onChange={(event) => setLongitude(event.target.value)}
-                />
-              </div>
-            </>
-          )}
-          <label className="flex items-center gap-2 self-end pb-2 text-sm">
-            <input
-              type="checkbox"
-              checked={active}
-              onChange={(event) => setActive(event.target.checked)}
-            />
-            Active
-          </label>
-          <div className="flex items-end gap-2 md:col-span-5 md:justify-end">
-            {editingId && (
-              <Button type="button" variant="outline" size="sm" onClick={reset}>
-                Cancel
-              </Button>
             )}
-            <Button type="submit" size="sm" disabled={save.isPending}>
-              {save.isPending
-                ? 'Saving...'
-                : editingId
-                  ? `Save ${title.toLowerCase()}`
-                  : `Add ${title.toLowerCase()}`}
-            </Button>
-          </div>
-        </form>
+            {withCoordinates && (
+              <>
+                <div className="space-y-1">
+                  <FieldLabel htmlFor={`${title}-latitude`}>Latitude</FieldLabel>
+                  <Input
+                    id={`${title}-latitude`}
+                    type="number"
+                    step="any"
+                    min="-90"
+                    max="90"
+                    value={latitude}
+                    onChange={(event) => setLatitude(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <FieldLabel htmlFor={`${title}-longitude`}>Longitude</FieldLabel>
+                  <Input
+                    id={`${title}-longitude`}
+                    type="number"
+                    step="any"
+                    min="-180"
+                    max="180"
+                    value={longitude}
+                    onChange={(event) => setLongitude(event.target.value)}
+                  />
+                </div>
+              </>
+            )}
+            <label className="flex items-center gap-2 self-end pb-2 text-sm">
+              <input
+                type="checkbox"
+                checked={active}
+                onChange={(event) => setActive(event.target.checked)}
+              />
+              Active
+            </label>
+            <div className="flex items-end gap-2 md:col-span-5 md:justify-end">
+              {editingId && (
+                <Button type="button" variant="outline" size="sm" onClick={reset}>
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" size="sm" disabled={save.isPending}>
+                {save.isPending
+                  ? 'Saving...'
+                  : editingId
+                    ? `Save ${title.toLowerCase()}`
+                    : `Add ${title.toLowerCase()}`}
+              </Button>
+            </div>
+          </form>
 
-        {mutationError ? (
-          <p className="text-sm text-danger">{errorMessage(mutationError)}</p>
-        ) : null}
+          {mutationError ? (
+            <p className="text-sm text-danger">{errorMessage(mutationError)}</p>
+          ) : null}
 
-        <TableScroll label={`${title} records`}>
-          <table className="w-full min-w-[600px] border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border">
-                <th className={HEAD_CLASS}>Code</th>
-                <th className={HEAD_CLASS}>Name</th>
-                {withOfficeCity && <th className={HEAD_CLASS}>City</th>}
-                {withCoordinates && <th className={HEAD_CLASS}>Coordinates</th>}
-                <th className={HEAD_CLASS}>Status</th>
-                <th className={HEAD_CLASS} />
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className={ROW_CLASS}>
-                  <td className={`${CELL_CLASS} font-mono`}>{item.code}</td>
-                  <td className={CELL_CLASS}>{item.name}</td>
-                  {withOfficeCity && <td className={CELL_CLASS}>{item.officeCity ?? '—'}</td>}
-                  {withCoordinates && (
-                    <td className={CELL_CLASS}>
-                      {item.latitude !== undefined && item.longitude !== undefined
-                        ? `${item.latitude.toFixed(3)}, ${item.longitude.toFixed(3)}`
-                        : '—'}
-                    </td>
-                  )}
-                  <td className={CELL_CLASS}>
-                    <Badge variant={item.active ? 'success' : 'muted'}>
-                      {item.active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </td>
-                  <td className={`${CELL_CLASS} text-right`}>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => startEdit(item)}>
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={remove.isPending}
-                        onClick={() => void handleDelete(item)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
+          <TableScroll label={`${title} records`}>
+            <table className="w-full min-w-[600px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className={HEAD_CLASS}>Code</th>
+                  <th className={HEAD_CLASS}>Name</th>
+                  {withOfficeCity && <th className={HEAD_CLASS}>City</th>}
+                  {withCoordinates && <th className={HEAD_CLASS}>Coordinates</th>}
+                  <th className={HEAD_CLASS}>Status</th>
+                  <th className={HEAD_CLASS} />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {items.length === 0 && (
-            <p className="px-4 py-3 text-sm text-muted-foreground">No records yet.</p>
-          )}
-        </TableScroll>
-      </CardContent>
-    </Card>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id} className={ROW_CLASS}>
+                    <td className={`${CELL_CLASS} font-mono`}>{item.code}</td>
+                    <td className={CELL_CLASS}>{item.name}</td>
+                    {withOfficeCity && <td className={CELL_CLASS}>{item.officeCity ?? '—'}</td>}
+                    {withCoordinates && (
+                      <td className={CELL_CLASS}>
+                        {item.latitude !== undefined && item.longitude !== undefined
+                          ? `${item.latitude.toFixed(3)}, ${item.longitude.toFixed(3)}`
+                          : '—'}
+                      </td>
+                    )}
+                    <td className={CELL_CLASS}>
+                      <Badge variant={item.active ? 'success' : 'muted'}>
+                        {item.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td className={`${CELL_CLASS} text-right`}>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => startEdit(item)}>
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={remove.isPending}
+                          onClick={() => setDeleteTarget(item)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {items.length === 0 && (
+              <p className="px-4 py-3 text-sm text-muted-foreground">No records yet.</p>
+            )}
+          </TableScroll>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete ${deleteTarget?.name ?? 'this record'}?`}
+        description="Referenced records must be deactivated instead."
+        confirmLabel="Delete"
+        destructive
+        pending={remove.isPending}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+      />
+    </>
   )
 }
 

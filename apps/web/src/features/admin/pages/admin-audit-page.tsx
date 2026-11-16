@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
+import { useAuditLog } from '#/features/admin/api'
 import { formatDate } from '#/lib/utils'
-import { useAuditLog } from '../api'
 
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`

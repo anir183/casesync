@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { portalKeys, usePortalProfile, usePublicInstitutions } from '#/features/portal/api'
 import { apiClient } from '#/lib/api-client'
-import { portalKeys, usePortalProfile, usePublicInstitutions } from '../api'
 
 export function PortalVerificationPage() {
   const profile = usePortalProfile()

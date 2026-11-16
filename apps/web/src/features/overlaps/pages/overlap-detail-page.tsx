@@ -263,7 +263,7 @@ export function OverlapDetailPage() {
                   <Textarea
                     id="review-notes"
                     rows={3}
-                    maxLength={2000}
+                    maxLength={OVERLAP.MAX_NOTES_LENGTH}
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
                     placeholder="Add context for this decision..."
@@ -300,7 +300,7 @@ export function OverlapDetailPage() {
                       <Textarea
                         id="unlink-notes"
                         rows={2}
-                        maxLength={2000}
+                        maxLength={OVERLAP.MAX_NOTES_LENGTH}
                         value={notes}
                         onChange={(event) => setNotes(event.target.value)}
                         placeholder="Explain why the cases should no longer be linked..."

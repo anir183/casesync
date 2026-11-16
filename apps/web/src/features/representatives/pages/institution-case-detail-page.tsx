@@ -1,3 +1,4 @@
+import { COMPLAINT } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
@@ -12,7 +13,7 @@ import {
   useRepresentativeCase,
   useRepresentativeMessage,
   useRepresentativeUpload,
-} from '../api'
+} from '#/features/representatives/api'
 
 export function InstitutionCaseDetailPage() {
   const { id = '' } = useParams()
@@ -135,7 +136,7 @@ export function InstitutionCaseDetailPage() {
                   <Textarea
                     id="institution-message"
                     rows={3}
-                    maxLength={3000}
+                    maxLength={COMPLAINT.MAX_MESSAGE_LENGTH}
                     value={body}
                     onChange={(event) => setBody(event.target.value)}
                   />

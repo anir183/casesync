@@ -15,10 +15,10 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { matchTypeLabel } from '#/features/overlaps/labels'
+import type { GeoRegionRow, ReportFilters, ReportGroupRow } from '#/features/reports/api'
+import { downloadReports, useReports, useReportsGeo } from '#/features/reports/api'
+import { RegionMap } from '#/features/reports/components/region-map'
 import { formatDate } from '#/lib/utils'
-import type { GeoRegionRow, ReportFilters, ReportGroupRow } from '../api'
-import { downloadReports, useReports, useReportsGeo } from '../api'
-import { RegionMap } from '../components/region-map'
 
 const CELL = 'px-4 py-3 text-sm'
 const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`

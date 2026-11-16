@@ -6,9 +6,9 @@ import { Card, CardBody } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { FieldLabel } from '#/components/ui/textarea'
+import { usePublicInstitutions } from '#/features/portal/api'
 import { apiClient } from '#/lib/api-client'
 import { signIn } from '#/lib/auth-client'
-import { usePublicInstitutions } from '../api'
 
 export function PortalSignupPage() {
   const [name, setName] = useState('')

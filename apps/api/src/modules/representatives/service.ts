@@ -34,8 +34,6 @@ import {
 } from '#/modules/complaints/complaint.service'
 import { storeUploadedFile } from '#/modules/complaints/upload'
 
-const CLOSED_STATUSES = new Set<string>([CASE_STATUS.DISPOSED, CASE_STATUS.CLOSED])
-
 export interface RepresentativeProfileDto {
   id: string
   name: string
@@ -877,8 +875,4 @@ export async function deleteInstitutionDomain(id: string, actorId: string) {
     metadata: { institutionEmailDomain: true },
   })
   return { ok: true }
-}
-
-export function isRepresentativeCaseOpen(status: string) {
-  return !CLOSED_STATUSES.has(status)
 }

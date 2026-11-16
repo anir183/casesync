@@ -1,3 +1,4 @@
+import { COMPLAINT } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
@@ -7,7 +8,7 @@ import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
-import { usePortalProfile, usePublicCategories, useSubmitComplaint } from '../api'
+import { usePortalProfile, usePublicCategories, useSubmitComplaint } from '#/features/portal/api'
 
 export function PortalComplaintNewPage() {
   const navigate = useNavigate()
@@ -98,7 +99,7 @@ export function PortalComplaintNewPage() {
               <Input
                 id="complaint-subject"
                 required
-                maxLength={200}
+                maxLength={COMPLAINT.MAX_SUBJECT_LENGTH}
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
               />
@@ -135,7 +136,7 @@ export function PortalComplaintNewPage() {
                 id="complaint-description"
                 rows={8}
                 required
-                maxLength={5000}
+                maxLength={COMPLAINT.MAX_DESCRIPTION_LENGTH}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
               />

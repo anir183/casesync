@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { TableScroll } from '#/components/ui/table-scroll'
+import type { CaseListItem } from '#/features/cases/api'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { formatDateOnly } from '#/lib/utils'
-import type { CaseListItem } from '../api'
 
 const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 const CELL_CLASS = 'px-4 py-3 text-sm'
