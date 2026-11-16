@@ -572,14 +572,12 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - Implemented Stage 9 Phase 1: exact pair auto-merges, merge group is visible, and revert
   restores manual review. Implemented Stage 9 Phase 2: representative approval/revocation,
   institution isolation, and the notification bell.
-- Stage 10 (in progress): make the browser suite the authoritative proof of the UI. The
+- Stage 10 (done 2026-11-16): make the browser suite the authoritative proof of the UI. The
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
-  state × accessibility × responsive × visual coverage. Route, mutation, state,
-  accessibility/responsive, visual, and CI rows are covered for current routes including
-  the representative shell and the Phase 3 flows; final exit waits for CI-image visual
-  verification and the final two-run full-suite record.
-- Stage 11 (planned): the existing suite is the no-behavior-change oracle for the code
-  audit; the visual baseline must not move.
+  state × accessibility × responsive × visual coverage. Flag-off dispatch `43750576126`
+  verified the 48 CI-image baselines and the three cross-browser projects.
+- Stage 11 (in progress, Phases 0–1 complete): the existing suite is the no-behavior-change
+  oracle for the code audit; the visual baseline must not move.
 - Stage 12 (planned): the UI modernization refreshes selectors only where accessible names
   changed, regenerates the visual baselines intentionally, reviews every diff, and reruns
   the full suite twice. See `docs/plans/ui-modernization-plan.md`.
@@ -592,8 +590,8 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 - `bun run verify` (lint, typechecks, unit/component, builds)
 - Mongo-backed integration/coverage
 - Seeded staff + portal E2E and accessibility
-- Stage 10 (in progress): smoke on PR, full Chromium on `main`, cross-browser and visual on
-  release/manual
+- Stage 10 (done 2026-11-16): smoke on PR, full Chromium on `main`, cross-browser and visual
+  on release/manual
 - Dependency audit
 
 ## 15. Decisions (locked 2026-10-28) and remaining questions

@@ -1,7 +1,7 @@
 # CaseSync — Requirements Realignment Audit
 
 Status: living audit. Location: `docs/requirements/requirements-realignment.md`.
-Audit date: 2026-10-28. Last verified: 2026-11-02 (Stage 9 Phase 0 baseline/UI consistency, Phase 1, Phase 3 navigation, and Phase 4 verified; Stage 10 in progress).
+Audit date: 2026-10-28. Last verified: 2026-11-16 (Stage 10 exit; Stage 11 Phase 0 baseline).
 Scope of this audit: the **original AICTE problem statement** (authorized-official,
 internal monitoring dashboard). The broader public complainant portal is tracked
 separately as an **optional Stage 8 extension**, now implemented but still outside MVP
@@ -20,9 +20,11 @@ Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI 
 (reversible auto-merge, representatives/domains, navigation/role landings/case
 workspace/resolution loop, and UI/charts/GIS) are implemented, while manual screen-reader
 sign-off and Phases 5–6 remain
-planned. Stage 10 (complete Playwright UI coverage) is in progress: fixtures, per-role
+planned. Stage 10 (complete Playwright UI coverage) exited on 2026-11-16: fixtures, per-role
 sessions, current-route render/denial coverage, mutations, UI states, Phase 3 flows,
-accessibility/responsive, visual regression, and the CI split have landed.**
+accessibility/responsive, visual regression, and the CI split landed; flag-off dispatch
+`43750576126` verified the 48 CI-image baselines and three cross-browser projects.
+Stage 11 Phase 0 is complete.**
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -57,11 +59,13 @@ accessibility/responsive, visual regression, and the CI split have landed.**
 - Stage 8 is CI-green on pushed commit `5666cad`. Malware scanning, distributed rate
   limiting, and manual screen-reader/mobile passes are production hardening follow-ups,
   not MVP blockers.
-- Stage 10 is in progress: fixtures, per-role storage states, current-route render/denial
-  coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
-  and Phase 3 flow suite, accessibility/responsive expansion, visual regression, and the
-  CI split have landed. Remaining is CI-image visual verification and the final two-run
-  full-suite record. The matrix in `docs/quality/ui-test-matrix.md` is the progress measure.
+- Stage 10 exited on 2026-11-16: fixtures, per-role storage states, current-route
+  render/denial coverage, staff/admin, portal/auth, and representative mutation coverage,
+  the UI-state and Phase 3 flow suite, accessibility/responsive expansion, visual
+  regression, and the CI split landed. Flag-off dispatch `43750576126` verified the 48
+  CI-image baselines and three cross-browser projects. The matrix in
+  `docs/quality/ui-test-matrix.md` is the coverage record; deferred cells name their
+  API-integration evidence.
 
 ## 1. Status legend
 

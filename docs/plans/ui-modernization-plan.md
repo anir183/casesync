@@ -49,7 +49,7 @@ and visual baselines, so it needs a stable coverage baseline to refresh from.
 | Design tokens | Semantic colour, chart, radius, and shadow tokens exist in `apps/web/src/index.css` | Good foundation; typography, density, motion, and surface tokens are missing or underused |
 | Motion | No animation library | Use CSS/Tailwind transitions; no new animation dependency |
 | Shell | Sticky top bar with primary links + More, notification bell, theme toggle, account menu; mobile drawer | Works, but the desktop bar is cramped and discovery depends on a “More” menu |
-| Dashboard | 465-line page; KPI cards, charts, tables, recent activity, map preview | Correct data, but the first screen is a wall of cards rather than “what needs me now” |
+| Dashboard | 713-line page; KPI cards, charts, tables, recent activity, map preview | Correct data, but the first screen is a wall of cards rather than “what needs me now” |
 | Admin | Users, organization, verifications, representatives, domains, SLA, audit are separate pages | Common actions are spread across pages; no admin hub or health summary |
 | Portal landing | Hero card plus three explanatory cards and a long privacy card | Reads as documentation; the primary action and trust path are not visually dominant |
 | GIS | Leaflet with circle markers, OpenStreetMap tiles, region chips, table fallback | No polygons, no choropleth, no institution drill-down, no boundary context |

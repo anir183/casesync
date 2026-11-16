@@ -7,10 +7,13 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > landings/case workspace/resolution loop, and visual redesign/charts/GIS) are implemented
 > and tested. Manual screen-reader sign-off, Phase 5 (hardening), and Phase 6 (polish)
 > remain planned.
-> Stage 10 (complete Playwright UI coverage) is in progress: fixtures, current-route
+> Stage 10 (complete Playwright UI coverage) exited on 2026-11-16: fixtures, current-route
 > render/denial coverage, mutation coverage, UI states, Phase 3 flows,
-> accessibility/responsive expansion, visual regression, and the CI job split have landed.
-> The CI-image visual baseline and the final two-run record remain.
+> accessibility/responsive expansion, visual regression, and the CI job split landed.
+> Flag-off dispatch `43750576126` verified the 48 CI-image baselines and the three
+> cross-browser projects.
+> Stage 11 Phases 0–1 (frozen baseline, ADRs, guardrail decision, import and dialog
+> cleanup) are complete; the contract and structural phases are in progress.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that
@@ -164,6 +167,8 @@ cannot belong to two active groups.
 
 **Imports and module boundaries**
 
+Decision record: [`../decisions/0001-imports-and-module-boundaries.md`](../decisions/0001-imports-and-module-boundaries.md).
+
 - Cross-directory imports use `#/*` in both apps.
 - Same-directory sibling imports may use `./`; keep them shallow.
 - Parent-relative imports (`../`) are not allowed in `apps/*/src`.
@@ -174,25 +179,37 @@ cannot belong to two active groups.
 
 **Shared contracts**
 
+Decision record: [`../decisions/0002-shared-contract-ownership.md`](../decisions/0002-shared-contract-ownership.md).
+
 - `packages/types` owns contracts used by both apps or by two or more features: `Page<T>`
   and pagination metadata, cross-boundary DTOs, and shared Zod schemas.
+- `Page<T>` has exactly one definition, in `packages/types`; the API pagination helper and
+  every paginated web feature import it.
 - A type used by one feature stays feature-local.
 - One definition per concept: no duplicate `Page<T>`, error envelope, status map, or query
   key. Query keys are declared once per feature.
 
 **Services and size**
 
+Decision record: [`../decisions/0003-service-size-and-split-criteria.md`](../decisions/0003-service-size-and-split-criteria.md).
+
 - Services expose intent-shaped operations, not a generic repository.
 - Split by change reason, not line count. Soft budget: 500 lines; a file above 700 lines
   needs a written review reason.
+- One exported facade per module; routes, jobs, and tests do not import internal helpers.
 - Pure calculations move to `packages/utils` only when they are genuinely pure and shared.
 - Refactors must not change routes, permissions, response shapes, transitions, seed output,
   or visual behavior.
 
 **Frontend and styling**
 
+Decision record: [`../decisions/0004-frontend-extraction-threshold.md`](../decisions/0004-frontend-extraction-threshold.md).
+
+- Extract a shared frontend seam at three real uses, or when a page passes the 500-line
+  soft budget and has a clear sub-tree seam.
 - Feature code is grouped by domain; large pages compose feature components instead of
   owning every sub-tree.
+- Query keys are declared once per feature and exported; components do not build raw arrays.
 - Destructive actions use `ConfirmDialog`; `window.confirm` is not allowed.
 - Use semantic tokens from `apps/web/src/index.css` before arbitrary values; inline styles
   are reserved for genuinely dynamic values.
@@ -200,9 +217,11 @@ cannot belong to two active groups.
   library.
 - The GIS view uses the existing Leaflet stack plus bundled GeoJSON; no new GIS dependency.
 
-The Stage 11 audit records the current drift and the cleanup plan in
-[`../plans/code-audit-plan.md`](../plans/code-audit-plan.md). The Stage 12 UI target is in
-[`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+The Stage 11 audit records the current drift, the frozen baseline, and the cleanup plan in
+[`../plans/code-audit-plan.md`](../plans/code-audit-plan.md) and
+[`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md). The enforcing decisions
+are recorded in [`../decisions/README.md`](../decisions/README.md). The Stage 12 UI target
+is in [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
 
 ## 6) Jev Integration
 

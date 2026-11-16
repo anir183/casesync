@@ -139,11 +139,11 @@ casesync/
 - **Performance** — a tagged stress-data suite run locally before demos and releases.
 
 The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md), complete as of
-2026-11-16; the living
-route/role/action matrix is [the UI test matrix](quality/ui-test-matrix.md). [Stage 11 code
-audit](plans/code-audit-plan.md) is next, followed by
-[Stage 12 UI modernization](plans/ui-modernization-plan.md); the UI pass
-will intentionally refresh the Stage 10 selectors and visual baselines. Use the
+2026-11-16; the living route/role/action matrix is
+[the UI test matrix](quality/ui-test-matrix.md). [Stage 11 code
+audit](plans/code-audit-plan.md) is in progress (Phases 0–1 complete), followed by
+[Stage 12 UI modernization](plans/ui-modernization-plan.md); the UI pass will intentionally
+refresh the Stage 10 selectors and visual baselines. Use the
 [testing guide](quality/testing-guide.md) to choose the smallest test set for a change.
 Current results and quality gates live in [QA and review](quality/qa-and-review.md).
 
@@ -159,7 +159,8 @@ Current results and quality gates live in [QA and review](quality/qa-and-review.
 | Quality | [QA and review](quality/qa-and-review.md) · [Testing guide](quality/testing-guide.md) · [Security](quality/security-checklist.md) · [Accessibility](quality/accessibility-audit.md) |
 | UI test coverage | [Stage 10 plan](plans/ui-testing-plan.md) · [Coverage matrix](quality/ui-test-matrix.md) |
 | Operations | [Runbook](operations/runbook.md) · [Mock data](operations/mock-data.md) · [Demo script](operations/demo-script.md) · [Backup and retention](operations/backup-and-retention.md) |
-| Planning | [Todo tracker](plans/todo-tracker.md) · [Stage 9 plan](plans/next-phase-plan.md) · [Stage 11 code audit](plans/code-audit-plan.md) · [Stage 12 UI modernization](plans/ui-modernization-plan.md) |
+| Planning | [Todo tracker](plans/todo-tracker.md) · [Stage 11 baseline](plans/stage-11-baseline.md) · [Stage 9 plan](plans/next-phase-plan.md) · [Stage 11 code audit](plans/code-audit-plan.md) · [Stage 12 UI modernization](plans/ui-modernization-plan.md) |
+| Decisions | [Decision records](decisions/README.md) |
 | Conventions | [Tiger style](tiger-style.md) |
 
 Project status, stage evidence, and remaining work are tracked in

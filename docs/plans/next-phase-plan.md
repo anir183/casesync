@@ -23,18 +23,18 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
 
 > **Stage 10 sequencing.** Complete Playwright UI coverage is a separate stage after
 > Stage 9: [`ui-testing-plan.md`](ui-testing-plan.md) with the living matrix at
-> [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 is in progress:
-> fixtures, route render/denial coverage, mutations (including the representative journey),
-> UI states, role landings, consolidated case tabs, the complaint-resolution loop,
-> accessibility/responsive expansion, visual regression, and the CI split have
-> landed. Its final exit gate waits for CI-image visual verification and the final
-> two-run full-suite record.
+> [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md). Stage 10 exited on
+> 2026-11-16: fixtures, route render/denial coverage, mutations (including the
+> representative journey), UI states, role landings, consolidated case tabs, the
+> complaint-resolution loop, accessibility/responsive expansion, visual regression, and the
+> CI split landed. Flag-off dispatch `43750576126` verified the 48 CI-image baselines and
+> the three cross-browser projects.
 >
-> **Stage 11–12 sequencing.** After Stage 10 exits, Stage 11
-> ([`code-audit-plan.md`](code-audit-plan.md)) cleans up imports, shared contracts,
-> services, duplication, and conventions without changing behavior. Stage 12
-> ([`ui-modernization-plan.md`](ui-modernization-plan.md)) then modernizes the UI and
-> intentionally refreshes the Stage 10 selectors and visual baselines.
+> **Stage 11–12 sequencing.** Stage 11
+> ([`code-audit-plan.md`](code-audit-plan.md)) is in progress (Phases 0–1 complete) and cleans
+> up imports, shared contracts, services, duplication, and conventions without changing
+> behavior. Stage 12 ([`ui-modernization-plan.md`](ui-modernization-plan.md)) then
+> modernizes the UI and intentionally refreshes the Stage 10 selectors and visual baselines.
 
 ## 1. Purpose
 

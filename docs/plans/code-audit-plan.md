@@ -1,13 +1,19 @@
 # CaseSync — Stage 11 Code Audit & Cleanup Plan
 
-Status: **Planned, not started.** Stage 11 begins only after Stage 10 exits. This plan is
-docs-only: no refactor, import rewrite, type move, or behavior change is authorized by
-this document alone.
+Status: **In progress.** Phase 0 (baseline inventory, ADRs, guardrail decision) and Phase 1
+(imports, dead exports, dialog replacement, existing-constant reuse) are complete as of
+2026-11-16. Stage 10 exited on 2026-11-16, so the no-behavior-change oracle is frozen.
+No product capability, route, permission, response shape, transition, seed output, or
+visual behavior changes in this stage.
 
-- **Plan date:** 2026-11-08
-- **Baseline:** Stages 0–9 implemented or partially implemented as recorded in
-  [`../product/end-product-and-stages.md`](../product/end-product-and-stages.md); Stage 10
-  is in progress.
+- **Plan date:** 2026-11-08. Last updated: 2026-11-16.
+- **Baseline:** [Stage 11 frozen baseline](stage-11-baseline.md), measured from Stage 10
+  exit dispatch `43750576126` on `f882bd1`. Stages 0–9 are recorded in
+  [`../product/end-product-and-stages.md`](../product/end-product-and-stages.md).
+- **Decision records:** [ADR 0001](../decisions/0001-imports-and-module-boundaries.md),
+  [ADR 0002](../decisions/0002-shared-contract-ownership.md),
+  [ADR 0003](../decisions/0003-service-size-and-split-criteria.md),
+  [ADR 0004](../decisions/0004-frontend-extraction-threshold.md).
 - **Umbrella name:** Stage 11 — codebase audit, cleanup, and convention hardening.
 - **Companions:** [`../tiger-style.md`](../tiger-style.md),
   [`../architecture/stack-and-architecture.md`](../architecture/stack-and-architecture.md),
@@ -41,21 +47,24 @@ Stage 11 is deliberately ordered before Stage 12. The UI modernization will touc
 the same files; importing the clean baseline first avoids mixing refactor noise with
 visual design review.
 
-## 2. Baseline evidence (read-only audit, 2026-11-08)
+## 2. Baseline evidence (read-only audit, refreshed 2026-11-16)
+
+The authoritative record, including the quality gates and the ordered work queue, is
+[`stage-11-baseline.md`](stage-11-baseline.md). This table is the summary.
 
 | Area | Verified baseline | Why it matters |
 |---|---|---|
-| Web imports | 100 web source files; 40 parent-relative imports across 29 files | `../` imports make moves noisy and hide layering |
-| API imports | 316 `#/*` imports; 44 same-directory `./` imports; 0 parent-relative | The alias convention already works; it is applied inconsistently |
-| Shared package use | `@casesync/types` imported once; `packages/types` is 18 lines | The shared contract package is effectively unused |
-| Pagination type | `Page<T>` defined 4 times in web feature API files plus the canonical API copy | Five definitions of one response envelope |
-| Local DTOs | 30 local `interface`/`type` declarations under `apps/web/src/features` | Response shapes drift between features and the API |
-| Confirmations | 5 `window.confirm` call sites while `ConfirmDialog` exists and is used in 4 files | Inconsistent destructive-action UX and accessibility |
-| Largest services | `complaint.service.ts` 1698, `case.service.ts` 1077, `demo-seed.ts` 989, representatives service 884, `overlap.scoring.ts` 856, `overlap.service.ts` 636, `report.service.ts` 586, `sla.service.ts` 505 | Hard to review, test in isolation, and safely change |
-| Largest pages | reports page 487, dashboard page 465, case detail 402, SLA config 388 | Page files mix data access, layout, and feature logic |
-| Query keys | 37 `useQuery` calls; keys are ad-hoc string arrays (`['sla']`, `['admin','audit']`, …) | Invalidation is easy to miss and hard to refactor |
-| Styling escapes | 3 inline styles; `text-[11px]`/`text-[10px]` used 10 times; several arbitrary widths | Token drift that Stage 12 would otherwise inherit |
-| Already clean | No `any`, no `TODO`/`FIXME`/`HACK`, no debug `console` in application source | Preserve this; do not regress it |
+| Web imports | 103 source files (64 feature files); 452 `#/*`, 42 parent-relative imports across 29 files, 17 sibling `./` | `../` imports make moves noisy and hide layering |
+| API imports | 90 source files; 316 `#/*` imports; 0 parent-relative; 44 same-directory `./` | The alias convention already works; it is applied inconsistently |
+| Shared package use | `@casesync/types` has 0 consumers; `packages/types` is 18 lines | The shared contract package is effectively unused |
+| Pagination type | `Page<T>` defined 5 times: the API copy plus four web feature API files | Five definitions of one response envelope |
+| Local DTOs | 79 `interface` and 13 type-alias declarations under `apps/web/src/features` | Response shapes drift between features and the API |
+| Confirmations | 5 `window.confirm` call sites in 5 files while `ConfirmDialog` is used in 4 files | Inconsistent destructive-action UX and accessibility |
+| Largest services | `complaint.service.ts` 1700, `case.service.ts` 1077, `demo-seed.ts` 989, representatives 884, `overlap.scoring.ts` 856, `overlap.service.ts` 636, `report.service.ts` 586, `sla.service.ts` 505 | Hard to review, test in isolation, and safely change |
+| Largest pages | dashboard 713, reports 487, case detail 449, SLA config 388 | Page files mix data access, layout, and feature logic |
+| Query keys | 99 `useQuery` references; 63 raw `queryKey: [...]` arrays across 13 files | Invalidation is easy to miss and hard to refactor |
+| Styling escapes | 3 inline styles (all computed chart/map values); 12 arbitrary `text-[10px]`/`text-[11px]` | Token drift that Stage 12 would otherwise inherit |
+| Already clean | No `any`, no `TODO`/`FIXME`/`HACK`, no debug `console`; console is limited to the logger, bootstrap, and seed paths | Preserve this; do not regress it |
 
 The audit is intentionally evidence-led. A file is not “smelly” because it is long; it is
 in scope when length, duplication, or convention drift makes a concrete change harder.
@@ -87,6 +96,8 @@ These become the review standard. They are also recorded in
 
 ### 4.1 Imports and module boundaries
 
+Decision record: [ADR 0001](../decisions/0001-imports-and-module-boundaries.md).
+
 | Rule | Target |
 |---|---|
 | Cross-directory import | `#/...` in both apps |
@@ -103,6 +114,8 @@ and should stay. The rule is about crossing a directory boundary.
 
 ### 4.2 Shared contracts
 
+Decision record: [ADR 0002](../decisions/0002-shared-contract-ownership.md).
+
 - `packages/types` owns contracts used by **both** apps or by **two or more** features:
   - `Page<T>` and pagination metadata;
   - shared request/response DTOs that cross the API/web boundary;
@@ -113,6 +126,8 @@ and should stay. The rule is about crossing a directory boundary.
 - API response shaping stays server-side. Moving a type does not move validation.
 
 ### 4.3 Server services
+
+Decision record: [ADR 0003](../decisions/0003-service-size-and-split-criteria.md).
 
 - Services expose intent-shaped operations (`registerComplaint`, `transitionCase`,
   `assessPair`), not a generic repository.
@@ -126,6 +141,8 @@ and should stay. The rule is about crossing a directory boundary.
 - Pure calculations move to `packages/utils` only when they are genuinely pure and shared.
 
 ### 4.4 Frontend structure
+
+Decision record: [ADR 0004](../decisions/0004-frontend-extraction-threshold.md).
 
 - Feature code is grouped by domain, not by technical type.
 - Query keys are declared once per feature and exported; invalidation uses those keys.
@@ -158,6 +175,10 @@ and should stay. The rule is about crossing a directory boundary.
 
 ### Phase 0 — Baseline inventory and guardrail design
 
+**Complete 2026-11-16.** The frozen measurements and ordered queue are in
+[`stage-11-baseline.md`](stage-11-baseline.md); the four rules are the
+[decision records](../decisions/README.md).
+
 **Goal:** turn the audit into a reviewed, ordered work queue before touching code.
 
 **Work**
@@ -184,6 +205,8 @@ and should stay. The rule is about crossing a directory boundary.
 - The four ADRs are reviewed and linked from the architecture document.
 - No application code changed.
 
+Recorded in [`stage-11-baseline.md`](stage-11-baseline.md) §4; met on 2026-11-16.
+
 ---
 
 ### Phase 1 — Import and mechanical hygiene
@@ -200,11 +223,14 @@ and should stay. The rule is about crossing a directory boundary.
   preserving the same message, confirm label, destructive intent, and pending state.
 - Replace repeated arbitrary text sizes (`text-[10px]`, `text-[11px]`) with the nearest
   semantic scale token. Do not change the visual size unless the token is exact; Stage 12
-  owns visual changes.
+  owns visual changes. **Outcome:** deferred to Stage 12; no default token preserves the
+  10/11px sizes, so any substitution moves the frozen baseline.
 - Replace static inline styles with token-backed classes where the value is not dynamic.
-  Keep genuinely computed chart/map values inline.
+  Keep genuinely computed chart/map values inline. **Outcome:** all three are computed
+  chart/map values and stay inline.
 - Move repeated magic numbers/strings found during the rewrite into `packages/config`
-  only when they already have three real uses.
+  only when they already have three real uses. **Outcome:** reused the existing
+  `COMPLAINT.MAX_*` and `OVERLAP.MAX_NOTES_LENGTH` constants; no new cross-domain constant.
 - Run Biome’s safe fixes and review the diff; do not enable new rules yet.
 
 **Exit criteria**
@@ -215,6 +241,11 @@ and should stay. The rule is about crossing a directory boundary.
 - Biome, typechecks, unit tests, and the smoke suite pass.
 - The diff is mechanical and reviewable file-by-file.
 
+**Outcome (2026-11-16):** met. API 159 pass, web 26 pass, smoke 13 pass, coverage 86.2%
+lines / 86.8% functions; the four dialog mutation flows and the dialog focus-trap test
+pass. Text-size tokenization is the one deliberate Stage 12 deferral (§4a M4 in
+[`stage-11-baseline.md`](stage-11-baseline.md)).
+
 ---
 
 ### Phase 2 — Shared contracts and frontend seams
@@ -223,9 +254,10 @@ and should stay. The rule is about crossing a directory boundary.
 
 **Work**
 
-- Move `Page<T>` to `packages/types`; re-export or import it from the API pagination helper
-  and every web feature that paginates. Delete the four local copies.
-- Inventory the 30 local web interfaces. For each, decide:
+- Move `Page<T>` to `packages/types`; import it from the API pagination helper and every
+  web feature that paginates. Delete the four web copies and the API copy, leaving one
+  definition.
+- Inventory the 79 local web interfaces and 13 aliases. For each, decide:
   - **shared** (API/web boundary or two+ features) → `packages/types`;
   - **feature-local** (form state, view model) → keep, but name and colocate it;
   - **duplicate** → import the canonical shape.
@@ -255,7 +287,7 @@ and should stay. The rule is about crossing a directory boundary.
 
 **Work, in risk order**
 
-1. **`complaint.service.ts` (1698 lines).** Split intake/verification, conversation and
+1. **`complaint.service.ts` (1700 lines).** Split intake/verification, conversation and
    messages, public projection, and shared query/authorization helpers. Keep the route
    handlers calling the same public functions.
 2. **`case.service.ts` (1077).** Separate list/query shaping from lifecycle transitions,
@@ -301,8 +333,8 @@ and should stay. The rule is about crossing a directory boundary.
   components or a small hook, but only where the same behavior appears three or more times.
 - Consolidate the repeated form field/label/error pattern where it is mechanically
   identical; do not hide form-specific validation.
-- Move large page sub-trees out of `reports-page.tsx`, `dashboard-page.tsx`, and
-  `case-detail-page.tsx` into feature components. The page keeps routing, query
+- Move large page sub-trees out of `reports-page.tsx` (487), `dashboard-page.tsx` (713),
+  and `case-detail-page.tsx` (449) into feature components. The page keeps routing, query
   composition, and layout.
 - Normalize feature API modules: one exported `api` object or function group per feature,
   consistent naming, shared `Page<T>`, shared error handling.
@@ -408,12 +440,12 @@ and should stay. The rule is about crossing a directory boundary.
 | Query keys | 37 ad-hoc keys | Per-feature key objects | 2 | Medium |
 | Session guards | Repeated skeleton | Shared guard/hook | 2 | Medium |
 | `window.confirm` | 5 call sites | `ConfirmDialog` | 1 | Low |
-| `complaint.service.ts` | 1698 lines | Split intake/conversation/projection | 3 | High |
+| `complaint.service.ts` | 1700 lines | Split intake/conversation/projection | 3 | High |
 | `case.service.ts` | 1077 lines | Split query/lifecycle/audit | 3 | High |
 | Representatives service | 884 lines | Split approval/scope | 3 | High |
 | Overlap scoring/orchestration | 856 + 636 lines | Split pure scoring/orchestration | 3 | High |
 | `demo-seed.ts` | 989 lines | Split fixtures/persistence | 3 | Medium |
-| Dashboard/reports/case pages | 465 / 487 / 402 lines | Extract sub-trees | 4 | Medium |
+| Dashboard/reports/case pages | 713 / 487 / 449 lines | Extract sub-trees | 4 | Medium |
 | Arbitrary text sizes | 10 occurrences | Tokenize | 1 | Low |
 | Static inline styles | 3 occurrences | Tokenize dynamic-only | 1 | Low |
 

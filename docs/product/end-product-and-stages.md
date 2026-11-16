@@ -269,20 +269,22 @@ layout.
   chart-first dashboard/reports and the Leaflet/OpenStreetMap map) are implemented. Manual
   screen-reader sign-off, production hardening, and documentation polish remain planned.
   See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
-- Stage 10 is in progress: complete Playwright UI coverage across every route, role,
+- Stage 10 exited on 2026-11-16: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable
   visual-regression subset. Fixtures, per-role sessions, current-route render/denial
   coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state
   and Phase 3 flow suite, accessibility/responsive expansion, visual regression, and the
-  CI split have landed; final exit waits for CI-image visual verification and the final
-  two-run full-suite record. See
+  CI split landed. All 48 baselines were regenerated on the pinned CI image and verified by
+  dispatch `43750576126`; test-count and coverage evidence is in
+  [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md). See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
-- Stage 11 is planned, not started. It begins only after Stage 10 exits. The read-only
-  audit found 40 parent-relative imports across 29 web files, 44 same-directory relative
-  API imports alongside 316 alias imports, four duplicate web `Page<T>` definitions, five
-  `window.confirm` call sites, and five API services or seed files above 800 lines. The
-  plan is [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md).
+- Stage 11 is in progress: Phases 0–1 (baseline, ADRs, guardrail decision, import and dialog
+  cleanup) completed on 2026-11-16. The refreshed audit found 42 parent-relative imports across 29 web files,
+  0 in the API, five `Page<T>` definitions, 79 local web interfaces plus 13 aliases, 63 raw
+  query-key arrays, five `window.confirm` sites, and five API services or seed files above
+  800 lines. The plan is [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the
+  frozen measurements are in [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md).
 - Stage 12 is planned, not started. It begins only after Stage 11 exits so the UI pass
   builds on clean imports, shared contracts, and decomposed services. It covers design
   tokens and primitives, a rail/top-bar shell with command search, role-specific dashboards,
@@ -877,9 +879,9 @@ Stage 8 (done — optional public portal)
    ↓
 Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–4 implemented; manual screen-reader sign-off, hardening, and docs remain)
    ↓
-Stage 10 (in progress — complete Playwright UI coverage; current-route render/denial, mutations, UI states, Phase 3 flows, accessibility/responsive, visual, and CI checks landed, exits after CI-image visual verification and the final two-run record)
+Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓
-Stage 11 (planned — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; exits after the full suite and visual baseline pass unchanged)
+Stage 11 (in progress — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–1 complete, exits after the full suite and visual baseline pass unchanged)
    ↓
 Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin hub, core surfaces, GIS, portal landing, motion/a11y; exits after refreshed coverage passes twice)
 ```
