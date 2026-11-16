@@ -1,0 +1,69 @@
+name: Cross-browser E2E
+
+# Called from ci.yml on manual dispatch and tag pushes. It lives in its own
+# reusable workflow so the caller job stays matrix-free: GitHub evaluates a
+# job-level `if` before the matrix, and a skipped matrix job renders its name as
+# a raw `${{ matrix.browser }}` template. A matrix-free caller can therefore
+# show a clean "Cross-browser E2E" while skipped, and the browser names still
+# appear here when the suite actually runs.
+
+on:
+  workflow_call:
+
+# Reusable workflows do not inherit the caller's env, so the test configuration
+# is repeated here. Keep it in sync with the `env` block in ci.yml.
+env:
+  NODE_ENV: test
+  BETTER_AUTH_SECRET: ci-only-secret-change-me
+  BETTER_AUTH_URL: http://localhost:3000
+  CORS_ORIGIN: http://localhost:5173
+  MONGODB_URI: mongodb://127.0.0.1:27017/casesync_test
+  JEV_ENABLED: 'false'
+  OVERLAP_AUTO_ASSESS: 'false'
+  CRON_ENABLED: 'false'
+  STAFF_SIGNUP_ENABLED: 'false'
+
+jobs:
+  run:
+    name: Cross-browser E2E (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    services:
+      mongo:
+        image: mongo:7.0.45
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps ${{ matrix.browser }}
+        working-directory: apps/web
+      # Each browser gets its own service container and seed. Running all three
+      # projects against one database lets the first project's mutation specs
+      # destroy state the next project's fixtures expect.
+      - run: bun run seed:demo
+      - name: Run the functional suite in ${{ matrix.browser }}
+        working-directory: apps/web
+        env:
+          PLAYWRIGHT_ALL_BROWSERS: '1'
+        run: bunx playwright test --project=${{ matrix.browser }}-desktop --grep-invert "@performance|@visual"
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-cross-browser-${{ matrix.browser }}-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore

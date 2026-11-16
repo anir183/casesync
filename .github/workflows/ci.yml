@@ -157,54 +157,13 @@ jobs:
           if-no-files-found: ignore
 
   e2e-cross-browser:
-    # A matrix job skipped by a job-level if is never expanded, so GitHub would
-    # render the raw `${{ matrix.browser }}` template in the run UI. Keeping one
-    # sentinel matrix entry on push/PR forces expansion: the job is still skipped
-    # but shows a single plain name, while dispatch/tag runs expand to the real
-    # browsers and keep the per-browser name.
-    name: ${{ matrix.browser == 'skip' && 'Cross-browser E2E' || format('Cross-browser E2E ({0})', matrix.browser) }}
-    if: ${{ matrix.browser != 'skip' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: ${{ (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')) && fromJSON('["chromium","firefox","webkit"]') || fromJSON('["skip"]') }}
-    services:
-      mongo:
-        image: mongo:7.0.45
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-    steps:
-      - uses: actions/checkout@v7
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.4
-      - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps ${{ matrix.browser }}
-        working-directory: apps/web
-      # Each browser gets its own service container and seed. Running all three
-      # projects against one database lets the first project's mutation specs
-      # destroy state the next project's fixtures expect.
-      - run: bun run seed:demo
-      - name: Run the functional suite in ${{ matrix.browser }}
-        working-directory: apps/web
-        env:
-          PLAYWRIGHT_ALL_BROWSERS: '1'
-        run: bunx playwright test --project=${{ matrix.browser }}-desktop --grep-invert "@performance|@visual"
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: playwright-cross-browser-${{ matrix.browser }}-report
-          path: |
-            apps/web/playwright-report
-            apps/web/test-results
-          if-no-files-found: ignore
+    # Matrix-free caller so a skipped run renders a clean name. GitHub evaluates
+    # a job-level `if` before the matrix and does not expand skipped matrix jobs,
+    # which would surface the raw `${{ matrix.browser }}` template. The browser
+    # matrix (and its per-browser names) lives in the reusable workflow.
+    name: Cross-browser E2E
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/cross-browser-e2e.yml
 
   e2e-visual:
     name: Visual regression
