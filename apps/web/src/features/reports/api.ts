@@ -1,5 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
+
+export const reportKeys = {
+  summary: (filters: ReportFilters) => [QUERY_KEY.reports, 'summary', filters] as const,
+  geo: (filters: ReportFilters) => [QUERY_KEY.reports, 'geo', filters] as const,
+}
 
 export interface ReportGroupRow {
   name: string
@@ -62,7 +68,7 @@ function buildQuery(filters: ReportFilters) {
 
 export function useReports(filters: ReportFilters) {
   return useQuery({
-    queryKey: ['reports', 'summary', filters],
+    queryKey: reportKeys.summary(filters),
     queryFn: () => apiClient.get<ReportsSummary>(`/reports/summary${buildQuery(filters)}`),
   })
 }
@@ -92,7 +98,7 @@ export interface ReportsGeoSummary {
 
 export function useReportsGeo(filters: ReportFilters) {
   return useQuery({
-    queryKey: ['reports', 'geo', filters],
+    queryKey: reportKeys.geo(filters),
     queryFn: () => apiClient.get<ReportsGeoSummary>(`/reports/geo${buildQuery(filters)}`),
   })
 }

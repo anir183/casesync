@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface AppNotification {
   id: string
@@ -29,7 +30,10 @@ interface NotificationListResponse {
   unreadCount: number
 }
 
-export const NOTIFICATION_QUERY_KEY = ['notifications', 'list'] as const
+export const notificationKeys = {
+  root: [QUERY_KEY.notifications] as const,
+  list: (filters: NotificationFilters) => [QUERY_KEY.notifications, 'list', filters] as const,
+}
 
 function buildQuery(filters: NotificationFilters) {
   const params = new URLSearchParams()
@@ -45,7 +49,7 @@ export function useNotifications(
   options: { enabled?: boolean } = {},
 ) {
   return useQuery({
-    queryKey: [...NOTIFICATION_QUERY_KEY, filters],
+    queryKey: notificationKeys.list(filters),
     queryFn: () => apiClient.get<NotificationListResponse>(`/notifications${buildQuery(filters)}`),
     enabled: options.enabled ?? true,
   })
@@ -56,7 +60,7 @@ export function useMarkNotificationRead() {
   return useMutation({
     mutationFn: (id: string) => apiClient.patch<AppNotification>(`/notifications/${id}/read`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.root })
     },
   })
 }
@@ -66,7 +70,7 @@ export function useMarkAllNotificationsRead() {
   return useMutation({
     mutationFn: () => apiClient.post<{ updated: number }>('/notifications/read-all'),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.root })
     },
   })
 }

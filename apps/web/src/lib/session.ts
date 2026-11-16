@@ -7,6 +7,7 @@ export interface CurrentUser {
   role?: string
   bureauId?: string
   regionId?: string
+  representativeStatus?: string
 }
 
 export function useCurrentUser() {

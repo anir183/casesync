@@ -1,7 +1,13 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Page } from '#/features/cases/api'
 import { buildQuery } from '#/features/cases/api'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
+
+export const adminKeys = {
+  users: [QUERY_KEY.admin, 'users'] as const,
+  audit: [QUERY_KEY.admin, 'audit'] as const,
+}
 
 export interface AdminUser {
   id: string
@@ -44,7 +50,7 @@ export interface AuditLogEntry {
 
 export function useAdminUsers() {
   return useQuery({
-    queryKey: ['admin', 'users'],
+    queryKey: adminKeys.users,
     queryFn: () => apiClient.get<{ items: AdminUser[] }>('/admin/users').then((data) => data.items),
   })
 }
@@ -55,8 +61,8 @@ export function useCreateAdminUser() {
     mutationFn: (input: UserInput) =>
       apiClient.post<TemporaryPasswordResult>('/admin/users', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.users })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
     },
   })
 }
@@ -67,8 +73,8 @@ export function useUpdateAdminUser() {
     mutationFn: ({ id, input }: { id: string; input: UserInput }) =>
       apiClient.patch<AdminUser>(`/admin/users/${id}`, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.users })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
     },
   })
 }
@@ -79,7 +85,7 @@ export function useResetAdminPassword() {
     mutationFn: (id: string) =>
       apiClient.post<TemporaryPasswordResult>(`/admin/users/${id}/reset-password`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
     },
   })
 }
@@ -93,7 +99,7 @@ export interface AuditFilters {
 
 export function useAuditLog(filters: AuditFilters) {
   return useQuery({
-    queryKey: ['admin', 'audit', filters],
+    queryKey: [...adminKeys.audit, filters],
     queryFn: () => apiClient.get<Page<AuditLogEntry>>(`/admin/audit${buildQuery(filters)}`),
   })
 }

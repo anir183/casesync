@@ -1,16 +1,12 @@
 import { PAGINATION } from '@casesync/config'
+import type { Page } from '@casesync/types'
 
 export interface PageQueryInput {
   page?: number | string
   pageSize?: number | string
 }
 
-export interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
+export type { Page }
 
 export interface ResolvedPage {
   page: number

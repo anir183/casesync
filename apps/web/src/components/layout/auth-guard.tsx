@@ -1,32 +1,21 @@
 import { Navigate } from 'react-router-dom'
-import { Skeleton } from '#/components/ui/skeleton'
-import { useSession } from '#/lib/auth-client'
+import { SessionGate } from '#/components/layout/session-gate'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = useSession()
-
-  if (isPending) {
-    return (
-      <div className="space-y-4 p-6" aria-busy="true" aria-label="Loading session">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
-  }
-
-  if (!session) {
-    return <Navigate to="/login" replace />
-  }
-
-  if ((session.user as { role?: string }).role === 'COMPLAINANT') {
-    return <Navigate to="/portal/dashboard" replace />
-  }
-
-  if ((session.user as { role?: string }).role === 'INSTITUTION_REPRESENTATIVE') {
-    const approved =
-      (session.user as { representativeStatus?: string }).representativeStatus === 'APPROVED'
-    return <Navigate to={approved ? '/institution/dashboard' : '/institution/profile'} replace />
-  }
-
-  return <>{children}</>
+  return (
+    <SessionGate loginPath="/login" padded>
+      {(user) => {
+        if (user.role === 'COMPLAINANT') {
+          return <Navigate to="/portal/dashboard" replace />
+        }
+        if (user.role === 'INSTITUTION_REPRESENTATIVE') {
+          const approved = user.representativeStatus === 'APPROVED'
+          return (
+            <Navigate to={approved ? '/institution/dashboard' : '/institution/profile'} replace />
+          )
+        }
+        return <>{children}</>
+      }}
+    </SessionGate>
+  )
 }

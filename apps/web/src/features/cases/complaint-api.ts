@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { caseKeys } from '#/features/cases/api'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface CaseMessage {
   id: string
@@ -12,13 +14,13 @@ export interface CaseMessage {
 }
 
 export const caseMessageKeys = {
-  list: (caseId: string) => ['cases', 'messages', caseId] as const,
+  list: (caseId: string) => caseKeys.messages(caseId),
 }
 
 function invalidate(queryClient: ReturnType<typeof useQueryClient>, caseId: string) {
-  void queryClient.invalidateQueries({ queryKey: ['cases'] })
+  void queryClient.invalidateQueries({ queryKey: caseKeys.root })
   void queryClient.invalidateQueries({ queryKey: caseMessageKeys.list(caseId) })
-  void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.notifications] })
 }
 
 export function useCaseMessages(caseId: string) {

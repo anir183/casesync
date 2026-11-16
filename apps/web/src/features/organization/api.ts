@@ -1,5 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
+
+export const organizationKeys = {
+  bureaus: [QUERY_KEY.bureaus] as const,
+  bureauList: [QUERY_KEY.bureaus, 'list'] as const,
+  bureauAll: [QUERY_KEY.bureaus, 'all'] as const,
+  categories: [QUERY_KEY.categories] as const,
+  categoryList: [QUERY_KEY.categories, 'list'] as const,
+  categoryAll: [QUERY_KEY.categories, 'all'] as const,
+  regions: [QUERY_KEY.regions] as const,
+  regionList: [QUERY_KEY.regions, 'list'] as const,
+  regionAll: [QUERY_KEY.regions, 'all'] as const,
+}
 
 export interface Bureau {
   id: string
@@ -73,15 +86,15 @@ export async function fetchRegions(): Promise<Region[]> {
 }
 
 export function useBureaus() {
-  return useQuery({ queryKey: ['bureaus', 'list'], queryFn: fetchBureaus })
+  return useQuery({ queryKey: organizationKeys.bureauList, queryFn: fetchBureaus })
 }
 
 export function useCategories() {
-  return useQuery({ queryKey: ['categories', 'list'], queryFn: fetchCategories })
+  return useQuery({ queryKey: organizationKeys.categoryList, queryFn: fetchCategories })
 }
 
 export function useRegions() {
-  return useQuery({ queryKey: ['regions', 'list'], queryFn: fetchRegions })
+  return useQuery({ queryKey: organizationKeys.regionList, queryFn: fetchRegions })
 }
 
 interface RawBureau {
@@ -91,7 +104,7 @@ interface RawBureau {
   active?: boolean
 }
 
-interface MasterInput {
+export interface MasterInput {
   code: string
   name: string
   active?: boolean
@@ -135,15 +148,15 @@ export function fetchAllRegions(): Promise<Region[]> {
 }
 
 export function useAllBureaus() {
-  return useQuery({ queryKey: ['bureaus', 'all'], queryFn: fetchAllBureaus })
+  return useQuery({ queryKey: organizationKeys.bureauAll, queryFn: fetchAllBureaus })
 }
 
 export function useAllCategories() {
-  return useQuery({ queryKey: ['categories', 'all'], queryFn: fetchAllCategories })
+  return useQuery({ queryKey: organizationKeys.categoryAll, queryFn: fetchAllCategories })
 }
 
 export function useAllRegions() {
-  return useQuery({ queryKey: ['regions', 'all'], queryFn: fetchAllRegions })
+  return useQuery({ queryKey: organizationKeys.regionAll, queryFn: fetchAllRegions })
 }
 
 export function useSaveBureau() {
@@ -154,8 +167,8 @@ export function useSaveBureau() {
         ? apiClient.patch<Bureau>(`/bureaus/${id}`, input)
         : apiClient.post<Bureau>('/bureaus', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['bureaus'] })
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.bureaus })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sla] })
     },
   })
 }
@@ -168,9 +181,9 @@ export function useSaveRegion() {
         ? apiClient.patch<Region>(`/regions/${id}`, input)
         : apiClient.post<Region>('/regions', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['regions'] })
-      void queryClient.invalidateQueries({ queryKey: ['institutions'] })
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.regions })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.institutions] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sla] })
     },
   })
 }
@@ -183,8 +196,8 @@ export function useSaveCategory() {
         ? apiClient.patch<Category>(`/categories/${id}`, input)
         : apiClient.post<Category>('/categories', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['categories'] })
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.categories })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sla] })
     },
   })
 }
@@ -194,7 +207,7 @@ export function useDeleteBureau() {
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<{ deleted: boolean }>(`/bureaus/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['bureaus'] })
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.bureaus })
     },
   })
 }
@@ -214,14 +227,14 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<{ deleted: boolean }>(`/categories/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['categories'] })
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.categories })
     },
   })
 }
 
 function clientInvalidate(queryClient: ReturnType<typeof useQueryClient>) {
-  void queryClient.invalidateQueries({ queryKey: ['regions'] })
-  void queryClient.invalidateQueries({ queryKey: ['institutions'] })
-  void queryClient.invalidateQueries({ queryKey: ['cases'] })
-  void queryClient.invalidateQueries({ queryKey: ['sla'] })
+  void queryClient.invalidateQueries({ queryKey: organizationKeys.regions })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.institutions] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.cases] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sla] })
 }

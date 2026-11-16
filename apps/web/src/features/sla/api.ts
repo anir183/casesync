@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface SlaConfig {
   id: string
@@ -60,8 +61,9 @@ export interface JobRun {
 }
 
 export const slaKeys = {
-  list: ['sla', 'configs'] as const,
-  runs: ['jobs', 'runs', 'SLA_SCAN'] as const,
+  root: [QUERY_KEY.sla] as const,
+  list: [QUERY_KEY.sla, 'configs'] as const,
+  runs: [QUERY_KEY.jobs, 'runs', 'SLA_SCAN'] as const,
 }
 
 export function useSlaConfigs() {
@@ -76,7 +78,7 @@ export function useCreateSlaConfig() {
   return useMutation({
     mutationFn: (input: SlaConfigInput) => apiClient.post<SlaConfig>('/sla-configs', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: slaKeys.root })
     },
   })
 }
@@ -87,7 +89,7 @@ export function useUpdateSlaConfig() {
     mutationFn: ({ id, input }: { id: string; input: SlaConfigInput }) =>
       apiClient.patch<SlaConfig>(`/sla-configs/${id}`, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: slaKeys.root })
     },
   })
 }
@@ -97,7 +99,7 @@ export function useDeleteSlaConfig() {
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<{ deleted: boolean }>(`/sla-configs/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sla'] })
+      void queryClient.invalidateQueries({ queryKey: slaKeys.root })
     },
   })
 }
@@ -114,8 +116,8 @@ export function useRunSlaJob() {
   return useMutation({
     mutationFn: () => apiClient.post<JobRun>('/admin/jobs/sla/run'),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['jobs'] })
-      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.jobs] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.notifications] })
     },
   })
 }

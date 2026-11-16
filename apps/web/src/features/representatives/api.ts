@@ -1,6 +1,8 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ComplaintDetail, ComplaintSummary } from '#/features/portal/api'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export type RepresentativeStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED'
 
@@ -40,13 +42,6 @@ export interface RepresentativeDomain {
   addedBy?: string
 }
 
-interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
-
 export interface RepresentativeFilters {
   status?: string
   institutionId?: string
@@ -56,14 +51,16 @@ export interface RepresentativeFilters {
 }
 
 export const representativeKeys = {
-  profile: ['institution', 'profile'] as const,
-  dashboard: ['institution', 'dashboard'] as const,
+  profile: [QUERY_KEY.institution, 'profile'] as const,
+  dashboard: [QUERY_KEY.institution, 'dashboard'] as const,
   cases: (filters: { status?: string; q?: string; page: number; pageSize: number }) =>
-    ['institution', 'cases', filters] as const,
-  case: (id: string) => ['institution', 'case', id] as const,
-  queue: (filters: RepresentativeFilters) => ['admin', 'representatives', filters] as const,
+    [QUERY_KEY.institution, 'cases', filters] as const,
+  case: (id: string) => [QUERY_KEY.institution, 'case', id] as const,
+  queueRoot: [QUERY_KEY.admin, 'representatives'] as const,
+  queue: (filters: RepresentativeFilters) => [...representativeKeys.queueRoot, filters] as const,
+  domainsRoot: [QUERY_KEY.admin, 'institution-domains'] as const,
   domains: (filters: { q?: string; institutionId?: string }) =>
-    ['admin', 'institution-domains', filters] as const,
+    [...representativeKeys.domainsRoot, filters] as const,
 }
 
 export function useRepresentativeProfile() {
@@ -183,8 +180,8 @@ export function useRepresentativeQueue(filters: RepresentativeFilters) {
 }
 
 function invalidateRepresentatives(queryClient: ReturnType<typeof useQueryClient>) {
-  void queryClient.invalidateQueries({ queryKey: ['admin', 'representatives'] })
-  void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+  void queryClient.invalidateQueries({ queryKey: representativeKeys.queueRoot })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.admin, 'audit'] })
 }
 
 export function useApproveRepresentative() {
@@ -233,8 +230,8 @@ export function useInstitutionDomains(filters: { q?: string; institutionId?: str
 }
 
 function invalidateDomains(queryClient: ReturnType<typeof useQueryClient>) {
-  void queryClient.invalidateQueries({ queryKey: ['admin', 'institution-domains'] })
-  void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+  void queryClient.invalidateQueries({ queryKey: representativeKeys.domainsRoot })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.admin, 'audit'] })
 }
 
 export function useCreateInstitutionDomain() {

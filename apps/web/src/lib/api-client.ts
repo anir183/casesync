@@ -11,6 +11,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Single display helper for any thrown value; the fallback is page-specific copy. */
+export function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
+}
+
 async function parseError(response: Response) {
   try {
     const body = (await response.json()) as { error?: string; message?: string }

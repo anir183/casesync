@@ -1,5 +1,7 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface PortalProfile {
   id: string
@@ -102,20 +104,14 @@ export interface VerificationRequest {
   rejectionReason?: string
 }
 
-interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
-
 export const portalKeys = {
-  profile: ['portal', 'profile'] as const,
-  complaints: (page = 1) => ['portal', 'complaints', page] as const,
-  complaint: (id: string) => ['portal', 'complaint', id] as const,
-  institutions: (q: string) => ['public', 'institutions', q] as const,
-  categories: ['public', 'categories'] as const,
-  verifications: (status: string) => ['admin', 'verifications', status] as const,
+  profile: [QUERY_KEY.portal, 'profile'] as const,
+  complaintsRoot: [QUERY_KEY.portal, 'complaints'] as const,
+  complaints: (page = 1) => [...portalKeys.complaintsRoot, page] as const,
+  complaint: (id: string) => [QUERY_KEY.portal, 'complaint', id] as const,
+  institutions: (q: string) => [QUERY_KEY.public, 'institutions', q] as const,
+  categories: [QUERY_KEY.public, 'categories'] as const,
+  verifications: (status: string) => [QUERY_KEY.admin, 'verifications', status] as const,
 }
 
 export function usePortalProfile() {
@@ -174,8 +170,8 @@ export function useSubmitComplaint() {
       consentGiven: boolean
     }) => apiClient.post<ComplaintDetail>('/portal/complaints', input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['portal', 'complaints'] })
-      void queryClient.invalidateQueries({ queryKey: ['portal', 'profile'] })
+      void queryClient.invalidateQueries({ queryKey: portalKeys.complaintsRoot })
+      void queryClient.invalidateQueries({ queryKey: portalKeys.profile })
     },
   })
 }
@@ -220,7 +216,7 @@ export function useAcceptResolution(id: string) {
     mutationFn: () => apiClient.post<ComplaintDetail>(`/portal/complaints/${id}/accept-resolution`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: portalKeys.complaint(id) })
-      void queryClient.invalidateQueries({ queryKey: ['portal', 'complaints'] })
+      void queryClient.invalidateQueries({ queryKey: portalKeys.complaintsRoot })
     },
   })
 }
@@ -232,7 +228,7 @@ export function useReopenComplaint(id: string) {
       apiClient.post<ComplaintDetail>(`/portal/complaints/${id}/reopen`, { reason }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: portalKeys.complaint(id) })
-      void queryClient.invalidateQueries({ queryKey: ['portal', 'complaints'] })
+      void queryClient.invalidateQueries({ queryKey: portalKeys.complaintsRoot })
     },
   })
 }
@@ -266,8 +262,8 @@ export function useReviewVerification() {
         ...(decision === 'reject' ? { rejectionReason } : {}),
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'verifications'] })
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.admin, 'verifications'] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.admin, 'audit'] })
     },
   })
 }

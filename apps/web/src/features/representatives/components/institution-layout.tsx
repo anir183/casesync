@@ -12,6 +12,7 @@ import {
   useNotifications,
 } from '#/features/notifications/api'
 import { signOut, useSession } from '#/lib/auth-client'
+import type { CurrentUser } from '#/lib/session'
 import { useRouteFocus } from '#/lib/use-route-focus'
 import { cn } from '#/lib/utils'
 
@@ -29,20 +30,13 @@ const MENU_LINK_CLASS =
 const MOBILE_LINK_CLASS = ({ isActive }: { isActive: boolean }) =>
   cn('block', PRIMARY_LINK_CLASS({ isActive }))
 
-interface InstitutionSessionUser {
-  name?: string
-  email?: string
-  role?: string
-  representativeStatus?: string
-}
-
 export function InstitutionLayout() {
   const { data: session } = useSession()
   const navigate = useNavigate()
   const location = useLocation()
   const mainRef = useRouteFocus(location.pathname)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const user = session?.user as InstitutionSessionUser | undefined
+  const user = session?.user as CurrentUser | undefined
   const signedIn = Boolean(user)
   const isRepresentative = user?.role === 'INSTITUTION_REPRESENTATIVE'
   const approved = user?.representativeStatus === 'APPROVED'

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface Attachment {
   id: string
@@ -13,7 +14,7 @@ export interface Attachment {
 }
 
 export const attachmentKeys = {
-  list: (caseId: string) => ['attachments', caseId] as const,
+  list: (caseId: string) => [QUERY_KEY.attachments, caseId] as const,
 }
 
 export function fetchAttachments(caseId: string): Promise<Attachment[]> {
@@ -41,7 +42,7 @@ export function useUploadAttachment(caseId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: attachmentKeys.list(caseId) })
-      void queryClient.invalidateQueries({ queryKey: ['cases', 'detail', caseId] })
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.cases, 'detail', caseId] })
     },
   })
 }

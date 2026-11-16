@@ -6,9 +6,5 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts"
-  },
-  "dependencies": {
-    "@casesync/config": "workspace:*",
-    "zod": "^4.6.7"
   }
 }

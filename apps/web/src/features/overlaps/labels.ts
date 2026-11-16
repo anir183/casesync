@@ -19,6 +19,12 @@ const MERGE_STATUS_LABELS: Record<string, string> = {
   reverted: 'Merge reverted',
 }
 
+const REVIEW_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pending review',
+  CONFIRMED: 'Confirmed overlap',
+  DISMISSED: 'Dismissed',
+}
+
 const MERGE_VETO_LABELS: Record<string, string> = {
   auto_merge_disabled: 'Automatic merge is disabled',
   match_type_not_exact: 'Match type is not an exact institution ID match',
@@ -58,6 +64,11 @@ export function matchTypeLabel(matchType: string) {
 export function mergeStatusLabel(status?: string) {
   if (!status) return 'Not merged'
   return MERGE_STATUS_LABELS[status] ?? status.replace(/_/g, ' ')
+}
+
+export function reviewStatusLabel(status?: string) {
+  if (!status) return 'Pending review'
+  return REVIEW_STATUS_LABELS[status] ?? status
 }
 
 export function mergeVetoLabel(reason?: string) {

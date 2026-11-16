@@ -19,6 +19,7 @@ import {
   useUpdateAdminUser,
 } from '#/features/admin/api'
 import { useBureaus, useRegions } from '#/features/organization/api'
+import { errorMessage } from '#/lib/api-client'
 import { useCurrentUser } from '#/lib/session'
 
 interface FormState {
@@ -44,10 +45,6 @@ const EMPTY_FORM: FormState = {
 }
 
 const ROLE_OPTIONS = Object.values(ROLES)
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'User could not be saved'
-}
 
 export function AdminUsersPage() {
   const { user: currentUser } = useCurrentUser()
@@ -253,7 +250,9 @@ export function AdminUsersPage() {
             </div>
           </form>
           {mutationError && (
-            <p className="mt-2 text-sm text-danger">{errorMessage(mutationError)}</p>
+            <p className="mt-2 text-sm text-danger">
+              {errorMessage(mutationError, 'User could not be saved')}
+            </p>
           )}
         </CardContent>
       </Card>

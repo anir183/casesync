@@ -1,4 +1,4 @@
-import { PAGINATION, REPRESENTATIVE_STATUS } from '@casesync/config'
+import { PAGINATION, REPRESENTATIVE_STATUS, REPRESENTATIVE_STATUS_VALUES } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
@@ -19,7 +19,7 @@ import {
 } from '#/features/representatives/api'
 import { formatDate } from '#/lib/utils'
 
-const STATUS_OPTIONS = Object.values(REPRESENTATIVE_STATUS)
+const STATUS_OPTIONS = REPRESENTATIVE_STATUS_VALUES
 
 const CELL_CLASS = 'px-4 py-3 text-sm align-top'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`

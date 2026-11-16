@@ -23,6 +23,7 @@ import { matchTypeLabel } from '#/features/overlaps/labels'
 import { useReports, useReportsGeo } from '#/features/reports/api'
 import { RegionMap } from '#/features/reports/components/region-map'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate, formatDateOnly } from '#/lib/utils'
 
@@ -73,6 +74,10 @@ interface DashboardFilters {
 
 const CELL = 'px-4 py-3 text-sm'
 const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+
+const dashboardKeys = {
+  summary: (filters: DashboardFilters) => [QUERY_KEY.dashboard, 'summary', filters] as const,
+}
 
 interface RoleLanding {
   kicker: string
@@ -325,7 +330,7 @@ export function DashboardPage() {
   const [draft, setDraft] = useState<DashboardFilters>({})
   const [filters, setFilters] = useState<DashboardFilters>({})
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['dashboard', 'summary', filters],
+    queryKey: dashboardKeys.summary(filters),
     queryFn: () => apiClient.get<DashboardSummary>(`/dashboard/summary${buildQuery(filters)}`),
     refetchInterval: 30_000,
   })

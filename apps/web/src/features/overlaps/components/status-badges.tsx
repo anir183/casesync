@@ -1,28 +1,13 @@
 import { Badge } from '#/components/ui/badge'
 import type { ReviewStatus } from '#/features/overlaps/api'
-
-const LABELS: Record<string, string> = {
-  PENDING: 'Pending review',
-  CONFIRMED: 'Confirmed overlap',
-  DISMISSED: 'Dismissed',
-}
+import { mergeStatusLabel, reviewStatusLabel } from '#/features/overlaps/labels'
 
 export function ReviewStatusBadge({ status }: { status: ReviewStatus | string }) {
   const variant = status === 'CONFIRMED' ? 'success' : status === 'DISMISSED' ? 'muted' : 'warning'
-  return <Badge variant={variant}>{LABELS[status] ?? status}</Badge>
+  return <Badge variant={variant}>{reviewStatusLabel(status)}</Badge>
 }
 
 export function MergeStatusBadge({ status }: { status?: string }) {
-  const label =
-    status === 'auto_merged'
-      ? 'Auto-merged'
-      : status === 'manual_merged'
-        ? 'Manually merged'
-        : status === 'manual_review'
-          ? 'Human review required'
-          : status === 'reverted'
-            ? 'Merge reverted'
-            : 'Not merged'
   const variant =
     status === 'auto_merged' || status === 'manual_merged'
       ? 'success'
@@ -31,7 +16,7 @@ export function MergeStatusBadge({ status }: { status?: string }) {
         : status === 'manual_review'
           ? 'warning'
           : 'muted'
-  return <Badge variant={variant}>{label}</Badge>
+  return <Badge variant={variant}>{mergeStatusLabel(status)}</Badge>
 }
 
 export function CaseStatusBadge({ status }: { status: string }) {

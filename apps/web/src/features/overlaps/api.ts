@@ -1,5 +1,7 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export type ReviewStatus = 'PENDING' | 'CONFIRMED' | 'DISMISSED'
 export type ReviewAction = 'confirm' | 'dismiss'
@@ -10,13 +12,6 @@ export type MergeStatus =
   | 'manual_review'
   | 'reverted'
 export type MergeGroupStatus = 'active' | 'reverted'
-
-export interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
 
 export interface OverlapCase {
   id: string
@@ -121,9 +116,10 @@ export interface LinkCasesInput {
 }
 
 export const overlapKeys = {
-  list: (filters: OverlapFilters) => ['overlaps', 'list', filters] as const,
-  detail: (id: string) => ['overlaps', 'detail', id] as const,
-  group: (id: string) => ['overlaps', 'group', id] as const,
+  root: [QUERY_KEY.overlaps] as const,
+  list: (filters: OverlapFilters) => [QUERY_KEY.overlaps, 'list', filters] as const,
+  detail: (id: string) => [QUERY_KEY.overlaps, 'detail', id] as const,
+  group: (id: string) => [QUERY_KEY.overlaps, 'group', id] as const,
 }
 
 function buildQuery(filters: object) {
@@ -200,11 +196,11 @@ export function useOverlap(id: string) {
 function useInvalidateOverlaps() {
   const queryClient = useQueryClient()
   return () => {
-    void queryClient.invalidateQueries({ queryKey: ['overlaps'] })
-    void queryClient.invalidateQueries({ queryKey: ['cases'] })
-    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-    void queryClient.invalidateQueries({ queryKey: ['reports'] })
-    void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    void queryClient.invalidateQueries({ queryKey: overlapKeys.root })
+    void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.cases] })
+    void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.dashboard] })
+    void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.reports] })
+    void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.notifications] })
   }
 }
 

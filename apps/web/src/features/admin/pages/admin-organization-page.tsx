@@ -10,6 +10,7 @@ import { FieldLabel } from '#/components/ui/textarea'
 import {
   type Bureau,
   type Category,
+  type MasterInput,
   type Region,
   useAllBureaus,
   useAllCategories,
@@ -21,6 +22,7 @@ import {
   useSaveCategory,
   useSaveRegion,
 } from '#/features/organization/api'
+import { errorMessage } from '#/lib/api-client'
 
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
@@ -28,15 +30,6 @@ const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:
 
 interface MasterRow {
   id: string
-  code: string
-  name: string
-  active: boolean
-  officeCity?: string
-  latitude?: number
-  longitude?: number
-}
-
-interface MasterInput {
   code: string
   name: string
   active: boolean
@@ -55,10 +48,6 @@ interface DeleteMutation {
   mutateAsync: (id: string) => Promise<unknown>
   isPending: boolean
   error: unknown
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Operation failed'
 }
 
 function MasterSection({
@@ -229,7 +218,7 @@ function MasterSection({
           </form>
 
           {mutationError ? (
-            <p className="text-sm text-danger">{errorMessage(mutationError)}</p>
+            <p className="text-sm text-danger">{errorMessage(mutationError, 'Operation failed')}</p>
           ) : null}
 
           <TableScroll label={`${title} records`}>

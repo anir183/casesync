@@ -75,10 +75,6 @@
     "packages/types": {
       "name": "@casesync/types",
       "version": "0.0.0",
-      "dependencies": {
-        "@casesync/config": "workspace:*",
-        "zod": "^4.6.7",
-      },
     },
     "packages/utils": {
       "name": "@casesync/utils",

@@ -1,12 +1,7 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
-
-export interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface CaseListItem {
   id: string
@@ -186,11 +181,13 @@ export type CaseActionInput =
   | { kind: 'dispose'; remarks?: string }
 
 export const caseKeys = {
-  list: (filters: CaseFilters) => ['cases', 'list', filters] as const,
-  detail: (id: string) => ['cases', 'detail', id] as const,
+  root: [QUERY_KEY.cases] as const,
+  list: (filters: CaseFilters) => [QUERY_KEY.cases, 'list', filters] as const,
+  detail: (id: string) => [QUERY_KEY.cases, 'detail', id] as const,
+  messages: (caseId: string) => [QUERY_KEY.cases, 'messages', caseId] as const,
 }
 
-const OFFICER_DIRECTORY_KEY = ['users', 'directory'] as const
+const OFFICER_DIRECTORY_KEY = [QUERY_KEY.users, 'directory'] as const
 
 export function buildQuery(filters: object) {
   const params = new URLSearchParams()
@@ -257,11 +254,11 @@ async function submitCaseAction(id: string, input: CaseActionInput) {
 }
 
 function invalidateCaseData(queryClient: ReturnType<typeof useQueryClient>, id?: string) {
-  void queryClient.invalidateQueries({ queryKey: ['cases'] })
-  void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-  void queryClient.invalidateQueries({ queryKey: ['reports'] })
-  void queryClient.invalidateQueries({ queryKey: ['overlaps'] })
-  void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  void queryClient.invalidateQueries({ queryKey: caseKeys.root })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.dashboard] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.reports] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.overlaps] })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.notifications] })
   if (id) void queryClient.invalidateQueries({ queryKey: caseKeys.detail(id) })
 }
 

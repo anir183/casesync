@@ -1,7 +1,9 @@
+import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { CaseListItem, Page } from '#/features/cases/api'
+import type { CaseListItem } from '#/features/cases/api'
 import { buildQuery } from '#/features/cases/api'
 import { apiClient } from '#/lib/api-client'
+import { QUERY_KEY } from '#/lib/query-keys'
 
 export interface Institution {
   id: string
@@ -73,13 +75,8 @@ interface RawInstitution {
   updatedAt?: string
 }
 
-interface InstitutionProfileResponse {
+type InstitutionProfileResponse = Omit<InstitutionProfile, 'institution'> & {
   institution: RawInstitution
-  summary: InstitutionCaseSummary
-  cases: CaseListItem[]
-  total: number
-  page: number
-  pageSize: number
 }
 
 interface DuplicateResponse {
@@ -87,11 +84,12 @@ interface DuplicateResponse {
 }
 
 export const institutionKeys = {
-  list: (filters: InstitutionFilters) => ['institutions', 'list', filters] as const,
+  root: [QUERY_KEY.institutions] as const,
+  list: (filters: InstitutionFilters) => [QUERY_KEY.institutions, 'list', filters] as const,
   detail: (id: string, page: number, pageSize: number) =>
-    ['institutions', 'detail', id, page, pageSize] as const,
+    [QUERY_KEY.institutions, 'detail', id, page, pageSize] as const,
   duplicates: (name: string, aictePermanentId: string) =>
-    ['institutions', 'duplicates', name, aictePermanentId] as const,
+    [QUERY_KEY.institutions, 'duplicates', name, aictePermanentId] as const,
 }
 
 function toInstitution(item: RawInstitution): Institution {
@@ -167,8 +165,8 @@ export function useInstitutionDuplicates(name: string, aictePermanentId: string,
 }
 
 function invalidateInstitutions(queryClient: ReturnType<typeof useQueryClient>) {
-  void queryClient.invalidateQueries({ queryKey: ['institutions'] })
-  void queryClient.invalidateQueries({ queryKey: ['cases'] })
+  void queryClient.invalidateQueries({ queryKey: institutionKeys.root })
+  void queryClient.invalidateQueries({ queryKey: [QUERY_KEY.cases] })
 }
 
 export function useCreateInstitution() {

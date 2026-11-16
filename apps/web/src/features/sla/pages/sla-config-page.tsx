@@ -19,6 +19,7 @@ import {
   useSlaConfigs,
   useUpdateSlaConfig,
 } from '#/features/sla/api'
+import { errorMessage } from '#/lib/api-client'
 import { formatDate } from '#/lib/utils'
 
 interface FormState {
@@ -52,10 +53,6 @@ function scopeLabel(item: SlaConfig) {
     item.regionName ? `Region: ${item.regionName}` : undefined,
   ].filter(Boolean)
   return parts.length > 0 ? parts.join(' · ') : 'Global default'
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Unable to save SLA rule'
 }
 
 export function SlaConfigPage() {
@@ -278,7 +275,9 @@ export function SlaConfigPage() {
             </div>
           </form>
           {mutationError && (
-            <p className="mt-3 text-sm text-danger">{errorMessage(mutationError)}</p>
+            <p className="mt-3 text-sm text-danger">
+              {errorMessage(mutationError, 'Unable to save SLA rule')}
+            </p>
           )}
           {runJob.data && (
             <p className="mt-3 text-sm text-muted-foreground">
