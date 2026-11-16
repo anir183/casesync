@@ -1,6 +1,6 @@
 # Stage 11 — Frozen baseline and work queue
 
-**Status:** Phase 0 baseline frozen and Phase 1 applied, 2026-11-16.
+**Status:** Phase 0 baseline frozen; Phases 1 and 2 applied, 2026-11-16.
 **Plan:** [`code-audit-plan.md`](code-audit-plan.md).
 **Authority:** Stage 10 exit, CI dispatch `43750576126` on `f882bd1` (`ubuntu-24.04`,
 `mongo:7.0.45`, Bun 1.4.4). Stage 11 compares against this record. Stage 12 may move the
@@ -108,7 +108,7 @@ and reduce churn for the later page work. Each item is a separate commit.
 
 ### Phase 1 outcome (2026-11-16)
 
-Phase 1 is applied; Phase 2 has not started.
+Phase 1 is applied; the Phase 2 outcome follows.
 
 - **M1 — done.** All 42 parent-relative imports are now `#/*` (29 web files). `grep` finds
   0 under `apps/*/src`. Sibling `./` imports are unchanged.
@@ -117,10 +117,12 @@ Phase 1 is applied; Phase 2 has not started.
   `canWriteInstitution`, `USER_TABLE`, `ALLOWED_TRANSITIONS`, `ComplainantUser`,
   `MessageInput`, `isComplainantRole`, `isRepresentativeCaseOpen`, `compactNumber`,
   `CardFooter`, `reviewStatusLabel`, and `INDIA_MAP_CENTER`. The remaining unused-export
-  candidates are `packages/config` type aliases (public type surface),
-  `REPRESENTATIVE_STATUS_VALUES`, and `packages/types/src/schemas.ts` (the package has no
-  consumers until Phase 2 moves `Page<T>` into it); those are Phase 2 scope, not dead app
-  code.
+  candidates were `packages/config` type aliases (public type surface),
+  `REPRESENTATIVE_STATUS_VALUES`, and `packages/types/src/schemas.ts`; Phase 2 now uses
+  `REPRESENTATIVE_STATUS_VALUES` in the admin representatives page and removes
+  `schemas.ts` (it duplicated API validation and had no consumer) together with its unused
+  `zod`/`@casesync/config` dependencies. The config type aliases stay as the package's
+  declared type surface.
 - **M3 — done.** All five `window.confirm` sites use `ConfirmDialog` with the same message,
   destructive intent, and a pending state where the mutation is async. Targeted mutation
   E2E and the focus-trap/escape accessibility test pass locally. No `window.confirm`
@@ -138,6 +140,68 @@ Phase 1 is applied; Phase 2 has not started.
   the remaining 2000-character note/reason inputs, because their domains (`cases`,
   `representatives`, portal verification) have no shared owner yet. Add one only when a
   third domain needs the same cap and the semantics are identical.
+
+### Phase 2 outcome (2026-11-16)
+
+Phase 2 is applied. No route, response field, query key value, redirect target, denial copy,
+or visual baseline changed.
+
+- **C1 — done.** `Page<T>` now has one definition:
+  `packages/types/src/pagination.ts`, exported by `@casesync/types`. The API pagination
+  helper re-exports it, and cases, institutions, overlaps, portal, representatives, and admin
+  import it. The four web copies and the API copy are gone.
+- **C2 — inventory and consolidation.** Every top-level web `interface`/`type` (101
+  declarations) was classified against one rule: a shape belongs in `packages/types` only if
+  it crosses the API/web boundary **and** is used by two or more consumers; form state, view
+  models, and prop types stay colocated with the feature. The only shared boundary shape was
+  the pagination envelope, already handled by C1. Real duplicates removed:
+  - `InstitutionSessionUser` (defined twice in the representatives feature) → the existing
+    `CurrentUser` projection in `lib/session.ts`, extended with `representativeStatus`.
+  - `MasterInput` (organization API and admin page) → exported once from
+    `features/organization/api.ts`.
+  - `InstitutionProfileResponse` (raw institution payload) → derived from
+    `InstitutionProfile` with `Omit<…, 'institution'>`.
+  - `caseMessageKeys` and the case conversation key → `caseKeys.messages(caseId)`.
+  - `MergeStatusBadge` inline label chain and `ReviewStatusBadge` local map →
+    `mergeStatusLabel`/`reviewStatusLabel` in `features/overlaps/labels.ts`.
+  - `packages/types/src/schemas.ts` → removed. It duplicated API validation schemas, had no
+    consumer, and dragged unused `zod` and `@casesync/config` dependencies into the package.
+    `REPRESENTATIVE_STATUS_VALUES` is now used by the admin representatives page instead of
+    remaining an unused config export.
+  The rest are feature-local by design, for example: `DashboardSummary`/`RoleLanding`
+  (dashboard view model), `FormState` in admin users and SLA (different fields), both
+  `PendingAction` types (different shapes), `MasterRow`/`MasterMutation`/`DeleteMutation`
+  (admin page adapters), `RawInstitution`/`RawOption`/`RawBureau` (wire normalization inside
+  one API module), and the `*Props` component types. Moving these into `packages/types`
+  would export UI concepts with no second consumer.
+- **C3 — done.** `ApiError` remains the only error class and `parseError` the only response
+  parser. The three byte-identical local `errorMessage` helpers were replaced by
+  `errorMessage(error, fallback)` in `lib/api-client.ts`. Inline page-specific fallbacks were
+  left alone; they are display copy, not parsing.
+- **C4 — done.** Status and match-type labels have one home per domain. Overlap labels are
+  consumed by the badges, pages, and dashboard; no editor left a second mapping behind.
+  Case status labels in `components/shared/status-badge.tsx` and the compact
+  `CaseStatusBadge` remain separate because they render different text, variants, and icons;
+  merging them would change the frozen visual baseline.
+- **C5 — done.** `apps/web/tests/contracts.type-test.ts` is checked by
+  `typecheck:web:tests`. It asserts the exact wire shape and key set of `Page`, and that the
+  cases, institutions, and overlaps fetchers return the shared envelope.
+- **S7 — done.** `lib/query-keys.ts` owns the canonical roots. Every feature has a key object
+  (`organizationKeys`, `adminKeys`, `portalKeys`, `caseKeys`, `slaKeys`, `overlapKeys`,
+  `representativeKeys`, `notificationKeys`, `institutionKeys`, `attachmentKeys`,
+  `dashboardKeys`, `reportKeys`). All 63 raw
+  `queryKey: [...]` string arrays were replaced; the remaining arrays are composed from
+  `QUERY_KEY` constants or spread a feature root, so no key string is repeated in a
+  component. Values are byte-identical to the previous arrays, including prefix
+  invalidations such as `['sla']` and `['cases']`.
+- **S8 — done.** `components/layout/session-gate.tsx` owns the pending skeleton and
+  signed-out redirect. `AuthGuard`, `PortalGuard`, and `InstitutionGuard` keep their own
+  role rules, redirect targets, and denial paths; only the shared sequence moved.
+
+Local verification before commit: Biome clean (293 files); all three typechecks pass; API
+159 pass with coverage 86.2% lines / 86.8% functions (above the 85/85 gate); web unit 26
+pass; smoke 13 pass; full Chromium and mobile E2E pass. Visual snapshots were not
+regenerated.
 
 ## 5. Guardrail decision
 

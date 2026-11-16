@@ -279,8 +279,8 @@ layout.
   [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md). See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
-- Stage 11 is in progress: Phases 0–1 (baseline, ADRs, guardrail decision, import and dialog
-  cleanup) completed on 2026-11-16. The refreshed audit found 42 parent-relative imports across 29 web files,
+- Stage 11 is in progress: Phases 0–2 (baseline, ADRs, guardrail decision, import and dialog
+  cleanup, shared pagination/query keys/guards) completed on 2026-11-16. The refreshed audit found 42 parent-relative imports across 29 web files,
   0 in the API, five `Page<T>` definitions, 79 local web interfaces plus 13 aliases, 63 raw
   query-key arrays, five `window.confirm` sites, and five API services or seed files above
   800 lines. The plan is [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the
@@ -881,7 +881,7 @@ Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–4 implemente
    ↓
 Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓
-Stage 11 (in progress — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–1 complete, exits after the full suite and visual baseline pass unchanged)
+Stage 11 (in progress — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–2 complete, exits after the full suite and visual baseline pass unchanged)
    ↓
 Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin hub, core surfaces, GIS, portal landing, motion/a11y; exits after refreshed coverage passes twice)
 ```

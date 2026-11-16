@@ -279,6 +279,15 @@ pass. Text-size tokenization is the one deliberate Stage 12 deferral (§4a M4 in
 - API integration tests prove response shapes are unchanged.
 - Web component and smoke tests pass.
 
+**Outcome (2026-11-16).** Applied as recorded in
+[`stage-11-baseline.md`](stage-11-baseline.md#phase-2-outcome-2026-11-16). One `Page<T>` in
+`packages/types`; one query-key root registry plus per-feature key objects with no raw string
+arrays left; `SessionGate` for the shared session sequence; duplicate session-user, master
+input, raw profile, message-key, and badge-label shapes removed. Feature form state, view
+models, and prop types stay local with a written rule. The contract type test is
+`apps/web/tests/contracts.type-test.ts`. API 159 pass, coverage unchanged at 86.2%/86.8%,
+web 26, smoke 13, full E2E green, visual baseline unchanged.
+
 ---
 
 ### Phase 3 — Service decomposition

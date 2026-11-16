@@ -5,7 +5,7 @@
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1–4 implemented; manual screen-reader sign-off and Phases 5–6 remain. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
-**Stage 11:** in progress; Phases 0–1 complete 2026-11-16. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
+**Stage 11:** in progress; Phases 0–2 complete 2026-11-16. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
@@ -614,16 +614,22 @@ are the no-behavior-change oracle.
       web 26, smoke 13, coverage 86.2% lines / 86.8% functions; targeted dialog E2E 4 and
       the focus-trap a11y test pass. Phase 1 complete 2026-11-16.
 
-### Phase 2 — Shared contracts and frontend seams
+### Phase 2 — Shared contracts and frontend seams (complete 2026-11-16)
 
-- [ ] Move `Page<T>` to `packages/types` and delete the four web copies and the API copy.
-- [ ] Classify the 79 local web interfaces and 13 aliases as shared, feature-local, or
-      duplicate.
-- [ ] Consolidate the API error shape and request helpers.
-- [ ] Add per-feature query-key objects; remove the 63 ad-hoc arrays.
-- [ ] Extract repeated session/role guard skeletons at three real uses.
-- [ ] Centralize duplicated status/role/match-type label maps.
-- [ ] Add a contract/type test for shared DTO drift.
+- [x] Move `Page<T>` to `packages/types` and delete the four web copies and the API copy.
+- [x] Classify the local web interfaces and aliases as shared, feature-local, or duplicate;
+      remove the real duplicates (`InstitutionSessionUser`, `MasterInput`,
+      `InstitutionProfileResponse`, case-message key, badge label maps) and keep form state,
+      view models, and prop types colocated.
+- [x] Consolidate the API error shape and request helpers; `ApiError` and `parseError` stay
+      single, and the three local `errorMessage` helpers now share one function.
+- [x] Add per-feature query-key objects; all 63 ad-hoc arrays now compose `QUERY_KEY` roots.
+- [x] Extract repeated session/role guard skeletons at three real uses into `SessionGate`.
+- [x] Centralize duplicated status/role/match-type label maps.
+- [x] Add a contract/type test for shared DTO drift (`apps/web/tests/contracts.type-test.ts`).
+- [x] Phase 2 verification: Biome clean, all three typechecks pass, API 159 pass with
+      86.2% lines / 86.8% functions, web 26 pass, smoke 13 pass, full Chromium and mobile
+      E2E pass, visual snapshots unchanged.
 
 ### Phase 3 — Service decomposition
 

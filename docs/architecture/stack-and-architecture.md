@@ -12,8 +12,9 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > accessibility/responsive expansion, visual regression, and the CI job split landed.
 > Flag-off dispatch `43750576126` verified the 48 CI-image baselines and the three
 > cross-browser projects.
-> Stage 11 Phases 0–1 (frozen baseline, ADRs, guardrail decision, import and dialog
-> cleanup) are complete; the contract and structural phases are in progress.
+> Stage 11 Phases 0–2 (frozen baseline, ADRs, guardrail decision, import and dialog
+> cleanup, shared contracts and query keys) are complete; the service and structural
+> phases are in progress.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that

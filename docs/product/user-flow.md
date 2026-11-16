@@ -576,7 +576,7 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
   state × accessibility × responsive × visual coverage. Flag-off dispatch `43750576126`
   verified the 48 CI-image baselines and the three cross-browser projects.
-- Stage 11 (in progress, Phases 0–1 complete): the existing suite is the no-behavior-change
+- Stage 11 (in progress, Phases 0–2 complete): the existing suite is the no-behavior-change
   oracle for the code audit; the visual baseline must not move.
 - Stage 12 (planned): the UI modernization refreshes selectors only where accessible names
   changed, regenerates the visual baselines intentionally, reviews every diff, and reruns
