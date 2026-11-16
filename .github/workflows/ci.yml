@@ -157,14 +157,19 @@ jobs:
           if-no-files-found: ignore
 
   e2e-cross-browser:
-    name: Cross-browser E2E (${{ matrix.browser }})
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    # A matrix job skipped by a job-level if is never expanded, so GitHub would
+    # render the raw `${{ matrix.browser }}` template in the run UI. Keeping one
+    # sentinel matrix entry on push/PR forces expansion: the job is still skipped
+    # but shows a single plain name, while dispatch/tag runs expand to the real
+    # browsers and keep the per-browser name.
+    name: ${{ matrix.browser == 'skip' && 'Cross-browser E2E' || format('Cross-browser E2E ({0})', matrix.browser) }}
+    if: ${{ matrix.browser != 'skip' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: ${{ (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')) && fromJSON('["chromium","firefox","webkit"]') || fromJSON('["skip"]') }}
     services:
       mongo:
         image: mongo:7.0.45
