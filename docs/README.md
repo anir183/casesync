@@ -70,7 +70,9 @@ cp .env.example .env
 ```
 
 Set `MONGODB_URI`, `BETTER_AUTH_SECRET`, and the optional Jev values in `.env`.
-Set `JEV_ENABLED=false` to run fully rules-based.
+Set `JEV_ENABLED=false` to run fully rules-based. An Atlas `MONGODB_URI` is fine
+for manual dev; test scripts default to local databases and only use a remote
+target when `ALLOW_REMOTE_MONGO=1` is set.
 
 ```bash
 bun run seed:demo   # deterministic demo data: users, institutions, cases, overlaps, SLAs

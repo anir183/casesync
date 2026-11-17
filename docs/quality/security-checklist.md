@@ -44,6 +44,7 @@ remains the authority for the control itself.
 | Search bounds | `SEARCH.MAX_QUERY_LENGTH = 100` on cases, institutions, directory, admin users | Integration Stage 7 security test |
 | Regex handling | User search strings are escaped before Mongo regex use | Integration Stage 7 security test (`[` returns 200) |
 | Query-object injection | Nested bracket syntax is treated as an inert literal key; schemas reject invalid values | Integration Stage 7 security test |
+| Test database isolation | Automated commands default to loopback databases; remote targets require `ALLOW_REMOTE_MONGO=1`; Atlas CI verification is manual-dispatch-only with a capped pool | `mongo-target` unit tests; `../operations/security-hardening.md` |
 | Rate limiting | In-memory fixed-window limiter, keyed by client IP + method + path; separate public/portal limits; edge/WAF limits required for scaled deployments | Unit limiter tests; integration 429 test; Phase 5 integration |
 | Request size | 25 MiB default request-body ceiling returns 413 before routing; attachment routes apply their own 10 MiB file limit | Security unit tests; Phase 5 integration |
 | Security headers / CSP | `nosniff`, frame/Referer/Permissions/CORP baselines on every response; configurable CSP and opt-in HSTS for HTTPS origins | Security unit tests; Phase 5 integration; `../operations/security-hardening.md` |
@@ -53,7 +54,7 @@ remains the authority for the control itself.
 | Auth cookies | Better Auth cookies explicitly `httpOnly`, `SameSite=Lax`, and `Secure` for HTTPS origins | Code review; Phase 5 integration |
 | Upload validation | MIME, size, empty-file, UUID filename, path containment; verification documents share the same validation | Integration attachment/Stage 8 suites |
 | Upload/download access | Scope checked; randomized storage names; no static serving | Integration attachment suite |
-| Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities; Dependabot opens weekly grouped npm/action updates | CI security job; local run 2026-11-17 |
+| Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities; GitHub Actions are pinned and updates are reviewed manually | CI security job; local run 2026-11-17 |
 | Secret handling | Jev key server-only; `.env` ignored; no client secrets | Code review / env templates |
 | CORS | Comma-separated origin allowlist with credentialed methods; loopback aliases normalised outside production; five parser regression tests | `apps/api/src/lib/origins.ts`, unit tests |
 | Map tiles | Browser requests go to OpenStreetMap unless `VITE_MAP_TILE_URL` points at a self-hosted/regional provider; no API key or runtime geo API | Map configuration review |

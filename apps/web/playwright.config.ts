@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import { resolveTestMongoUri } from '../../scripts/mongo-target'
 
+const MONGODB_URI = resolveTestMongoUri('e2e')
 const WEB_PORT = 4173
 const API_PORT = 3100
 const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH?.trim()
@@ -85,6 +87,7 @@ export default defineConfig({
       env: {
         NODE_ENV: 'test',
         PORT: String(API_PORT),
+        MONGODB_URI,
         BETTER_AUTH_URL: `http://localhost:${API_PORT}`,
         CORS_ORIGIN: `http://localhost:${WEB_PORT}`,
         JEV_ENABLED: 'false',

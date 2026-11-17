@@ -1,8 +1,8 @@
 # CaseSync — Operations Runbook
 
-Status: Stage 7–9 runbook (Stage 9 Phase 0, Phase 1, Phase 3 navigation, and Phase 4
-implemented) plus the Stage 10 UI coverage commands.
-Last verified: 2026-11-02.
+Status: Stage 7–9 runbook (Stage 9 Phases 0–5 implemented and CI-confirmed) plus
+Stage 10 UI coverage commands and local-first MongoDB target isolation.
+Last verified: 2026-11-17.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
@@ -15,7 +15,17 @@ Companions: [`backup-and-retention.md`](backup-and-retention.md),
   Local MongoDB 8.3.9 is supported for development and integration runs; do not silently
   change the CI major without a migration pass.
 - `apps/api/.env` with `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-  `CORS_ORIGIN`, and optional Jev settings. Never commit it.
+  `CORS_ORIGIN`, and optional Jev settings. Never commit it. Manual dev and seed
+  commands always honor this URI, including Atlas.
+- Automated commands resolve local databases by default and ignore an Atlas
+  `MONGODB_URI` unless `ALLOW_REMOTE_MONGO=1` is set. `TEST_MONGODB_URI` selects a
+  different test destination; pool caps are available through
+  `MONGODB_MAX_POOL_SIZE` and `MONGODB_MAX_IDLE_TIME_MS`.
+- Atlas CI verification is manual-dispatch-only: set `mongo_target=atlas` and
+  configure the `ATLAS_MONGODB_URI` secret with a dedicated `casesync_atlas_*` or
+  `casesync_ci_atlas_*` database. `atlas_scope=connectivity` is the default;
+  `atlas_scope=smoke` adds one seeded Chromium smoke run. If the secret is absent,
+  the job skips successfully.
 - For CI/E2E, set `JEV_ENABLED=false`, `CRON_ENABLED=false`,
   `STAFF_SIGNUP_ENABLED=false`, and `COMPLAINANT_SIGNUP_ENABLED=true` unless explicitly
   testing those paths.

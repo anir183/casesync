@@ -11,6 +11,20 @@ on:
         description: Regenerate and upload visual baselines instead of verifying them
         type: boolean
         default: false
+      mongo_target:
+        description: MongoDB target for this dispatch
+        type: choice
+        options:
+          - local
+          - atlas
+        default: local
+      atlas_scope:
+        description: Atlas check scope (only used when mongo_target is atlas)
+        type: choice
+        options:
+          - connectivity
+          - smoke
+        default: connectivity
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -219,3 +233,53 @@ jobs:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       - run: bun audit --audit-level=high
+
+  atlas-smoke:
+    # Manual dispatch only. Push/PR runs never use Atlas; the default mongo_target
+    # is local. The secret must point at a dedicated disposable casesync_atlas_*
+    # database, and the pool is capped so this is a small off-site connection check.
+    name: Optional Atlas smoke
+    if: github.event_name == 'workflow_dispatch' && inputs.mongo_target == 'atlas'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      NODE_ENV: test
+      MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
+      ATLAS_MONGODB_URI: ${{ secrets.ATLAS_MONGODB_URI }}
+      ALLOW_REMOTE_MONGO: '1'
+      MONGODB_MAX_POOL_SIZE: '5'
+      MONGODB_MAX_IDLE_TIME_MS: '10000'
+      BETTER_AUTH_SECRET: ci-only-secret-change-me
+      BETTER_AUTH_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:5173
+      JEV_ENABLED: 'false'
+      OVERLAP_AUTO_ASSESS: 'false'
+      CRON_ENABLED: 'false'
+      STAFF_SIGNUP_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - name: Check Atlas secret
+        id: atlas
+        shell: bash
+        run: |
+          if [[ -z "${ATLAS_MONGODB_URI:-}" ]]; then
+            echo "ATLAS_MONGODB_URI secret is not configured; skipping Atlas smoke."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run bounded Atlas connectivity check
+        if: steps.atlas.outputs.available == 'true'
+        working-directory: apps/api
+        run: bun run scripts/atlas-smoke.ts
+      - name: Seed dedicated Atlas database for optional smoke
+        if: steps.atlas.outputs.available == 'true' && inputs.atlas_scope == 'smoke'
+        run: bun run seed:demo
+      - name: Run single Chromium smoke against Atlas
+        if: steps.atlas.outputs.available == 'true' && inputs.atlas_scope == 'smoke'
+        working-directory: apps/web
+        run: bunx playwright test --project=chromium-desktop --grep @smoke

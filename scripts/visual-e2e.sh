@@ -4,7 +4,7 @@ set -euo pipefail
 VISUAL_MONGODB_URI="${VISUAL_MONGODB_URI:-mongodb://127.0.0.1:27017/casesync-visual}"
 VISUAL_SEED_NOW="${VISUAL_SEED_NOW:-2026-01-15T09:00:00.000Z}"
 
-if [[ "${VISUAL_ALLOW_REMOTE:-}" != "1" ]]; then
+if [[ "${VISUAL_ALLOW_REMOTE:-}" != "1" && "${ALLOW_REMOTE_MONGO:-}" != "1" ]]; then
   case "$VISUAL_MONGODB_URI" in
     mongodb://127.0.0.1:* | mongodb://localhost:*) ;;
     *)

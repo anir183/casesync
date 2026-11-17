@@ -1,3 +1,5 @@
+import { assertMongoTargetAllowed } from '../../../scripts/mongo-target'
+
 const integrationEnabled = process.env.RUN_INTEGRATION === '1'
 
 if (!integrationEnabled) {
@@ -7,4 +9,7 @@ if (!integrationEnabled) {
   process.env.OVERLAP_AUTO_ASSESS ??= 'false'
   process.env.CRON_ENABLED ??= 'false'
   process.env.STAFF_SIGNUP_ENABLED ??= 'false'
+} else {
+  const uri = process.env.MONGODB_URI?.trim()
+  if (uri) assertMongoTargetAllowed(uri, process.env)
 }

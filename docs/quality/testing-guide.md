@@ -182,10 +182,21 @@ and CI-generated baselines.
 - Root E2E scripts seed demo data, but `seed:demo` does not delete extra records created
   by earlier test runs. Repeated local full runs accumulate users, cases, and
   institutions.
-- CI and visual runs use a fresh disposable database. For repeatable local full runs,
-  point `MONGODB_URI` at a dedicated test database and reset it first.
+- Test scripts resolve local databases by default: `casesync_test` for
+  integration/coverage, `casesync_e2e` for browser suites, `casesync_perf` for
+  stress, and `casesync-visual` for visual. They ignore an Atlas `MONGODB_URI`
+  unless `ALLOW_REMOTE_MONGO=1` is set, so a developer's `.env` is respected for
+  `bun run dev` and `bun run seed:*` but is not used by repeated automated runs.
+- Use `TEST_MONGODB_URI` to choose a different test destination. Any non-loopback
+  destination still requires `ALLOW_REMOTE_MONGO=1`; the guard rejects it before
+  connecting otherwise. The test wrappers also set small connection-pool defaults.
+- CI and visual runs use a fresh disposable database. Push/PR CI always uses a local
+  `mongo:7.0.45` service. Atlas is manual-dispatch-only (`mongo_target=atlas`) and
+  uses a dedicated disposable database from the `ATLAS_MONGODB_URI` secret.
 - The visual suite uses `mongodb://127.0.0.1:27017/casesync-visual` by default; override
-  with `VISUAL_MONGODB_URI`. The helper script resets and seeds that database.
+  with `VISUAL_MONGODB_URI`. The helper script resets and seeds that database and
+  accepts either `VISUAL_ALLOW_REMOTE=1` or `ALLOW_REMOTE_MONGO=1` for an approved
+  remote target.
 - Playwright starts production builds on API port `3100` and web port `4173`. Do not leave
   manual servers on those ports.
 - `workers: 1` is intentional until data isolation is proven. Keep it.

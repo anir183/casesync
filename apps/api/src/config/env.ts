@@ -29,6 +29,8 @@ const envSchema = z.object({
   // HSTS only makes sense over HTTPS behind a TLS-terminating proxy.
   HSTS_ENABLED: booleanFromEnv.default(false),
   MONGODB_URI: z.string().min(1),
+  MONGODB_MAX_POOL_SIZE: z.coerce.number().int().positive().optional(),
+  MONGODB_MAX_IDLE_TIME_MS: z.coerce.number().int().positive().optional(),
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
   JEVMODEL_API_KEY: z.string().optional(),

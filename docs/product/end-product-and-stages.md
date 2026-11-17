@@ -267,7 +267,7 @@ layout.
   exact-institution overlap auto-merge, representatives and email-domain allowlists, the
   navigation/role-landing/case-workspace/resolution-loop work, and the visual redesign with
   chart-first dashboard/reports and the Leaflet/OpenStreetMap map) are implemented. Manual
-  screen-reader sign-off and documentation polish (Phase 6) remain; Phase 5 hardening is implemented and committed locally (push/CI pending).
+  screen-reader sign-off and documentation polish (Phase 6) remain; Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`.
   See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 - Stage 10 exited on 2026-11-16: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable

@@ -1,8 +1,8 @@
 # CaseSync — Stage 9 Next-Phase Plan
 
 Status: **Phase 0 (baseline + final UI consistency pass) and Phases 1–4 implemented;
-manual screen-reader sign-off pending. Phase 5 (hardening) is implemented and committed locally
-(push/CI pending); Phase 6 remains planned.** Phase 4 was pulled
+manual screen-reader sign-off pending. Phase 5 (hardening) is implemented, pushed, and CI-confirmed on
+`44128890885`; Phase 6 remains planned.** Phase 4 was pulled
 forward at
 product-owner request. Phase 0 cleared the baseline debt on 2026-11-01; the shared
 integration-fixture extraction is a recorded follow-up rather than a Phase 0 exit gate.
@@ -809,7 +809,7 @@ UI:
 - Structured logs with request IDs, error taxonomy, readiness checks for Mongo/Jev.
 - Idempotency keys for merge/revert and other retryable mutations.
 - Broader audit metadata (request ID, actor, before/after) without secrets or PII.
-- Dependency and secret scanning; Dependabot or equivalent.
+- Dependency and secret scanning; CI audit with pinned GitHub Actions (no Dependabot).
 - Backup/restore coverage for merge-group snapshots, domains, representative approvals;
   retention update.
 - Load smoke for new dashboard/report/map endpoints.
@@ -822,12 +822,11 @@ UI:
 - Backup/restore documentation covers every new collection.
 - A retried merge/revert does not create duplicate groups or audit rows.
 
-**Outcome (2026-11-17):** implemented and committed locally; push/CI pending.
+**Outcome (2026-11-17):** implemented, pushed, and CI-confirmed on `44128890885`.
 Security headers/CSP, request IDs in logs and audit metadata, body limits, explicit
 cookie flags, readiness endpoints, conditional idempotency for
 merge/revert/suppression, edge/WAF rate-limit guidance, index additions,
-Dependabot, the geo-endpoint perf smoke, and expanded backup/retention coverage
-landed. Evidence: `docs/operations/security-hardening.md`,
+the geo-endpoint perf smoke, and expanded backup/retention coverage landed. Evidence: `docs/operations/security-hardening.md`,
 `docs/operations/backup-and-retention.md`, the `stage9-phase5.integration.test.ts`
 and merge/retry cases in `stage1.integration.test.ts`, and a clean `bun audit`.
 

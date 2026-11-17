@@ -386,7 +386,7 @@ indigo/teal language.
 - [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
 - [ ] Manual screen-reader pass and 200% zoom review.
 
-### Phase 5 — Production hardening (no deployment; implemented and committed locally 2026-11-17, push/CI pending)
+### Phase 5 — Production hardening (no deployment; implemented, pushed, and CI-confirmed 2026-11-17 on `44128890885`)
 
 - [x] Security headers/CSP baseline, stricter CORS, cookie flags, request-size limits.
 - [x] Shared/distributed rate-limit path or documented edge/WAF requirement.
@@ -399,7 +399,7 @@ indigo/teal language.
   Evidence: `docs/operations/security-hardening.md`,
   `docs/operations/backup-and-retention.md`, `stage9-phase5.integration.test.ts`,
   merge/retry cases in `stage1.integration.test.ts`, and a clean `bun audit`. Local
-  verification passed; the commit is local and push/CI are pending.
+  verification passed; the push was CI-confirmed on run `44128890885`.
 
 ### Phase 6 — Polish and documentation
 

@@ -5,7 +5,7 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > Stages 0–8 are complete. Stage 9 is partial: Phase 0 baseline/UI consistency and
 > Phases 1–4 (reversible overlap auto-merge, representatives/domains, navigation/role
 > landings/case workspace/resolution loop, and visual redesign/charts/GIS) are implemented
-> and tested. Phase 5 (hardening) is implemented and committed locally (push/CI pending);
+> and tested. Phase 5 (hardening) is implemented, pushed, and CI-confirmed on `44128890885`;
 > manual screen-reader sign-off and
 > Phase 6 (polish) remain planned.
 > Stage 10 (complete Playwright UI coverage) exited on 2026-11-16: fixtures, current-route
