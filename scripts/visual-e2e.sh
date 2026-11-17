@@ -15,7 +15,16 @@ if [[ "${VISUAL_ALLOW_REMOTE:-}" != "1" && "${ALLOW_REMOTE_MONGO:-}" != "1" ]]; 
   esac
 fi
 
+# The shared Mongo guard only understands ALLOW_REMOTE_MONGO, so keep the legacy
+# VISUAL_ALLOW_REMOTE opt-in equivalent for the Playwright webServer as well.
+if [[ "${VISUAL_ALLOW_REMOTE:-}" == "1" ]]; then
+  export ALLOW_REMOTE_MONGO=1
+fi
+
+# Seed and Playwright must resolve the same database. Playwright's config prefers
+# TEST_MONGODB_URI when resolving automated targets.
 export MONGODB_URI="$VISUAL_MONGODB_URI"
+export TEST_MONGODB_URI="$VISUAL_MONGODB_URI"
 export SEED_NOW="$VISUAL_SEED_NOW"
 export SEED_RESET_CONFIRM=YES
 

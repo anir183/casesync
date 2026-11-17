@@ -86,7 +86,7 @@ bun run test:integration
 bun run test:coverage   # 85% lines/functions floor; also run in CI
 bun run test:e2e        # 196 desktop functional tests; excludes performance and visual
 bun run test:perf       # stress seed, performance budgets, automatic reset
-bun audit --audit-level=high
+bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf
 ```
 
 Stage 10 suites (see [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md)):

@@ -400,6 +400,8 @@ indigo/teal language.
   `docs/operations/backup-and-retention.md`, `stage9-phase5.integration.test.ts`,
   merge/retry cases in `stage1.integration.test.ts`, and a clean `bun audit`. Local
   verification passed; the push was CI-confirmed on run `44128890885`.
+- [ ] Remove the temporary `GHSA-fc5q-39xc-vjpf` audit ignore once a patched
+  `picomatch` release is published; no fixed version existed on 2026-11-17.
 
 ### Phase 6 — Polish and documentation
 

@@ -10,8 +10,8 @@ Companions: [`qa-and-review.md`](qa-and-review.md),
 Security gates for the internal MVP and public portal pass. The API requires
 authenticated sessions, enforces role and bureau/region scope, ownership-checks every
 complainant resource, strips internal data from public projections, bounds search input,
-rate-limits abuse-prone routes, validates uploads, and is clean under
-`bun audit --audit-level=high`.
+rate-limits abuse-prone routes, validates uploads, and is clean under the CI audit gate
+(`bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf`; temporary ignore documented in §5).
 
 This is not a penetration test. The HTTP security-header/CSP baseline was reviewed and
 implemented in Stage 9 Phase 5 (see
@@ -54,7 +54,7 @@ remains the authority for the control itself.
 | Auth cookies | Better Auth cookies explicitly `httpOnly`, `SameSite=Lax`, and `Secure` for HTTPS origins | Code review; Phase 5 integration |
 | Upload validation | MIME, size, empty-file, UUID filename, path containment; verification documents share the same validation | Integration attachment/Stage 8 suites |
 | Upload/download access | Scope checked; randomized storage names; no static serving | Integration attachment suite |
-| Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities; GitHub Actions are pinned and updates are reviewed manually | CI security job; local run 2026-11-17 |
+| Dependency audit | `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf` returns no other findings; the ignore is temporary because `picomatch <= 4.0.7` has no published fix. GitHub Actions are pinned and updates are reviewed manually | CI security job; local run 2026-11-17 |
 | Secret handling | Jev key server-only; `.env` ignored; no client secrets | Code review / env templates |
 | CORS | Comma-separated origin allowlist with credentialed methods; loopback aliases normalised outside production; five parser regression tests | `apps/api/src/lib/origins.ts`, unit tests |
 | Map tiles | Browser requests go to OpenStreetMap unless `VITE_MAP_TILE_URL` points at a self-hosted/regional provider; no API key or runtime geo API | Map configuration review |
@@ -105,8 +105,9 @@ Rate-limited responses use HTTP `429` with `error: "RATE_LIMITED"`,
 - Workspace Zod is pinned to `^4.6.7`; `@hookform/resolvers` v5 keeps the web app on Zod 4.
 - The Elysia Swagger UI is available at `/docs`. Its Scalar theme dependency is overridden
   to a current release so no transitive Zod 3 copy is installed.
-- `bun audit --audit-level=high` reports no high-severity vulnerabilities on the merged
-  dependency graph.
+- `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf` reports no other
+  high-severity vulnerabilities on the merged dependency graph. The ignore is temporary:
+  `picomatch <= 4.0.7` (via Vite) has no published fix as of 2026-11-17.
 
 ## 6. Residual risks / follow-ups
 

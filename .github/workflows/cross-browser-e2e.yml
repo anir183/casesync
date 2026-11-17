@@ -52,8 +52,9 @@ jobs:
         working-directory: apps/web
       # Each browser gets its own service container and seed. Running all three
       # projects against one database lets the first project's mutation specs
-      # destroy state the next project's fixtures expect.
-      - run: bun run seed:demo
+      # destroy state the next project's fixtures expect. Use the shared wrapper
+      # so the seed and Playwright resolve the same purpose-specific Mongo URI.
+      - run: bun run scripts/with-test-mongo.ts e2e -- bun run seed:demo
       - name: Run the functional suite in ${{ matrix.browser }}
         working-directory: apps/web
         env:
