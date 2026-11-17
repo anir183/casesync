@@ -45,7 +45,7 @@ visual run was used and no snapshot was regenerated.
 | Seed (pinned `SEED_NOW`) | identical across two fresh DBs: 8 institutions, 14 cases, 7 overlaps, 5 SLA configs; 7 staff, 1 complainant, 2 representatives |
 
 No route, response field, permission outcome, user-visible copy, or visual baseline changed.
-Stage 11 is implemented, verified and committed locally; push and CI pending.
+Stage 11 is implemented, verified and CI-confirmed on `main` by dispatch `44122619636`.
 
 ### Historical baseline (verified 2026-11-02, Stage 7/8)
 

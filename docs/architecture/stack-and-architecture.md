@@ -5,8 +5,9 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > Stages 0–8 are complete. Stage 9 is partial: Phase 0 baseline/UI consistency and
 > Phases 1–4 (reversible overlap auto-merge, representatives/domains, navigation/role
 > landings/case workspace/resolution loop, and visual redesign/charts/GIS) are implemented
-> and tested. Manual screen-reader sign-off, Phase 5 (hardening), and Phase 6 (polish)
-> remain planned.
+> and tested. Phase 5 (hardening) is implemented and committed locally (push/CI pending);
+> manual screen-reader sign-off and
+> Phase 6 (polish) remain planned.
 > Stage 10 (complete Playwright UI coverage) exited on 2026-11-16: fixtures, current-route
 > render/denial coverage, mutation coverage, UI states, Phase 3 flows,
 > accessibility/responsive expansion, visual regression, and the CI job split landed.
@@ -14,8 +15,8 @@ Status: active reference. Location: `docs/architecture/stack-and-architecture.md
 > cross-browser projects.
 > Stage 11 Phases 0–6 (frozen baseline, ADRs, guardrail decision, import and dialog
 > cleanup, shared contracts and query keys, service decomposition, structural cleanup,
-> convention guardrails, and exit verification) are complete and committed locally;
-> push and CI confirmation on `main` are pending.
+> convention guardrails, and exit verification) are complete and CI-confirmed on `main`
+> by dispatch `44122619636`.
 > Case/institution APIs, web workflows, overlap correctness/coordination, scoped
 > monitoring/search/reporting, SLA configuration/jobs, and the public portal are wired and
 > covered by API/integration/E2E tests. Periodic overlap sweeps remain. Sections that

@@ -19,8 +19,8 @@ Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI 
 (`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency and Phases 1–4
 (reversible auto-merge, representatives/domains, navigation/role landings/case
 workspace/resolution loop, and UI/charts/GIS) are implemented, while manual screen-reader
-sign-off and Phases 5–6 remain
-planned. Stage 10 (complete Playwright UI coverage) exited on 2026-11-16: fixtures, per-role
+sign-off and Phase 6 remain planned; Phase 5 hardening is implemented and committed locally (push/CI pending). Stage 10 (complete
+Playwright UI coverage) exited on 2026-11-16: fixtures, per-role
 sessions, current-route render/denial coverage, mutations, UI states, Phase 3 flows,
 accessibility/responsive, visual regression, and the CI split landed; flag-off dispatch
 `43750576126` verified the 48 CI-image baselines and three cross-browser projects.
@@ -409,7 +409,7 @@ the audit above predates them. Current facts:
   shell, and suggestion-only email-domain allowlist with admin queues.
 - Phase 3 (done): role-specific landings, consolidated case workspace, overflow actions,
   and the resolution loop.
-- Phases 5–6 remain planned.
+- Phase 5 hardening is implemented and committed locally (push/CI pending); Phase 6 remains planned.
 - Stage 10: exited 2026-11-16. Fixtures, current-route render/denial coverage, mutations, UI
   states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI
   split have

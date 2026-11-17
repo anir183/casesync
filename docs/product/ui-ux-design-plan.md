@@ -20,7 +20,7 @@ and paginated tables. Mutations use pending/disabled states rather than optimist
 implemented: reversible auto-merge, the representative shell/admin screens, the visual
 redesign/chart-first dashboard/reports/Leaflet map, and the Phase 3 navigation, role
 landings, consolidated case workspace, and resolution loop. Manual screen-reader sign-off
-and Phases 5–6 remain. The decision-complete plan is
+and Phase 6 remains; Phase 5 hardening is implemented and committed locally (push/CI pending). The decision-complete plan is
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals

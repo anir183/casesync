@@ -11,9 +11,10 @@ AICTE policy is recorded.
 
 | Data | Location | Contains PII? | Backup owner |
 |---|---|---|---|
-| Cases, actions, assignments, relationships, merge groups, assessments | MongoDB Atlas | Yes | Platform operator |
-| Institutions, regions, bureaus, categories, users, sessions, notifications, SLA configs | MongoDB Atlas | Yes | Platform operator |
-| `audit_log` and `job_runs` | MongoDB Atlas | Yes (actor identities) | Platform operator |
+| Cases, actions, assignments, relationships, merge groups (including member snapshots), assessments | MongoDB Atlas | Yes | Platform operator |
+| Institutions, regions, bureaus, categories, users (including representative approval status), sessions, notifications, SLA configs | MongoDB Atlas | Yes | Platform operator |
+| `institution_email_domains` (representative domain allowlist) and `complainant_verifications` | MongoDB Atlas | Yes | Platform operator |
+| `audit_log`, `job_runs`, and `idempotency_records` (retry deduplication) | MongoDB Atlas | Yes (actor identities) | Platform operator |
 | Attachments | `ATTACHMENT_STORAGE_DIR` (default `storage/attachments`) | Potentially | Platform operator |
 | Application secrets and `.env` | Secret manager / deployment host | No PII, high sensitivity | Security owner |
 
@@ -68,8 +69,12 @@ backup bucket as application data. Restore secrets from the secret manager.
 3. Restore the attachment volume/snapshot to a staging path.
 4. Verify counts and scopes:
    - `cases`, `case_actions`, `case_assignments`, `case_relationships`,
-     `case_merge_groups`, `audit_log`;
-   - users and active sessions (revoke all sessions after a suspected compromise);
+     `case_merge_groups` (including each group's `snapshot.members`), `audit_log`;
+   - users and active sessions (revoke all sessions after a suspected compromise),
+     including representative approval status on user records;
+   - `institution_email_domains`, `complainant_verifications`, and
+     `idempotency_records` (a missing retry record is safe; a resurrected one can
+     suppress a legitimate retry until its TTL expires);
    - attachment rows versus files on disk.
 5. Verify a sample of attachment checksums against the restored files.
 6. Point `ATTACHMENT_STORAGE_DIR` at the restored volume and start the API.
@@ -88,6 +93,8 @@ database metadata is orphaned and should be quarantined, not served.
 | Cases and case actions | 7 years after final disposal, or per AICTE records schedule | Formal records-disposition approval; never ad hoc |
 | `case_merge_groups` | 7 years after the group is reverted or its canonical case is disposed | Same as cases; keep reverted groups for audit and suppression |
 | `audit_log` | 7 years | Same as cases; append-only |
+| `institution_email_domains` and `complainant_verifications` | Same as the linked institution/case; at minimum 7 years for approval evidence | Remove only with approved records disposition |
+| `idempotency_records` | 24 hours | MongoDB TTL index on `expiresAt`; safe to purge sooner |
 | Attachments | Same as the parent case | Delete with the approved case disposition only |
 | Notifications | 2 years | Scheduled cleanup after retention review |
 | `job_runs` | 1 year | Scheduled cleanup |

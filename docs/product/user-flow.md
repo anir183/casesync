@@ -11,7 +11,7 @@ coverage) exited on 2026-11-16, with fixtures, current-route coverage, mutations
 Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI split
 landed; see
 `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. Stage 11
-([code audit](../plans/code-audit-plan.md)) is exit-verified and committed locally; Stage 12
+([code audit](../plans/code-audit-plan.md)) is exit-verified and CI-confirmed by dispatch `44122619636`; Stage 12
 ([UI modernization](../plans/ui-modernization-plan.md)) is planned and begins after Stage 11
 CI is green on `main`. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
@@ -577,7 +577,7 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
   state × accessibility × responsive × visual coverage. Flag-off dispatch `43750576126`
   verified the 48 CI-image baselines and the three cross-browser projects.
-- Stage 11 (exit verified, Phases 0–6 complete, committed locally; push/CI pending): the existing suite was the
+- Stage 11 (exit verified, Phases 0–6 complete, CI confirmed by dispatch `44122619636`): the existing suite was the
   no-behavior-change oracle for the code audit; the visual baseline did not move.
 - Stage 12 (planned): the UI modernization refreshes selectors only where accessible names
   changed, regenerates the visual baselines intentionally, reviews every diff, and reruns

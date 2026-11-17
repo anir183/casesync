@@ -1,7 +1,7 @@
 # CaseSync — Security Checklist
 
-Status: Stage 7–9 release evidence plus the in-progress Stage 10 UI coverage. Last verified:
-2026-11-02.
+Status: Stage 7–11 release evidence, Stage 9 Phase 5 hardening, and Stage 10 UI coverage.
+Last verified: 2026-11-17.
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`accessibility-audit.md`](accessibility-audit.md).
 
@@ -13,8 +13,11 @@ complainant resource, strips internal data from public projections, bounds searc
 rate-limits abuse-prone routes, validates uploads, and is clean under
 `bun audit --audit-level=high`.
 
-This is not a penetration test. Malware scanning, distributed rate limiting, and a
-formal HTTP security-header review remain production hardening items. Browser-level
+This is not a penetration test. The HTTP security-header/CSP baseline was reviewed and
+implemented in Stage 9 Phase 5 (see
+[`../operations/security-hardening.md`](../operations/security-hardening.md)). Malware
+scanning and edge/distributed rate limiting remain deployment hardening items; GitHub
+secret scanning and push protection must be enabled in repository settings. Browser-level
 route denial and staff/admin plus portal/auth mutation denial coverage landed in
 Stage 10; a few out-of-scope staff mutation cells remain deferred with API integration as
 the authority (see [`ui-test-matrix.md`](ui-test-matrix.md)). Server-side evidence below
@@ -41,10 +44,16 @@ remains the authority for the control itself.
 | Search bounds | `SEARCH.MAX_QUERY_LENGTH = 100` on cases, institutions, directory, admin users | Integration Stage 7 security test |
 | Regex handling | User search strings are escaped before Mongo regex use | Integration Stage 7 security test (`[` returns 200) |
 | Query-object injection | Nested bracket syntax is treated as an inert literal key; schemas reject invalid values | Integration Stage 7 security test |
-| Rate limiting | In-memory fixed-window limiter, keyed by client IP + method + path; separate public/portal limits | Unit limiter tests; integration 429 test |
+| Rate limiting | In-memory fixed-window limiter, keyed by client IP + method + path; separate public/portal limits; edge/WAF limits required for scaled deployments | Unit limiter tests; integration 429 test; Phase 5 integration |
+| Request size | 25 MiB default request-body ceiling returns 413 before routing; attachment routes apply their own 10 MiB file limit | Security unit tests; Phase 5 integration |
+| Security headers / CSP | `nosniff`, frame/Referer/Permissions/CORP baselines on every response; configurable CSP and opt-in HSTS for HTTPS origins | Security unit tests; Phase 5 integration; `../operations/security-hardening.md` |
+| Request correlation | Validated inbound `x-request-id` or UUID returned in responses and stamped into structured logs and `audit_log.metadata.requestId` | Request-context unit tests; Phase 5 integration |
+| Readiness probes | `/health/live` for liveness and `/health/ready` for Mongo/JEV configuration readiness | Readiness unit tests; Phase 5 integration |
+| Idempotency | Opt-in `Idempotency-Key` for merge/revert/suppression-clear stores only hashed keys and result IDs with a 24h TTL; failures are not cached | Stage 1 and Phase 5 integration tests |
+| Auth cookies | Better Auth cookies explicitly `httpOnly`, `SameSite=Lax`, and `Secure` for HTTPS origins | Code review; Phase 5 integration |
 | Upload validation | MIME, size, empty-file, UUID filename, path containment; verification documents share the same validation | Integration attachment/Stage 8 suites |
 | Upload/download access | Scope checked; randomized storage names; no static serving | Integration attachment suite |
-| Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities | CI security job; local run 2026-10-29 |
+| Dependency audit | `bun audit --audit-level=high` returns no vulnerabilities; Dependabot opens weekly grouped npm/action updates | CI security job; local run 2026-11-17 |
 | Secret handling | Jev key server-only; `.env` ignored; no client secrets | Code review / env templates |
 | CORS | Comma-separated origin allowlist with credentialed methods; loopback aliases normalised outside production; five parser regression tests | `apps/api/src/lib/origins.ts`, unit tests |
 | Map tiles | Browser requests go to OpenStreetMap unless `VITE_MAP_TILE_URL` points at a self-hosted/regional provider; no API key or runtime geo API | Map configuration review |

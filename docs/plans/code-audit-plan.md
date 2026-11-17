@@ -355,8 +355,8 @@ Verification: Biome clean, all three typechecks pass, API unit 100 pass / 62 int
 skip (162 with integration), coverage 86.4% lines / 86.8% functions (above the 85/85 gate and
 the Stage 10 floor), web unit 26, smoke 13, full Chromium E2E 216 pass. Seed output with a
 pinned `SEED_NOW` is byte-identical before/after and across two fresh DBs. No visual snapshot
-or `.png` baseline changed. The splits are implemented, verified and committed locally;
-push and CI pending.
+or `.png` baseline changed. The splits are implemented, verified and committed;
+CI confirmed on `main` by dispatch `44122619636`.
 
 ---
 
@@ -403,8 +403,8 @@ budget, route tree and user-visible copy are unchanged, and no visual baseline m
 Verification: Biome clean; all three typechecks pass; API unit 100 pass / 62 integration-only
 skip (162 with integration), coverage unchanged at 86.4% lines / 86.8% functions; web unit 26;
 smoke 13; full Chromium E2E 216 pass; production builds succeed. No visual snapshot or `.png`
-baseline changed. Changes are implemented, verified and committed locally; push and CI
-pending.
+baseline changed. Changes are implemented, verified and committed; CI confirmed on `main`
+by dispatch `44122619636`.
 
 ---
 
@@ -464,8 +464,8 @@ pending.
   `window.confirm` 0, and all 26 `queryKey` arrays rooted in `QUERY_KEY` or a key object.
 
 Verification: `bun run check:ci` passes with the new gate, including the negative-import test;
-all earlier Phase 3–4 checks remain green. Changes are implemented, verified and committed
-locally; push and CI pending.
+all earlier Phase 3–4 checks remain green. Changes are implemented, verified and
+committed; CI confirmed on `main` by dispatch `44122619636`.
 
 ---
 
@@ -507,7 +507,7 @@ locally; push and CI pending.
 6. The after-state audit is recorded and every remaining exception is written down.
 7. The working tree contains no unrelated feature or UI work.
 
-**Outcome (2026-11-17) — Stage 11 exit verified and committed locally; push and CI pending.** Every Phase 1–5 gate
+**Outcome (2026-11-17) — Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`.** Every Phase 1–5 gate
 passed. Full local exit gate: `bun run check:ci` (with the import-boundary checker), all three
 typechecks, API unit 100 pass / 62 integration-only skip (162 with integration), web unit 26,
 smoke 13, full Chromium E2E 216, and production builds. Coverage 86.4% lines / 86.8% functions

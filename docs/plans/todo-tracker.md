@@ -1,11 +1,11 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-17 (Stage 11 Phases 3–6 implemented; Stage 11 exit verified, committed locally; push and CI pending).
+**Last verified:** 2026-11-17 (Stage 11 Phases 3–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phase 0 baseline/UI consistency, Phases 1–4 implemented; manual screen-reader sign-off and Phases 5–6 remain. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phase 0 baseline/UI consistency and Phases 1–5 implemented; manual screen-reader sign-off and Phase 6 remain. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
-**Stage 11:** exit verified 2026-11-17 (committed locally; push and CI pending); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI must confirm on `main` before Stage 12 starts. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
+**Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
@@ -262,8 +262,8 @@ allowlist. The portal remains an extension outside MVP acceptance.
 ## Stage 9 — Next phase (PARTIAL — Phases 0–4 implemented)
 
 Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
-Phase 0 baseline, the final UI consistency pass, and Phases 1–4 implemented; manual
-screen-reader sign-off and Phases 5–6 remain). Locked
+Phase 0 baseline, the final UI consistency pass, and Phases 1–5 implemented; manual
+screen-reader sign-off and Phase 6 remain). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
 that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
 review and suppresses automatic re-merge; the merge group is flat with one canonical case;
@@ -386,15 +386,20 @@ indigo/teal language.
 - [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
 - [ ] Manual screen-reader pass and 200% zoom review.
 
-### Phase 5 — Production hardening (no deployment)
+### Phase 5 — Production hardening (no deployment; implemented and committed locally 2026-11-17, push/CI pending)
 
-- [ ] Security headers/CSP baseline, stricter CORS, cookie flags, request-size limits.
-- [ ] Shared/distributed rate-limit path or documented edge/WAF requirement.
-- [ ] Index audit, pagination review, and query-cost checks for new endpoints.
-- [ ] Request IDs, structured logs, readiness checks, and merge/job failure logging.
-- [ ] Idempotency keys and broader audit metadata.
-- [ ] Dependency/secret scanning.
-- [ ] Backup/retention coverage for merge groups, domains, and representative approvals.
+- [x] Security headers/CSP baseline, stricter CORS, cookie flags, request-size limits.
+- [x] Shared/distributed rate-limit path or documented edge/WAF requirement.
+- [x] Index audit, pagination review, and query-cost checks for new endpoints.
+- [x] Request IDs, structured logs, readiness checks, and merge/job failure logging.
+- [x] Idempotency keys and broader audit metadata.
+- [x] Dependency/secret scanning.
+- [x] Backup/retention coverage for merge groups, domains, and representative approvals.
+
+  Evidence: `docs/operations/security-hardening.md`,
+  `docs/operations/backup-and-retention.md`, `stage9-phase5.integration.test.ts`,
+  merge/retry cases in `stage1.integration.test.ts`, and a clean `bun audit`. Local
+  verification passed; the commit is local and push/CI are pending.
 
 ### Phase 6 — Polish and documentation
 
@@ -572,7 +577,7 @@ Deferred:
       dispatch `43750576126` on `f882bd1` passed all 11 jobs on 2026-11-16, including visual
       regression (48/48) and the three cross-browser projects.
 
-## Stage 11 — Codebase audit, cleanup & convention hardening (EXIT VERIFIED — COMMITTED; PUSH/CI PENDING)
+## Stage 11 — Codebase audit, cleanup & convention hardening (EXIT VERIFIED — COMMITTED, PUSHED, CI CONFIRMED)
 
 Full plan: `docs/plans/code-audit-plan.md`. Frozen measurements and the ordered queue:
 `docs/plans/stage-11-baseline.md`. Decision records: `docs/decisions/`. Began after Stage
@@ -655,7 +660,7 @@ are the no-behavior-change oracle.
 - [x] Characterization tests and full integration suite pass after each split. Phase 3
       verification: Biome clean, all typechecks pass, API 162 pass (100 unit + 62 integration),
       coverage 86.4% lines / 86.8% functions, web unit 26, smoke 13, full Chromium E2E 216;
-      no visual snapshot change. Splits are committed locally; push and CI pending.
+      no visual snapshot change. Splits are committed and CI-verified by dispatch `44122619636`.
 
 ### Phase 4 — Duplication and UI structure (implemented, verified and committed 2026-11-17)
 
@@ -672,7 +677,7 @@ are the no-behavior-change oracle.
 - [x] Component tests cover the extracted seams; smoke/visual baselines unchanged. Phase 4
       verification: Biome clean, all typechecks pass, API 162 pass, coverage 86.4%/86.8%
       unchanged, web unit 26, smoke 13, full Chromium E2E 216, builds pass; no visual change.
-      Changes are committed locally; push and CI pending.
+      Changes are committed and CI-verified by dispatch `44122619636`.
 
 ### Phase 5 — Convention enforcement and documentation (implemented, verified and committed 2026-11-17)
 
@@ -696,7 +701,7 @@ are the no-behavior-change oracle.
       pre-existing fixture table) exceed 500 lines; `../` imports 0, `Page<T>` 1,
       `buildQuery` 1, `window.confirm` 0, all query keys rooted in `QUERY_KEY`. Phase 5
       verification: `bun run check:ci` green with the new gate; earlier Phase 3–4 checks
-      remain green. Changes are committed locally; push and CI pending.
+      remain green. Changes are committed and CI-verified by dispatch `44122619636`.
 
 ### Phase 6 — Verification and exit evidence (implemented, verified and committed 2026-11-17)
 
@@ -718,7 +723,7 @@ are the no-behavior-change oracle.
       (Stage 11 exit table in `docs/quality/qa-and-review.md`), this tracker, and the Phase 3–6
       outcomes in `code-audit-plan.md` / `stage-11-baseline.md`. No deferred Stage 11 cleanup
       remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified but
-      committed locally; push and CI must confirm on `main` before Stage 12
+      committed and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start
       starts.
 
 ## Stage 12 — UI/UX modernization (PLANNED)

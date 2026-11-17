@@ -1,0 +1,113 @@
+# CaseSync — Production hardening baseline
+
+Status: active operating reference. Stage 9 Phase 5. This documents what the
+API implements and the deployment-side requirements that code alone cannot
+enforce.
+
+## 1. Response headers and CSP
+
+`apps/api/src/middleware/security.ts` applies a baseline to every response in
+`app.ts`:
+
+| Header | Value | Purpose |
+|---|---|---|
+| `x-content-type-options` | `nosniff` | Prevent MIME sniffing on downloads and JSON |
+| `x-frame-options` | `DENY` | Block framing of API responses |
+| `referrer-policy` | `no-referrer` | Do not leak URLs in the `Referer` header |
+| `permissions-policy` | `camera=(), microphone=(), geolocation=()` | Deny unused browser capabilities |
+| `cross-origin-resource-policy` | `same-origin` | Restrict cross-origin embedding |
+| `content-security-policy` | `SECURITY_HEADERS_CSP` | Restrict sources for scripts, styles, images, connects |
+
+The CSP default allows only first-party sources plus the HTTPS origins needed
+for the Leaflet/OpenStreetMap tiles and inline styles used by the UI. Adjust
+`SECURITY_HEADERS_CSP` when a deployment adds a first-party asset origin.
+`SECURITY_HEADERS_ENABLED=false` disables only the CSP/HSTS headers; the other
+baselines remain on because removing `nosniff` would regress an existing
+protection. `HSTS_ENABLED=true` adds `strict-transport-security` and should only
+be set when the public origin is HTTPS.
+
+## 2. Request IDs and structured logs
+
+`apps/api/src/lib/request-context.ts` assigns a request ID from a validated
+inbound `x-request-id` header (ASCII, at most 64 characters) or generates a
+UUID. The ID is:
+
+- returned on every response as `x-request-id`;
+- included in every JSON line written by `apps/api/src/lib/logger.ts`;
+- stamped into `audit_log.metadata.requestId` by `recordAudit`.
+
+`app.ts` wraps the whole Elysia lifecycle in the request context, so background
+work started inside a route (notifications, merge audit writes) keeps the ID.
+When correlating an incident, quote the response `x-request-id` and grep the
+structured logs and `audit_log` for it.
+
+## 3. Health endpoints
+
+| Endpoint | Meaning |
+|---|---|
+| `GET /health` | Legacy liveness shim kept for existing probes |
+| `GET /health/live` | Process is up; no dependency checks |
+| `GET /health/ready` | 200 when Mongo is connected and JEV is usable, 503 otherwise |
+
+`getReadiness()` in `apps/api/src/lib/readiness.ts` reports Mongo from the
+mongoose connection state and JEV from `JEV_ENABLED` / `JEVMODEL_API_KEY`. JEV is
+checked by configuration, not by an outbound probe, so a slow external provider
+never causes the API to be removed from rotation. JEV request failures remain
+observable in the structured logs and job/assessment records.
+
+## 4. Request size, CORS, and cookies
+
+- `MAX_REQUEST_BODY_BYTES` (default 25 MiB) rejects oversized bodies with
+  `413 PAYLOAD_TOO_LARGE` before routing. Attachment routes still validate the
+  file itself against `ATTACHMENT_MAX_BYTES` (default 10 MiB).
+- CORS uses the `parseAllowedOrigins` allowlist with credentials enabled and an
+  explicit method list; wildcard origins are never combined with credentials.
+- Better Auth session cookies are explicitly `httpOnly`, `SameSite=Lax`, and
+  `Secure` when `BETTER_AUTH_URL` is HTTPS. The `Secure` prefix follows the same
+  origin check so local/test HTTP flows are unaffected.
+
+## 5. Rate limiting
+
+`apps/api/src/lib/rate-limit.ts` enforces per-endpoint budgets with an in-process
+`Map`. This is sufficient for a single API instance (and for the MVP), but the
+counters are not shared between processes or replicas.
+
+**Deployment requirement:** for any horizontally scaled or multi-region
+deployment, terminate/rate-limit at the edge or WAF using the same budgets and
+treat the in-process limiter as a coarse local backstop. The limiter already
+reads `x-forwarded-for` / `x-real-ip` when no socket address is available, so it
+works behind a trusted proxy; the proxy must strip spoofed forwarded headers.
+`retry-after`, `x-ratelimit-limit`, `x-ratelimit-remaining`, and
+`x-ratelimit-reset` are emitted so clients and the edge can share the same
+signals.
+
+## 6. Dependency and secret scanning
+
+- CI runs `bun audit --audit-level=high` on every push (`Dependency audit` job).
+- `.github/dependabot.yml` opens weekly grouped updates for npm dependencies
+  (the single Bun workspace covers all `apps/*` and `packages/*`) and for GitHub
+  Actions.
+- GitHub secret scanning and push protection must be enabled in repository
+  settings; they cannot be configured from a committed file. Secrets belong in
+  the deployment secret manager, never in `.env` files committed to source.
+
+## 7. Index and pagination audit
+
+The query patterns that carry the Stage 9 merge/domain/geo features are
+backed by indexes in `apps/api/src/models`:
+
+| Collection | Index | Serves |
+|---|---|---|
+| `case_merge_groups` | unique partial on `memberCaseIds`, unique partial on `canonicalCaseId` (active only) | active-group conflict checks; prevents duplicate groups |
+| `case_merge_groups` | `{ status: 1, memberCaseIds: 1 }` | active-group lookup for a candidate pair |
+| `case_relationships` | unique on `{ caseAId, caseBId }` | pair deduplication |
+| `case_relationships` | `{ mergeGroupId: 1, mergeStatus: 1 }` | revert/suppression scans over a group |
+| `institution_email_domains` | unique on `domainNormalized`; `{ domainNormalized, active, verified }` | signup suggestions and duplicate-domain checks |
+| `cases` | `{ regionId: 1, status: 1 }`, `{ bureauId: 1, status: 1 }` | scoped report/geo aggregations |
+
+Collections of results are paginated with `page`/`pageSize` and the shared
+`Page<T>` shape; report exports are capped and report truncation is surfaced in
+`x-export-truncated`. Single-resource GETs and downloads are intentionally not
+paginated. Mongoose creates these indexes from the schema definitions; ensure
+`autoIndex` is enabled on first boot or apply the equivalent index build from
+the migration tooling before enabling writes in production.

@@ -62,7 +62,7 @@ on unfinished Stage 9 work.
 | Current routes (staff, admin, portal, auth, institution) | Covered |
 | Stage 9 Phase 2 representative shell and admin queues | Landed and covered |
 | Stage 9 Phase 3 role flows and consolidated case tabs | Landed and covered |
-| Stage 9 Phase 5 hardening (headers, request IDs) | Not a blocker; add assertions when it lands |
+| Stage 9 Phase 5 hardening (headers, request IDs) | Landed; asserted in `stage9-phase5.integration.test.ts` |
 | Seeded demo data | Required; `seed:demo` must stay deterministic |
 | Production builds | Required; tests run against built API and web, matching CI |
 

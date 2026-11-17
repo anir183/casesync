@@ -243,8 +243,8 @@ test. Splitting it further would separate steps that always move together. `seed
 Verification: Biome clean; all three typechecks pass; API unit 100 pass / 62 integration-only
 skip (162 pass with integration); coverage 86.4% lines / 86.8% functions (above 85/85 and the
 Stage 10 floor); web unit 26 pass; smoke 13 pass; full Chromium E2E 216 pass. No visual
-snapshot or `.png` baseline changed. The splits are implemented, verified and committed locally;
-push and CI pending.
+snapshot or `.png` baseline changed. The splits are implemented, verified and committed;
+CI confirmed on `main` by dispatch `44122619636`.
 
 ### Phase 4 outcome (2026-11-17)
 
@@ -276,7 +276,7 @@ baseline changed; sub-trees and helpers moved verbatim.
 Verification: Biome clean; all three typechecks pass; API 162 pass with coverage unchanged at
 86.4% lines / 86.8% functions; web unit 26 pass; smoke 13 pass; full Chromium E2E 216 pass;
 production builds succeed. No visual snapshot or `.png` baseline changed. Changes are
-implemented, verified and committed locally; push and CI pending.
+implemented, verified and committed; CI confirmed on `main` by dispatch `44122619636`.
 
 ### Final file-size and duplication baseline (2026-11-17)
 
@@ -396,7 +396,7 @@ Recorded in Phase 6; every line must match or have a written exception.
 
 ### Phase 6 outcome (2026-11-17)
 
-Stage 11 exit is verified and committed locally (push and CI pending). Every exit target above is
+Stage 11 exit is verified and CI-confirmed on `main` by dispatch `44122619636`. Every exit target above is
 met:
 
 | Measure | Exit result |
@@ -410,7 +410,7 @@ met:
 | `queryKey:` arrays | 26, all rooted in `QUERY_KEY` or a key object; 0 raw arrays |
 | Test counts | API 162 (100 unit + 62 integration), web 26, smoke 13, full Chromium 216 — all at or above §3 |
 | Coverage | 86.4% lines / 86.8% functions — above 86.2%/86.3% floor and 85/85 gate |
-| Visual comparisons | no snapshot or `.png` changed; pinned CI (48 comparisons) remains authoritative and has not been run since Stage 11 was committed locally |
+| Visual comparisons | no snapshot or `.png` changed; pinned CI passed 48 comparisons unchanged on dispatch `44122619636` |
 | Route manifests, response fixtures, permissions, seed output | no route file, response field, or permission changed; 162 integration tests pass; pinned-`SEED_NOW` output identical across two fresh DBs |
 
 Full local gate: `bun run check:ci`, all three typechecks, API unit/integration, web unit,

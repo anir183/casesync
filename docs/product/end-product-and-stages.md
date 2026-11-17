@@ -229,9 +229,9 @@ layout.
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
-| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phases 1–5 (auto-merge, representatives/domains, navigation, UI/GIS, hardening) pass; remaining gates in `../plans/next-phase-plan.md` |
 | 10 | Complete Playwright UI coverage | **Partial** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
-| 11 | Codebase audit, cleanup & convention hardening | **Implemented — exit verified, committed locally** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard in `check:ci`, one shared `Page<T>` and `buildQuery`, decomposed services, documented conventions; full suite passes and visual baseline unchanged (pinned CI authoritative); see `../plans/code-audit-plan.md` |
+| 11 | Codebase audit, cleanup & convention hardening | **Implemented — exit verified, CI confirmed** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard in `check:ci`, one shared `Page<T>` and `buildQuery`, decomposed services, documented conventions; full suite passes and visual baseline unchanged (pinned CI authoritative); see `../plans/code-audit-plan.md` |
 | 12 | UI/UX modernization | **Planned** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
 
 ### Current position (honest)
@@ -267,7 +267,7 @@ layout.
   exact-institution overlap auto-merge, representatives and email-domain allowlists, the
   navigation/role-landing/case-workspace/resolution-loop work, and the visual redesign with
   chart-first dashboard/reports and the Leaflet/OpenStreetMap map) are implemented. Manual
-  screen-reader sign-off, production hardening, and documentation polish remain planned.
+  screen-reader sign-off and documentation polish (Phase 6) remain; Phase 5 hardening is implemented and committed locally (push/CI pending).
   See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 - Stage 10 exited on 2026-11-16: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable
@@ -279,7 +279,7 @@ layout.
   [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md). See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
-- Stage 11 is implemented and exit-verified on 2026-11-17 (committed locally; push/CI pending). Phases 0–2
+- Stage 11 is implemented and exit-verified on 2026-11-17 (CI confirmed by dispatch `44122619636`). Phases 0–2
   (baseline, ADRs, guardrail decision, import and dialog cleanup, shared pagination/query
   keys/guards) landed 2026-11-16; Phases 3–5 (service decomposition, duplication/UI structure,
   convention enforcement and docs) landed 2026-11-17. Phase 6 exit gate passed: `check:ci`
@@ -885,11 +885,11 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–4 implemented; manual screen-reader sign-off, hardening, and docs remain)
+Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–5 implemented; manual screen-reader sign-off and docs remain)
    ↓
 Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓
-Stage 11 (exit verified, committed locally; push/CI pending — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–6 complete, full suite green and visual baseline unchanged)
+Stage 11 (exit verified, CI confirmed by dispatch `44122619636` — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–6 complete, full suite green and visual baseline unchanged)
    ↓
 Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin hub, core surfaces, GIS, portal landing, motion/a11y; exits after refreshed coverage passes twice)
 ```
