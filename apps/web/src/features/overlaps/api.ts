@@ -2,6 +2,7 @@ import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
+import { buildQuery } from '#/lib/utils'
 
 export type ReviewStatus = 'PENDING' | 'CONFIRMED' | 'DISMISSED'
 export type ReviewAction = 'confirm' | 'dismiss'
@@ -120,15 +121,6 @@ export const overlapKeys = {
   list: (filters: OverlapFilters) => [QUERY_KEY.overlaps, 'list', filters] as const,
   detail: (id: string) => [QUERY_KEY.overlaps, 'detail', id] as const,
   group: (id: string) => [QUERY_KEY.overlaps, 'group', id] as const,
-}
-
-function buildQuery(filters: object) {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== null && value !== '') params.set(key, String(value))
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
 }
 
 export function fetchOverlaps(filters: OverlapFilters): Promise<Page<Overlap>> {

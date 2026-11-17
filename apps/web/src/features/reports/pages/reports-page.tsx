@@ -12,17 +12,14 @@ import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { TableScroll } from '#/components/ui/table-scroll'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
 import { matchTypeLabel } from '#/features/overlaps/labels'
-import type { GeoRegionRow, ReportFilters, ReportGroupRow } from '#/features/reports/api'
+import type { GeoRegionRow, ReportFilters } from '#/features/reports/api'
 import { downloadReports, useReports, useReportsGeo } from '#/features/reports/api'
 import { RegionMap } from '#/features/reports/components/region-map'
+import { CountTable, GroupTable } from '#/features/reports/components/report-tables'
 import { formatDate } from '#/lib/utils'
 
-const CELL = 'px-4 py-3 text-sm'
-const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
-const ROW = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
 
 function cleanFilters(input: ReportFilters): ReportFilters {
@@ -36,86 +33,6 @@ function titleCase(value: string) {
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
-}
-
-function CountTable({
-  title,
-  rows,
-  labelKey,
-}: {
-  title: string
-  rows: Array<{ count: number } & Record<string, string | number>>
-  labelKey: string
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data.</p>
-        ) : (
-          <TableScroll label={title}>
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className={HEAD_CELL}>Name</th>
-                  <th className={HEAD_CELL}>Cases</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={String(row[labelKey])} className={ROW}>
-                    <td className={CELL}>{String(row[labelKey])}</td>
-                    <td className={CELL}>{row.count}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableScroll>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data.</p>
-        ) : (
-          <TableScroll label={title}>
-            <table className="w-full min-w-[360px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className={HEAD_CELL}>Name</th>
-                  <th className={HEAD_CELL}>Total</th>
-                  <th className={HEAD_CELL}>Open</th>
-                  <th className={HEAD_CELL}>Disposed</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.name} className={ROW}>
-                    <td className={CELL}>{row.name}</td>
-                    <td className={CELL}>{row.total}</td>
-                    <td className={CELL}>{row.open}</td>
-                    <td className={CELL}>{row.disposed}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableScroll>
-        )}
-      </CardContent>
-    </Card>
-  )
 }
 
 export function ReportsPage() {

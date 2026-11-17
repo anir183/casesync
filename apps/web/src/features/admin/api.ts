@@ -1,8 +1,8 @@
 import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { buildQuery } from '#/features/cases/api'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
+import { buildQuery } from '#/lib/utils'
 
 export const adminKeys = {
   users: [QUERY_KEY.admin, 'users'] as const,

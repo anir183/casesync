@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
+import { buildQuery } from '#/lib/utils'
 
 export const reportKeys = {
   summary: (filters: ReportFilters) => [QUERY_KEY.reports, 'summary', filters] as const,
@@ -55,15 +56,6 @@ export interface ReportFilters {
   regionId?: string
   status?: string
   category?: string
-}
-
-function buildQuery(filters: ReportFilters) {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, value)
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
 }
 
 export function useReports(filters: ReportFilters) {

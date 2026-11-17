@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
+import { buildQuery } from '#/lib/utils'
 
 export interface AppNotification {
   id: string
@@ -33,15 +34,6 @@ interface NotificationListResponse {
 export const notificationKeys = {
   root: [QUERY_KEY.notifications] as const,
   list: (filters: NotificationFilters) => [QUERY_KEY.notifications, 'list', filters] as const,
-}
-
-function buildQuery(filters: NotificationFilters) {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, String(value))
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
 }
 
 export function useNotifications(

@@ -2,6 +2,7 @@ import type { Page } from '@casesync/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
+import { buildQuery } from '#/lib/utils'
 
 export interface CaseListItem {
   id: string
@@ -188,15 +189,6 @@ export const caseKeys = {
 }
 
 const OFFICER_DIRECTORY_KEY = [QUERY_KEY.users, 'directory'] as const
-
-export function buildQuery(filters: object) {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== null && value !== '') params.set(key, String(value))
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
-}
 
 export function fetchCases(filters: CaseFilters): Promise<Page<CaseListItem>> {
   return apiClient.get<Page<CaseListItem>>(`/cases${buildQuery(filters)}`)

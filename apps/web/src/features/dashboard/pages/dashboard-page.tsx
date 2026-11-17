@@ -1,4 +1,3 @@
-import { CASE_STATUS, ROLES } from '@casesync/config'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, FolderOpen, Layers } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
@@ -12,233 +11,25 @@ import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
 import { StatCard } from '#/components/shared/stat-card'
 import { StatusBadge } from '#/components/shared/status-badge'
-import { Badge } from '#/components/ui/badge'
-import { Button, buttonVariants } from '#/components/ui/button'
+import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
-import { type CaseFilters, useCases } from '#/features/cases/api'
-import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
+import { useCases } from '#/features/cases/api'
+import { RoleLandingCard } from '#/features/dashboard/components/role-landing-card'
+import { WorkloadTable } from '#/features/dashboard/components/workload-table'
+import { landingForRole } from '#/features/dashboard/landing'
+import type { DashboardFilters, DashboardSummary } from '#/features/dashboard/types'
 import { matchTypeLabel } from '#/features/overlaps/labels'
 import { useReports, useReportsGeo } from '#/features/reports/api'
 import { RegionMap } from '#/features/reports/components/region-map'
 import { apiClient } from '#/lib/api-client'
 import { QUERY_KEY } from '#/lib/query-keys'
 import { useCurrentUser } from '#/lib/session'
-import { formatDate, formatDateOnly } from '#/lib/utils'
-
-interface StatusCounts {
-  total: number
-  open: number
-  pending: number
-  unassigned: number
-  assigned: number
-  underProcess: number
-  disposed: number
-  transferred: number
-  escalated: number
-  reopened: number
-  beyondTimelines: number
-}
-
-interface RecentOverlap {
-  id: string
-  matchType: string
-  reviewStatus: string
-  createdAt: string
-  institutionName: string
-  caseNumbers: string[]
-}
-
-interface RecentEscalation {
-  id: string
-  caseId: string
-  caseNumber: string
-  remarks?: string
-  createdAt: string
-}
-
-interface DashboardSummary extends StatusCounts {
-  generatedAt: string
-  institutionWise: Array<StatusCounts & { institutionId: string; institutionName: string }>
-  bureauWise: Array<StatusCounts & { bureauId: string; bureauName: string; bureauCode: string }>
-  regionWise: Array<StatusCounts & { regionId: string; regionName: string; regionCode: string }>
-  recentOverlaps: RecentOverlap[]
-  recentEscalations: RecentEscalation[]
-}
-
-interface DashboardFilters {
-  dateFrom?: string
-  dateTo?: string
-}
-
-const CELL = 'px-4 py-3 text-sm'
-const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+import { buildQuery, formatDate } from '#/lib/utils'
 
 const dashboardKeys = {
   summary: (filters: DashboardFilters) => [QUERY_KEY.dashboard, 'summary', filters] as const,
-}
-
-interface RoleLanding {
-  kicker: string
-  queueTitle: string
-  summary: string
-  emptyTitle: string
-  emptyDescription: string
-  queueFilters: CaseFilters | null
-  links: Array<{ to: string; label: string }>
-}
-
-function landingForRole(
-  role: string | undefined,
-  scope: { bureauId?: string; regionId?: string },
-): RoleLanding {
-  switch (role) {
-    case ROLES.ADMIN:
-      return {
-        kicker: 'Administrator',
-        queueTitle: 'Escalations needing attention',
-        summary:
-          'Platform-wide operations. Review escalated complaints, then work the representative, domain, verification, and audit queues.',
-        emptyTitle: 'No escalations waiting',
-        emptyDescription:
-          'No case is escalated right now. The admin queues remain available below.',
-        queueFilters: {
-          status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
-          { to: '/admin/institution-representatives', label: 'Representatives' },
-          { to: '/admin/institution-domains', label: 'Institution domains' },
-          { to: '/admin/verifications', label: 'Verifications' },
-          { to: '/admin/audit', label: 'Audit log' },
-        ],
-      }
-    case ROLES.SENIOR_MANAGEMENT:
-      return {
-        kicker: 'Senior management',
-        queueTitle: 'Escalations awaiting a decision',
-        summary:
-          'Review escalated cases, disposal decisions, and overlap coordination. Use reports to compare disposal performance across regions.',
-        emptyTitle: 'No escalations waiting',
-        emptyDescription:
-          'No case is escalated right now. Continue monitoring disposal performance in reports.',
-        queueFilters: {
-          status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
-          { to: '/overlaps', label: 'Overlap queue' },
-          { to: '/reports', label: 'Reports' },
-        ],
-      }
-    case ROLES.COMPETENT_AUTHORITY:
-      return {
-        kicker: 'Competent authority',
-        queueTitle: 'Complaints awaiting complainant input',
-        summary:
-          'Close the loop on information requests, then move assigned cases through review and disposal. SLA dates are shown on each case.',
-        emptyTitle: 'No complaints awaiting input',
-        emptyDescription:
-          'Every active complaint has what it needs. Review cases under process for the next disposal decision.',
-        queueFilters: {
-          status: CASE_STATUS.AWAITING_COMPLAINANT,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          { to: '/cases?status=AWAITING_COMPLAINANT', label: 'Awaiting complainant' },
-          { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
-          { to: '/reports', label: 'Reports' },
-        ],
-      }
-    case ROLES.BUREAU_OFFICER:
-      return {
-        kicker: 'Bureau officer',
-        queueTitle: 'Assigned to your bureau',
-        summary:
-          'Work assigned complaints first, record the next action and due date, then respond to the complainant before the target decision date.',
-        emptyTitle: 'No newly assigned cases',
-        emptyDescription:
-          'Your bureau has no newly assigned cases. Check cases under process for follow-up work.',
-        queueFilters: {
-          status: CASE_STATUS.ASSIGNED,
-          bureauId: scope.bureauId,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          {
-            to: scope.bureauId ? `/cases?bureauId=${scope.bureauId}` : '/cases',
-            label: 'My bureau cases',
-          },
-          { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
-          { to: '/cases/new', label: 'Register case' },
-          { to: '/overlaps', label: 'Overlap queue' },
-        ],
-      }
-    case ROLES.REGIONAL_OFFICER:
-      return {
-        kicker: 'Regional officer',
-        queueTitle: 'Transfers in your region',
-        summary:
-          'Review transfers and regional workload. Confirm ownership or escalate cases that need senior management attention.',
-        emptyTitle: 'No transfers waiting',
-        emptyDescription:
-          'No case is waiting for a transfer decision in your region. Review regional workload in reports.',
-        queueFilters: {
-          status: CASE_STATUS.TRANSFERRED,
-          regionId: scope.regionId,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          {
-            to: scope.regionId ? `/cases?regionId=${scope.regionId}` : '/cases',
-            label: 'Regional cases',
-          },
-          { to: '/cases?status=TRANSFERRED', label: 'Transfers' },
-          { to: '/reports', label: 'Reports' },
-        ],
-      }
-    case ROLES.VIEWER:
-      return {
-        kicker: 'Read-only oversight',
-        queueTitle: 'Your access is read-only',
-        summary:
-          'You can review cases, overlaps, and reports. Case actions, registration, and administrative changes stay hidden for this role.',
-        emptyTitle: 'Read-only oversight',
-        emptyDescription:
-          'Use the case registry and reports to review activity. No action queue is assigned to this role.',
-        queueFilters: null,
-        links: [
-          { to: '/cases', label: 'Case registry' },
-          { to: '/overlaps', label: 'Overlap queue' },
-          { to: '/reports', label: 'Reports' },
-        ],
-      }
-    default:
-      return {
-        kicker: 'Operations',
-        queueTitle: 'Cases needing attention',
-        summary: 'Review the active complaint posture across institutions, bureaus, and regions.',
-        emptyTitle: 'Nothing needs attention',
-        emptyDescription: 'No case is currently waiting on an escalation or complainant response.',
-        queueFilters: {
-          status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
-          sort: 'lastActionAt:asc',
-        },
-        links: [
-          { to: '/cases', label: 'Case registry' },
-          { to: '/reports', label: 'Reports' },
-        ],
-      }
-  }
 }
 
 function titleCase(value: string) {
@@ -246,84 +37,6 @@ function titleCase(value: string) {
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
-}
-
-function buildQuery(filters: DashboardFilters) {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, value)
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
-}
-
-function WorkloadTable<T extends StatusCounts>({
-  title,
-  rows,
-  labelKey,
-}: {
-  title: string
-  rows: T[]
-  labelKey: keyof T & string
-}) {
-  return (
-    <Card className="min-w-0 overflow-hidden">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data for this period.</p>
-        ) : (
-          <section
-            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable regions must be keyboard focusable
-            tabIndex={0}
-            aria-label={`${title} table`}
-            className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <table className="w-full min-w-[460px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className={HEAD_CELL}>Name</th>
-                  <th className={HEAD_CELL}>Total</th>
-                  <th className={HEAD_CELL}>Open</th>
-                  <th className={HEAD_CELL}>Disposed</th>
-                  <th className={HEAD_CELL}>Beyond SLA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr
-                    key={String(row[labelKey])}
-                    className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
-                  >
-                    <td className={CELL}>
-                      <div className="font-medium">{String(row[labelKey])}</div>
-                      {'bureauCode' in row && row.bureauCode !== '—' ? (
-                        <span className="text-xs text-muted-foreground">
-                          {String(row.bureauCode)}
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className={CELL}>{row.total}</td>
-                    <td className={CELL}>{row.open}</td>
-                    <td className={CELL}>{row.disposed}</td>
-                    <td className={CELL}>
-                      {row.beyondTimelines > 0 ? (
-                        <Badge variant="danger">{row.beyondTimelines}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">0</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        )}
-      </CardContent>
-    </Card>
-  )
 }
 
 export function DashboardPage() {
@@ -388,81 +101,7 @@ export function DashboardPage() {
         }
       />
 
-      <Card>
-        <CardBody className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                {landing.kicker}
-              </p>
-              <h2 className="text-lg font-semibold">{landing.queueTitle}</h2>
-              <p className="text-sm text-muted-foreground">{landing.summary}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {landing.links.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {landing.queueFilters ? (
-            <div className="space-y-2 border-t border-border pt-3">
-              {queue.isLoading && (
-                <div className="space-y-2" aria-busy="true" aria-label="Loading role work queue">
-                  {['a', 'b', 'c'].map((row) => (
-                    <Skeleton key={row} className="h-14 w-full" />
-                  ))}
-                </div>
-              )}
-              {queue.isError && (
-                <p className="text-sm text-danger">Unable to load the work queue for your role.</p>
-              )}
-              {queue.data && queue.data.items.length === 0 && (
-                <EmptyState
-                  className="border-0 bg-transparent"
-                  title={landing.emptyTitle}
-                  description={landing.emptyDescription}
-                />
-              )}
-              {queue.data?.items.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/cases/${item.id}`}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm transition-colors hover:bg-muted/40"
-                >
-                  <div className="min-w-0 space-y-0.5">
-                    <p className="font-medium">{item.caseNumber}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {item.subject ?? item.institutionName ?? 'Complaint'}
-                      {item.bureauName ? ` · ${item.bureauName}` : ''}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CaseStatusBadge status={item.status} />
-                    {item.nextActionDueAt ? (
-                      <span className="text-xs text-muted-foreground">
-                        Due {formatDateOnly(item.nextActionDueAt)}
-                      </span>
-                    ) : null}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              className="border-0 bg-transparent"
-              title={landing.emptyTitle}
-              description={landing.emptyDescription}
-            />
-          )}
-        </CardBody>
-      </Card>
+      <RoleLandingCard landing={landing} queue={queue} />
 
       <Card>
         <CardBody>
