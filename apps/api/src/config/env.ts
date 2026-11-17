@@ -12,6 +12,22 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  // Coarse ceiling for the whole request body; attachment routes validate the
+  // file itself against ATTACHMENT_MAX_BYTES. Based on a generous multipart
+  // allowance so the two limits never reject a legitimate upload.
+  MAX_REQUEST_BODY_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(25 * 1024 * 1024),
+  SECURITY_HEADERS_ENABLED: booleanFromEnv,
+  SECURITY_HEADERS_CSP: z
+    .string()
+    .default(
+      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https: wss:",
+    ),
+  // HSTS only makes sense over HTTPS behind a TLS-terminating proxy.
+  HSTS_ENABLED: booleanFromEnv.default(false),
   MONGODB_URI: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),

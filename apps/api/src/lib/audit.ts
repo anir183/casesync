@@ -1,3 +1,4 @@
+import { getRequestId } from '#/lib/request-context'
 import { AuditLog } from '#/models/audit_log.model'
 
 export const AUDIT_ACTION = {
@@ -37,5 +38,7 @@ export interface AuditEntry {
 }
 
 export async function recordAudit(entry: AuditEntry) {
-  return AuditLog.create(entry)
+  const requestId = getRequestId()
+  const metadata = requestId ? { ...entry.metadata, requestId } : entry.metadata
+  return AuditLog.create({ ...entry, ...(metadata ? { metadata } : {}) })
 }

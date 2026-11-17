@@ -15,6 +15,18 @@ export const auth = betterAuth({
   database: mongodbAdapter(db),
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  // Make the session-cookie posture explicit. These match Better Auth's
+  // defaults; the secure flag follows the configured origin so local and test
+  // runs over plain HTTP keep working.
+  advanced: {
+    useSecureCookies: env.BETTER_AUTH_URL.startsWith('https://'),
+    defaultCookieAttributes: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: env.BETTER_AUTH_URL.startsWith('https://'),
+      path: '/',
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },

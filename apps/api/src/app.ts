@@ -6,7 +6,10 @@ import { auth } from '#/lib/auth'
 import { HTTP_STATUS } from '#/lib/errors'
 import { parseAllowedOrigins } from '#/lib/origins'
 import { enforceRateLimit } from '#/lib/rate-limit'
+import { getReadiness } from '#/lib/readiness'
+import { getRequestId, requestIdFromHeaders, runWithRequestContext } from '#/lib/request-context'
 import { toErrorResponse } from '#/middleware/error'
+import { applySecurityHeaders, enforceBodyLimit } from '#/middleware/security'
 import { auditRoutes } from '#/modules/admin/audit.routes'
 import { jobsRoutes } from '#/modules/admin/jobs.routes'
 import { adminUsersRoutes } from '#/modules/admin/users.routes'
@@ -32,6 +35,12 @@ import { slaRoutes } from '#/modules/sla/routes'
 import { usersRoutes } from '#/modules/users/routes'
 
 export const app = new Elysia()
+  // Run every request in its own context so logs and audit rows can be
+  // correlated by request id, including work kicked off inside route handlers.
+  .wrap(
+    (handler, request) => (nextRequest: Request) =>
+      runWithRequestContext(requestIdFromHeaders(request.headers), () => handler(nextRequest)),
+  )
   .use(
     swagger({
       path: '/docs',
@@ -57,6 +66,10 @@ export const app = new Elysia()
     return result.body
   })
   .onRequest(({ request, set, server }) => {
+    const requestId = getRequestId()
+    if (requestId) set.headers['x-request-id'] = requestId
+    applySecurityHeaders(set)
+    enforceBodyLimit(request)
     const clientAddress = server?.requestIP(request)?.address
     enforceRateLimit(request, set, clientAddress)
   })
@@ -104,3 +117,9 @@ export const app = new Elysia()
   )
   .get('/', () => ({ status: 'ok', service: 'casesync-api' }))
   .get('/health', () => ({ ok: true }))
+  .get('/health/live', () => ({ status: 'ok' }))
+  .get('/health/ready', ({ set }) => {
+    const readiness = getReadiness()
+    if (readiness.status !== 'ok') set.status = HTTP_STATUS.SERVICE_UNAVAILABLE
+    return readiness
+  })

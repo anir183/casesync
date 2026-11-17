@@ -1,9 +1,18 @@
+import { getRequestId } from '#/lib/request-context'
+
 type LogLevel = 'info' | 'warn' | 'error'
 
 type LogContext = Record<string, unknown>
 
 function write(level: LogLevel, message: string, context?: LogContext) {
-  const entry = { ts: new Date().toISOString(), level, message, ...context }
+  const requestId = getRequestId()
+  const entry = {
+    ts: new Date().toISOString(),
+    level,
+    message,
+    ...(requestId ? { requestId } : {}),
+    ...context,
+  }
   const line = JSON.stringify(entry)
   if (level === 'error') {
     console.error(line)
