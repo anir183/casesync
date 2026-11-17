@@ -117,7 +117,7 @@ export function AppShell() {
                       <div className="my-1 border-t border-border" />
                     )}
                     {adminOverflow.length > 0 && (
-                      <p className="px-2.5 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <p className="px-2.5 pb-1 pt-1 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
                         Admin
                       </p>
                     )}
@@ -171,7 +171,7 @@ export function AppShell() {
                         <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                       )}
                       {role && (
-                        <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                        <p className="mt-1 text-meta uppercase tracking-wide text-muted-foreground">
                           {role.replace(/_/g, ' ').toLowerCase()}
                         </p>
                       )}
@@ -222,7 +222,7 @@ export function AppShell() {
               {generalOverflow.map(renderMobileItem)}
               {adminOverflow.length > 0 && (
                 <>
-                  <p className="px-2.5 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <p className="px-2.5 pb-1 pt-3 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
                     Admin
                   </p>
                   {adminOverflow.map(renderMobileItem)}

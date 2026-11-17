@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ChartTable } from './chart-table'
 import { type ChartDatum, percentage, sumValues } from './chart-utils'
 
@@ -48,11 +49,13 @@ export function BarChart({
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full transition-[width] duration-300"
-                    style={{
-                      width: `${Math.max(width, item.value > 0 ? 2 : 0)}%`,
-                      background: itemColor,
-                    }}
+                    className="h-full w-[var(--bar-width)] rounded-full bg-[var(--bar-color)] transition-[width] duration-base ease-out"
+                    style={
+                      {
+                        '--bar-width': `${Math.max(width, item.value > 0 ? 2 : 0)}%`,
+                        '--bar-color': itemColor,
+                      } as CSSProperties
+                    }
                   />
                 </div>
               </li>

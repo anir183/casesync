@@ -33,10 +33,8 @@ export function StatCard({
       <CardBody className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {isLoading ? '—' : value}
-          </p>
-          {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
+          <p className="text-title font-semibold sm:text-display">{isLoading ? '—' : value}</p>
+          {hint ? <div className="text-meta text-muted-foreground">{hint}</div> : null}
         </div>
         {icon ? (
           <span

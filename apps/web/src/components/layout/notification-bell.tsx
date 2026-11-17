@@ -40,7 +40,7 @@ export function NotificationBell({
         <>
           <Bell aria-hidden className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-danger-foreground">
+            <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-meta font-semibold text-danger-foreground">
               {badge}
             </span>
           )}
@@ -117,7 +117,7 @@ export function NotificationBell({
                               {item.message}
                             </p>
                           )}
-                          <p className="mt-1 text-[11px] text-muted-foreground">
+                          <p className="mt-1 text-meta text-muted-foreground">
                             {formatDate(item.createdAt)}
                           </p>
                         </div>

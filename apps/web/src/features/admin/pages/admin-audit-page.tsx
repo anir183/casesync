@@ -5,14 +5,17 @@ import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from '#/components/ui/table'
 import { TableScroll } from '#/components/ui/table-scroll'
 import { useAuditLog } from '#/features/admin/api'
 import { formatDate } from '#/lib/utils'
-
-const CELL_CLASS = 'px-4 py-3 text-sm'
-const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
-const ROW_CLASS =
-  'border-b border-border align-top transition-colors last:border-0 hover:bg-muted/40'
 
 const ENTITY_TYPES = [
   'USER',
@@ -40,16 +43,16 @@ export function AdminAuditPage() {
   const { data, isLoading, error } = useAuditLog({ entityType, action, page, pageSize })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-section">
       <PageHeader
         title="Audit log"
         description="Append-only history of administrative and master-data changes."
       />
 
       <Card>
-        <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-          <CardTitle className="text-base">Recent activity</CardTitle>
-          <div className="flex flex-wrap gap-2">
+        <CardHeader className="flex flex-wrap items-center justify-between gap-control">
+          <CardTitle className="text-subhead">Recent activity</CardTitle>
+          <div className="flex flex-wrap gap-tight">
             <Select
               aria-label="Filter audit entity"
               className="w-44"
@@ -93,62 +96,62 @@ export function AdminAuditPage() {
             </div>
           )}
           {error && (
-            <p className="text-sm text-danger">
+            <p className="text-body text-danger">
               {error instanceof Error ? error.message : 'Audit log could not be loaded'}
             </p>
           )}
           {data && data.items.length === 0 && (
-            <p className="text-sm text-muted-foreground">No audit entries match these filters.</p>
+            <p className="text-body text-muted-foreground">No audit entries match these filters.</p>
           )}
           {data && data.items.length > 0 && (
             <TableScroll label="Audit log entries">
-              <table className="w-full min-w-[900px] border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className={HEAD_CLASS}>When</th>
-                    <th className={HEAD_CLASS}>Actor</th>
-                    <th className={HEAD_CLASS}>Action</th>
-                    <th className={HEAD_CLASS}>Entity</th>
-                    <th className={HEAD_CLASS}>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className="min-w-[900px]" density="compact">
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell className="uppercase tracking-wide">When</TableHeaderCell>
+                    <TableHeaderCell className="uppercase tracking-wide">Actor</TableHeaderCell>
+                    <TableHeaderCell className="uppercase tracking-wide">Action</TableHeaderCell>
+                    <TableHeaderCell className="uppercase tracking-wide">Entity</TableHeaderCell>
+                    <TableHeaderCell className="uppercase tracking-wide">Details</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {data.items.map((item) => (
-                    <tr key={item.id} className={ROW_CLASS}>
-                      <td className={CELL_CLASS}>{formatDate(item.createdAt)}</td>
-                      <td className={CELL_CLASS}>{item.actorName ?? item.actorId}</td>
-                      <td className={CELL_CLASS}>
+                    <TableRow key={item.id} className="align-top last:border-0">
+                      <TableCell>{formatDate(item.createdAt)}</TableCell>
+                      <TableCell>{item.actorName ?? item.actorId}</TableCell>
+                      <TableCell>
                         <Badge variant={actionVariant(item.action)}>
                           {item.action.replace(/_/g, ' ')}
                         </Badge>
-                      </td>
-                      <td className={CELL_CLASS}>
+                      </TableCell>
+                      <TableCell>
                         <p>{item.entityType.replace(/_/g, ' ')}</p>
-                        <p className="font-mono text-xs text-muted-foreground">{item.entityId}</p>
-                      </td>
-                      <td className={CELL_CLASS}>
+                        <p className="font-mono text-meta text-muted-foreground">{item.entityId}</p>
+                      </TableCell>
+                      <TableCell>
                         <details>
-                          <summary className="cursor-pointer text-xs underline underline-offset-4">
+                          <summary className="cursor-pointer text-meta underline underline-offset-4">
                             View before / after
                           </summary>
-                          <div className="mt-2 grid gap-2 lg:grid-cols-2">
+                          <div className="mt-2 grid gap-tight lg:grid-cols-2">
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">Before</p>
-                              <pre className="mt-1 max-h-56 overflow-auto rounded bg-muted p-2 text-xs">
+                              <p className="text-meta font-medium text-muted-foreground">Before</p>
+                              <pre className="mt-1 max-h-56 overflow-auto rounded bg-muted p-2 text-meta">
                                 {item.before ? JSON.stringify(item.before, null, 2) : '—'}
                               </pre>
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">After</p>
-                              <pre className="mt-1 max-h-56 overflow-auto rounded bg-muted p-2 text-xs">
+                              <p className="text-meta font-medium text-muted-foreground">After</p>
+                              <pre className="mt-1 max-h-56 overflow-auto rounded bg-muted p-2 text-meta">
                                 {item.after ? JSON.stringify(item.after, null, 2) : '—'}
                               </pre>
                               {item.metadata && (
                                 <>
-                                  <p className="mt-2 text-xs font-medium text-muted-foreground">
+                                  <p className="mt-2 text-meta font-medium text-muted-foreground">
                                     Metadata
                                   </p>
-                                  <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
+                                  <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted p-2 text-meta">
                                     {JSON.stringify(item.metadata, null, 2)}
                                   </pre>
                                 </>
@@ -156,11 +159,11 @@ export function AdminAuditPage() {
                             </div>
                           </div>
                         </details>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </TableScroll>
           )}
           {data && data.total > 0 && (

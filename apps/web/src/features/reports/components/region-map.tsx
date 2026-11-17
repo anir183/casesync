@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { type CSSProperties, Suspense, lazy, useEffect, useState } from 'react'
 import { ChartTable } from '#/components/charts/chart-table'
 import { Skeleton } from '#/components/ui/skeleton'
 import type { GeoRegionRow } from '#/features/reports/api'
@@ -81,8 +81,8 @@ export function RegionMap({
               >
                 <span
                   aria-hidden
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: bubbleColor(region) }}
+                  className="h-2 w-2 rounded-full bg-[var(--bubble-color)]"
+                  style={{ '--bubble-color': bubbleColor(region) } as CSSProperties}
                 />
                 {region.code.slice(0, 3)}
               </button>
@@ -107,7 +107,7 @@ export function RegionMap({
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-danger" /> High
         </span>
-        <span className="ml-auto text-[11px]">Base map © OpenStreetMap contributors</span>
+        <span className="ml-auto text-meta">Base map © OpenStreetMap contributors</span>
       </div>
 
       <ChartTable

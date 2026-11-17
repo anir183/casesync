@@ -755,17 +755,30 @@ intentionally in Phase 7, not in Phase 0.
 - [x] Confirm Stage 11 exit (dispatch `44122619636`) and the Stage 10 coverage baseline —
       see evidence §6.
 
-### Phase 1 — Tokens and primitives
+### Phase 1 — Tokens and primitives (COMPLETE — Phase 2 not yet authorized)
 
-- [ ] Add type, spacing, surface, focus, density, and motion tokens.
-- [ ] Replace one-off text sizes and static inline styles.
-- [ ] Refine Button, Input/Select/Textarea/Field, Card, Badge/StatusBadge, Table, Tabs,
+Decisions: apply the new scale now with a 12 px text floor; reference page `/admin/audit`;
+no local baseline refresh (all 48 already fail at clean `HEAD` locally); full 48 refresh in
+Phase 7 CI with every diff reviewed.
+
+- [x] Add type, spacing, surface, focus, density, and motion tokens.
+- [x] Replace one-off text sizes and static inline styles.
+- [x] Refine Button, Input/Select/Textarea/Field, Card, Badge/StatusBadge, Table, Tabs,
       Dialog/Sheet, Dropdown/Tooltip/Popover, Skeleton/Empty/Error/Permission, StatCard,
       KpiStrip, SectionHeader, FilterBar, and SavedViewMenu.
-- [ ] Add focus-visible, dark-mode, and reduced-motion behavior to every interactive
+- [x] Add focus-visible, dark-mode, and reduced-motion behavior to every interactive
       primitive.
-- [ ] Add component/visual coverage for behavior-bearing primitives.
-- [ ] Prove the system on one reference page with axe, zoom, and reflow checks.
+- [x] Add component/visual coverage for behavior-bearing primitives (7 new unit tests).
+- [x] Prove the system on `/admin/audit` with axe, zoom, and reflow checks (216 E2E pass).
+- [x] Visual baseline decision: all 48 committed baselines already fail at clean `HEAD` on
+      this machine because they were pinned to the `ubuntu-24.04` CI runner, and local font
+      rendering differs. Product owner chose to leave them untouched; the official refresh,
+      full diff review, and second confirmation run happen in the pinned CI runner during
+      Phase 7. No machine-specific screenshots were committed.
+
+Verification: `typecheck:web`, `typecheck:web:tests`, `check:ci`, 33 web unit tests, 216
+full-browser E2E tests, and a fresh web build all pass. Main chunk `506.11 kB / 140.06 kB
+gzip`, within the Phase 0 guardrail.
 
 ### Phase 2 — Shell and navigation
 

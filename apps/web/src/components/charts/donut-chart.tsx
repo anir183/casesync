@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ChartTable } from './chart-table'
 import { type ChartDatum, percentage, sumValues } from './chart-utils'
 
@@ -85,8 +86,8 @@ export function DonutChart({
                 <span className="flex min-w-0 items-center gap-2">
                   <span
                     aria-hidden
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: item.color }}
+                    className="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--segment-color)]"
+                    style={{ '--segment-color': item.color } as CSSProperties}
                   />
                   <span className="truncate text-muted-foreground">{item.label}</span>
                 </span>

@@ -236,6 +236,11 @@ The approved direction is recorded in
 [`../product/ui-ux-design-plan.md`](../product/ui-ux-design-plan.md) "Phase 0 direction
 lock". This is a direction lock only; Phase 1 still requires separate authorization.
 
+**Phase 1 staging decisions (product owner, 2026-11-18):** apply the new scale in Phase 1
+with a 12 px text floor; prove primitives on `/admin/audit`. The planned selective visual
+refresh was deferred: all 48 baselines already fail at clean `HEAD` locally, so the
+official full refresh and diff review happen in the pinned CI runner during Phase 7.
+
 ## 9. Exit criteria
 
 - [x] Baseline screenshots and metrics stored for comparison (§4, §5).

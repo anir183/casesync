@@ -36,7 +36,7 @@ export default function LeafletRegionMap({
   return (
     <section
       aria-label={`${caption} map`}
-      className="relative overflow-hidden rounded-xl border border-border [&_.leaflet-container]:z-0 [&_.leaflet-container]:h-[420px] [&_.leaflet-container]:w-full [&_.leaflet-container]:bg-muted [&_.leaflet-control-attribution]:text-[10px]"
+      className="relative overflow-hidden rounded-xl border border-border [&_.leaflet-container]:z-0 [&_.leaflet-container]:h-[420px] [&_.leaflet-container]:w-full [&_.leaflet-container]:bg-muted [&_.leaflet-control-attribution]:text-meta"
     >
       <MapContainer
         bounds={INDIA_MAP_BOUNDS}

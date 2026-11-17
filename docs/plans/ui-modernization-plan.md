@@ -247,6 +247,19 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 
 **Goal:** make the new visual language reusable before touching screens.
 
+**Staging decisions (product owner, 2026-11-18)**
+
+- Apply the **new visual scale in Phase 1**, not a pixel-identical first pass. The 12 px
+  minimum replaces every 10 px and 11 px use; dense tables use 12 px with tighter
+  line-height.
+- Prove the primitives on **`/admin/audit`**, a page outside the 48-baseline subset.
+- The new scale was originally meant to trigger a **selective visual refresh** in Phase 1.
+  That refresh was **deferred to the Phase 7 CI run**: all 48 committed baselines already
+  fail on the development machine at clean `HEAD` because they were pinned to the
+  `ubuntu-24.04` runner, so regenerating locally would commit machine-specific images.
+  Phase 7 performs the full 48-baseline refresh, reviews every diff, and runs it twice.
+  See §9.
+
 **Work**
 
 - Extend `apps/web/src/index.css` with:
@@ -536,8 +549,15 @@ The refresh is part of the stage, not a bypass.
   the redesign changed the accessible name; do not add `data-testid` as a first resort.
 - **Routes:** the route tree and permissions stay unchanged. Any new route must be added to
   the matrix in the same change.
-- **Visual regression:** regenerate all 48 baselines after design sign-off, review every
-  diff, and run twice. A baseline update without review is a failed gate.
+- **Visual regression:** design sign-off happened in Phase 0 (2026-11-18). Phase 1 applies
+  the new scale but performs **no baseline refresh**: all 48 committed baselines already
+  fail at clean `HEAD` on the development machine, with identical output before and after
+  the Phase 1 changes. They were pinned from the `ubuntu-24.04` CI runner, and local text
+  rendering differs; regenerating locally would commit machine-specific screenshots. The
+  product owner chose to leave them untouched. Phase 7 performs the official full
+  48-baseline refresh in the pinned CI runner, reviews every diff, and runs it twice. A
+  baseline update without review is a failed gate. The decision is tracked in
+  `todo-tracker.md`.
 - **Coverage matrix:** update route, mutation, state, responsive, visual, and accessibility
   rows as the UI changes. Keep the matrix the single status source.
 - **Full suite:** run twice against fresh production builds and `seed:demo`; the second run

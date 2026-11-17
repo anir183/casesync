@@ -49,11 +49,11 @@ export function GaugeChart({
           x="100"
           y="84"
           textAnchor="middle"
-          className="fill-foreground text-[28px] font-semibold"
+          className="fill-foreground text-display font-semibold"
         >
           {Math.round(bounded)}%
         </text>
-        <text x="100" y="105" textAnchor="middle" className="fill-muted-foreground text-[11px]">
+        <text x="100" y="105" textAnchor="middle" className="fill-muted-foreground text-meta">
           {label}
         </text>
       </svg>

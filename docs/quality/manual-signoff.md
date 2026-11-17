@@ -277,7 +277,8 @@ severity. Leave every checkbox unchecked and re-run this worksheet after the fix
 ## 4. Guardrails
 
 - No deployment, hosting, or production data changes.
-- No visual baseline regeneration — the 48 CI-image baselines remain authoritative.
+- No visual baseline regeneration during manual QA — use the Stage 12-refreshed baselines
+  (full 48-baseline refresh in Phase 7 CI) as the authority.
 - No Atlas traffic — keep `ALLOW_REMOTE_MONGO` unset and use disposable loopback databases.
 - No Stage 12 implementation work; this worksheet only records manual verification.
 - Do not mark a row passed from a screenshot alone — record the observed result.

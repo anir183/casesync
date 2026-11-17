@@ -249,7 +249,7 @@ export function ResolutionLoop({
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold',
+                      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-meta font-semibold',
                       state === 'complete' && 'border-success bg-success text-success-foreground',
                       state === 'current' && 'border-primary bg-primary text-primary-foreground',
                       state === 'upcoming' && 'border-border bg-background text-muted-foreground',
@@ -271,7 +271,7 @@ export function ResolutionLoop({
                   </span>
                 </div>
                 {step.optional && !isComplete ? (
-                  <p className="mt-1 text-[11px] text-muted-foreground">Optional</p>
+                  <p className="mt-1 text-meta text-muted-foreground">Optional</p>
                 ) : null}
               </li>
             )

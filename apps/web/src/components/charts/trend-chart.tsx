@@ -81,7 +81,7 @@ export function TrendChart({
                     x={PADDING.left - 8}
                     y={tickY + 4}
                     textAnchor="end"
-                    className="fill-muted-foreground text-[10px]"
+                    className="fill-muted-foreground text-meta"
                   >
                     {tick}
                   </text>
@@ -115,7 +115,7 @@ export function TrendChart({
                     x={x(index)}
                     y={HEIGHT - 10}
                     textAnchor="middle"
-                    className="fill-muted-foreground text-[10px]"
+                    className="fill-muted-foreground text-meta"
                   >
                     {item.label}
                   </text>
