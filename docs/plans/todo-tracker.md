@@ -1,11 +1,11 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-16 (Stage 10 exit; Stage 11 Phase 0 baseline).
+**Last verified:** 2026-11-17 (Stage 11 Phases 3–6 implemented; Stage 11 exit verified, committed locally; push and CI pending).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phase 0 baseline/UI consistency, Phases 1–4 implemented; manual screen-reader sign-off and Phases 5–6 remain. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
-**Stage 11:** in progress; Phases 0–2 complete 2026-11-16. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
+**Stage 11:** exit verified 2026-11-17 (committed locally; push and CI pending); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI must confirm on `main` before Stage 12 starts. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
@@ -572,7 +572,7 @@ Deferred:
       dispatch `43750576126` on `f882bd1` passed all 11 jobs on 2026-11-16, including visual
       regression (48/48) and the three cross-browser projects.
 
-## Stage 11 — Codebase audit, cleanup & convention hardening (IN PROGRESS)
+## Stage 11 — Codebase audit, cleanup & convention hardening (EXIT VERIFIED — COMMITTED; PUSH/CI PENDING)
 
 Full plan: `docs/plans/code-audit-plan.md`. Frozen measurements and the ordered queue:
 `docs/plans/stage-11-baseline.md`. Decision records: `docs/decisions/`. Began after Stage
@@ -631,50 +631,95 @@ are the no-behavior-change oracle.
       86.2% lines / 86.8% functions, web 26 pass, smoke 13 pass, full Chromium and mobile
       E2E pass, visual snapshots unchanged.
 
-### Phase 3 — Service decomposition
+### Phase 3 — Service decomposition (implemented, verified and committed 2026-11-17)
 
-- [ ] Split `complaint.service.ts` (1700) into intake/verification, conversation/projection,
-      and shared query/authorization seams.
-- [ ] Split `case.service.ts` (1077) into query/listing, lifecycle/assignment, and audit.
-- [ ] Split the representatives service (884) into approval/revocation and institution scope.
-- [ ] Split `overlap.scoring.ts` (856) and `overlap.service.ts` (636) into pure scoring and
-      orchestration/queue projection.
-- [ ] Extract only repeated query/metric helpers from reports (586) and SLA (505).
-- [ ] Split `demo-seed.ts` (989) into fixtures, persistence, and reset guards; seed output
-      stays deterministic.
-- [ ] Keep one facade per module; no route/job/test imports a private internal helper.
-- [ ] Characterization tests and full integration suite pass after each split.
+- [x] Split `complaint.service.ts` (1683) into verification (561), conversation (391), shared
+      query/auth (350), intake (278), and public projection (187); facade is 54 lines. Added
+      `complaint-projection.test.ts` as a characterization test.
+- [x] Split `case.service.ts` (1077) into lifecycle/state-machine (486), query/listing (311),
+      shared (276), and audit (35); facade is 36 lines.
+- [x] Split the representatives service (878) into approval/revocation lifecycle (291),
+      institution case access (280), domains (208), and shared (137); facade is 38 lines.
+- [x] Split `overlap.scoring.ts` (856) and `overlap.service.ts` (636) into merge orchestration
+      (489), JEV assessment (290), merge persistence (256), merge support (156), shared (88),
+      and candidate discovery (87); facades are 10 and 198 lines. Stage 9 thresholds and JEV
+      veto behavior unchanged.
+- [x] Extract only repeated query/metric helpers from reports (586 → 399, +report-metrics 205)
+      and SLA (505 → 350, +sla-config-helpers 171). Not split for symmetry.
+- [x] Split `demo-seed.ts` (989 → 40) into fixtures, persistence, and reset guards; seed output
+      with a pinned `SEED_NOW` is byte-identical before/after and across two fresh DBs.
+- [x] Keep one facade per module; no route/job/test imports a private internal helper. Written
+      budget exception: `complaint-verification.ts` (561) is one cohesive verification
+      workflow covered by integration + projection unit tests; `demo-data.ts` (510) is a
+      pre-existing, unchanged fixture table. All other named services are ≤ 500 lines.
+- [x] Characterization tests and full integration suite pass after each split. Phase 3
+      verification: Biome clean, all typechecks pass, API 162 pass (100 unit + 62 integration),
+      coverage 86.4% lines / 86.8% functions, web unit 26, smoke 13, full Chromium E2E 216;
+      no visual snapshot change. Splits are committed locally; push and CI pending.
 
-### Phase 4 — Duplication and UI structure
+### Phase 4 — Duplication and UI structure (implemented, verified and committed 2026-11-17)
 
-- [ ] Consolidate repeated table/filter/CSV/pagination wiring at three real uses.
-- [ ] Consolidate repeated form field/label/error patterns where mechanically identical.
-- [ ] Extract sub-trees from reports (487), dashboard (713), and case-detail (449) pages.
-- [ ] Normalize feature API module exports and date/status formatting helpers.
-- [ ] Remove copy-paste empty/loading/error/permission variants in favor of shared states.
-- [ ] Component tests cover the extracted seams; smoke/visual baselines unchanged.
+- [x] Consolidate repeated query/CSV wiring: five `buildQuery` copies → one in `lib/utils.ts`
+      (byte-identical output verified); removed cross-feature helper import from `cases/api`.
+      CSV download, pagination, label maps, and error/`Page<T>` handling were already shared.
+- [x] Form field/label/error patterns and empty/loading/error/permission states already use the
+      shared `EmptyState`, skeletons, and form primitives; no identical-at-3-uses variant left.
+      Inline date formatting kept as-is (shared formatter would move the visual baseline).
+- [x] Extract sub-trees from dashboard (718 → 357), reports (487 → 404), and case detail
+      (449 → 352) into feature components verbatim; all three now below the 500-line budget.
+- [x] Normalize feature API modules: one `api.ts` per feature with a coherent function group;
+      shared error handling, `Page<T>`, query keys, label maps, and `buildQuery` (Phase 2 + S10).
+- [x] Component tests cover the extracted seams; smoke/visual baselines unchanged. Phase 4
+      verification: Biome clean, all typechecks pass, API 162 pass, coverage 86.4%/86.8%
+      unchanged, web unit 26, smoke 13, full Chromium E2E 216, builds pass; no visual change.
+      Changes are committed locally; push and CI pending.
 
-### Phase 5 — Convention enforcement and documentation
+### Phase 5 — Convention enforcement and documentation (implemented, verified and committed 2026-11-17)
 
-- [ ] Update architecture §5 with import, contract, service, frontend, styling, and test
-      rules.
-- [ ] Add the Phase 0 ADRs.
-- [ ] Add safe Biome rules and, if needed, `scripts/check-imports.ts` to `check:ci`.
-- [ ] Add review-checklist items for shared types, size exceptions, dialogs, query keys,
-      and no-behavior-change refactors.
-- [ ] Update the testing guide with the refactor cadence.
-- [ ] Record the final file-size and duplication baseline for Stage 12.
+- [x] Architecture §5 already carries the import, contract, service, frontend, styling, and
+      test rules; ADRs 0001–0004 (accepted 2026-11-16) are in `docs/decisions/`. No duplicate
+      convention doc added.
+- [x] Biome recommended rules already cover unused imports/variables; console use stays in
+      logger/bootstrap/seed, and type imports are consistent. Biome cannot express the
+      directory-level import boundary, so added `scripts/check-imports.ts`, wired into
+      `check:ci` before `biome check .`. Negative test (injecting `../` under `apps/web/src`)
+      fails with file:line; clean tree passes. All `../` imports introduced in Phase 4 were
+      converted to `#/*` (0 remaining).
+- [x] Review checklist gained a **Structure & contracts (refactors)** block: shared type
+      ownership, 500-line exception with one facade, `QUERY_KEY`-rooted keys, shared
+      `ConfirmDialog`, and structure-only commits with a characterization test and unchanged
+      visual baseline. Stage 11–12 gate records the `check:ci` import-boundary rule.
+- [x] Testing guide already had the refactor cadence (characterization → focused integration
+      → full suite before merge); verified in place.
+- [x] Recorded the final file-size and duplication baseline in `stage-11-baseline.md`:
+      only `complaint-verification.ts` (561, written exception) and `demo-data.ts` (510,
+      pre-existing fixture table) exceed 500 lines; `../` imports 0, `Page<T>` 1,
+      `buildQuery` 1, `window.confirm` 0, all query keys rooted in `QUERY_KEY`. Phase 5
+      verification: `bun run check:ci` green with the new gate; earlier Phase 3–4 checks
+      remain green. Changes are committed locally; push and CI pending.
 
-### Phase 6 — Verification and exit evidence
+### Phase 6 — Verification and exit evidence (implemented, verified and committed 2026-11-17)
 
-- [ ] Run `check:ci`, typechecks, unit/integration/component tests, smoke, full Chromium,
-      visual suite, and production builds.
-- [ ] Compare routes, response fixtures, permissions, and seed output to the Stage 10
-      baseline.
-- [ ] Record the after-state audit: 0 parent-relative imports, 1 `Page<T>`, 0
-      `window.confirm`, and a disposition for every remaining local type/large file.
-- [ ] Confirm coverage is at or above baseline and the visual baseline is unchanged.
-- [ ] Update the stage map, QA evidence, and tracker.
+- [x] Full local gate passed: `bun run check:ci` (with the new import-boundary checker), all
+      three typechecks, API 100 unit / 62 skip (162 with integration), web unit 26, smoke 13,
+      full Chromium 216, and production builds. Visual suite is pinned-CI authoritative; no
+      local visual run was used and no snapshot was regenerated.
+- [x] Compared contracts: no route/router file changed, integration suite 162 pass, no
+      response field or permission changed; pinned-`SEED_NOW` seed output identical across two
+      fresh DBs (8 institutions, 14 cases, 7 overlaps, 5 SLA configs; 7 staff, 1 complainant,
+      2 representatives), matching the frozen baseline.
+- [x] After-state audit recorded: `../` imports 0, `Page<T>` 1, `buildQuery` 1,
+      `window.confirm` 0, all query keys rooted in `QUERY_KEY`, 0 strict `any`/TODO/FIXME/HACK.
+      Two files above 500 lines with dispositions: `complaint-verification.ts` (561, written
+      exception) and `demo-data.ts` (510, pre-existing unchanged fixture table).
+- [x] Coverage 86.4% lines / 86.8% functions, above the 86.2%/86.3% Stage 10 floor and 85/85
+      gate. No visual snapshot or `.png` baseline changed.
+- [x] Updated the stage map (`docs/product/end-product-and-stages.md`), the QA evidence
+      (Stage 11 exit table in `docs/quality/qa-and-review.md`), this tracker, and the Phase 3–6
+      outcomes in `code-audit-plan.md` / `stage-11-baseline.md`. No deferred Stage 11 cleanup
+      remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified but
+      committed locally; push and CI must confirm on `main` before Stage 12
+      starts.
 
 ## Stage 12 — UI/UX modernization (PLANNED)
 

@@ -330,6 +330,34 @@ web 26, smoke 13, full E2E green, visual baseline unchanged.
 - Full integration suite passes; coverage does not fall.
 - Each extraction is a separate, reviewable commit.
 
+**Outcome (2026-11-17).** Applied the six splits below. Every public function kept its
+signature and behavior, routes/jobs/tests still import only the facade, and no query,
+threshold, transition, schema, index, or response field changed. Resulting file sizes:
+
+| Item | Facade | New internal seams (lines) |
+|---|---|---|
+| S1 complaints | `complaint.service.ts` (54) | verification 561, conversation 391, shared 350, intake 278, public 187 |
+| S2 cases | `case.service.ts` (36) | lifecycle 486, query 311, shared 276, audit 35 |
+| S3 representatives | `service.ts` (38) | lifecycle 291, cases 280, domains 208, shared 137 |
+| S4 overlaps | `overlap.scoring.ts` (10), `overlap.service.ts` (198) | merge 489, assessment 290, merge-store 256, merge-support 156, shared 88, candidates 87 |
+| S5 reports/SLA | `report.service.ts` (399), `sla.service.ts` (350) | report-metrics 205, sla-config-helpers 171 |
+| S6 seed | `demo-seed.ts` (40) | fixtures 302, overlaps 266, identity 217, cases 114, notifications 106 |
+
+All named services are now at or below the 500-line soft budget. Written exception:
+`complaint-verification.ts` (561) is the one new seam above the budget. It is a cohesive
+verification workflow (submission validation, evidence checks, portal identity checks, and
+role-scoped decisions) that changes for one reason and is characterized by the integration
+suite plus `apps/api/tests/unit/complaint-projection.test.ts`; splitting it further would
+separate steps that always move together. `seed/demo-data.ts` (510) is a pre-existing,
+unchanged fixture-data table, not a service in scope.
+
+Verification: Biome clean, all three typechecks pass, API unit 100 pass / 62 integration-only
+skip (162 with integration), coverage 86.4% lines / 86.8% functions (above the 85/85 gate and
+the Stage 10 floor), web unit 26, smoke 13, full Chromium E2E 216 pass. Seed output with a
+pinned `SEED_NOW` is byte-identical before/after and across two fresh DBs. No visual snapshot
+or `.png` baseline changed. The splits are implemented, verified and committed locally;
+push and CI pending.
+
 ---
 
 ### Phase 4 — Duplication and UI structure
@@ -362,6 +390,21 @@ web 26, smoke 13, full E2E green, visual baseline unchanged.
 - Component tests cover the extracted seams.
 - The smoke suite and visual baseline are unchanged (Stage 12 will intentionally change
   them later).
+
+**Outcome (2026-11-17).** Applied S9–S11. All three named pages are below the 500-line soft
+budget, route tree and user-visible copy are unchanged, and no visual baseline moved.
+
+| Item | Result |
+|---|---|
+| S9 | `dashboard-page.tsx` 718 → 357; `reports-page.tsx` 487 → 404; `case-detail-page.tsx` 449 → 352. Extracted into feature components verbatim: dashboard `landing.ts` (role config), `types.ts`, `components/{role-landing-card,workload-table}`; reports `components/report-tables.tsx` (`CountTable`/`GroupTable`); cases `components/case-detail-sections.tsx` (`DetailRow`/`Timeline`/`AssignmentHistory`). Pages keep routing, query composition, and layout. |
+| S10 | Five copies of `buildQuery` (cases, overlaps, reports, notifications, dashboard) unified as one `buildQuery` in `lib/utils.ts`; a byte-identical-output check across representative string/number filters confirms parity. Also removed the cross-feature import of a helper from `features/cases/api` (institutions and admin now import from `lib/utils`). Other repeated wiring (CSV/download via one `apiClient.download`, pagination via shared `Pagination`, label maps, shared error/`Page<T>`) was already consolidated in Phases 1–2. |
+| S11 | Satisfied by Phase 2 plus S10: each feature has one `api.ts` exporting a coherent function group; `ApiError`/`parseError`, `Page<T>`, query-key roots, and label maps are shared; `buildQuery` now has one home. Inline date `toLocaleString()` calls were deliberately left alone — replacing them with the shared formatters would change rendered text and move the visual baseline, which Stage 12 owns. |
+
+Verification: Biome clean; all three typechecks pass; API unit 100 pass / 62 integration-only
+skip (162 with integration), coverage unchanged at 86.4% lines / 86.8% functions; web unit 26;
+smoke 13; full Chromium E2E 216 pass; production builds succeed. No visual snapshot or `.png`
+baseline changed. Changes are implemented, verified and committed locally; push and CI
+pending.
 
 ---
 
@@ -397,6 +440,32 @@ web 26, smoke 13, full E2E green, visual baseline unchanged.
 - CI fails on the mechanical rules that are now enforced.
 - The review checklist matches the conventions.
 - No rule is added that the codebase does not already satisfy without a written exception.
+
+**Outcome (2026-11-17).** Conventions are written once and enforced mechanically.
+
+- The rules already live in architecture §5 and ADRs 0001–0004 (accepted 2026-11-16); no
+  duplicate convention doc was added. The testing guide already carried the refactor
+  cadence, and the QA doc already had the Stage 11–12 quality gates and manual checklist.
+- Biome's recommended rules already cover unused imports/variables; console use is confined
+  to the logger, bootstrap, and seed paths, and type imports are consistent. Biome cannot
+  express the directory-level import boundary cleanly, so `scripts/check-imports.ts` was
+  added and wired into `check:ci` ahead of `biome check .`. A negative test (injecting a
+  `../` import into `apps/web/src`) fails with a file:line report; the clean tree passes.
+- The review checklist gained a **Structure & contracts (refactors)** block: shared type
+  ownership, the 500-line service/page exception with one facade, `QUERY_KEY`-rooted query
+  keys, the shared `ConfirmDialog`, and structure-only refactor commits with a
+  characterization test and unchanged visual baseline. The Stage 11–12 gate now records
+  that `check:ci` enforces the import boundary.
+- Final file-size and duplication baseline recorded in
+  [`stage-11-baseline.md`](stage-11-baseline.md#final-file-size-and-duplication-baseline).
+  Only two files exceed 500 lines: `complaint-verification.ts` (561, written exception) and
+  `demo-data.ts` (510, pre-existing unchanged fixture table). After-state greps:
+  `../` imports under `apps/*/src` 0, `Page<T>` definitions 1, `buildQuery` definitions 1,
+  `window.confirm` 0, and all 26 `queryKey` arrays rooted in `QUERY_KEY` or a key object.
+
+Verification: `bun run check:ci` passes with the new gate, including the negative-import test;
+all earlier Phase 3–4 checks remain green. Changes are implemented, verified and committed
+locally; push and CI pending.
 
 ---
 
@@ -437,6 +506,26 @@ web 26, smoke 13, full E2E green, visual baseline unchanged.
 5. Coverage is at or above the Stage 10 baseline.
 6. The after-state audit is recorded and every remaining exception is written down.
 7. The working tree contains no unrelated feature or UI work.
+
+**Outcome (2026-11-17) — Stage 11 exit verified and committed locally; push and CI pending.** Every Phase 1–5 gate
+passed. Full local exit gate: `bun run check:ci` (with the import-boundary checker), all three
+typechecks, API unit 100 pass / 62 integration-only skip (162 with integration), web unit 26,
+smoke 13, full Chromium E2E 216, and production builds. Coverage 86.4% lines / 86.8% functions
+is at or above the Stage 10 floor (86.2% / 86.3%) and the 85/85 gate. Seed output with pinned
+`SEED_NOW='2026-06-15T12:00:00.000Z'` is identical across two fresh DBs and matches the frozen
+baseline. No route file, response field, permission outcome, or user-visible copy changed; no
+visual snapshot or `.png` baseline was touched (pinned CI remains authoritative for the 48
+comparisons). After-state audit: `../` imports 0, `Page<T>` 1, `buildQuery` 1, `window.confirm`
+0, all query keys rooted in `QUERY_KEY`, 0 strict `any`/TODO/FIXME/HACK, and two files above
+500 lines with dispositions (one recorded exception, one pre-existing fixture table).
+
+Deferred cleanup (written, with owner): none for Stage 11. The five `window.confirm` sites
+were already replaced with `ConfirmDialog` in Phase 1, so no deferral remains. Stage 12 owns
+the intentional visual refresh, including inline date-format rendering and any further
+date/status helper consolidation; owner is the maintainer at Stage 12 start. Stage 11 is not
+committed yet — atomic commits will be made only on explicit request, after which the user
+pushes and CI (including the authoritative visual job) confirms the exit on `main`. Stage 12
+must not start until that exit is green.
 
 ## 6. Candidate work queue
 

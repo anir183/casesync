@@ -31,10 +31,11 @@ data/API/UI contracts, sequencing, test evidence, and exit gates.
 > the three cross-browser projects.
 >
 > **Stage 11–12 sequencing.** Stage 11
-> ([`code-audit-plan.md`](code-audit-plan.md)) is in progress (Phases 0–2 complete) and cleans
-> up imports, shared contracts, services, duplication, and conventions without changing
-> behavior. Stage 12 ([`ui-modernization-plan.md`](ui-modernization-plan.md)) then
-> modernizes the UI and intentionally refreshes the Stage 10 selectors and visual baselines.
+> ([`code-audit-plan.md`](code-audit-plan.md)) is exit-verified (Phases 0–6 complete; commits
+> pending) and cleaned up imports, shared contracts, services, duplication, and conventions
+> without changing behavior. Stage 12 ([`ui-modernization-plan.md`](ui-modernization-plan.md))
+> then modernizes the UI and intentionally refreshes the Stage 10 selectors and visual
+> baselines, and must not start until Stage 11 CI is green on `main`.
 
 ## 1. Purpose
 

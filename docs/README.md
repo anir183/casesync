@@ -141,9 +141,9 @@ casesync/
 The complete UI coverage plan is [Stage 10](plans/ui-testing-plan.md), complete as of
 2026-11-16; the living route/role/action matrix is
 [the UI test matrix](quality/ui-test-matrix.md). [Stage 11 code
-audit](plans/code-audit-plan.md) is in progress (Phases 0–2 complete), followed by
-[Stage 12 UI modernization](plans/ui-modernization-plan.md); the UI pass will intentionally
-refresh the Stage 10 selectors and visual baselines. Use the
+audit](plans/code-audit-plan.md) is exit-verified (Phases 0–6 complete, committed locally),
+followed by [Stage 12 UI modernization](plans/ui-modernization-plan.md); the UI pass will
+intentionally refresh the Stage 10 selectors and visual baselines. Use the
 [testing guide](quality/testing-guide.md) to choose the smallest test set for a change.
 Current results and quality gates live in [QA and review](quality/qa-and-review.md).
 

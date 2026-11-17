@@ -23,7 +23,31 @@ history. Quality means:
 Quality is a **gate**, not a final cleanup phase. Each stage has its own tests and
 exit criteria.
 
-## 2. Current test baseline (verified 2026-11-02)
+## 2. Current test baseline
+
+### Stage 11 exit evidence (2026-11-17)
+
+Verified locally on the working tree before commit. The pinned CI image (`ubuntu-24.04`,
+Bun `1.4.4`, `mongo:7.0.45`) remains authoritative for the 48 visual comparisons; no local
+visual run was used and no snapshot was regenerated.
+
+| Gate | Stage 11 exit |
+|---|---|
+| `check:ci` | pass, including the new `scripts/check-imports.ts` boundary gate |
+| Typechecks (API, web, web tests) | pass |
+| API unit | 100 pass, 62 integration-only skip (162 total) |
+| API with integration | 162 pass, 0 fail |
+| Coverage | 86.4% lines (9238/10690), 86.8% functions (605/697); gate 85/85 |
+| Web component | 26 pass across 8 files |
+| Smoke / full Chromium E2E | 13 pass / 216 pass |
+| Production builds | pass |
+| Visual | 48 baselines unchanged; no snapshot regenerated |
+| Seed (pinned `SEED_NOW`) | identical across two fresh DBs: 8 institutions, 14 cases, 7 overlaps, 5 SLA configs; 7 staff, 1 complainant, 2 representatives |
+
+No route, response field, permission outcome, user-visible copy, or visual baseline changed.
+Stage 11 is implemented, verified and committed locally; push and CI pending.
+
+### Historical baseline (verified 2026-11-02, Stage 7/8)
 
 - **85 API unit tests across 20 files** plus **25 web component/URL tests across 8
   files**: pair, normalize, similarity, interpret, Jev provider, overlap-Jev, reports,
@@ -367,7 +391,8 @@ Stage 11 (code audit) and Stage 12 (UI modernization) have different oracles:
   tests, then the smoke suite. At the exit gate run `check:ci`, typechecks, unit,
   integration, component, full Chromium, visual, and builds. The visual baseline must
   **not** change; a diff is an accidental visual regression. Coverage must not fall below
-  the Stage 10 baseline. Do not regenerate snapshots in Stage 11.
+  the Stage 10 baseline. Do not regenerate snapshots in Stage 11. `check:ci` enforces the
+  import boundary (`scripts/check-imports.ts`) on every run: no `../` under `apps/*/src`.
 - **Stage 12 — visuals change, behavior does not.** Refresh selectors only where the
   redesign changed an accessible name, preferring roles/labels over `data-testid`. After
   design sign-off, regenerate the 48 visual baselines, review every diff, and run the
@@ -614,6 +639,18 @@ rule with no test blocks the stage even if coverage is high.
 - [ ] API/data/env changes documented.
 - [ ] Runbook updated for operational changes.
 - [ ] No doc claim ahead of implementation.
+
+**Structure & contracts (refactors)**
+- [ ] Cross-app boundary types live in `packages/types`; form state, view models, and prop
+      types stay feature-local (ADR 0002).
+- [ ] A service/page over the 500-line soft budget has a written exception; one facade per
+      module, and no route/job/test imports a private helper (ADR 0003).
+- [ ] Data-fetching keys compose a `QUERY_KEY` root; no raw string key arrays.
+- [ ] Destructive confirms use the shared `ConfirmDialog`, preserving pending state, focus
+      handling, and stable test selectors.
+- [ ] Refactor commits change structure only: no route, response field, user-visible copy,
+      query, threshold, transition, or rendered output change. A characterization test pins
+      behavior before an extraction, and the visual baseline stays unchanged in Stage 11.
 
 ### 12.3 Review outcomes
 

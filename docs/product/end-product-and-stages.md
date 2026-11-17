@@ -231,7 +231,7 @@ layout.
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
 | 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phase 1 auto-merge, Phase 2 representatives/domains, Phase 3 navigation, and Phase 4 UI/GIS pass; remaining gates in `../plans/next-phase-plan.md` |
 | 10 | Complete Playwright UI coverage | **Partial** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
-| 11 | Codebase audit, cleanup & convention hardening | **Planned** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard, one shared `Page<T>`, decomposed services, documented conventions, full suite and visual baseline pass unchanged; see `../plans/code-audit-plan.md` |
+| 11 | Codebase audit, cleanup & convention hardening | **Implemented — exit verified, committed locally** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard in `check:ci`, one shared `Page<T>` and `buildQuery`, decomposed services, documented conventions; full suite passes and visual baseline unchanged (pinned CI authoritative); see `../plans/code-audit-plan.md` |
 | 12 | UI/UX modernization | **Planned** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
 
 ### Current position (honest)
@@ -279,12 +279,20 @@ layout.
   [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md). See
   [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and
   [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
-- Stage 11 is in progress: Phases 0–2 (baseline, ADRs, guardrail decision, import and dialog
-  cleanup, shared pagination/query keys/guards) completed on 2026-11-16. The refreshed audit found 42 parent-relative imports across 29 web files,
-  0 in the API, five `Page<T>` definitions, 79 local web interfaces plus 13 aliases, 63 raw
-  query-key arrays, five `window.confirm` sites, and five API services or seed files above
-  800 lines. The plan is [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the
-  frozen measurements are in [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md).
+- Stage 11 is implemented and exit-verified on 2026-11-17 (committed locally; push/CI pending). Phases 0–2
+  (baseline, ADRs, guardrail decision, import and dialog cleanup, shared pagination/query
+  keys/guards) landed 2026-11-16; Phases 3–5 (service decomposition, duplication/UI structure,
+  convention enforcement and docs) landed 2026-11-17. Phase 6 exit gate passed: `check:ci`
+  with the import-boundary checker, all typechecks, API 162 pass with coverage 86.4%/86.8%,
+  web unit 26, smoke 13, full Chromium 216, production builds, and identical seed output
+  across two fresh DBs. No route, response field, permission outcome, or visual baseline
+  changed. The starting audit found 42 parent-relative imports across 29 web files, five
+  `Page<T>` definitions, 63 raw query-key arrays, five `window.confirm` sites, and five
+  oversized services/seeds; the after-state is 0 `../` imports, 1 `Page<T>`, 1 `buildQuery`,
+  all keys rooted in `QUERY_KEY`, 0 `window.confirm`, and only two files above 500 lines
+  (one recorded exception and one pre-existing fixture table). The plan is
+  [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the frozen measurements and
+  final baseline are in [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md).
 - Stage 12 is planned, not started. It begins only after Stage 11 exits so the UI pass
   builds on clean imports, shared contracts, and decomposed services. It covers design
   tokens and primitives, a rail/top-bar shell with command search, role-specific dashboards,
@@ -881,7 +889,7 @@ Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–4 implemente
    ↓
 Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓
-Stage 11 (in progress — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–2 complete, exits after the full suite and visual baseline pass unchanged)
+Stage 11 (exit verified, committed locally; push/CI pending — codebase audit, cleanup, shared contracts, service decomposition, convention hardening; Phases 0–6 complete, full suite green and visual baseline unchanged)
    ↓
 Stage 12 (planned — UI/UX modernization: tokens, shell, role dashboards, admin hub, core surfaces, GIS, portal landing, motion/a11y; exits after refreshed coverage passes twice)
 ```

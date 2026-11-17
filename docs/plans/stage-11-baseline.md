@@ -203,6 +203,115 @@ Local verification before commit: Biome clean (293 files); all three typechecks 
 pass; smoke 13 pass; full Chromium and mobile E2E pass. Visual snapshots were not
 regenerated.
 
+### Phase 3 outcome (2026-11-17)
+
+Phase 3 is applied and verified. No route, public function signature, API response field,
+query, permission, transition, Stage 9 threshold, JEV veto rule, index, schema, migration, or
+seed output changed. Each module keeps one exported facade; routes, jobs, and tests never
+import a private internal helper.
+
+- **S1 — done.** `complaint.service.ts` (1683 → 54) split into verification (561),
+  conversation (391), shared query/auth (350), intake (278), and public projection (187).
+  Added `apps/api/tests/unit/complaint-projection.test.ts` to pin the public projection; it
+  mocks `#/lib/auth` because Better Auth needs a live DB at import. The integration suite is
+  the characterization oracle for the remaining seams.
+- **S2 — done.** `case.service.ts` (1077 → 36) split into lifecycle (486), query (311),
+  shared (276), and audit (35). The transition state machine stays whole in `case-lifecycle`.
+- **S3 — done.** representatives `service.ts` (878 → 38) split into lifecycle (291),
+  institution case access (280), domains (208), and shared (137).
+- **S4 — done.** `overlap.scoring.ts` (856 → 10) and `overlap.service.ts` (636 → 198)
+  split into merge orchestration (489), JEV assessment (290), merge persistence (256),
+  merge support (156), shared (88), and candidate discovery (87). Locked Stage 9 thresholds
+  and JEV veto behavior are unchanged; the existing overlap scoring/JEV unit tests (8 pass)
+  and overlap integration tests pin them.
+- **S5 — done.** Only repeated helpers extracted: `report.service.ts` (586 → 399) with
+  `report-metrics.ts` (205); `sla.service.ts` (505 → 350) with `sla-config-helpers.ts` (171).
+  Not split for symmetry.
+- **S6 — done.** `demo-seed.ts` (989 → 40) split into fixtures (302), overlaps (266),
+  identity (217), cases (114), and notifications (106). With pinned
+  `SEED_NOW='2026-06-15T12:00:00.000Z'` the output is byte-identical before/after
+  (`Institutions: 8, cases: 14, overlaps: 7, SLA configs: 5`; `Staff users: 7, complainant
+  users: 1, representatives: 2`) and matches a fresh DB.
+
+**Budget exception.** All named services are at or below the 500-line soft budget. The one
+new seam above it is `complaint-verification.ts` (561): a cohesive verification workflow
+(submission validation, evidence and portal-identity checks, role-scoped decisions) that
+changes for one reason and is covered by the integration suite plus the new projection unit
+test. Splitting it further would separate steps that always move together. `seed/demo-data.ts`
+(510) is a pre-existing, unchanged fixture-data table, not a service in scope.
+
+Verification: Biome clean; all three typechecks pass; API unit 100 pass / 62 integration-only
+skip (162 pass with integration); coverage 86.4% lines / 86.8% functions (above 85/85 and the
+Stage 10 floor); web unit 26 pass; smoke 13 pass; full Chromium E2E 216 pass. No visual
+snapshot or `.png` baseline changed. The splits are implemented, verified and committed locally;
+push and CI pending.
+
+### Phase 4 outcome (2026-11-17)
+
+Phase 4 is applied and verified. No route, user-visible copy, component output, or visual
+baseline changed; sub-trees and helpers moved verbatim.
+
+- **S9 — done.** Extracted page sub-trees into feature components. `dashboard-page.tsx`
+  (718 → 357): role-landing config to `landing.ts`, shared data contracts to `types.ts`, and
+  the work-queue card (`components/role-landing-card.tsx`) and workload table
+  (`components/workload-table.tsx`) to components. `reports-page.tsx` (487 → 404): `CountTable`
+  and `GroupTable` to `components/report-tables.tsx`. `case-detail-page.tsx` (449 → 352):
+  `DetailRow`, `Timeline`, and `AssignmentHistory` to
+  `components/case-detail-sections.tsx`. An ordered-line comparison confirms every moved
+  line is present verbatim; the pages keep routing, query composition, and layout. All three
+  are now below the 500-line soft budget.
+- **S10 — done.** Five `buildQuery` copies (cases, overlaps, reports, notifications, dashboard)
+  replaced with one `buildQuery` in `lib/utils.ts`. A parity check across representative
+  string and number filters confirmed byte-identical output, so every request URL is unchanged.
+  Removed the cross-feature helper import from `features/cases/api` (institutions and admin
+  import from `lib/utils`). CSV export, paginated lists, status/label maps, error parsing, and
+  `Page<T>` were already single-sourced in earlier phases. No new duplicate key, guard, status
+  map, or pagination type was introduced.
+- **S11 — done (by Phase 2 + S10).** One `api.ts` per feature with a coherent function group;
+  shared `ApiError`/`parseError`, `Page<T>`, query-key roots, label maps, and now `buildQuery`.
+  Inline date `toLocaleString()` calls were intentionally kept: the shared `formatDate`
+  uses explicit locale options and would render different text, moving the visual baseline
+  that Stage 12 owns.
+
+Verification: Biome clean; all three typechecks pass; API 162 pass with coverage unchanged at
+86.4% lines / 86.8% functions; web unit 26 pass; smoke 13 pass; full Chromium E2E 216 pass;
+production builds succeed. No visual snapshot or `.png` baseline changed. Changes are
+implemented, verified and committed locally; push and CI pending.
+
+### Final file-size and duplication baseline (2026-11-17)
+
+Recorded so Stage 12 can measure drift. The Stage 10 inventory is in §2; the after-state
+below is the Stage 11 exit baseline.
+
+**Files above the 500-line soft budget (only two):**
+
+| File | Lines | Disposition |
+|---|---|---|
+| `apps/api/src/modules/complaints/complaint-verification.ts` | 561 | Written exception: one cohesive verification workflow (submission validation, evidence and portal-identity checks, role-scoped decisions) that changes for one reason and is covered by the integration suite plus `complaint-projection.test.ts` (ADR 0003). |
+| `apps/api/src/seed/demo-data.ts` | 510 | Pre-existing, unchanged fixture-data table — not a service in scope. |
+
+The next largest files are `overlap-merge.ts` (489), `case-lifecycle.ts` (486),
+`institutions/routes.ts` (433), `reports-page.tsx` (404), `sla-config-page.tsx` (402), and
+`report.service.ts` (399). All named services and the three refactored pages are at or below
+the budget.
+
+**Duplication after-state:**
+
+| Check | Stage 10 baseline | Stage 11 exit |
+|---|---|---|
+| `../` imports under `apps/*/src` | present | 0 (enforced by `check:ci`) |
+| `Page<T>` definitions | 6 | 1 (`packages/types`) |
+| `buildQuery` definitions | 5 | 1 (`lib/utils.ts`) |
+| `window.confirm` sites | 5 | 0 (replaced with `ConfirmDialog` in Phase 1) |
+| `queryKey` arrays | 63 ad-hoc | 26, all rooted in `QUERY_KEY` or a key object |
+| `ApiError`/`parseError` definitions | 3 each | 1 each |
+| console in app source | logger/bootstrap/seed only | unchanged (no new sites) |
+
+The five `window.confirm` sites were replaced with the shared `ConfirmDialog` in Phase 1
+(M3), preserving the message, pending state, focus handling, and test selectors. No silent
+exception remains: the only two files above the soft budget are the recorded exception and
+the pre-existing fixture table.
+
 ## 5. Guardrail decision
 
 Biome 1.9.4 is the only lint dependency. Do not add another.
@@ -284,3 +393,28 @@ Recorded in Phase 6; every line must match or have a written exception.
 | Coverage | at or above 86.2% lines / 86.3% functions |
 | Visual comparisons | 48/48, baselines unchanged |
 | Route manifests, response fixtures, permissions, seed output | identical to this baseline |
+
+### Phase 6 outcome (2026-11-17)
+
+Stage 11 exit is verified and committed locally (push and CI pending). Every exit target above is
+met:
+
+| Measure | Exit result |
+|---|---|
+| Parent-relative imports under `apps/*/src` | 0 — enforced by `check:ci` (`scripts/check-imports.ts`), negative-tested |
+| `Page<T>` definitions | 1, in `packages/types` |
+| `buildQuery` definitions | 1, in `lib/utils.ts` (byte-identical output verified) |
+| `window.confirm` | 0 — five sites moved to `ConfirmDialog` in Phase 1 |
+| Local web interfaces/aliases | classified in Phase 2; duplicates removed, remainder justified |
+| Files above 500 / 700 lines | 561 (`complaint-verification.ts`, written exception) and 510 (pre-existing `demo-data.ts` fixture table); none above 700 |
+| `queryKey:` arrays | 26, all rooted in `QUERY_KEY` or a key object; 0 raw arrays |
+| Test counts | API 162 (100 unit + 62 integration), web 26, smoke 13, full Chromium 216 — all at or above §3 |
+| Coverage | 86.4% lines / 86.8% functions — above 86.2%/86.3% floor and 85/85 gate |
+| Visual comparisons | no snapshot or `.png` changed; pinned CI (48 comparisons) remains authoritative and has not been run since Stage 11 was committed locally |
+| Route manifests, response fixtures, permissions, seed output | no route file, response field, or permission changed; 162 integration tests pass; pinned-`SEED_NOW` output identical across two fresh DBs |
+
+Full local gate: `bun run check:ci`, all three typechecks, API unit/integration, web unit,
+smoke, full Chromium, and production builds all pass. The only deliberate behavior change in
+the whole stage is the Phase 1 `window.confirm` → `ConfirmDialog` migration, which was
+verified with targeted E2E and the a11y suite. Stage 12 must not start until the Stage 11
+commits are pushed and CI (including the visual job) is green on `main`.

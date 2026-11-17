@@ -7,12 +7,13 @@ and remains outside MVP acceptance. Stage 9 Phase 0 (baseline/UI consistency) an
 landings/case workspace/resolution loop, and visual tokens, chart-first dashboard/reports,
 Leaflet/OpenStreetMap map) are implemented. Manual screen-reader sign-off and Phases 5–6
 remain. Stage 10 (complete Playwright UI
-coverage) is in progress, with fixtures, current-route coverage, mutations, UI states,
+coverage) exited on 2026-11-16, with fixtures, current-route coverage, mutations, UI states,
 Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI split
 landed; see
 `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. Stage 11
-([code audit](../plans/code-audit-plan.md)) and Stage 12
-([UI modernization](../plans/ui-modernization-plan.md)) are planned after Stage 10. See
+([code audit](../plans/code-audit-plan.md)) is exit-verified and committed locally; Stage 12
+([UI modernization](../plans/ui-modernization-plan.md)) is planned and begins after Stage 11
+CI is green on `main`. See
 `docs/plans/next-phase-plan.md` for the decision-complete Stage 9 plan,
 `docs/requirements/requirements-realignment.md` for the gap audit, and
 `docs/product/end-product-and-stages.md` for stage criteria.
@@ -576,8 +577,8 @@ Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
   living matrix in `docs/quality/ui-test-matrix.md` tracks route × role × mutation ×
   state × accessibility × responsive × visual coverage. Flag-off dispatch `43750576126`
   verified the 48 CI-image baselines and the three cross-browser projects.
-- Stage 11 (in progress, Phases 0–2 complete): the existing suite is the no-behavior-change
-  oracle for the code audit; the visual baseline must not move.
+- Stage 11 (exit verified, Phases 0–6 complete, committed locally; push/CI pending): the existing suite was the
+  no-behavior-change oracle for the code audit; the visual baseline did not move.
 - Stage 12 (planned): the UI modernization refreshes selectors only where accessible names
   changed, regenerates the visual baselines intentionally, reviews every diff, and reruns
   the full suite twice. See `docs/plans/ui-modernization-plan.md`.

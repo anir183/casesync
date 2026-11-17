@@ -471,8 +471,8 @@ verification and the final two-run full-suite record.
 
 ## 13. Definition of done
 
-Stage 10 is done when the suite is the authoritative proof of the UI: it runs
-deterministically from a clean checkout and fresh seed, covers the matrix, fails for the
-right reasons, and is documented well enough for a new contributor to add a route
-without guessing. Until then the stage stays **in progress**, and the matrix — not the
-test count — is the progress measure.
+Stage 10 met its definition of done on 2026-11-16: the suite is the authoritative proof
+of the UI — it runs deterministically from a clean checkout and fresh seed, covers the
+matrix, fails for the right reasons, and is documented well enough for a new contributor
+to add a route without guessing. The matrix — not the test count — was the progress
+measure.
