@@ -31,12 +31,13 @@ async function measure(label: string, request: () => Promise<APIResponse>) {
   return median(samples.map((sample) => sample.duration))
 }
 
-test('@performance dashboard, lists, reports and detail stay within demo budgets', async () => {
+test('@performance dashboard, lists, reports, map and detail stay within demo budgets', async () => {
   const api = await signedInApi('admin@casesync.test')
 
   const dashboard = await measure('dashboard summary', () => api.get('/api/v1/dashboard/summary'))
   const cases = await measure('cases list', () => api.get('/api/v1/cases?page=1&pageSize=20'))
   const reports = await measure('report summary', () => api.get('/api/v1/reports/summary'))
+  const geo = await measure('reports geo', () => api.get('/api/v1/reports/geo'))
   const overlaps = await measure('overlap queue', () => api.get('/api/v1/overlaps?pageSize=100'))
 
   const firstCases = (await (
@@ -52,6 +53,7 @@ test('@performance dashboard, lists, reports and detail stay within demo budgets
   expect(dashboard).toBeLessThan(1500)
   expect(cases).toBeLessThan(1000)
   expect(reports).toBeLessThan(2000)
+  expect(geo).toBeLessThan(2000)
   expect(overlaps).toBeLessThan(1000)
   expect(detail).toBeLessThan(800)
 
