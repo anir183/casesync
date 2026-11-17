@@ -74,6 +74,7 @@ CaseRelationshipSchema.index({ caseAId: 1, caseBId: 1 }, { unique: true })
 CaseRelationshipSchema.index({ reviewStatus: 1 })
 CaseRelationshipSchema.index({ mergeStatus: 1 })
 CaseRelationshipSchema.index({ mergeGroupId: 1 })
+CaseRelationshipSchema.index({ mergeGroupId: 1, mergeStatus: 1 })
 CaseRelationshipSchema.index({ reMergeSuppressed: 1 })
 
 export const CaseRelationship = mongoose.model<ICaseRelationship>(

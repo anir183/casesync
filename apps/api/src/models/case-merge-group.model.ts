@@ -75,6 +75,7 @@ CaseMergeGroupSchema.index(
   { canonicalCaseId: 1 },
   { unique: true, partialFilterExpression: { status: MERGE_GROUP_STATUS.ACTIVE } },
 )
+CaseMergeGroupSchema.index({ status: 1, memberCaseIds: 1 })
 CaseMergeGroupSchema.index({ status: 1, mergedAt: -1 })
 
 export const CaseMergeGroup = mongoose.model<ICaseMergeGroup>(

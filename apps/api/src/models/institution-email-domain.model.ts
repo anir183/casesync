@@ -33,6 +33,7 @@ const InstitutionEmailDomainSchema = new Schema<IInstitutionEmailDomain>(
 
 InstitutionEmailDomainSchema.index({ institutionId: 1 })
 InstitutionEmailDomainSchema.index({ active: 1, verified: 1 })
+InstitutionEmailDomainSchema.index({ domainNormalized: 1, active: 1, verified: 1 })
 
 export const InstitutionEmailDomain = mongoose.model<IInstitutionEmailDomain>(
   'InstitutionEmailDomain',

@@ -11,6 +11,7 @@ import {
 } from '@casesync/config'
 import { Elysia, t } from 'elysia'
 import { AppError, HTTP_STATUS } from '#/lib/errors'
+import { withIdempotency } from '#/lib/idempotency'
 import { requireAuth, requireRole } from '#/middleware/rbac'
 import { CaseAction } from '#/models/case-action.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
@@ -215,10 +216,18 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
 
   .post(
     '/:id/merge',
-    async ({ params, body, user }) => {
+    async ({ params, body, user, headers }) => {
       requireRole(user, REVIEW_ROLES)
       const relationship = await requireScopedRelationship(params.id, user)
-      await mergeRelationship(relationship, body, user.id)
+      await withIdempotency({
+        key: headers['idempotency-key'],
+        scope: `overlap:merge:${params.id}`,
+        actorId: user.id,
+        run: async () => {
+          const group = await mergeRelationship(relationship, body, user.id)
+          return { mergeGroupId: String(group._id) }
+        },
+      })
       return getOverlap(params.id, user)
     },
     {
@@ -230,10 +239,18 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
   )
   .post(
     '/:id/revert',
-    async ({ params, body, user }) => {
+    async ({ params, body, user, headers }) => {
       requireRole(user, REVIEW_ROLES)
       const relationship = await requireScopedRelationship(params.id, user)
-      await revertMerge(relationship, body, user.id)
+      await withIdempotency({
+        key: headers['idempotency-key'],
+        scope: `overlap:revert:${params.id}`,
+        actorId: user.id,
+        run: async () => {
+          const group = await revertMerge(relationship, body, user.id)
+          return { mergeGroupId: String(group._id) }
+        },
+      })
       return getOverlap(params.id, user)
     },
     {
@@ -244,10 +261,18 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
   )
   .post(
     '/:id/clear-suppression',
-    async ({ params, body, user }) => {
+    async ({ params, body, user, headers }) => {
       requireRole(user, CLEAR_SUPPRESSION_ROLES)
       const relationship = await requireScopedRelationship(params.id, user)
-      await clearReMergeSuppression(relationship, body, user.id)
+      await withIdempotency({
+        key: headers['idempotency-key'],
+        scope: `overlap:clear-suppression:${params.id}`,
+        actorId: user.id,
+        run: async () => {
+          await clearReMergeSuppression(relationship, body, user.id)
+          return { relationshipId: String(relationship._id) }
+        },
+      })
       return getOverlap(params.id, user)
     },
     {

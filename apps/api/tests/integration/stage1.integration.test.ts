@@ -161,9 +161,9 @@ async function uploadAttachment(emailAddress: string, caseId: string, file: File
 async function api(
   emailAddress: string,
   path: string,
-  init: { method?: string; body?: unknown } = {},
+  init: { method?: string; body?: unknown; headers?: Record<string, string> } = {},
 ): Promise<Response> {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = { ...init.headers }
   const cookie = cookies.get(emailAddress)
   if (cookie) headers.cookie = cookie
   if (init.body !== undefined) headers['content-type'] = 'application/json'
@@ -1602,6 +1602,87 @@ suite('Stage 9 reversible overlap auto-merge', () => {
       body: { notes: 'Should be rejected' },
     })
     expect(unlinkResponse.status).toBe(409)
+  })
+
+  test('merge and revert retries with an idempotency key are deduplicated', async () => {
+    const pair = await createCasePair(
+      'IDEMPOTENT-MERGE',
+      {},
+      {
+        category: 'FEES',
+        description: 'Fee refund complaint for idempotency verification',
+      },
+    )
+    configureJev(false)
+    env.OVERLAP_AUTO_MERGE_ENABLED = false
+    await assessCaseOverlaps(pair.caseAId, userIds.get(email('admin')) as string)
+    const relationship = await findRelationship(pair.caseAId, pair.caseBId)
+
+    const mergePath = `/overlaps/${relationship?._id}/merge`
+    const mergeBody = { reason: 'Coordinated handling' }
+    const mergeKey = `idem-merge-${RUN_ID}`
+    const first = await api(email('admin'), mergePath, {
+      method: 'POST',
+      body: mergeBody,
+      headers: { 'idempotency-key': mergeKey },
+    })
+    expect(first.status).toBe(200)
+    const firstBody = await json<{ mergeGroupId: string }>(first)
+
+    const retry = await api(email('admin'), mergePath, {
+      method: 'POST',
+      body: mergeBody,
+      headers: { 'idempotency-key': mergeKey },
+    })
+    expect(retry.status).toBe(200)
+    expect((await json<{ mergeGroupId: string }>(retry)).mergeGroupId).toBe(firstBody.mergeGroupId)
+
+    const otherKey = await api(email('admin'), mergePath, {
+      method: 'POST',
+      body: mergeBody,
+      headers: { 'idempotency-key': `${mergeKey}-other` },
+    })
+    expect(otherKey.status).toBe(409)
+
+    expect(
+      await runtime.CaseMergeGroup.countDocuments({
+        memberCaseIds: { $all: [pair.caseAId, pair.caseBId] },
+      }),
+    ).toBe(1)
+    expect(
+      await runtime.AuditLog.countDocuments({
+        entityId: String(relationship?._id),
+        action: 'OVERLAP_MANUALLY_MERGED',
+      }),
+    ).toBe(1)
+
+    const revertPath = `/overlaps/${relationship?._id}/revert`
+    const revertBody = { reason: 'Reverted after review' }
+    const revertKey = `idem-revert-${RUN_ID}`
+    const revert = await api(email('admin'), revertPath, {
+      method: 'POST',
+      body: revertBody,
+      headers: { 'idempotency-key': revertKey },
+    })
+    expect(revert.status).toBe(200)
+    const revertRetry = await api(email('admin'), revertPath, {
+      method: 'POST',
+      body: revertBody,
+      headers: { 'idempotency-key': revertKey },
+    })
+    expect(revertRetry.status).toBe(200)
+    expect(
+      await runtime.CaseMergeGroup.countDocuments({
+        memberCaseIds: { $all: [pair.caseAId, pair.caseBId] },
+        status: 'reverted',
+      }),
+    ).toBe(1)
+    expect(
+      await runtime.AuditLog.countDocuments({
+        entityId: String(relationship?._id),
+        action: 'OVERLAP_MERGE_REVERTED',
+      }),
+    ).toBe(1)
   })
 
   test('JEV different-issue veto keeps a high-scoring pair in manual review', async () => {
