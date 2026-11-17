@@ -692,7 +692,9 @@ Stages 0–8. The decision-complete plan is
 
 **Exit criteria:** every Phase 0–6 gate and the Stage 9 definition of done in
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. All phases are
-implemented; the only open gate is the manual screen-reader and 200% zoom review in Phase 4.
+implemented; the only open gate is the manual screen-reader and 200% zoom review in Phase 4,
+held until Stage 12 completes and tracked in
+[`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
 
@@ -887,7 +889,7 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (Phases 0–6 implemented; manual screen-reader/200% zoom sign-off is the only open gate)
+Stage 9 (Phases 0–6 implemented; manual screen-reader/200% zoom sign-off is the only open gate, held until Stage 12)
    ↓
 Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓

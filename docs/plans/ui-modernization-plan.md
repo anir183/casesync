@@ -2,7 +2,9 @@
 
 Status: **Planned, not started.** Stage 12 begins only after Stage 11 exits. This plan is
 docs-only: it does not authorize UI implementation, dependency changes, or test updates
-yet.
+yet. The two remaining manual gates (screen-reader/200% zoom review and the independent
+runbook walkthrough) are **held until this stage completes**, because the UI refresh would
+invalidate a pass run now; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 - **Plan date:** 2026-11-08
 - **Baseline:** the current indigo/teal shell, chart-first dashboard/reports, Leaflet

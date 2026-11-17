@@ -3,7 +3,7 @@
 **Last verified:** 2026-11-18 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
@@ -385,7 +385,8 @@ indigo/teal language.
 - [x] Keep the main bundle under 500 kB (483.90 kB / 137.86 kB gzip after the Phase 0
       route-level split).
 - [x] Axe, automated keyboard, mobile reflow, and reduced-motion checks.
-- [ ] Manual screen-reader pass and 200% zoom review.
+- [ ] Manual screen-reader pass and 200% zoom review — worksheet: `docs/quality/manual-signoff.md`
+      Part A. Held until Stage 12 completes; revalidate the route inventory first.
 
 ### Phase 5 — Production hardening (no deployment; implemented, pushed, and CI-confirmed 2026-11-17 on `44128890885`)
 

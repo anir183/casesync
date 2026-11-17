@@ -697,7 +697,9 @@ change description.
 - [x] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`
       after the representative slice (216/216 twice, 2026-11-15).
 - [x] CI green on a pushed commit (flag-off dispatch `43750576126` on `f882bd1`).
-- [ ] Independent runbook walkthrough by someone other than the author.
+- [ ] Independent runbook walkthrough by someone other than the author — worksheet:
+      [`manual-signoff.md`](manual-signoff.md) Part B. **Held until Stage 12 completes**, because
+      Stage 12 changes the UI, routes, and runbook; revalidate the steps before executing.
 - [x] Security checklist complete.
 - [x] Dashboard/report numbers reconciled with seeded fixtures.
 - [x] Demo smoke journeys and performance rehearsal pass.
@@ -741,6 +743,7 @@ checkpoint. **Deployment remains out of scope.**
 - [x] Docs reconciled to current state; stale stage counts and obsolete "deferred" text
       removed from current-state documents.
 - [ ] Manual screen-reader pass and 200% zoom review (Stage 9 Phase 4) — the one open
-      Stage 9 gate.
+      Stage 9 gate. Worksheet: [`manual-signoff.md`](manual-signoff.md) Part A. **Held until
+      Stage 12 completes**; the screen reader pass would be invalidated by the UI refresh.
 - [ ] Independent runbook walkthrough by someone other than the author (§14).
 - [x] No deployment performed or implied by this checklist.

@@ -83,3 +83,10 @@ authenticated portal-detail axe scan now lands with Stage 10. Stage 10 makes the
 portion exhaustive per current route and primary role; the manual screen-reader pass
 remains a release checklist item, and representative-shell scans are now part of the
 automated suite.
+
+The manual checks are recorded as executable steps in
+[`manual-signoff.md`](manual-signoff.md) Part A. They are **held until Stage 12 completes**:
+Stage 12 changes the shell, dashboards, admin, GIS, portal, and motion/accessibility surfaces,
+so a pass run now would have to be repeated. Revalidate the route inventory against the Stage 12
+router before executing, and do not manually re-test 375 px reflow or reduced motion while the
+automated checks still cover them.
