@@ -16,15 +16,17 @@ security, accessibility, performance, stress-seed, and runbook gates; Stage 8 ad
 external intake surface with separate ownership and public-projection controls.
 
 Current position: **release candidate; Stage 7 CI green (`4abd2f3`), Stage 8 CI green
-(`5666cad`); Stage 9 is partial — Phase 0 baseline/UI consistency and Phases 1–4
-(reversible auto-merge, representatives/domains, navigation/role landings/case
-workspace/resolution loop, and UI/charts/GIS) are implemented, while manual screen-reader
-sign-off and Phase 6 remain planned; Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`. Stage 10 (complete
+(`5666cad`); Stage 9 Phases 0–6 are implemented — baseline/UI consistency, reversible
+auto-merge, representatives/domains, navigation/role landings/case workspace/resolution
+loop, UI/charts/GIS, hardening (CI-confirmed on `44128890885`), and the Phase 6 ADRs,
+documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader
+sign-off and 200% zoom review are the only open Stage 9 gate. Stage 10 (complete
 Playwright UI coverage) exited on 2026-11-16: fixtures, per-role
 sessions, current-route render/denial coverage, mutations, UI states, Phase 3 flows,
 accessibility/responsive, visual regression, and the CI split landed; flag-off dispatch
 `43750576126` verified the 48 CI-image baselines and three cross-browser projects.
-Stage 11 Phase 0 is complete.**
+Stage 11 exited and was CI-confirmed on `44122619636`; Stage 12 is planned, not started.**
+The later CI isolation work was CI-confirmed on `44143783816` and `44147190267`.
 
 - Core data model, auth, case API, overlap engine, overlap review UI, dashboard,
   search, reports, notifications: present.
@@ -409,7 +411,9 @@ the audit above predates them. Current facts:
   shell, and suggestion-only email-domain allowlist with admin queues.
 - Phase 3 (done): role-specific landings, consolidated case workspace, overflow actions,
   and the resolution loop.
-- Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`; Phase 6 remains planned.
+- Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`; Phase 6 ADRs,
+  documentation reconciliation, and the final QA matrix/release checklist were finalized on
+  2026-11-18. Only the manual screen-reader and 200% zoom review remains open.
 - Stage 10: exited 2026-11-16. Fixtures, current-route render/denial coverage, mutations, UI
   states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI
   split have

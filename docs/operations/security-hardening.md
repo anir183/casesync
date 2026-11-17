@@ -83,7 +83,8 @@ signals.
 
 ## 6. Dependency and secret scanning
 
-- CI runs `bun audit --audit-level=high` on every push (`Dependency audit` job).
+- CI runs `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf` on every push
+  (`Dependency audit` job).
   As of 2026-11-17 it ignores only `GHSA-fc5q-39xc-vjpf`: the advisory affects
   `picomatch <= 4.0.7` through Vite, and no patched release has been published.
   Remove that narrow ignore when a fixed version is available.
@@ -127,6 +128,15 @@ resolve a purpose-specific loopback default first:
 | Browser E2E | `mongodb://127.0.0.1:27017/casesync_e2e` |
 | Perf/stress | `mongodb://127.0.0.1:27017/casesync_perf` |
 | Visual | `mongodb://127.0.0.1:27017/casesync-visual` |
+
+These are the script defaults; CI uses them as-is with its `mongo:7.0.45` service on
+port `27017`. On a developer machine with an authenticated system MongoDB on `27017`,
+local verification can point at a separate loopback `mongod` on `27018` by setting
+`TEST_MONGODB_URI` or the purpose-specific override (`INTEGRATION_MONGODB_URI`,
+`E2E_MONGODB_URI`, `PERF_MONGODB_URI`, `VISUAL_MONGODB_URI`) to
+`mongodb://127.0.0.1:27018/...`; the loopback check still passes. Manual `bun run dev`,
+`bun run seed:*`, and direct API startup continue to use `MONGODB_URI` from `.env`
+unchanged.
 
 A non-loopback target is refused unless `ALLOW_REMOTE_MONGO=1` is set. With that
 flag, a configured `MONGODB_URI` (for example the developer's Atlas `.env`) is

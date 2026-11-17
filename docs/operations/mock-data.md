@@ -98,7 +98,7 @@ created. Complainant self-signup is enabled by default
 
 ## 4. Demo cases
 
-`seed:demo` creates 13 cases with relative dates from seed time. Every status is
+`seed:demo` creates 14 cases with relative dates from seed time. Every status is
 represented, including `REOPENED`, `TRANSFERRED`, `ESCALATED`, and `DISPOSED`.
 
 | Case number | Institution | Bureau | Category | Status | Age | SLA | Purpose |
@@ -116,13 +116,14 @@ represented, including `REOPENED`, `TRANSFERRED`, `ESCALATED`, and `DISPOSED`.
 | `RB-2026-004` | MIE | RB | INFRASTRUCTURE | `UNDER_PROCESS` | 40d | 45d | Overdue |
 | `RB-2026-005` | DIT | RB | FEES | `UNDER_PROCESS` | 8d | 30d | Exact match, different issue |
 | `RB-2026-006` | KIS | RB | HARASSMENT | `UNDER_PROCESS` | 30d | 30d | Jev failure fallback |
+| `RB-2026-007` | DIT | RB | ACADEMIC | `UNDER_PROCESS` | 16d | 30d | Reverted-merge pair |
 
 Demo cases include matching actions, assignments (including unassigned and ended
 assignments), next actions, and notifications for demo users.
 
 ## 5. Demo overlaps
 
-`seed:demo` creates 6 scenarios:
+`seed:demo` creates 7 scenarios:
 
 | Scenario | Pair | Assessment | Relationship |
 |---|---|---|---|
@@ -132,6 +133,7 @@ assignments), next actions, and notifications for demo users.
 | Confirmed | `PGRC-2026-002` + `RB-2026-001` | `ASSESSED` | `CONFIRMED` |
 | Dismissed | `PGRC-2026-003` + `RB-2026-001` | `ASSESSED` | `DISMISSED` |
 | Jev failure | `PGRC-2026-004` + `RB-2026-006` | `FAILED` | `PENDING` |
+| Reverted merge | `PGRC-2026-001` + `RB-2026-007` | `ASSESSED`, likely same issue | `PENDING` (`REVERTED`, re-merge suppressed) |
 
 The base relationship is created for every same-institution cross-bureau pair; Jev only
 enriches the assessment. The seed does not call the real Jev provider.
@@ -155,7 +157,7 @@ fixtures.
 
 Integration tests do not use the demo seed. They create run-scoped users, regions,
 bureaus, institutions, and cases with a unique `RUN_ID`, and clean up by ID/email because
-the local Atlas user cannot create/drop databases. CI uses a disposable `mongo:7` service
-instead (exact `7.0.45` pin planned). See [`../quality/qa-and-review.md`](../quality/qa-and-review.md).
+the local Atlas user cannot create/drop databases. CI uses a disposable, pinned
+`mongo:7.0.45` service instead. See [`../quality/qa-and-review.md`](../quality/qa-and-review.md).
 
 Test data must not reuse demo ObjectIds or emails.

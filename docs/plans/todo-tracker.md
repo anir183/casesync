@@ -1,9 +1,9 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-17 (Stage 11 Phases 3–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`).
+**Last verified:** 2026-11-18 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phase 0 baseline/UI consistency and Phases 1–5 implemented; manual screen-reader sign-off and Phase 6 remain. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
 **Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
@@ -259,14 +259,15 @@ not needed to prove the complainant flow; they were delivered in Stage 9 Phase 2
 dedicated external role, institution-side scoping, an approval model, and an email-domain
 allowlist. The portal remains an extension outside MVP acceptance.
 
-## Stage 9 — Next phase (PARTIAL — Phases 0–4 implemented)
+## Stage 9 — Next phase (Phases 0–6 implemented; manual screen-reader sign-off open)
 
-Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status `partial` —
-Phase 0 baseline, the final UI consistency pass, and Phases 1–5 implemented; manual
-screen-reader sign-off and Phase 6 remain). Locked
+Full plan: `docs/plans/next-phase-plan.md` (decision-complete; status — Phase 0 baseline,
+the final UI consistency pass, and Phases 1–6 implemented; only the manual screen-reader
+and 200% zoom review remains open). Locked
 decisions: auto-merge is enabled immediately for **exact AICTE institution-ID matches**
-that pass the confidence/text gates and have no JEV veto; revert returns a pair to manual
-review and suppresses automatic re-merge; the merge group is flat with one canonical case;
+that pass the confidence/text gates and have no JEV veto; revert marks the pair reverted,
+reopens review, and suppresses automatic re-merge until a human clears suppression; the
+merge group is flat with one canonical case;
 the merge banner is neutral; representatives may post public responses/evidence only; GIS
 uses a lazy-loaded Leaflet map with OpenStreetMap tiles by default and a configurable
 `VITE_MAP_TILE_URL`; email-domain matching is suggestion-only; deployment is out of scope.
@@ -403,13 +404,15 @@ indigo/teal language.
 - [ ] Remove the temporary `GHSA-fc5q-39xc-vjpf` audit ignore once a patched
   `picomatch` release is published; no fixed version existed on 2026-11-17.
 
-### Phase 6 — Polish and documentation
+### Phase 6 — Polish and documentation (implemented 2026-11-18)
 
-- [ ] Update README, stage plan, tracker, traceability, audit, UI/UX, user flow,
+- [x] Update README, stage plan, tracker, traceability, audit, UI/UX, user flow,
       architecture, QA, security, accessibility, runbook, demo script, mock data, retention.
-- [ ] Add ADRs for reversible auto-merge, representatives/domain allowlists, and GIS.
-- [ ] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
-- [ ] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment).
+- [x] Add ADRs for reversible auto-merge, representatives/domain allowlists, and GIS
+      (`docs/decisions/0005`–`0007`).
+- [x] Remove stale claims, duplicated counts, dead links, and obsolete “deferred” text.
+- [x] Final role/journey/merge/rep/map QA matrix and release checklist (no deployment):
+      `docs/quality/qa-and-review.md` §15.
 
 ## Stage 10 — Complete Playwright UI coverage (DONE)
 
@@ -724,9 +727,8 @@ are the no-behavior-change oracle.
 - [x] Updated the stage map (`docs/product/end-product-and-stages.md`), the QA evidence
       (Stage 11 exit table in `docs/quality/qa-and-review.md`), this tracker, and the Phase 3–6
       outcomes in `code-audit-plan.md` / `stage-11-baseline.md`. No deferred Stage 11 cleanup
-      remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified but
-      committed and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start
-      starts.
+      remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified,
+      committed, and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start.
 
 ## Stage 12 — UI/UX modernization (PLANNED)
 

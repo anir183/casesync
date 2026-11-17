@@ -16,11 +16,13 @@ and detail with filters/pagination and manual link/unlink, reports, notification
 admin user/organization/SLA/audit/verification screens, the public complainant portal,
 and paginated tables. Mutations use pending/disabled states rather than optimistic UI.
 
-**Stage 9 status:** Phase 0 baseline plus the final UI consistency pass and Phases 1–4 are
-implemented: reversible auto-merge, the representative shell/admin screens, the visual
-redesign/chart-first dashboard/reports/Leaflet map, and the Phase 3 navigation, role
-landings, consolidated case workspace, and resolution loop. Manual screen-reader sign-off
-and Phase 6 remains; Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`. The decision-complete plan is
+**Stage 9 status:** Phases 0–6 are implemented: Phase 0 baseline plus the final UI
+consistency pass; Phases 1–4 (reversible auto-merge, the representative shell/admin screens,
+the visual redesign/chart-first dashboard/reports/Leaflet map, and the Phase 3 navigation,
+role landings, consolidated case workspace, and resolution loop); Phase 5 hardening, pushed
+and CI-confirmed on `44128890885`; and Phase 6 (ADRs, document reconciliation, and the final
+QA matrix/release checklist). Manual screen-reader sign-off and 200% zoom review are the only
+open gate. The decision-complete plan is
 [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md).
 
 ## Goals

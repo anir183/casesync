@@ -34,7 +34,7 @@ Status legend:
 | Target users | **Done** | Staff roles/scoping/admin screens plus the separate `COMPLAINANT` portal role. |
 | Public portal (extension) | **Done** | Signup/login, exact-AICTE verification + document review, filing/tracking, conversation, documents, ownership checks, and staff/admin UI. Representative access is **Done** (Stage 9 Phase 2). |
 | Non-functional | **Done** | `active` enforcement, scoping, rate limits, 409/404 mapping, component/E2E/a11y/perf gates, CI, stress seed, and runbook are implemented; Stage 8 CI green on `5666cad`. |
-| Stage 9 next phase | **Partial** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, and docs. Phase 0 baseline/UI consistency and Phases 1–4 (auto-merge; representatives/domains; navigation, role landings, case workspace, and resolution loop; UI/GIS) are implemented, and Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`. Manual screen-reader sign-off and Phase 6 remain planned. See §11.2. |
+| Stage 9 next phase | **Phases 0–6 implemented** | Baseline fixes, reversible exact-institution auto-merge, representatives/domains, IA/UI/GIS refresh, hardening, and docs. Phase 0 baseline/UI consistency; Phases 1–4 (auto-merge; representatives/domains; navigation, role landings, case workspace, and resolution loop; UI/GIS); Phase 5 hardening, pushed and CI-confirmed on `44128890885`; Phase 6 ADRs, documentation reconciliation, and the final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review are the only open gate. See §11.2. |
 | Stage 10 UI coverage | **Done** | Complete Playwright coverage of every route, role, mutation, state, accessibility requirement, responsive breakpoint, and a stable visual subset. Fixtures, per-role sessions, current-route render/denial coverage, mutation coverage (staff/admin, portal/auth, representative), UI states, Phase 3 flows, accessibility/responsive expansion, visual regression, and the CI split have landed. CI-image visual verification and two consecutive full-suite runs are recorded (flag-off dispatch `43750576126`). See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`. |
 | Stage 11 code audit | **Exit verified (CI confirmed)** | Import/alias normalization with a `check:ci` boundary gate, shared contracts (`Page<T>`, `buildQuery`, DTOs, error shape), per-feature query keys, service decomposition, duplication removal, and convention guardrails. No behavior change; full local suite passes, coverage 86.4%/86.8%, visual baseline unchanged. See `docs/plans/code-audit-plan.md`. |
 | Stage 12 UI modernization | **Planned** | Tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core work surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed Stage 10 baselines. Keeps routes, permissions, data, and product scope fixed. See `docs/plans/ui-modernization-plan.md`. |
@@ -105,7 +105,7 @@ Status legend:
 | OVR-04 | Re-evaluate after case movement | **Done** | Re-assessment on create/assign/transfer/institution name/AICTE/region change; manual `POST /overlaps/assess` | Periodic sweep/background batch remains. |
 | OVR-05 | Explain why cases are related | **Done** | match type, confidence, reason, probabilities, Jev rationale, compare view | Institution/region names resolved in DTOs. |
 | OVR-06 | Notify only concerned officials | **Done** | `lib/notifications.ts` scoped recipients | Involved bureau officers + regional officers + `ADMIN`/`SENIOR_MANAGEMENT`/`COMPETENT_AUTHORITY`; deduped per relationship. |
-| OVR-07 | Human decision by default | **Done**; Stage 9 exception **Implemented** | PENDING relationships; confirm/dismiss; exact-institution high-confidence auto-merge with score, veto, audit, and revert | Only eligible exact-institution pairs auto-merge; every other pair stays manual. Revert returns to review and suppresses re-merge until clearance. |
+| OVR-07 | Human decision by default | **Done**; Stage 9 exception **Implemented** | PENDING relationships; confirm/dismiss; exact-institution high-confidence auto-merge with score, veto, audit, and revert | Only eligible exact-institution pairs auto-merge; every other pair stays manual. Revert marks the pair `reverted`, reopens review, and suppresses re-merge until a human explicitly clears suppression. |
 | OVR-08 | Scale | **Partial** | Fuzzy scan capped at 500 institutions; sequential Jev calls | Acceptable for demo; indexed blocking/background batch needed for production. |
 
 ## 5. Feature 4 — Real-Time Dashboard
@@ -245,7 +245,8 @@ Status legend:
   attachments, invite/reset, Stage 7 search/regex/operator/rate-limit checks, Stage 8
   verification/ownership/public-visibility/reopen flows, and Stage 9 Phase 2
   representative/domain contracts. `RUN_INTEGRATION=1` runs locally against run-scoped
-  records; CI uses `mongo:7` (exact `7.0.45` pin planned).
+  records; CI used `mongo:7` with the exact `7.0.45` pin planned (the pin landed and is now
+  active in `.github/workflows/ci.yml` — this line is kept as the dated 2026-11-07 baseline).
 - Coverage is 87.4% lines / 89.7% functions with an 85% floor.
 - Playwright: 196 desktop functional tests (216 with the mobile project), 13 smoke, 55
   accessibility (37 route scans, 13 denial scans, 5 keyboard/focus), 16 responsive-spec

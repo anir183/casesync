@@ -77,8 +77,8 @@ Stage 11 is implemented, verified and CI-confirmed on `main` by dispatch `441226
 - **1 tagged performance test** runs against a deterministic 5,000-case stress seed and
   asserts dashboard/list/report/overlap/detail/page budgets. `test:perf` resets stress
   data automatically.
-- **Coverage gate**: 87.4% lines and 89.7% functions from the full API suite (97 unit + 62
-  integration source tests); CI floor is 85% lines/functions.
+- **Coverage gate**: 86.4% lines and 86.8% functions from the full API suite (100 unit pass
+  with 62 integration-only skips; 162 pass with a DB); CI floor is 85% lines/functions.
 - **CI** (`.github/workflows/ci.yml`) runs static checks, typechecks (including web
   tests/e2e), unit/component tests, Mongo-backed integration/coverage, builds, seeded
   smoke on PRs, full Chromium on `main`, and cross-browser/visual jobs on manual dispatch
@@ -200,7 +200,7 @@ Current (Stage 1) approach, because the Atlas user cannot create/drop databases:
 
 CI approach (implemented Stage 7):
 
-- GitHub Actions starts a disposable `mongo:7` service (exact `7.0.45` pin planned) and points integration/coverage
+- GitHub Actions starts a disposable `mongo:7.0.45` service and points integration/coverage
   and seeded E2E jobs at `casesync_test`.
 - Local integration remains run-scoped against the configured dev database because the
   Atlas user cannot create/drop databases.
@@ -488,7 +488,8 @@ Implemented in `.github/workflows/ci.yml`:
    separate matrix jobs, each with its own Mongo service and fresh demo seed.
 8. **Visual regression**: manual or `v*` release tag; disposable visual database, pinned
    timeline, 48 screenshot comparisons.
-9. **Security**: `bun audit --audit-level=high`.
+9. **Security**: `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf` (narrow,
+   temporary `picomatch` ignore with a tracker item to remove it).
 
 ### Stage 10 CI split
 
@@ -506,26 +507,28 @@ documented in
 [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md) and the MongoDB service is
 pinned to `7.0.45`.
 
-Actual root scripts:
+Actual root scripts (mirrored from `package.json`, the authority if these drift). The
+`scripts/with-test-mongo.ts` wrapper resolves a purpose-specific loopback database before
+integration, E2E, and perf runs; `check:ci` also enforces the import-boundary guard:
 
 ```json
 {
-  "check:ci": "biome check .",
+  "check:ci": "bun run scripts/check-imports.ts && biome check .",
   "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
   "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
   "typecheck:web:tests": "cd apps/web && ./node_modules/.bin/tsc --noEmit -p tsconfig.test.json",
   "test:unit": "bun run --filter @casesync/api test && bun run --filter @casesync/web test",
-  "test:integration": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration",
-  "test:coverage": "cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts",
-  "test:e2e": "bun run seed:demo && bun run --filter @casesync/web test:e2e",
-  "test:e2e:smoke": "bun run seed:demo && bun run --filter @casesync/web test:e2e:smoke",
-  "test:e2e:full": "bun run seed:demo && bun run --filter @casesync/web test:e2e:full",
-  "test:e2e:mobile": "bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile",
-  "test:e2e:ui": "bun run seed:demo && bun run --filter @casesync/web test:e2e:ui",
+  "test:integration": "bun run scripts/with-test-mongo.ts test -- bash -c 'cd apps/api && RUN_INTEGRATION=1 bun test --isolate tests/integration'",
+  "test:coverage": "bun run scripts/with-test-mongo.ts test -- bash -c 'cd apps/api && RUN_INTEGRATION=1 bun test --isolate --coverage --coverage-reporter=lcov && cd ../.. && bun run scripts/check-coverage.ts'",
+  "test:e2e": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e'",
+  "test:e2e:smoke": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:smoke'",
+  "test:e2e:full": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:full'",
+  "test:e2e:mobile": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile'",
+  "test:e2e:ui": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:ui'",
   "test:e2e:visual": "./scripts/visual-e2e.sh",
   "test:e2e:update-snapshots": "./scripts/visual-e2e.sh --update-snapshots",
-  "test:e2e:cross-browser": "./scripts/cross-browser-e2e.sh",
-  "test:perf": "./scripts/perf-smoke.sh",
+  "test:e2e:cross-browser": "bun run scripts/with-test-mongo.ts e2e -- ./scripts/cross-browser-e2e.sh",
+  "test:perf": "bun run scripts/with-test-mongo.ts perf -- ./scripts/perf-smoke.sh",
   "verify": "bun run check:ci && bun run typecheck:api && bun run typecheck:web && bun run typecheck:web:tests && bun run test:unit && bun run build"
 }
 ```
@@ -535,8 +538,8 @@ CI must never rewrite files. Keep `check` (write mode) for local use.
 ### Coverage thresholds
 
 The CI gate currently enforces **85% lines and 85% functions** for the API suite. The
-full suite is at 87.4% lines / 89.7% functions. Coverage is a floor, not a goal; a critical
-rule with no test blocks the stage even if coverage is high.
+full suite is at 86.4% lines / 86.8% functions (Stage 11 baseline). Coverage is a floor,
+not a goal; a critical rule with no test blocks the stage even if coverage is high.
 
 ## 11. Manual QA checklist (per stage)
 
@@ -701,3 +704,43 @@ change description.
 - [x] Rollback/restore steps documented.
 - [x] Docs match implementation.
 - [x] No P0/P1 open bugs known.
+
+## 15. Stage 9 final QA matrix and release checklist
+
+This is the Phase 6 roll-up for the Stage 9 flows. It does not replace the living
+[UI test matrix](ui-test-matrix.md) (route × role × state) or the per-stage gates above; it
+records that the four Stage 9 outcome areas were exercised together before the release
+checkpoint. **Deployment remains out of scope.**
+
+### 15.1 Role / journey / merge / representative / map matrix
+
+| Area | Journey under test | Roles involved | Automated evidence | Manual gate |
+|---|---|---|---|---|
+| Access | Deep-link render and denial for every route | All 8 seeded roles across 10 accounts, including approved and pending representatives | Stage 10 render/denial suite; `ui-test-matrix.md` | Role happy paths and denial copy |
+| Case lifecycle | Register → assign → escalate → dispose → reopen with append-only actions | Officer, senior, viewer (denial) | Integration lifecycle suite; `coverage/mutations.spec.ts`; `@smoke` | Action trail and counts reconcile |
+| Overlap merge | Detect same-institution pair → score/gate → auto or manual merge → revert → clear suppression | Officer, admin; `system:auto` for merges | `overlap-scoring` / merge unit tests, integration revert + idempotency cases, `e2e/merge.spec.ts` | Revert preserves both complaints; suppression is explicit |
+| Representatives | Sign-up → pending → admin approve/reject/revoke → institution-scoped access | Pending and approved representative, admin | `institution-domain.test.ts`, representative lifecycle integration, `coverage/representative.spec.ts` | Domain match is a hint only; revocation ends sessions |
+| GIS / reports | `/reports/geo` aggregation → region bubbles → keyboard chips → table fallback | Senior, admin, regional officers | `report-geo.test.ts`, visual suite with tile masking, axe/responsive suites | Map readable with tiles blocked; 200% zoom review (open) |
+| Public portal | Signup → verification → file → track → accept/reopen | Complainant, staff reviewer | Portal integration and E2E ownership flows | Public projections expose no internal data |
+
+### 15.2 Release checklist (no deployment)
+
+- [x] Stage 9 Phases 0–6 implemented; CI green on push `44143783816` and local-target
+      dispatch `44147190267`.
+- [x] Scope isolation verified: manual runs still honour `.env`; automated runs default to
+      local databases; Atlas is opt-in only via `ATLAS_MONGODB_URI` and `mongo_target=atlas`.
+- [x] Optional Atlas connectivity check succeeded on job `134237644490`; no smoke, stress,
+      or full-suite traffic was sent to Atlas.
+- [x] Cross-browser (Chromium, Firefox, WebKit), visual regression, and the dependency audit
+      gate pass in CI.
+- [x] `picomatch` advisory `GHSA-fc5q-39xc-vjpf` is narrowly ignored with a tracker item to
+      remove it when a patched release exists.
+- [x] Visual baselines remain authoritative only on the pinned CI image; none were regenerated
+      locally.
+- [x] ADRs 0005–0007 record the auto-merge, representative/domain, and GIS decisions.
+- [x] Docs reconciled to current state; stale stage counts and obsolete "deferred" text
+      removed from current-state documents.
+- [ ] Manual screen-reader pass and 200% zoom review (Stage 9 Phase 4) — the one open
+      Stage 9 gate.
+- [ ] Independent runbook walkthrough by someone other than the author (§14).
+- [x] No deployment performed or implied by this checklist.

@@ -1,9 +1,10 @@
 # CaseSync — Stage 9 Next-Phase Plan
 
-Status: **Phase 0 (baseline + final UI consistency pass) and Phases 1–4 implemented;
-manual screen-reader sign-off pending. Phase 5 (hardening) is implemented, pushed, and CI-confirmed on
-`44128890885`; Phase 6 remains planned.** Phase 4 was pulled
-forward at
+Status: **Phases 0–6 implemented.** Phase 0 (baseline + final UI consistency pass) and
+Phases 1–4 landed first; Phase 5 (hardening) was pushed and CI-confirmed on `44128890885`;
+Phase 6 (ADRs, documentation reconciliation, and the final QA matrix/release checklist)
+was finalized on 2026-11-18. The only open Stage 9 gate is the manual screen-reader sign-off
+and 200% zoom review. Phase 4 was pulled forward at
 product-owner request. Phase 0 cleared the baseline debt on 2026-11-01; the shared
 integration-fixture extraction is a recorded follow-up rather than a Phase 0 exit gate.
 This is the decision-complete execution plan for Stage 9 and defines the work,
@@ -891,7 +892,8 @@ Every phase must keep:
 - Unit, integration, seeded E2E, and accessibility suites passing.
 - API coverage at or above the 85% lines/functions floor.
 - Production builds with route-level splitting and no new warnings.
-- `bun audit --audit-level=high` clean.
+- `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf` clean (narrow, temporary
+  `picomatch` ignore; remove when a patched release exists).
 - No P0/P1 bug; every fix has a regression test.
 - No doc claim ahead of implementation.
 

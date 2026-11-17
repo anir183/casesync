@@ -512,21 +512,22 @@ Expose:
 - Audit export remains a follow-up.
 - Acceptance: critical journeys run in CI; ownership/IDOR and public-leakage tests pass.
 
-### Phase G — Stage 9 next phase (partial)
+### Phase G — Stage 9 next phase (Phases 0–6 implemented; manual a11y sign-off open)
 - Phase 0 (done): pin CI/Bun/runner, clear warnings, enable unused-symbol checks,
   typecheck web tests/e2e, lazy-load every route, final UI consistency pass, docs truth
   pass. Shared integration fixtures remain a deferred follow-up.
 - Phase 1 (done): reversible exact-institution auto-merge, queue/detail/group controls,
   revert and suppression, audit.
-- Phase 2: representative role/approval/scope, suggestion-only domains, `/institution`.
+- Phase 2 (done): representative role/approval/scope, suggestion-only domains, `/institution`.
 - Phase 3 (done): primary/More navigation, notification bell, mobile drawer, role-specific
   landings and empty states, consolidated case workspace, overflow actions, and the
   authority ↔ complainant resolution loop.
 - Phase 4 (done): visual refresh, local SVG charts, region coordinates, `/reports/geo`,
   lazy-loaded Leaflet/OpenStreetMap map, region chips, table fallback.
-- Phase 5: CSP/headers, distributed rate-limit path, request IDs, readiness,
-  idempotency, index/pagination audit, dependency/secret scanning.
-- Phase 6: docs/ADR/polish and final QA; no deployment step.
+- Phase 5 (done): CSP/headers, distributed rate-limit path, request IDs, readiness,
+  idempotency, index/pagination audit, dependency/secret scanning. CI-confirmed on `44128890885`.
+- Phase 6 (done): ADRs 0005–0007, documentation reconciliation, and the final QA
+  matrix/release checklist in `docs/quality/qa-and-review.md` §15; no deployment step.
 - Acceptance: `docs/plans/next-phase-plan.md` §18 gates pass and all new claims switch
   from planned to implemented.
 
@@ -553,10 +554,10 @@ Expose:
 - Implemented Stage 9 Phase 1: auto-merge enabled/disabled, exact vs fuzzy names,
   disposed cases, JEV veto, concurrency/idempotency, partial-index races,
   revert/suppression, and audit.
-- Planned Stage 9: representative pending/approved/rejected/revoked states, institution
-  isolation, IDOR/404 behavior, domain suggestion-only, and public projection limits.
-- Implemented Phase 4: region bounds/coordinates, geo aggregation/scope/date filters, and
-  chart/table reconciliation. Planned Stage 9: notification bell count.
+- Implemented Stage 9 Phase 2: representative pending/approved/rejected/revoked states,
+  institution isolation, IDOR/404 behavior, domain suggestion-only, and public projection limits.
+- Implemented Phase 4: region bounds/coordinates, geo aggregation/scope/date filters, chart/table
+  reconciliation, and the notification bell count.
 
 Use a disposable test database (e.g. `mongodb-memory-server` or a dedicated
 `casesync_test` URI) and `app.handle()` route tests. Jev must remain mocked.

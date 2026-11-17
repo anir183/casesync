@@ -1,8 +1,8 @@
 # CaseSync — Operations Runbook
 
-Status: Stage 7–9 runbook (Stage 9 Phases 0–5 implemented and CI-confirmed) plus
+Status: Stage 7–9 runbook (Stage 9 Phases 0–6 implemented; Phase 5 CI-confirmed) plus
 Stage 10 UI coverage commands and local-first MongoDB target isolation.
-Last verified: 2026-11-17.
+Last verified: 2026-11-18.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
@@ -114,16 +114,17 @@ Install browsers once per machine with
 `cd apps/web && bunx playwright install --with-deps chromium` (add `firefox webkit` for the
 cross-browser suite).
 
-Current local baseline (2026-11-08): 97 API unit + 26 web tests, 62 integration tests, 196
-desktop browser tests plus 20 mobile-project tests (216 total), including 55 accessibility
-checks, 16 responsive-spec checks, 16 state checks, and 48 visual comparisons, plus 87.4%
-lines / 89.7%
-functions of API coverage. The full suite passed twice consecutively for the Stage 10
-exit record (216/216, 2026-11-15) and the flag-off CI verification passed on
-2026-11-16. The production
-web build is warning-free with a 483.90 kB main chunk (137.86 kB gzip) after every route
-was lazy-loaded; `bun audit --audit-level=high` is clean. Stage 10 adds coverage, not a
-new runtime.
+Current verified baseline (2026-11-18): 100 API unit pass plus 62 integration-only skips
+(162 pass with a DB), 26 web component tests, 216 full Chromium tests (196 desktop plus
+20 mobile), and 13 `@smoke` journeys. Accessibility (55), responsive-spec (16), state
+(16), and visual (48) comparisons are unchanged, with API coverage at 86.4% lines /
+86.8% functions (Stage 11 baseline). The full suite passed twice consecutively for the
+Stage 10 exit record (216/216, 2026-11-15); the flag-off CI verification passed on
+2026-11-16, and the later local-first Mongo isolation work passed on push `44143783816`
+and local dispatch `44147190267`. The production web build is warning-free with a
+483.90 kB main chunk (137.86 kB gzip) after every route was lazy-loaded. CI passes
+`bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf`; the narrow `picomatch`
+ignore is temporary and tracked for removal. Stage 10 adds coverage, not a new runtime.
 
 API unit/component tests preload inert test defaults, so `verify` does not need a
 personal `.env`; integration, seed, and E2E commands do need real DB/auth env.

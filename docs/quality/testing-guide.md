@@ -70,7 +70,7 @@ Counts are for the desktop project unless noted.
 | `coverage/mutations.spec.ts` | `@mutation` | 14 | Case register/remark/transition, institution CRUD/merge, overlap review/merge/revert, admin invite/reset/deactivate, masters, SLA, verification, notifications | Any staff/admin write path or denial change |
 | `coverage/portal-auth.spec.ts` | `@mutation` | 5 | Portal signup/verification, unverified filing limits, ownership denial, document download, reopen | Portal auth, verification, filing, or documents |
 | `coverage/representative.spec.ts` | `@mutation` | 1 | Exact-domain sign-up suggestion, pending gate, approval, public reply, revocation, session loss, revoked redirect | Representative role, institution scope, or domain allowlist |
-| `coverage/states.spec.ts` | `@states` | 12 | Loading, empty, pagination, filters/sort, CSV export, error recovery, not-found, dialog cancel, pending/failed save, session expiry, theme persistence | Touching a list, table, filter, dialog, toast, or session state |
+| `coverage/states.spec.ts` | `@states` | 16 | Loading, empty, pagination, filters/sort, CSV export, error recovery, not-found, dialog cancel, pending/failed save, session expiry, workspace timeline, overflow menu, theme persistence, and role landings | Touching a list, table, filter, dialog, toast, or session state |
 | `responsive.spec.ts` | `@responsive` | 16 | Staff/portal/institution reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
 | `navigation.spec.ts` | `@responsive` | 3 | One-row staff nav, mobile drawer destinations, notification bell preview | Header, nav, drawer, or notification changes |
 | `reports.spec.ts` | `@responsive`, `@a11y` | 2 | Reports map keyboard focus/mobile reflow; chart-heavy reduced motion | Map, chart, or reports changes |
@@ -91,7 +91,7 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:unit` | API unit tests and web component tests |
 | `bun run test:integration` | Mongo-backed API integration tests |
 | `bun run test:coverage` | Integration tests plus the coverage floor |
-| `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys |
+| `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys (3 in `smoke.spec.ts` + 10 in `routes.spec.ts`) |
 | `bun run test:e2e` | 196 desktop functional tests, excluding `@performance` and `@visual` |
 | `bun run test:e2e:full` | 216 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |

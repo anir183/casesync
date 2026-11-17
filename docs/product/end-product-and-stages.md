@@ -121,7 +121,7 @@ acceptance.
 | `case_relationships` additions: `manual` flag, `linkedBy`, `unlinkedAt` | Manual link/unlink and audit clarity. |
 | `attachments` additions: `visibility`, `messageId?`, `storageProvider`, `checksum` | Access control and future message threading. |
 
-### Stage 9 additions (planned)
+### Stage 9 additions (implemented)
 
 | Collection / change | Why |
 |---|---|
@@ -229,8 +229,8 @@ layout.
 | 6 | Administration, attachments & data quality | **Done** | Operability without code changes; evidence handling | Admin CRUD; attachment access control; institution verify/merge |
 | 7 | Hardening, QA & release | **Done** | Trust, security, maintainability, demo readiness | CI green on `4abd2f3`; independent runbook walkthrough remains desirable |
 | 8 | Public complainant portal (optional) | **Done** | Transparency extension beyond original scope | Separate acceptance, security, integration, and E2E coverage; CI green on `5666cad` |
-| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Partial** | Closes remaining product, usability, and operational gaps | Phases 1–5 (auto-merge, representatives/domains, navigation, UI/GIS, hardening) pass; remaining gates in `../plans/next-phase-plan.md` |
-| 10 | Complete Playwright UI coverage | **Partial** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
+| 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Phases 0–6 implemented; manual a11y sign-off open** | Closes remaining product, usability, and operational gaps | Phases 0–5 pass and Phase 6 docs are finalized; manual screen-reader/200% zoom sign-off remains; gates in `../plans/next-phase-plan.md` |
+| 10 | Complete Playwright UI coverage | **Done** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
 | 11 | Codebase audit, cleanup & convention hardening | **Implemented — exit verified, CI confirmed** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard in `check:ci`, one shared `Page<T>` and `buildQuery`, decomposed services, documented conventions; full suite passes and visual baseline unchanged (pinned CI authoritative); see `../plans/code-audit-plan.md` |
 | 12 | UI/UX modernization | **Planned** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
 
@@ -263,11 +263,14 @@ layout.
   were not required for Stage 8 acceptance.
 - The internal MVP and optional public portal are functionally complete and release-ready
   with CI green on `5666cad`.
-- Stage 9 is partial: Phase 0 baseline/UI consistency and Phases 1–4 (reversible
-  exact-institution overlap auto-merge, representatives and email-domain allowlists, the
-  navigation/role-landing/case-workspace/resolution-loop work, and the visual redesign with
-  chart-first dashboard/reports and the Leaflet/OpenStreetMap map) are implemented. Manual
-  screen-reader sign-off and documentation polish (Phase 6) remain; Phase 5 hardening is implemented, pushed, and CI-confirmed on `44128890885`.
+- Stage 9 has Phases 0–5 implemented and Phase 6 finalized: Phase 0 baseline/UI consistency;
+  Phases 1–4 (reversible exact-institution overlap auto-merge, representatives and
+  email-domain allowlists, the navigation/role-landing/case-workspace/resolution-loop work,
+  and the visual redesign with chart-first dashboard/reports and the Leaflet/OpenStreetMap
+  map); Phase 5 hardening, pushed and CI-confirmed on `44128890885`; and Phase 6 ADRs,
+  documentation reconciliation, and the final QA matrix/release checklist. Manual
+  screen-reader sign-off and 200% zoom review remain the only open Stage 9 item.
+  The later CI isolation work was CI-confirmed on `44143783816` and `44147190267`.
   See [`../plans/next-phase-plan.md`](../plans/next-phase-plan.md). Deployment is out of scope.
 - Stage 10 exited on 2026-11-16: complete Playwright UI coverage across every route, role,
   mutation, UI state, accessibility check, responsive breakpoint, and a stable
@@ -418,8 +421,8 @@ verify with duplicate warnings), case registration (`/cases/new`), expanded case
 workspace (overview/actions/assignments/related), role-gated action panel, officer
 directory, resolved actor/officer/bureau/region names, and paginated case/institution
 lists are all wired. Mutations use pending/disabled states rather than optimistic UI.
-Automated browser/component E2E is not yet present; Stage 2 flows were verified with API
-integration tests and manual runtime smoke checks.
+Automated coverage is present: API integration tests plus Stage 10 Playwright route/render,
+mutation, and smoke suites; see [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md).
 
 ---
 
@@ -653,7 +656,7 @@ edit DB" from operations.
 
 ---
 
-### Stage 9 — Next phase (partial — Phases 1, 3 navigation, and 4 implemented)
+### Stage 9 — Next phase (Phases 0–6 implemented; manual screen-reader sign-off open)
 
 **Goal:** close the remaining product, usability, and operational gaps without reopening
 Stages 0–8. The decision-complete plan is
@@ -668,16 +671,16 @@ Stages 0–8. The decision-complete plan is
 | 2 | **Implemented** | `INSTITUTION_REPRESENTATIVE` role, approval/revocation lifecycle, institution scope, suggestion-only email-domain allowlist, separate `/institution` shell. |
 | 3 | **Implemented** | Navigation refresh (primary links + More, notification bell, account menu, mobile drawer), role-specific dashboard briefings/queues/empty states, consolidated case workspace (Overview · Conversation · Documents · Timeline · Related) with an overflow action menu, and a shared authority ↔ complainant resolution loop with next-action ownership and SLA context. |
 | 4 | **Implemented** | Visual redesign with local SVG charts, chart-first dashboard/reports, region coordinates, `/reports/geo`, lazy-loaded Leaflet/OpenStreetMap map, region chips, accessible table fallback. |
-| 5 | Planned | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. |
-| 6 | Planned | Documentation/ADR/polish pass and final QA matrix without a deployment step. |
+| 5 | **Implemented** | Host-independent hardening: headers/CSP, distributed-limit path, request IDs, readiness, idempotency, index/pagination audit, dependency/secret scanning. CI-confirmed on `44128890885`. |
+| 6 | **Implemented** | ADRs, documentation/ADR/polish pass, final role/journey/merge/rep/map QA matrix, and release checklist. No deployment step. |
 
 **Planned contracts**
 
 - Auto-merge thresholds: combined `0.85`, text gate `0.75`; exact AICTE institution-ID
   match, cross-bureau, both non-disposed, no active group, no suppression, no JEV veto.
 - Relationship `mergeStatus`: `candidate`, `manual_review`, `auto_merged`,
-  `manual_merged`, `reverted`. Revert returns the pair to manual review and suppresses
-  automatic re-merge until human clearance.
+  `manual_merged`, `reverted`. Revert marks the pair `reverted`, reopens review, and
+  suppresses automatic re-merge until a human explicitly clears suppression.
 - `case_merge_groups` is flat with one canonical case and an immutable member snapshot;
   member complaints are never rewritten.
 - Representative access comes from the authenticated user and public projections only;
@@ -688,9 +691,8 @@ Stages 0–8. The decision-complete plan is
 - Deployment remains out of scope.
 
 **Exit criteria:** every Phase 0–6 gate and the Stage 9 definition of done in
-[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. Phase 0, Phase 1,
-Phase 4, and the Phase 3 navigation refresh are implemented; this section stays
-**partial** until every gate passes.
+[`../plans/next-phase-plan.md`](../plans/next-phase-plan.md) §18 passes. All phases are
+implemented; the only open gate is the manual screen-reader and 200% zoom review in Phase 4.
 
 ---
 
@@ -885,7 +887,7 @@ Stage 7 (done — QA + CI + release)
    ↓
 Stage 8 (done — optional public portal)
    ↓
-Stage 9 (partial — Phase 0 baseline/UI consistency and Phases 1–5 implemented; manual screen-reader sign-off and docs remain)
+Stage 9 (Phases 0–6 implemented; manual screen-reader/200% zoom sign-off is the only open gate)
    ↓
 Stage 10 (done — complete Playwright UI coverage; 48 CI-image visual baselines verified by flag-off dispatch `43750576126`)
    ↓

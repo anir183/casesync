@@ -338,9 +338,12 @@ These are recorded, not silently closed. None blocks Stage 11.
 
 1. **Manual screen-reader sign-off** remains a release-checklist item. Automated axe checks
    are green; no assistive-technology session is recorded.
-2. **Stage 9 Phases 5–6** remain planned: the final documentation/ADR polish and the
-   role/journey QA matrix. Stage 11 ADRs partially address the documentation item; the QA
-   matrix stays open.
+2. **Stage 9 Phases 5–6** remained planned at the Stage 11 baseline: the final documentation/ADR
+   polish and the role/journey QA matrix. Stage 11 ADRs partially addressed the documentation
+   item. **Resolved 2026-11-18:** Phase 5 was CI-confirmed on `44128890885`; Phase 6 added
+   ADRs 0005–0007, reconciled the current-state docs, and recorded the final QA matrix and
+   release checklist in `../quality/qa-and-review.md` §15. This entry is kept as the frozen
+   Stage 11 baseline observation.
 3. **Exact Node `24.21.0` pin** is still a follow-up; CI uses the runner's Node while
    `mise.toml` tracks the `24` line. Do not change `mise.toml` in Stage 11.
 4. **`index` chunk warning**: 506.10 kB (139.82 kB gzip) is above Vite's 500 kB warning.

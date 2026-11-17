@@ -32,7 +32,7 @@ All sections below are demoable; do not fake missing behaviour.
 
 - API and web running; database reachable; `JEV_ENABLED` set as intended.
 - Run `bun run seed:demo`. It idempotently creates masters, 7 staff users, the verified
-  demo complainant, 8 institutions, 13 staff cases, 6 overlap scenarios, related
+  demo complainant, 8 institutions, 14 staff cases, 7 overlap scenarios, related
   history, notifications, and 5 SLA configs.
 - Portal credentials: `complainant@casesync.test` / `Passw0rd!123` (linked to `dit`).
 - Optional release rehearsal: `bun run verify && bun run test:e2e && bun run test:perf`
