@@ -89,8 +89,11 @@ Stage 11 is implemented, verified and CI-confirmed on `main` by dispatch `441226
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
 - API, web, and web test/e2e typechecks pass; Biome is clean; API and web production
-  builds pass. The web build is warning-free: every route is lazy-loaded and the main
-  chunk is 483.90 kB (137.86 kB gzip), below the 500 kB budget.
+  builds pass. Every route is lazy-loaded, but as of the Stage 12 Phase 0 rebuild the main
+  chunk is 506.12 kB (140.06 kB gzip), which exceeds the 500 kB budget and emits Vite's
+  `Some chunks are larger than 500 kB` warning. The earlier 483.90 kB / 137.86 kB
+  warning-free figure is dated Stage 9 evidence, not the current state; reducing the main
+  chunk is a Stage 12 exit criterion, not a release blocker closed here.
 - The Phase 0.5 UI consistency pass is verified at 375/768/1024/1440 px in light and
   dark mode with no horizontal page overflow; axe stays clean on desktop routes and the
   mobile drawer.

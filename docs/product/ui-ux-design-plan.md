@@ -372,6 +372,27 @@ text” feel with a fluid, action-first operational product. Full plan:
 - Progressive disclosure: common actions visible, rare actions in overflow/drawers.
 - Purposeful motion only; reduced-motion is a first-class state.
 
+**Phase 0 direction lock (product owner, 2026-11-18)**
+
+The five Stage 12 Phase 0 decisions are locked; evidence is in
+[`../plans/stage-12-phase0-baseline.md`](../plans/stage-12-phase0-baseline.md) §8.
+
+- **Shell:** desktop rail + context top bar; `Ctrl/Cmd+K` is a shortcut, not the only path;
+  mobile keeps top bar + drawer; route tree and permissions unchanged.
+- **Type/spacing/surface:** full token migration in Phase 1 — one display scale and one
+  compact UI scale, 4 px spacing base with semantic gaps, layered neutral surfaces with
+  tinted status, tabular numerals; keep indigo/teal; remove all arbitrary text sizes and
+  the 3 inline styles.
+- **Motion:** 120/180/240 ms tokens with the planned easings, transform/opacity only, no layout
+  animation, reduced-motion overrides, no animation library.
+- **GIS:** existing Leaflet stack only; bundled simplified region polygons with a
+  one-metric choropleth, institution points, legend, keyboard chips, table fallback, and a
+  schematic-geometry label; no new package.
+- **Portal hero:** action-first hero with one primary CTA and inline tracking, compact
+  three-step strip, trust strip, short FAQ, prominent verification state.
+
+The lock fixes direction only; Phase 1 implementation requires separate authorization.
+
 **Target surfaces**
 
 - **Shell:** desktop rail + context top bar, global command/search (`Ctrl/Cmd+K`),

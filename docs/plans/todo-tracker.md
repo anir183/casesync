@@ -6,7 +6,7 @@
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** planned, not started. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Begins after Stage 11 exits. See `docs/plans/ui-modernization-plan.md`.
+**Stage 12:** Phase 0 complete 2026-11-18 (audit, direction, and baselines); Phase 1 not yet authorized. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices. See `docs/plans/ui-modernization-plan.md` §3.4 and `docs/plans/stage-12-phase0-baseline.md`.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -731,23 +731,29 @@ are the no-behavior-change oracle.
       remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified,
       committed, and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start.
 
-## Stage 12 — UI/UX modernization (PLANNED)
+## Stage 12 — UI/UX modernization (PHASE 0 COMPLETE — Phase 1 not authorized)
 
-Full plan: `docs/plans/ui-modernization-plan.md`. Begins after Stage 11 exits. Keeps the
-route tree, permissions, data, and product scope fixed. The Stage 10 visual baseline is
-expected to change and is refreshed intentionally.
+Full plan: `docs/plans/ui-modernization-plan.md`. Phase 0 evidence:
+`docs/plans/stage-12-phase0-baseline.md`. Keeps the route tree, permissions, data, and
+product scope fixed. The Stage 10 visual baseline is expected to change and is refreshed
+intentionally in Phase 7, not in Phase 0.
 
 ### Phase 0 — Audit, direction, and baselines
 
-- [ ] Inventory every screen/component: route, role, primary action, states, text density,
-      and friction.
-- [ ] Capture current shell, dashboard, admin, portal, and GIS at 375/768/1024/1440 px in
-      light/dark.
-- [ ] Record bundle, route-chunk, axe, and time-to-primary-action baselines.
-- [ ] Lock the rail/top-bar shell, type/spacing/surface direction, motion limits, GIS
-      approach, and portal hero direction.
-- [ ] Produce the keep/refine/replace/delete component inventory.
-- [ ] Confirm Stage 11 exit and the Stage 10 coverage baseline.
+- [x] Inventory every screen/component: route, role, primary action, states, text density,
+      and friction — 43 route nodes, 33 page files, 23 shared components; see Phase 0
+      evidence §3 and §7.
+- [x] Capture current shell, dashboard, admin, portal, and GIS at 375/768/1024/1440 px in
+      light/dark — 40 captures in `storage/phase0-baseline/`; see evidence §4.
+- [x] Record bundle, route-chunk, axe, and time-to-primary-action baselines — main chunk
+      506.12 kB / 140.06 kB with a `>500 kB` warning; axe 55/55; see evidence §5.
+- [x] Lock the rail/top-bar shell, type/spacing/surface direction, motion limits, GIS
+      approach, and portal hero direction — all five recommended options approved by the
+      product owner 2026-11-18; recorded in `ui-modernization-plan.md` §3.4 and
+      `ui-ux-design-plan.md`, evidence §8. Phase 1 still requires separate authorization.
+- [x] Produce the keep/refine/replace/delete component inventory — see evidence §7.
+- [x] Confirm Stage 11 exit (dispatch `44122619636`) and the Stage 10 coverage baseline —
+      see evidence §6.
 
 ### Phase 1 — Tokens and primitives
 

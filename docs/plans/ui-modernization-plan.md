@@ -1,8 +1,9 @@
 # CaseSync — Stage 12 UI Modernization Plan
 
-Status: **Planned, not started.** Stage 12 begins only after Stage 11 exits. This plan is
-docs-only: it does not authorize UI implementation, dependency changes, or test updates
-yet. The two remaining manual gates (screen-reader/200% zoom review and the independent
+Status: **Phase 0 complete** (audit, direction, and baselines) 2026-11-18; Phase 1 is not
+authorized yet. Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md).
+This plan does not authorize UI implementation, dependency changes, or test updates yet.
+The two remaining manual gates (screen-reader/200% zoom review and the independent
 runbook walkthrough) are **held until this stage completes**, because the UI refresh would
 invalidate a pass run now; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
@@ -45,6 +46,15 @@ type, query-key, and service baseline; the UI pass will intentionally invalidate
 and visual baselines, so it needs a stable coverage baseline to refresh from.
 
 ## 2. Baseline evidence (read-only audit, 2026-11-08)
+
+The table below is the **dated pre-Stage-11 audit** and is retained as historical
+evidence. The measured Stage 12 starting point is
+[`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md), which supersedes it for
+comparison. Two figures below have since moved: the dashboard is now 357 lines (not 713)
+after the Stage 11 extraction of `RoleLandingCard` and `WorkloadTable`, and there are 12
+uses of `text-[10px]`/`text-[11px]` plus one `text-[28px]` (not 10). The bundle figure in
+budget referenced in §10 is currently exceeded: the main chunk measures 506.12 kB /
+140.06 kB with a Vite `>500 kB` warning.
 
 | Area | Verified baseline | UI consequence |
 |---|---|---|
@@ -131,6 +141,21 @@ Avoid:
 No animation library is added. Use Tailwind transitions, CSS keyframes, and the View
 Transitions API only as progressive enhancement where it degrades cleanly.
 
+### 3.4 Phase 0 direction lock (product owner, 2026-11-18)
+
+The five decisions required by Phase 0 are **locked**. This is the authority for the rest
+of Stage 12; measurement evidence is in
+[`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md) §8. The lock fixes direction
+only — it does **not** authorize Phase 1 implementation.
+
+| Decision | Locked choice |
+|---|---|
+| Shell | Desktop left rail (Dashboard, Cases, Institutions, Overlaps, Reports + admin group) with a context top bar: breadcrumb/title, `Ctrl/Cmd+K` command trigger, read-only scope indicator, quick-create, notification bell, theme, account. Command palette is a shortcut, not a replacement for visible navigation. Mobile keeps top bar + drawer. Route tree and permissions unchanged. |
+| Type / spacing / surface | Full token migration in Phase 1: one display/heading scale and one compact UI scale, 4 px spacing base with semantic gaps and one section gap, layered neutral surfaces with tinted status, tabular numerals for counts/dates. Keep indigo primary and teal accent. Migrate all 12 arbitrary `text-[10px]`/`text-[11px]` uses, the one `text-[28px]`, and the 3 inline styles. |
+| Motion | Tokenized 120/180/240 ms with the §3.3 easings; transform/opacity only; no layout-affecting animation; reduced-motion uses opacity-only or no transition; no animation library. |
+| GIS | Existing `leaflet` + `react-leaflet` only. Bundled simplified region GeoJSON, one active metric as a choropleth, institution points, legend, keyboard chips, always-present table fallback, no-tiles state. Label geometry as schematic unless it is an official boundary. Lazy-load map and geometry; no new GIS package. |
+| Portal hero | Action-first hero with one primary CTA and an inline track form, compact three-step strip, trust strip, concise FAQ, and prominent verification state. Move the long privacy card into help/tooltip. |
+
 ## 4. Target information architecture
 
 ### 4.1 Staff shell
@@ -186,6 +211,11 @@ failing jobs) and one obvious action. The individual pages remain; the hub remov
 ### Phase 0 — Audit, direction, and baselines
 
 **Goal:** agree on the visual direction and measure the starting point before changing it.
+
+The measured output of this phase is recorded in
+[`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md): route/component inventory,
+40 screenshots, bundle/axe/timing metrics, prior-evidence confirmation, and the component
+disposition. Phase 0 artifacts are local evidence; they are not the CI visual baselines.
 
 **Work**
 

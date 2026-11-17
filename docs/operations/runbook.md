@@ -121,8 +121,11 @@ Current verified baseline (2026-11-18): 100 API unit pass plus 62 integration-on
 86.8% functions (Stage 11 baseline). The full suite passed twice consecutively for the
 Stage 10 exit record (216/216, 2026-11-15); the flag-off CI verification passed on
 2026-11-16, and the later local-first Mongo isolation work passed on push `44143783816`
-and local dispatch `44147190267`. The production web build is warning-free with a
-483.90 kB main chunk (137.86 kB gzip) after every route was lazy-loaded. CI passes
+and local dispatch `44147190267`. Every route is lazy-loaded. The Stage 12 Phase 0
+rebuild produces a 506.12 kB main chunk (140.06 kB gzip) and Vite's
+`Some chunks are larger than 500 kB` warning; the earlier 483.90 kB / 137.86 kB
+warning-free figure is dated Stage 9 evidence. Reducing the main chunk back under the
+500 kB budget is a Stage 12 exit target. CI passes
 `bun audit --audit-level=high --ignore GHSA-fc5q-39xc-vjpf`; the narrow `picomatch`
 ignore is temporary and tracked for removal. Stage 10 adds coverage, not a new runtime.
 

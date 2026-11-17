@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-18.
+Last updated: 2026-11-18 (Stage 12 Phase 0 in progress).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -26,7 +26,9 @@ named reviewer runs the steps and signs below. Nothing here authorizes deploymen
 | Part A — screen reader + 200% zoom | Held — not executed | Stage 12 UI refresh | `qa-and-review.md` §15, `accessibility-audit.md` §4 |
 | Part B — independent runbook walkthrough | Held — not executed | Stage 12 UI refresh + runbook changes | `qa-and-review.md` §14 |
 
-**Why held.** Stage 12 is planned, not started. It replaces the shell, command/search,
+**Why held.** Stage 12 Phase 0 completed 2026-11-18 (audit, direction, and baselines only;
+no UI code changed); the product owner locked all five direction choices. The later phases
+replace the shell, command/search,
 role dashboards, admin hub, core surfaces, bundled GIS, portal landing, and motion/accessibility
 behaviour, and it refreshes the visual baselines and coverage suite. A manual pass run against
 the current UI would be invalidated by that work and would have to be repeated. Execute both
@@ -48,6 +50,8 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | Date | Change | By |
 |---|---|---|
 | 2026-11-18 | Worksheet created from the Stage 9 Phase 6 plan; both gates marked held pending Stage 12 | — |
+| 2026-11-18 | Stage 12 Phase 0 started. Route inventory rechecked against `router.tsx`: 35 real routes, no additions; runbook §1 bundle claim corrected (main chunk 506.12 kB / 140.06 kB with a `>500 kB` warning). Step B4 still expects a warning-free build because this pass runs after Stage 12 exits and returning under 500 kB is a Stage 12 exit target. Evidence: `docs/plans/stage-12-phase0-baseline.md` | — |
+| 2026-11-18 | Stage 12 Phase 0 exited. Product owner approved the rail + top-bar shell, full token system, tokenized motion, bundled-polygon GIS, and action-first portal hero. No route, guard, or runbook step changed at the lock; both gates remain held until all Stage 12 phases complete. | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the
