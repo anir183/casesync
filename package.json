@@ -28,7 +28,7 @@
     "seed:stress": "bun run --filter @casesync/api seed:stress",
     "seed:stress:reset": "bun run --filter @casesync/api seed:stress:reset",
     "test:perf": "./scripts/perf-smoke.sh",
-    "check:ci": "biome check .",
+    "check:ci": "bun run scripts/check-imports.ts && biome check .",
     "typecheck:api": "bunx --package typescript@5.6.3 tsc --noEmit -p apps/api/tsconfig.json",
     "typecheck:web": "cd apps/web && ./node_modules/.bin/tsc -b --noEmit",
     "typecheck:web:tests": "cd apps/web && ./node_modules/.bin/tsc --noEmit -p tsconfig.test.json",
