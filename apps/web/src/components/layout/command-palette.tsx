@@ -1,7 +1,7 @@
 import { ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useQuery } from '@tanstack/react-query'
-import { CornerDownLeft, Search } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { CornerDownLeft, Search, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dialog } from '#/components/ui/dialog'
@@ -18,12 +18,32 @@ interface CommandPaletteProps {
   role?: string
 }
 
+interface InlineCommandSearchProps {
+  role?: string
+  open: boolean
+  onOpen: () => void
+  onClose: () => void
+  /** The centered palette owns input while it is open. */
+  suspended?: boolean
+  className?: string
+}
+
 interface CommandResult {
   id: string
   label: string
   detail?: string
   to: string
   group: string
+}
+
+interface CommandResultsProps {
+  results: CommandResult[]
+  selected: number
+  fetching: boolean
+  searchable: boolean
+  listId: string
+  onSelect: (result: CommandResult) => void
+  onActiveChange: (index: number) => void
 }
 
 function matches(query: string, ...values: Array<string | undefined>) {
@@ -33,16 +53,28 @@ function matches(query: string, ...values: Array<string | undefined>) {
 }
 
 /**
- * Global jump/search surface. Content searches stay behind a two-character
- * threshold and reuse the same list endpoints and server scoping as the pages.
+ * Shared command data and keyboard contract. Whether the surface is a modal or
+ * an inline dropdown, results, role gating, and the two-character threshold are
+ * identical.
  */
-export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
-  const navigate = useNavigate()
+function useCommandSearch(
+  role: string | undefined,
+  enabled: boolean,
+  onEscape?: () => void,
+  onSelect?: (result: CommandResult) => void,
+) {
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounced = useDebouncedValue(query.trim(), 250)
-  const searchable = debounced.length >= 2
+  const searchable = enabled && debounced.length >= 2
+
+  useEffect(() => {
+    if (!enabled) {
+      setQuery('')
+      setActiveIndex(0)
+    }
+  }, [enabled])
 
   const cases = useCases({ q: debounced, pageSize: 5 }, { enabled: searchable })
   const institutions = useInstitutions({ q: debounced, pageSize: 5 }, searchable)
@@ -129,12 +161,17 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
   const fetching =
     searchable && (cases.isFetching || institutions.isFetching || overlaps.isFetching)
 
-  function select(result: CommandResult) {
-    onClose()
-    navigate(result.to)
+  function onQueryChange(value: string) {
+    setQuery(value)
+    setActiveIndex(0)
   }
 
   function handleKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Escape' && onEscape) {
+      event.preventDefault()
+      onEscape()
+      return
+    }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       if (results.length === 0) return
@@ -149,26 +186,132 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
     } else if (event.key === 'Enter') {
       event.preventDefault()
       const result = results[selected]
-      if (result) select(result)
+      if (result) {
+        onEscape?.()
+        onSelect?.(result)
+      }
     }
   }
 
+  return {
+    query,
+    onQueryChange,
+    results,
+    selected,
+    setActiveIndex,
+    fetching,
+    searchable,
+    inputRef,
+    handleKeyDown,
+  }
+}
+
+function CommandResultsList({
+  results,
+  selected,
+  fetching,
+  searchable,
+  listId,
+  onSelect,
+  onActiveChange,
+}: CommandResultsProps) {
+  const listRef = useRef<HTMLDivElement>(null)
   let lastGroup = ''
+
+  // Keyboard selection must reveal its row without scrolling the page or the
+  // dialog itself, so adjust only this list's own scroll offset.
+  useEffect(() => {
+    const container = listRef.current
+    if (!container) return
+    const active = container.querySelector<HTMLElement>(`[data-result-index="${selected}"]`)
+    if (!active) return
+    const view = container.getBoundingClientRect()
+    const row = active.getBoundingClientRect()
+    if (row.top < view.top) container.scrollTop -= view.top - row.top
+    else if (row.bottom > view.bottom) container.scrollTop += row.bottom - view.bottom
+  }, [selected])
+
+  return (
+    <div ref={listRef} id={listId} className="max-h-[55vh] overflow-y-auto p-2">
+      {fetching && (
+        <p className="px-3 py-1 text-meta text-muted-foreground" aria-live="polite">
+          Searching…
+        </p>
+      )}
+      {results.length === 0 ? (
+        <p className="px-3 py-8 text-center text-body text-muted-foreground">
+          {searchable ? 'No matches found.' : 'Start typing to search.'}
+        </p>
+      ) : (
+        results.map((result, index) => {
+          const showGroup = result.group !== lastGroup
+          lastGroup = result.group
+          return (
+            <div key={result.id}>
+              {showGroup && (
+                <p className="px-3 pb-1 pt-2 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
+                  {result.group}
+                </p>
+              )}
+              <button
+                type="button"
+                id={`${listId}-option-${index}`}
+                data-result-index={index}
+                aria-current={index === selected ? 'true' : undefined}
+                onClick={() => onSelect(result)}
+                onMouseEnter={() => onActiveChange(index)}
+                className={cn(
+                  'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  index === selected ? 'bg-muted text-foreground' : 'text-muted-foreground',
+                )}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{result.label}</span>
+                  {result.detail && (
+                    <span className="block truncate text-meta text-muted-foreground">
+                      {result.detail}
+                    </span>
+                  )}
+                </span>
+                {index === selected && (
+                  <CornerDownLeft aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+                )}
+              </button>
+            </div>
+          )
+        })
+      )}
+    </div>
+  )
+}
+
+/** Centered keyboard surface opened with `Cmd/Ctrl+K`. */
+export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
+  const navigate = useNavigate()
+
+  function select(result: CommandResult) {
+    onClose()
+    navigate(result.to)
+  }
+
+  const command = useCommandSearch(role, open, undefined, select)
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title="Command palette"
-      description="Jump to a page or search cases, institutions and overlaps."
-      overlayClassName="items-start pt-[8vh]"
-      className="max-w-2xl p-0"
+      // A modal dialog sits in the browser top layer, so its own margins—not
+      // the overlay's flex alignment—control placement.
+      dialogClassName="mx-auto mb-0 mt-[8vh] max-w-2xl"
+      className="space-y-2 p-0"
+      titleClassName="px-4 pt-4"
     >
       <div className="border-b border-border p-3">
         <div className="flex items-center gap-2">
           <Search aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground" />
           <input
-            ref={inputRef}
+            ref={command.inputRef}
             type="search"
             role="combobox"
             aria-label="Search or jump to"
@@ -176,12 +319,9 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
             aria-controls="command-results"
             aria-autocomplete="list"
             autoComplete="off"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              setActiveIndex(0)
-            }}
-            onKeyDown={handleKeyDown}
+            value={command.query}
+            onChange={(event) => command.onQueryChange(event.target.value)}
+            onKeyDown={command.handleKeyDown}
             placeholder="Search cases, institutions, overlaps or jump to a page"
             className="min-w-0 flex-1 bg-transparent text-body outline-none placeholder:text-muted-foreground"
           />
@@ -190,60 +330,129 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
           </kbd>
         </div>
       </div>
+      <CommandResultsList
+        results={command.results}
+        selected={command.selected}
+        fetching={command.fetching}
+        searchable={command.searchable}
+        listId="command-results"
+        onSelect={select}
+        onActiveChange={command.setActiveIndex}
+      />
+    </Dialog>
+  )
+}
 
-      {fetching && (
-        <p className="px-4 py-1 text-meta text-muted-foreground" aria-live="polite">
-          Searching…
-        </p>
-      )}
+/**
+ * Click surface for the top bar. The input stays in the bar and results drop
+ * beneath it; focus remains in the bar input throughout.
+ */
+export function InlineCommandSearch({
+  role,
+  open,
+  onOpen,
+  onClose,
+  suspended = false,
+  className,
+}: InlineCommandSearchProps) {
+  const navigate = useNavigate()
+  const rootRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
-      {results.length === 0 ? (
-        <p className="px-4 py-8 text-center text-body text-muted-foreground">
-          {searchable ? 'No matches found.' : 'Start typing to search.'}
-        </p>
-      ) : (
-        <div id="command-results" className="max-h-[55vh] overflow-y-auto p-2">
-          {results.map((result, index) => {
-            const showGroup = result.group !== lastGroup
-            lastGroup = result.group
-            return (
-              <div key={result.id}>
-                {showGroup && (
-                  <p className="px-3 pb-1 pt-2 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
-                    {result.group}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  id={`command-option-${index}`}
-                  aria-current={index === selected ? 'true' : undefined}
-                  onClick={() => select(result)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className={cn(
-                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    index === selected ? 'bg-muted text-foreground' : 'text-muted-foreground',
-                  )}
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{result.label}</span>
-                    {result.detail && (
-                      <span className="block truncate text-meta text-muted-foreground">
-                        {result.detail}
-                      </span>
-                    )}
-                  </span>
-                  {index === selected && (
-                    <CornerDownLeft
-                      aria-hidden
-                      className="h-4 w-4 shrink-0 text-muted-foreground"
-                    />
-                  )}
-                </button>
-              </div>
-            )
-          })}
+  function select(result: CommandResult) {
+    onCloseRef.current()
+    navigate(result.to)
+  }
+
+  const command = useCommandSearch(role, open, () => onCloseRef.current(), select)
+
+  useEffect(() => {
+    if (open && !suspended) command.inputRef.current?.focus()
+  }, [open, suspended, command.inputRef])
+
+  useEffect(() => {
+    if (!open) return
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) onCloseRef.current()
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [open])
+
+  return (
+    <div ref={rootRef} className={cn('relative min-w-0', className)}>
+      <div
+        className={cn(
+          'flex h-9 items-center gap-2 rounded-lg border px-3 transition-colors',
+          suspended
+            ? 'border-primary/40 bg-primary/5'
+            : open
+              ? 'border-primary bg-background ring-2 ring-ring/20'
+              : 'border-border bg-muted/40 hover:bg-muted',
+        )}
+      >
+        <Search aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <input
+          ref={command.inputRef}
+          type="search"
+          role="combobox"
+          aria-label="Search or jump to"
+          aria-expanded={open}
+          aria-controls={open ? 'inline-command-results' : undefined}
+          aria-autocomplete="list"
+          autoComplete="off"
+          disabled={suspended}
+          readOnly={!open}
+          value={command.query}
+          onChange={(event) => command.onQueryChange(event.target.value)}
+          onFocus={() => {
+            if (!open && !suspended) onOpen()
+          }}
+          onClick={() => {
+            if (!open && !suspended) onOpen()
+          }}
+          onKeyDown={command.handleKeyDown}
+          placeholder={suspended ? 'Open in command palette' : 'Search anything…'}
+          className="min-w-0 flex-1 bg-transparent text-body outline-none placeholder:text-muted-foreground"
+        />
+        {suspended ? (
+          <span
+            title="Command palette is open"
+            className="shrink-0 rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-meta font-medium text-primary"
+          >
+            Open
+          </span>
+        ) : open ? (
+          <button
+            type="button"
+            aria-label="Close search"
+            onClick={onClose}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X aria-hidden className="h-4 w-4" />
+          </button>
+        ) : (
+          <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 text-meta text-muted-foreground sm:inline">
+            ⌘K
+          </kbd>
+        )}
+      </div>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-elevated">
+          <CommandResultsList
+            results={command.results}
+            selected={command.selected}
+            fetching={command.fetching}
+            searchable={command.searchable}
+            listId="inline-command-results"
+            onSelect={select}
+            onActiveChange={command.setActiveIndex}
+          />
         </div>
       )}
-    </Dialog>
+    </div>
   )
 }

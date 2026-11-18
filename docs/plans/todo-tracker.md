@@ -6,7 +6,7 @@
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** Phases 0–1 complete and Phase 2 implemented 2026-11-18, but **Phase 2 reopened for product-owner review remediation** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs); Phase 3 not yet authorized. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
+**Stage 12:** Phases 0–1 complete and Phase 2 implemented 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs); Phase 3 not yet authorized. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -780,7 +780,7 @@ Verification: `typecheck:web`, `typecheck:web:tests`, `check:ci`, 33 web unit te
 full-browser E2E tests, and a fresh web build all pass. Main chunk `506.11 kB / 140.06 kB
 gzip`, within the Phase 0 guardrail.
 
-### Phase 2 — Shell and navigation (IMPLEMENTED — REVIEW REMEDIATION OPEN — Phase 3 not authorized)
+### Phase 2 — Shell and navigation (IMPLEMENTED — REVIEW REMEDIATION VERIFIED — Phase 3 not authorized)
 
 Decisions: 240 px label-and-icon rail; `Cmd/Ctrl+K` palette with native button results and a
 two-character content-search threshold; optional escaped `q` filter on the overlaps API applied
@@ -796,36 +796,47 @@ Phase 0 guardrail.
 - [x] Add breadcrumb/context and rework the mobile drawer for thumb reach.
 - [x] Preserve active nav, focus return, route-change focus, and keyboard access.
 
-Product-owner review remediation (2026-11-18) — Phase 2 is not exited until these pass:
+Product-owner review remediation (2026-11-18) — implemented and reverified:
 
-- [ ] Replace the rail footer with an upward `Account menu, {name}`; move Sign out inside it
+- [x] Replace the rail footer with an upward `Account menu, {name}`; move Sign out inside it
       and keep identity/email in the menu header. No placeholder settings links.
-- [ ] Remove `More navigation` from the rail and show role-gated destinations in persistent
+- [x] Remove `More navigation` from the rail and show role-gated destinations in persistent
       Workspace, Notifications, and Admin/Oversight groups. Fix the horizontal-scroll/focus
       defect and update the intentional selector retirement in E2E and QA docs.
-- [ ] Add a persisted icon-only rail collapse mode with labelled tooltips, unchanged active
+- [x] Add a persisted icon-only rail collapse mode with labelled tooltips, unchanged active
       state, and no page-level overflow.
-- [ ] Split the command surface: `Cmd/Ctrl+K` opens a centered modal; clicking the top-bar
+- [x] Split the command surface: `Cmd/Ctrl+K` opens a centered modal; clicking the top-bar
       search keeps the input in place and drops results below it. Add the search trigger's
       open-state indicator and correct focus return for both modes.
-- [ ] Change the top bar to two zones: left search/context; right scope, Create, Notifications,
+- [x] Change the top bar to two zones: left search/context; right scope, Create, Notifications,
       Theme, mobile toggle. Admin destinations stay in the rail.
-- [ ] Remove global `Dashboard > …` breadcrumbs; rely on active rail state, page headers, and
+- [x] Remove global `Dashboard > …` breadcrumbs; rely on active rail state, page headers, and
       local `Back to …` links for nested routes.
-- [ ] Update `navigation.spec.ts`, component/unit tests, `ui-test-matrix.md`, and
+- [x] Update `navigation.spec.ts`, component/unit tests, `ui-test-matrix.md`, and
       `manual-signoff.md` for the new shell contract.
 
-Verification below proves the **initial** implementation only; remediation requires a fresh
-full chain and E2E pass before Phase 2 can be marked complete.
+Verification (remediation): `check:ci`, all three typechecks, API unit (116 pass / 74 skip / 0
+fail), web unit (43 pass / 0 fail), targeted shell/a11y/smoke/portal E2E (70 pass / 0 fail), full
+desktop E2E (203 pass / 0 fail), and a fresh web build all pass against disposable loopback Mongo.
+Main chunk `499.44 kB / 140.06 kB gzip` (at the `506.12 kB / 140.06 kB gzip` guardrail).
 
-Verification: `check:ci`, all three typechecks, API unit (116 pass / 74 skip / 0 fail), web
-unit (41 pass / 0 fail), overlap `q` integration (1 targeted test / 12 assertions plus
-`stage1.integration.test.ts` 52 pass / 0 fail), full desktop E2E (200 pass / 0 fail), and a
-fresh web build all pass against disposable loopback Mongo. Main chunk
-`499.27 kB / 140.06 kB gzip` (below the `506.12 kB / 140.06 kB gzip` guardrail). No routes,
-permissions, data contracts, or runbook steps changed; the command palette is a dialog, not a
-route. Visual baselines remain untouched locally; the official 48-baseline refresh and double
-CI run remain Stage 12 Phase 7 work.
+Product-owner tuning pass (2026-11-18), post-remediation:
+
+- [x] Widen the top-bar search ~135% with fixed standard Tailwind widths and keep the utility
+      cluster right-aligned without 375 px overflow.
+- [x] Remove the centered palette description, add title padding, and reduce the gap below the
+      title.
+- [x] Scroll the active command result into view on arrow/Home/End navigation.
+- [x] Enlarge the notification preview (28rem panel, 8 items, `max-h-96`).
+- [x] Show a disabled `Open` indicator in the bar search while the keyboard palette owns input.
+- [x] Remove the redundant top-bar role/scope indicator (identity lives in the rail profile
+      menu); retire the `Current scope` selector and reconcile navigation/E2E/docs.
+
+Verification (tuning): Biome, `check:ci`, web typechecks, web build (`499.39 kB / 140.04 kB
+gzip`), and targeted loopback E2E (`navigation`, `responsive`, `accessibility`) pass. No routes,
+permissions, data contracts, or runbook steps changed. Visual baselines remain untouched locally;
+the official 48-baseline refresh and double CI run remain Stage 12 Phase 7 work. Manual QA gates
+remain held.
 
 ### Phase 3 — Dashboard and admin command surfaces
 
@@ -897,6 +908,13 @@ CI run remain Stage 12 Phase 7 work.
 - [ ] Update selectors only where accessible names changed; prefer roles/labels.
 - [ ] Regenerate the 48 visual baselines after sign-off, review every diff, and run twice.
 - [ ] Run the full Chromium suite twice against fresh builds and `seed:demo`.
+- [ ] Add a branded route-error fallback: `errorElement` on the top-level route branches in
+      `apps/web/src/app/router.tsx`, reusing the existing `ErrorState` primitive with a safe
+      "Return to dashboard" action (and a sign-in action on public branches). The default React
+      Router error screen exposes developer copy on unhandled render/lazy-load errors; this is a
+      follow-up after Stage 12 exits, not part of the locked shell remediation.
+- [ ] Cover the error fallback with a forced-throw E2E route test and add a QA matrix row for
+      unhandled route errors, including axe and 375 px checks.
 - [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker.
 
 ## Testing Definition of Done

@@ -37,17 +37,17 @@ function renderBell(
 }
 
 describe('notification bell', () => {
-  test('is the unread indicator and shows the five newest items', () => {
+  test('is the unread indicator and shows the eight newest items', () => {
     renderBell(
-      [1, 2, 3, 4, 5, 6].map((index) => notification(index)),
+      [1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => notification(index)),
       2,
     )
 
     const trigger = screen.getByRole('button', { name: 'Notifications, 2 unread' })
     fireEvent.click(trigger)
 
-    expect(screen.getByText('Alert 5')).toBeDefined()
-    expect(screen.queryByText('Alert 6')).toBeNull()
+    expect(screen.getByText('Alert 8')).toBeDefined()
+    expect(screen.queryByText('Alert 9')).toBeNull()
     expect(screen.getByRole('link', { name: 'View all notifications' })).toBeDefined()
   })
 

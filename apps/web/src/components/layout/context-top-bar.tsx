@@ -1,17 +1,15 @@
-import { Menu, Search, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Menu, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ThemeToggle } from '#/components/theme/theme-toggle'
 import type { AppNotification } from '#/features/notifications/api'
-import { Breadcrumbs } from './breadcrumbs'
+import { InlineCommandSearch } from './command-palette'
 import { NotificationBell } from './notification-bell'
 import { QuickCreateMenu } from './quick-create-menu'
-import { ScopeIndicator } from './scope-indicator'
 
 interface ContextTopBarProps {
-  pathname: string
   role?: string
-  bureauId?: string
-  regionId?: string
+  commandOpen: boolean
   notifications: AppNotification[]
   unreadCount: number
   isMarkingAllRead: boolean
@@ -22,12 +20,10 @@ interface ContextTopBarProps {
   onToggleMobile: () => void
 }
 
-/** Context bar for the staff workspace: global actions only, no destinations. */
+/** Two-zone context bar: search on the left, workspace utilities on the right. */
 export function ContextTopBar({
-  pathname,
   role,
-  bureauId,
-  regionId,
+  commandOpen,
   notifications,
   unreadCount,
   isMarkingAllRead,
@@ -37,6 +33,8 @@ export function ContextTopBar({
   mobileOpen,
   onToggleMobile,
 }: ContextTopBarProps) {
+  const location = useLocation()
+  const [inlineCommandOpen, setInlineCommandOpen] = useState(false)
   const openCommandRef = useRef(onOpenCommand)
   openCommandRef.current = onOpenCommand
 
@@ -44,6 +42,7 @@ export function ContextTopBar({
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 'k') {
         event.preventDefault()
+        setInlineCommandOpen(false)
         openCommandRef.current()
       }
     }
@@ -51,49 +50,50 @@ export function ContextTopBar({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  // Navigation closes the inline panel without disturbing the centered modal.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close inline search on navigation
+  useEffect(() => {
+    setInlineCommandOpen(false)
+  }, [location.pathname])
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <div className="flex h-16 items-center gap-2 px-4 sm:px-6">
-        <button
-          type="button"
-          onClick={onOpenCommand}
-          className="flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 text-body text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:max-w-sm"
-        >
-          <Search aria-hidden className="h-4 w-4 shrink-0" />
-          <span className="truncate">Search anything…</span>
-          <kbd className="ml-auto hidden rounded border border-border px-1.5 py-0.5 text-meta sm:inline">
-            ⌘K
-          </kbd>
-        </button>
-
-        <ScopeIndicator role={role} bureauId={bureauId} regionId={regionId} />
-        <QuickCreateMenu role={role} />
-        <NotificationBell
-          items={notifications}
-          unreadCount={unreadCount}
-          isMarkingAllRead={isMarkingAllRead}
-          onMarkAllRead={onMarkAllRead}
-          onOpenNotification={onOpenNotification}
+      <div className="flex h-16 items-center justify-between gap-2 px-4 sm:px-6">
+        <InlineCommandSearch
+          role={role}
+          open={inlineCommandOpen}
+          onOpen={() => setInlineCommandOpen(true)}
+          onClose={() => setInlineCommandOpen(false)}
+          suspended={commandOpen}
+          className="w-64 sm:w-88 md:w-96 lg:w-108"
         />
-        <ThemeToggle className="hidden md:inline-flex" />
 
-        <button
-          type="button"
-          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-          aria-expanded={mobileOpen}
-          aria-controls="staff-mobile-nav"
-          onClick={onToggleMobile}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-        >
-          {mobileOpen ? (
-            <X aria-hidden className="h-5 w-5" />
-          ) : (
-            <Menu aria-hidden className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-      <div className="px-4 sm:px-6">
-        <Breadcrumbs pathname={pathname} className="py-2" />
+        <div className="flex shrink-0 items-center gap-2">
+          <QuickCreateMenu role={role} />
+          <NotificationBell
+            items={notifications}
+            unreadCount={unreadCount}
+            isMarkingAllRead={isMarkingAllRead}
+            onMarkAllRead={onMarkAllRead}
+            onOpenNotification={onOpenNotification}
+          />
+          <ThemeToggle className="hidden md:inline-flex" />
+
+          <button
+            type="button"
+            aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={mobileOpen}
+            aria-controls="staff-mobile-nav"
+            onClick={onToggleMobile}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+          >
+            {mobileOpen ? (
+              <X aria-hidden className="h-5 w-5" />
+            ) : (
+              <Menu aria-hidden className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
     </header>
   )

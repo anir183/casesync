@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-18 (Phase 2 review remediation planned; gates still held).
+Last updated: 2026-11-18 (Phase 2 review remediation implemented and verified; gates still held).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -54,6 +54,9 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | 2026-11-18 | Stage 12 Phase 0 exited. Product owner approved the rail + top-bar shell, full token system, tokenized motion, bundled-polygon GIS, and action-first portal hero. No route, guard, or runbook step changed at the lock; both gates remain held until all Stage 12 phases complete. | — |
 | 2026-11-18 | Stage 12 Phase 2 shell/navigation implemented: desktop rail + context top bar, `Cmd/Ctrl+K` command palette, grouped/filterable notification preview, quick create, scope indicator, breadcrumbs, and reworked mobile drawer. No route, guard, data, or runbook step changed; the palette is a dialog surface, so §A.1 adds rows A13–A14. Both gates remain held until Stage 12 exits. | — |
 | 2026-11-18 | Product-owner review of the Phase 2 build. Phase 2 reopened for remediation: upward profile menu with Sign out inside, no rail `More`, persistent grouped/collapsible rail, two command modes (centered keyboard modal and inline click dropdown), two-zone top bar, and no global breadcrumbs. Phase 3 dashboard/report separation and Phase 6 full-height portal hero also clarified. §A.1 rows A13–A16 updated; gates remain held. | — |
+| 2026-11-18 | Phase 2 review remediation implemented and verified on disposable loopback Mongo: Biome clean, three typechecks clean, API 116 pass / 74 skip, web 43 pass, targeted E2E 70 pass, full desktop E2E 203 pass, main chunk `499.44 kB / 140.06 kB gzip`. No route, guard, data, or runbook step changed; `More navigation` and global breadcrumb selectors retired. Gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Product-owner UI tuning: fixed-width search widened ~135% (`w-64 sm:w-88 md:w-96 lg:w-108`), centered palette description removed and title padded with a tighter following gap, keyboard arrow selection now scrolls the result list, notification preview enlarged (28rem panel, 8 items, `max-h-96`), and the top-bar search shows a disabled `Open` badge while the keyboard palette owns input. The redundant role/scope indicator was removed from the top bar — identity and role live in the rail profile menu — so the `Current scope` selector is retired. No route, guard, data, or runbook step changed. Gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Product owner observed React Router's default developer-facing error screen on an unhandled route error. No route, guard, or runbook change made now; a branded `errorElement` reusing `ErrorState` with a safe recovery action, plus forced-throw E2E coverage and a matrix row, is planned in Phase 7 of `docs/plans/todo-tracker.md`. Gates remain held. | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the

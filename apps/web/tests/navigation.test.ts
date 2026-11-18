@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { ROLES } from '@casesync/config'
-import { breadcrumbsFor, buildNavigation, findNavItem } from '../src/components/layout/navigation'
+import { buildNavigation, findNavItem } from '../src/components/layout/navigation'
 
 const ALL_ROLES = Object.values(ROLES)
 
 describe('staff navigation', () => {
-  test('keeps the primary bar to five scannable links', () => {
+  test('keeps the five workspace links scannable', () => {
     const { primary } = buildNavigation(ROLES.ADMIN)
     expect(primary.map((item) => item.label)).toEqual([
       'Dashboard',
@@ -16,10 +16,22 @@ describe('staff navigation', () => {
     ])
   })
 
-  test('groups role-gated destinations under the admin overflow', () => {
+  test('groups persistent destinations by job instead of hiding them in More', () => {
     const admin = buildNavigation(ROLES.ADMIN)
-    expect(admin.generalOverflow.map((item) => item.label)).toEqual(['Notifications'])
-    expect(admin.adminOverflow.map((item) => item.label)).toEqual([
+    expect(admin.groups.map((group) => group.label)).toEqual([
+      'Workspace',
+      'Notifications',
+      'Admin',
+    ])
+    expect(admin.groups[0]?.items.map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Cases',
+      'Institutions',
+      'Overlaps',
+      'Reports',
+    ])
+    expect(admin.groups[1]?.items.map((item) => item.label)).toEqual(['Notifications'])
+    expect(admin.groups[2]?.items.map((item) => item.label)).toEqual([
       'Users',
       'Representatives',
       'Email domains',
@@ -28,6 +40,16 @@ describe('staff navigation', () => {
       'SLA rules',
       'Audit log',
     ])
+  })
+
+  test('labels the audit-only rail group as Oversight', () => {
+    const viewer = buildNavigation(ROLES.VIEWER)
+    expect(viewer.groups.map((group) => group.label)).toEqual([
+      'Workspace',
+      'Notifications',
+      'Oversight',
+    ])
+    expect(viewer.groups[2]?.items.map((item) => item.label)).toEqual(['Audit log'])
   })
 
   test('hides admin destinations from officers', () => {
@@ -44,17 +66,17 @@ describe('staff navigation', () => {
     }
   })
 
-  test('never duplicates a destination across primary and overflow', () => {
+  test('never duplicates a destination across groups', () => {
     for (const role of ALL_ROLES) {
-      const { primary, overflow } = buildNavigation(role)
-      const paths = [...primary, ...overflow].map((item) => item.to)
+      const { groups } = buildNavigation(role)
+      const paths = groups.flatMap((group) => group.items.map((item) => item.to))
       expect(new Set(paths).size).toBe(paths.length)
     }
   })
 })
 
 describe('route context', () => {
-  test('resolves detail and edit routes to their owning section', () => {
+  test('resolves detail and edit routes to their owning destination', () => {
     expect(findNavItem('/cases')?.label).toBe('Cases')
     expect(findNavItem('/cases/new')?.label).toBe('Cases')
     expect(findNavItem('/cases/507f1f77bcf86cd799439011')?.label).toBe('Cases')
@@ -68,22 +90,5 @@ describe('route context', () => {
   test('does not treat the dashboard as the owner of every child route', () => {
     expect(findNavItem('/reports/details')?.label).toBe('Reports')
     expect(findNavItem('/unknown/deep/path')).toBeUndefined()
-  })
-
-  test('breadcrumbs omit the leaf, which is already named by the page heading', () => {
-    expect(breadcrumbsFor('/dashboard')).toEqual([])
-    expect(breadcrumbsFor('/cases')).toEqual([{ label: 'Dashboard', to: '/dashboard' }])
-    expect(breadcrumbsFor('/cases/new')).toEqual([
-      { label: 'Dashboard', to: '/dashboard' },
-      { label: 'Cases', to: '/cases' },
-    ])
-    expect(breadcrumbsFor('/overlaps/abc')).toEqual([
-      { label: 'Dashboard', to: '/dashboard' },
-      { label: 'Overlaps', to: '/overlaps' },
-    ])
-    expect(breadcrumbsFor('/admin/audit')).toEqual([
-      { label: 'Dashboard', to: '/dashboard' },
-      { label: 'Admin' },
-    ])
   })
 })

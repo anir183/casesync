@@ -267,9 +267,11 @@ test.describe('@states staff UI states', () => {
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Escalations needing attention' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Representatives' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Institution domains' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Audit log' })).toBeVisible()
+    // Admin destinations also live in the persistent rail now; scope to the cards.
+    const main = page.locator('#main-content')
+    await expect(main.getByRole('link', { name: 'Representatives' })).toBeVisible()
+    await expect(main.getByRole('link', { name: 'Institution domains' })).toBeVisible()
+    await expect(main.getByRole('link', { name: 'Audit log' })).toBeVisible()
   })
 })
 

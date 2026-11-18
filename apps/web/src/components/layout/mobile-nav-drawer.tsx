@@ -31,7 +31,7 @@ export function MobileNavDrawer({
   email,
   onSignOut,
 }: MobileNavDrawerProps) {
-  const { primary, generalOverflow, adminOverflow } = buildNavigation(role)
+  const { groups } = buildNavigation(role)
 
   function renderItem(item: NavItem) {
     return (
@@ -51,22 +51,20 @@ export function MobileNavDrawer({
       title="Navigation"
       className="max-w-xs"
     >
-      <nav aria-label="Mobile" className="space-y-1">
+      <nav aria-label="Mobile" className="space-y-4">
         <div className="mb-3 border-b border-border px-3 pb-3">
           <p className="truncate text-body font-medium">{displayName}</p>
           {email && <p className="truncate text-meta text-muted-foreground">{email}</p>}
         </div>
 
-        {primary.map(renderItem)}
-        {generalOverflow.map(renderItem)}
-        {adminOverflow.length > 0 && (
-          <>
-            <p className="px-3 pb-1 pt-3 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
-              Admin
+        {groups.map((group) => (
+          <div key={group.label} className="space-y-1">
+            <p className="px-3 pb-1 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
+              {group.label}
             </p>
-            {adminOverflow.map(renderItem)}
-          </>
-        )}
+            {group.items.map(renderItem)}
+          </div>
+        ))}
 
         <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
           <ThemeToggle />

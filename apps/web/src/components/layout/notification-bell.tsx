@@ -59,7 +59,7 @@ function NotificationPanel({
   const visible = items
     .filter((item) => !unreadOnly || !item.readAt)
     .filter((item) => !type || item.type === type)
-    .slice(0, 5)
+    .slice(0, 8)
   const groups = groupByType(visible)
 
   return (
@@ -116,7 +116,7 @@ function NotificationPanel({
           {items.length === 0 ? 'No notifications yet.' : 'No notifications match these filters.'}
         </p>
       ) : (
-        <div className="max-h-80 divide-y divide-border overflow-y-auto">
+        <div className="max-h-96 divide-y divide-border overflow-y-auto">
           {groups.map((group) => (
             <section key={group.label} aria-label={group.label}>
               <h3 className="bg-muted/50 px-4 py-1.5 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
@@ -209,7 +209,7 @@ export function NotificationBell({
       ariaLabel={label}
       align="right"
       panelLabel="Notification preview"
-      panelClassName="w-[min(24rem,calc(100vw-2rem))] p-0"
+      panelClassName="w-[min(28rem,calc(100vw-2rem))] p-0"
       triggerClassName="relative h-9 w-9 justify-center px-0"
       label={
         <>

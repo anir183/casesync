@@ -394,8 +394,9 @@ The five Stage 12 Phase 0 decisions are locked; evidence is in
 - **Portal hero:** action-first hero with one primary CTA and inline tracking, compact
   three-step strip, trust strip, short FAQ, prominent verification state.
 
-The lock fixed direction only. Phases 0–1 are complete and Phase 2 was implemented, then
-reopened for the review amendment below; Phase 3 still requires separate authorization.
+The lock fixed direction only. Phases 0–1 are complete; Phase 2 was implemented, reopened for
+the review amendment below, and the amendment was implemented and verified on 2026-11-18.
+Phase 3 still requires separate authorization.
 
 **Phase 2 product-owner review amendment (2026-11-18)**
 

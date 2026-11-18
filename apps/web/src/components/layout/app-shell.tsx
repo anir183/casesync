@@ -38,8 +38,6 @@ export function AppShell() {
   const displayName = user?.name || user?.email || 'Account'
   const unreadCount = notifications.data?.unreadCount ?? 0
 
-  const openCommand = () => setCommandOpen(true)
-
   // A route change must never leave a floating drawer or palette behind.
   // biome-ignore lint/correctness/useExhaustiveDependencies: close overlays on navigation
   useEffect(() => {
@@ -61,7 +59,7 @@ export function AppShell() {
         Skip to main content
       </a>
 
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 lg:block">
+      <aside className="sticky top-0 hidden h-screen shrink-0 lg:block">
         <Suspense fallback={<div className="h-full w-60 border-r border-border" aria-hidden />}>
           <SidebarRail
             role={role}
@@ -75,16 +73,14 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Suspense fallback={<div className="h-16 border-b border-border" aria-hidden />}>
           <ContextTopBar
-            pathname={location.pathname}
             role={role}
-            bureauId={user?.bureauId}
-            regionId={user?.regionId}
+            commandOpen={commandOpen}
             notifications={notifications.data?.items ?? []}
             unreadCount={unreadCount}
             isMarkingAllRead={markAllRead.isPending}
             onMarkAllRead={() => markAllRead.mutate()}
             onOpenNotification={(id) => markRead.mutate(id)}
-            onOpenCommand={openCommand}
+            onOpenCommand={() => setCommandOpen(true)}
             mobileOpen={mobileOpen}
             onToggleMobile={() => setMobileOpen((current) => !current)}
           />

@@ -25,10 +25,12 @@ export interface NavItem {
   section?: string
 }
 
-/**
- * Staff primary navigation. Keep this list short: anything rare belongs in the
- * More overflow so the top bar stays scannable at 1024px.
- */
+export interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+/** Persistent staff destinations. Utility routes live in their own rail groups. */
 export const PRIMARY_NAV: readonly NavItem[] = [
   {
     to: '/dashboard',
@@ -130,13 +132,27 @@ function isAllowed(item: NavItem, role: string | undefined) {
   return !item.roles || Boolean(role && item.roles.includes(role))
 }
 
+function adminGroupLabel(role: string | undefined) {
+  return role === ROLES.ADMIN ? 'Admin' : 'Oversight'
+}
+
 export function buildNavigation(role: string | undefined) {
+  const primary = PRIMARY_NAV.filter((item) => isAllowed(item, role))
   const overflow = OVERFLOW_NAV.filter((item) => isAllowed(item, role))
+  const generalOverflow = overflow.filter((item) => !item.roles)
+  const adminOverflow = overflow.filter((item) => item.roles)
+  const groups: NavGroup[] = [
+    { label: 'Workspace', items: primary },
+    ...(generalOverflow.length > 0 ? [{ label: 'Notifications', items: generalOverflow }] : []),
+    ...(adminOverflow.length > 0 ? [{ label: adminGroupLabel(role), items: adminOverflow }] : []),
+  ]
+
   return {
-    primary: PRIMARY_NAV.filter((item) => isAllowed(item, role)),
+    primary,
     overflow,
-    generalOverflow: overflow.filter((item) => !item.roles),
-    adminOverflow: overflow.filter((item) => item.roles),
+    generalOverflow,
+    adminOverflow,
+    groups,
   }
 }
 
@@ -160,47 +176,4 @@ export function findNavItem(pathname: string): NavItem | undefined {
     (entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`),
   )
   return alias ? all.find((item) => item.to === alias.to) : undefined
-}
-
-/** Static section labels for routes that have no nav entry of their own. */
-const SECTION_LABELS: ReadonlyArray<{ prefix: string; label: string; to?: string }> = [
-  { prefix: '/cases', label: 'Cases', to: '/cases' },
-  { prefix: '/institutions', label: 'Institutions', to: '/institutions' },
-  { prefix: '/overlaps', label: 'Overlaps', to: '/overlaps' },
-  { prefix: '/merge-groups', label: 'Overlaps', to: '/overlaps' },
-  { prefix: '/admin', label: 'Admin' },
-]
-
-export interface Breadcrumb {
-  label: string
-  to?: string
-}
-
-/**
- * Context crumbs for a path. The leaf is deliberately omitted: the page's own
- * `h1` already names it, so repeating it here would be noise for screen readers.
- */
-export function breadcrumbsFor(pathname: string): Breadcrumb[] {
-  if (pathname === '/' || pathname === '/dashboard') return []
-
-  const crumbs: Breadcrumb[] = [{ label: 'Dashboard', to: '/dashboard' }]
-  const item = findNavItem(pathname)
-
-  // A child route inherits its section crumb; the leaf is the page's own h1.
-  if (item && item.to !== pathname) {
-    crumbs.push({ label: item.label, to: item.to })
-    return crumbs
-  }
-  if (item?.section === 'Admin') {
-    crumbs.push({ label: 'Admin' })
-    return crumbs
-  }
-
-  const section = SECTION_LABELS.find((entry) => pathname.startsWith(`${entry.prefix}/`))
-  if (section) {
-    crumbs.push(
-      section.label === 'Admin' ? { label: 'Admin' } : { label: section.label, to: section.to },
-    )
-  }
-  return crumbs
 }

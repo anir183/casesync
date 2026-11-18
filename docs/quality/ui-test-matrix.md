@@ -293,8 +293,8 @@ landings, and the portal next-step/resolution-loop surfaces. Step 5 closed the d
 focus, mobile drawer, reduced-motion, and 200% zoom rows through the accessibility and
 responsive specs. Stage 12 Phase 2 added shell/navigation rows from `navigation.spec.ts`;
 product-owner review then reopened Phase 2 for profile-menu, grouped/collapsible rail,
-dual-command-mode, two-zone top-bar, and no-breadcrumb remediation. New surfaces are marked
-**Blocked** with a named phase dependency until implemented. Rows stay **Partial** where only
+dual-command-mode, two-zone top-bar, and no-breadcrumb remediation; those rows are now
+**Covered** by the verified remediation. Rows stay **Partial** where only
 one route or one side of the state is exercised, or where a surface is asserted only outside
 Playwright.
 
@@ -316,15 +316,16 @@ Playwright.
 | Success toast | All mutations | **Partial** (mutation suite) |
 | Error toast | Failed mutation | **Partial** (case remark) |
 | Session expiry redirect | Staff and portal shells | **Partial** (staff) |
-| Desktop rail and active nav | Staff shell | **Partial** (initial rail visibility and `aria-current` covered; grouped no-More layout, overflow fix, and role-gated sections pending Phase 2 remediation) |
-| Command palette | Staff shell | **Partial** (keyboard modal covered; click-to-inline dropdown mode and search open-state pending Phase 2 remediation) |
-| Quick create and scope indicator | Staff shell | **Covered** (admin actions and role name; viewer hides create and shows read-only scope) |
+| Desktop rail and active nav | Staff shell | **Covered** (grouped no-More layout, active `aria-current`, role-gated sections, and no overflow at 375/768/1024/1440 px) |
+| Command palette | Staff shell | **Covered** (keyboard modal and click-to-inline modes, open state, arrow/Enter/Escape focus, arrow selection scrolls results, role-gated results) |
+| Quick create follows signed-in role | Staff shell | **Covered** (admin actions; viewer hides create and role-gated sections) |
 | Mobile drawer open/close and focus return | Staff shell | **Covered** (keyboard open, role-gated destinations, close on navigation, opener focus restored) |
 | Notification bell preview | Staff shell | **Covered** (preview opens, `View all notifications` reaches the centre) |
 | Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
-| Profile menu in rail | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (upward menu, identity, Sign out inside) |
-| Icon-only collapsed rail | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (persisted toggle, labelled tooltips, no overflow) |
-| Two-zone top bar | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (left search/context; right utility cluster) |
+| Profile menu in rail | Staff shell | **Covered** (upward menu, identity/email header, Sign out inside, axe-clean accessible name) |
+| Icon-only collapsed rail | Staff shell | **Covered** (persisted toggle, labelled links/tooltips, no page overflow) |
+| Two-zone top bar | Staff shell | **Covered** (left search with `Open` indicator while the keyboard palette owns input; right Create/Notifications/Theme/mobile cluster) |
+| Unhandled route error | All route groups | **Deferred** — React Router's default developer screen is still visible; branded `errorElement` using `ErrorState` with a recovery action and forced-throw E2E coverage planned in Phase 7 |
 | Dashboard/report separation | `/dashboard`, `/reports` | **Blocked** — Stage 12 Phase 3 (no dashboard filters/charts/map/export; Reports is sole workbench) |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
@@ -355,11 +356,10 @@ users routes, the institution dashboard, case list, and profile, plus `/portal/t
 `/portal/dashboard`. It also proves tables scroll inside their container rather than the
 page (including the institution representatives queue), page and text-only 200% zoom
 reflow (including `/overlaps`), and reduced-motion transition collapse.
-`navigation.spec.ts` currently covers the initial rail at 375/768/1024/1440 px, active
-destination and More overflow, keyboard palette, quick-create/scope role treatment, and
-drawer focus return. Phase 2 remediation replaces the More assertions with grouped/collapsible
-rail, profile-menu, two-mode command, and two-zone top-bar coverage; global breadcrumbs are
-removed. `reports.spec.ts` covers the reports map at 375 px. Routes marked Deferred in §1
+`navigation.spec.ts` covers the rail at 375/768/1024/1440 px, active destination, grouped
+no-More rail, persisted icon-only collapse, profile menu, both command modes, quick-create/scope
+role treatment, two-zone top bar, and drawer focus return; global breadcrumbs are asserted
+absent. `reports.spec.ts` covers the reports map at 375 px. Routes marked Deferred in §1
 share one of these layout families; add a row only when a route introduces a new layout.
 
 ## 5. Visual regression baseline set

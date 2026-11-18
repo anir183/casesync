@@ -14,6 +14,10 @@ export interface DialogProps {
   footer?: ReactNode
   className?: string
   overlayClassName?: string
+  /** Padding for the title block when the body opts out of card padding. */
+  titleClassName?: string
+  /** Escapes for modal dialogs, whose positioning is owned by the browser's top layer. */
+  dialogClassName?: string
   id?: string
 }
 
@@ -26,6 +30,8 @@ export function Dialog({
   footer,
   className,
   overlayClassName,
+  titleClassName,
+  dialogClassName,
   id,
 }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -116,7 +122,10 @@ export function Dialog({
           event.preventDefault()
           requestClose()
         }}
-        className="m-0 w-full max-w-lg border-0 bg-transparent p-0 text-foreground shadow-none"
+        className={cn(
+          'm-0 w-full max-w-lg border-0 bg-transparent p-0 text-foreground shadow-none',
+          dialogClassName,
+        )}
       >
         <div
           className={cn(
@@ -124,7 +133,7 @@ export function Dialog({
             className,
           )}
         >
-          <div className="space-y-tight">
+          <div className={cn('space-y-tight', titleClassName)}>
             <h2 id={titleId} className="text-subhead font-semibold">
               {title}
             </h2>

@@ -9,6 +9,7 @@ interface NavDropdownProps {
   label: React.ReactNode
   children: (close: () => void) => React.ReactNode
   align?: 'left' | 'right'
+  placement?: 'bottom' | 'top'
   showChevron?: boolean
   triggerClassName?: string
   panelClassName?: string
@@ -25,6 +26,7 @@ export function NavDropdown({
   label,
   children,
   align = 'left',
+  placement = 'bottom',
   showChevron = false,
   triggerClassName,
   panelClassName,
@@ -88,7 +90,8 @@ export function NavDropdown({
           id={panelId}
           aria-label={panelLabel ?? ariaLabel}
           className={cn(
-            'absolute z-50 mt-2 min-w-56 overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-elevated',
+            'absolute z-50 min-w-56 overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-elevated',
+            placement === 'top' ? 'bottom-full mb-2' : 'mt-2',
             align === 'right' ? 'right-0' : 'left-0',
             panelClassName,
           )}

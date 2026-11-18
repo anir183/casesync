@@ -1,9 +1,9 @@
 # CaseSync — Stage 12 UI Modernization Plan
 
-Status: **Phases 0–2 implemented** 2026-11-18; **Phase 2 reopened for product-owner review
-remediation**, Phase 3 not authorized. Evidence:
+Status: **Phases 0–2 implemented** 2026-11-18; **Phase 2 review remediation implemented and
+verified** 2026-11-18 (exit criteria below met), Phase 3 not authorized. Evidence:
 [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md). Phase 0–1 history is retained;
-Phase 2 must pass the remediation exit criteria below before it is considered exited.
+the remediation record is kept below for traceability.
 Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
 runbook walkthrough) are **held until this stage completes**, because the UI refresh would
@@ -332,9 +332,12 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 ### Phase 2 review remediation (product owner, 2026-11-18)
 
 The implemented shell passed its first verification run, but product-owner review found
-usability defects. Phase 2 is therefore **not exited** until the following are implemented
-and reverified. This is an amendment to the locked shell direction, not a new product
-capability.
+usability defects. The following amendment to the locked shell direction was implemented and
+reverified on 2026-11-18; it added no product capability or route. Full chain green: Biome,
+all three typechecks, API unit 116 pass / 74 skip / 0 fail, web unit 43 pass / 0 fail,
+targeted E2E 70 pass / 0 fail, full desktop E2E 203 pass / 0 fail, and main chunk
+`499.44 kB / 140.06 kB gzip` (at the Phase 0 guardrail). Manual QA gates remain held until
+Stage 12 exits.
 
 **Work**
 
