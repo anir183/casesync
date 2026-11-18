@@ -1,9 +1,10 @@
 # CaseSync — Stage 12 UI Modernization Plan
 
-Status: **Phases 0–2 implemented** 2026-11-18; **Phase 2 review remediation implemented and
-verified** 2026-11-18 (exit criteria below met), Phase 3 not authorized. Evidence:
-[`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md). Phase 0–1 history is retained;
-the remediation record is kept below for traceability.
+Status: **Phases 0–3 implemented and verified** 2026-11-18, including the Phase 2 review
+remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 planned, not started**.
+Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md) and
+[`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md).
+Phase 0–1 history is retained; the remediation record is kept below for traceability.
 Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
 runbook walkthrough) are **held until this stage completes**, because the UI refresh would
@@ -411,6 +412,49 @@ which is why it reads as a second Reports page. Remove that duplication.
 - Admin pages are reachable from the hub, and each hub card shows a real signal.
 - The dashboard and admin hub pass axe, responsive, and reduced-motion checks.
 - Component tests cover the role-aware section selection.
+
+**Implementation status (2026-11-18):** complete and verified. The attention-first dashboard,
+admin hub, saved views, and pulled-forward branded route-error fallback are recorded in
+`docs/plans/todo-tracker.md`. Reports remains the sole analytical workbench.
+
+---
+
+### Phase 3.5 — Operator dashboard experience (PLANNED — not started)
+
+**Goal:** make the completed action-first dashboard comfortable and visually alive for
+operators who keep it open for hours, without turning it back into Reports.
+
+Full plan: [`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md).
+The operator contract is: *what needs me now? what changed? are we within target? where do I
+go next?* The layout keeps stable geometry across roles and refreshes: attention deck plus
+next actions, then a pulse strip, then pressure and change feed, then the admin command deck
+or team context.
+
+**Work**
+
+- Add a freshness control with Live/Stale state, manual refresh, and session-local
+  `New since you looked` markers.
+- Rebuild the queue into Due now / Due soon / Watching bands with text, icon/shape, and subtle
+  color accents; keep five rows and link to the scoped case query.
+- Give quick actions one dominant CTA and quiet secondary links, sourced from the existing
+  role-landing configuration.
+- Add KPI meter bars, a status ribbon, and top-5 pressure bars using existing tokens and CSS;
+  replace the two activity lists with one change feed.
+- Rework the admin hub into grouped command panels and a health rail with real counts.
+- Apply the strict color budget: indigo action, teal healthy, amber review, red urgent
+  exception, blue information, purple admin/data-quality; 80% neutral / 15% semantic / 5% red.
+- Verify long-session comfort: no layout shift, no flashing or nonessential motion, 44px
+  targets, tabular numbers, no color-only meaning, stable tab order, light/dark parity, and
+  `prefers-reduced-motion`.
+
+**Exit criteria**
+
+- Every staff role can answer the four operator-contract questions in one glance.
+- The dashboard feels “alive but calm” and every accent is paired with a label/icon/shape.
+- Dashboard still has no filter form, full chart grid, map, export, new route, permission,
+  server contract, or dependency.
+- Dashboard component, responsive, axe, reduced-motion, selector-preservation, and build-budget
+  checks pass; the official 48-baseline refresh and double CI remain in Phase 7.
 
 ---
 
