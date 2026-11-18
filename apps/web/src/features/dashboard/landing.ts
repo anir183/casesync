@@ -143,11 +143,16 @@ export function landingForRole(
         },
         quickActions: [
           {
-            to: scope.regionId ? `/cases?regionId=${scope.regionId}` : '/cases',
-            label: 'Regional cases',
+            to: scope.regionId
+              ? `/cases?status=TRANSFERRED&regionId=${scope.regionId}`
+              : '/cases?status=TRANSFERRED',
+            label: 'Transfers',
             primary: true,
           },
-          { to: '/cases?status=TRANSFERRED', label: 'Transfers' },
+          {
+            to: scope.regionId ? `/cases?regionId=${scope.regionId}` : '/cases',
+            label: 'Regional cases',
+          },
           reportsAction(scope),
         ],
         reportsTo,

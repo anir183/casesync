@@ -863,7 +863,7 @@ code split. No routes, permissions, data contracts, or new dependencies changed.
 baselines remain untouched locally; the official 48-baseline refresh and double CI run stay in
 Phase 7, and both manual QA gates remain held until Stage 12 exits.
 
-### Phase 3.5 — Operator dashboard experience (PLANNED — not started)
+### Phase 3.5 — Operator dashboard experience (IN PROGRESS — 3.5.A+B complete; 3.5.C–E pending)
 
 Full plan: `docs/plans/stage-12-phase3-5-dashboard-experience.md`. This phase follows Phase 3
 without renumbering Phases 4–7. It keeps Dashboard as the attention/quick-start surface and
@@ -871,10 +871,11 @@ Reports as the sole analytical workbench; no new routes, permissions, server con
 dependencies are authorized. Visual baselines remain untouched locally, and both manual QA
 gates remain held until Stage 12 exits.
 
-- [ ] **3.5.A — Observation and design contract:** capture the dashboard at 1440/1024/768/375
+- [x] **3.5.A — Observation and design contract:** capture the dashboard at 1440/1024/768/375
       px in light/dark with seeded data; map each role to its primary question, action, queue,
       and deep link; freeze the three-zone geometry and color budget; add matrix coverage rows.
-- [ ] **3.5.B — Attention and action layer:** add freshness/Live/Stale state, `New since you
+      Local seeded observation is complete; official visual baselines remain untouched.
+- [x] **3.5.B — Attention and action layer:** add freshness/Live/Stale state, `New since you
       looked` (session-local), manual refresh, and the primary role CTA; rebuild the queue as
       Due now / Due soon / Watching bands with five rows and a scoped `View all N` link; make
       quick actions one dominant action plus quiet secondary links.

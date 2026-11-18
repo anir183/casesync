@@ -1,7 +1,8 @@
 # CaseSync — Stage 12 UI Modernization Plan
 
 Status: **Phases 0–3 implemented and verified** 2026-11-18, including the Phase 2 review
-remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 planned, not started**.
+remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5.A+B implemented and locally
+verified, with 3.5.C–E pending**.
 Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md) and
 [`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md).
 Phase 0–1 history is retained; the remediation record is kept below for traceability.
@@ -419,7 +420,7 @@ admin hub, saved views, and pulled-forward branded route-error fallback are reco
 
 ---
 
-### Phase 3.5 — Operator dashboard experience (PLANNED — not started)
+### Phase 3.5 — Operator dashboard experience (IN PROGRESS — 3.5.A+B complete; 3.5.C–E pending)
 
 **Goal:** make the completed action-first dashboard comfortable and visually alive for
 operators who keep it open for hours, without turning it back into Reports.
