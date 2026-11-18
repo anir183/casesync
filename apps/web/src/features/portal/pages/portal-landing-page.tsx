@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { useSession } from '#/lib/auth-client'
+import { throwIfForcedRouteError } from '#/lib/route-error-probe'
 
 export function PortalLandingPage() {
+  const [searchParams] = useSearchParams()
+  throwIfForcedRouteError(searchParams)
   const { data: session } = useSession()
   const isComplainant = (session?.user as { role?: string } | undefined)?.role === 'COMPLAINANT'
 

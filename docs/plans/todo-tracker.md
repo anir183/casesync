@@ -6,7 +6,7 @@
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** Phases 0–1 complete and Phase 2 implemented 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs); Phase 3 not yet authorized. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
+**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -731,7 +731,7 @@ are the no-behavior-change oracle.
       remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified,
       committed, and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start.
 
-## Stage 12 — UI/UX modernization (PHASE 2 REVIEW REMEDIATION OPEN — Phase 3 not authorized)
+## Stage 12 — UI/UX modernization (PHASE 2 REMEDIATION VERIFIED — PHASE 3 COMPLETE — ERROR FALLBACK PULLED FORWARD)
 
 Full plan: `docs/plans/ui-modernization-plan.md`. Phase 0 evidence:
 `docs/plans/stage-12-phase0-baseline.md`. Keeps the route tree, permissions, data, and
@@ -780,7 +780,7 @@ Verification: `typecheck:web`, `typecheck:web:tests`, `check:ci`, 33 web unit te
 full-browser E2E tests, and a fresh web build all pass. Main chunk `506.11 kB / 140.06 kB
 gzip`, within the Phase 0 guardrail.
 
-### Phase 2 — Shell and navigation (IMPLEMENTED — REVIEW REMEDIATION VERIFIED — Phase 3 not authorized)
+### Phase 2 — Shell and navigation (IMPLEMENTED — REVIEW REMEDIATION VERIFIED — Phase 3 complete)
 
 Decisions: 240 px label-and-icon rail; `Cmd/Ctrl+K` palette with native button results and a
 two-character content-search threshold; optional escaped `q` filter on the overlaps API applied
@@ -838,21 +838,30 @@ permissions, data contracts, or runbook steps changed. Visual baselines remain u
 the official 48-baseline refresh and double CI run remain Stage 12 Phase 7 work. Manual QA gates
 remain held.
 
-### Phase 3 — Dashboard and admin command surfaces
+### Phase 3 — Dashboard and admin command surfaces (COMPLETE — verified 2026-11-18)
 
-- [ ] Rebuild the dashboard as role-aware sections with a “Needs attention” queue, compact
+- [x] Rebuild the dashboard as role-aware sections with a “Needs attention” queue, compact
       critical-metric strip, quick actions, and recent activity only.
-- [ ] Remove the dashboard's Reports duplication: no date/bureau/region/status filter form,
+- [x] Remove the dashboard's Reports duplication: no date/bureau/region/status filter form,
       full chart grid, map preview, or CSV export. Link to Reports with role scope preserved.
-- [ ] Keep Reports as the sole analytical workbench (filters, charts, tables, GIS, export).
-- [ ] Replace equal-weight card grids with primary/secondary/tertiary hierarchy.
-- [ ] Move explanatory prose into labels, inline help, and empty states.
-- [ ] Build the admin hub with people/access, masters, operations, and data-quality groups
+- [x] Keep Reports as the sole analytical workbench (filters, charts, tables, GIS, export).
+- [x] Replace equal-weight card grids with primary/secondary/tertiary hierarchy.
+- [x] Move explanatory prose into labels, inline help, and empty states.
+- [x] Build the admin hub with people/access, masters, operations, and data-quality groups
       plus real counts/health and direct actions.
-- [ ] Add a system-health strip for jobs, failed runs, and pending approvals where allowed.
-- [ ] Add saved views for the case registry and overlap queue.
-- [ ] Keep metric reconciliation unchanged; cover role-aware section selection with component
+- [x] Add a system-health strip for jobs, failed runs, and pending approvals where allowed.
+- [x] Add saved views for the case registry and overlap queue.
+- [x] Keep metric reconciliation unchanged; cover role-aware section selection with component
       tests and assert that Dashboard no longer renders the Reports filter/chart/map/export set.
+
+Verification: `check:ci`, all four typechecks, API unit (116 pass / 74 skip / 0 fail), web unit
+(53 pass / 0 fail), and the full desktop E2E suite (207 pass / 0 fail) all pass against
+disposable loopback Mongo. The fresh web build is `492.67 kB / 139.25 kB gzip`, below the
+`506.12 kB / 140.06 kB gzip` Phase 0 guardrail: the route-error fallback is resolved through
+a route `lazy` hook in its own chunk, and `LoginPage` is lazily loaded as a behavior-neutral
+code split. No routes, permissions, data contracts, or new dependencies changed. Visual
+baselines remain untouched locally; the official 48-baseline refresh and double CI run stay in
+Phase 7, and both manual QA gates remain held until Stage 12 exits.
 
 ### Phase 4 — Core work surfaces
 
@@ -908,14 +917,17 @@ remain held.
 - [ ] Update selectors only where accessible names changed; prefer roles/labels.
 - [ ] Regenerate the 48 visual baselines after sign-off, review every diff, and run twice.
 - [ ] Run the full Chromium suite twice against fresh builds and `seed:demo`.
-- [ ] Add a branded route-error fallback: `errorElement` on the top-level route branches in
+- [x] Add a branded route-error fallback: `errorElement` on the top-level route branches in
       `apps/web/src/app/router.tsx`, reusing the existing `ErrorState` primitive with a safe
       "Return to dashboard" action (and a sign-in action on public branches). The default React
-      Router error screen exposes developer copy on unhandled render/lazy-load errors; this is a
-      follow-up after Stage 12 exits, not part of the locked shell remediation.
-- [ ] Cover the error fallback with a forced-throw E2E route test and add a QA matrix row for
-      unhandled route errors, including axe and 375 px checks.
-- [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker.
+      Router error screen exposes developer copy on unhandled render/lazy-load errors. Pulled
+      forward into Phase 3 at product-owner request; the fallback is resolved through a route
+      `lazy` hook so it stays in its own chunk.
+- [x] Cover the error fallback with a forced-throw E2E route test and add a QA matrix row for
+      unhandled route errors, including axe and 375 px checks. Also pulled forward into Phase 3.
+- [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker. The matrix,
+      QA change log, and this tracker are current; the testing guide and UI/UX plan remain part
+      of the full Phase 7 documentation pass.
 
 ## Testing Definition of Done
 

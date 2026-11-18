@@ -325,8 +325,8 @@ Playwright.
 | Profile menu in rail | Staff shell | **Covered** (upward menu, identity/email header, Sign out inside, axe-clean accessible name) |
 | Icon-only collapsed rail | Staff shell | **Covered** (persisted toggle, labelled links/tooltips, no page overflow) |
 | Two-zone top bar | Staff shell | **Covered** (left search with `Open` indicator while the keyboard palette owns input; right Create/Notifications/Theme/mobile cluster) |
-| Unhandled route error | All route groups | **Deferred** — React Router's default developer screen is still visible; branded `errorElement` using `ErrorState` with a recovery action and forced-throw E2E coverage planned in Phase 7 |
-| Dashboard/report separation | `/dashboard`, `/reports` | **Blocked** — Stage 12 Phase 3 (no dashboard filters/charts/map/export; Reports is sole workbench) |
+| Unhandled route error | All route groups | **Covered** — branded `errorElement` resolved through a route `lazy` hook, reusing `ErrorState` with "Return to dashboard" for staff and "Go to sign in" for public branches; forced-throw E2E checks include axe and 375 px |
+| Dashboard/report separation | `/dashboard`, `/reports` | **Covered** — dashboard is the quick-start/attention surface only; Reports is the sole analytical workbench and receives role scope through query params |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
 | Consolidated case timeline | `/cases/:id` | **Covered** (action + assignment history in one Timeline tab) |

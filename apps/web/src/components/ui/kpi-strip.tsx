@@ -35,10 +35,14 @@ export function KpiStrip({ items }: KpiStripProps) {
           className="rounded-lg border border-border-subtle bg-surface-card p-control"
         >
           <dt className="text-meta font-medium text-muted-foreground">{item.label}</dt>
-          <dd className={cn('mt-1', kpiValueVariants({ tone: item.tone }))}>{item.value}</dd>
-          {item.hint ? (
-            <p className="mt-tight text-meta text-muted-foreground">{item.hint}</p>
-          ) : null}
+          <dd className={cn('mt-1', kpiValueVariants({ tone: item.tone }))}>
+            {item.value}
+            {item.hint ? (
+              <span className="mt-tight block text-meta font-normal text-muted-foreground">
+                {item.hint}
+              </span>
+            ) : null}
+          </dd>
         </div>
       ))}
     </dl>

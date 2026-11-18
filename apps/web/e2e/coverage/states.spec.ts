@@ -102,6 +102,15 @@ test.describe('@states staff UI states', () => {
     await expect(page.locator('tbody tr').first()).toContainText('ACAD-2026-001')
   })
 
+  test('the case registry applies a saved view', async ({ page }) => {
+    await page.goto('/cases')
+    await expect(page.getByLabel('Saved views')).toBeVisible()
+    await page.getByLabel('Saved views').selectOption('escalated')
+
+    await expect(page).toHaveURL(/status=ESCALATED/)
+    await expect(page.getByLabel('Status')).toHaveValue('ESCALATED')
+  })
+
   test('the case registry exports a CSV file', async ({ page }) => {
     await page.goto('/cases')
     await expect(page.getByLabel('Case registry table')).toBeVisible()
@@ -136,6 +145,20 @@ test.describe('@states staff UI states', () => {
     await expect(page.getByText('E2E temporary failure')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Awaiting review' })).toBeVisible()
     await expect(page.getByText('No overlap alerts')).toHaveCount(0)
+  })
+
+  test('the overlap queue applies a saved view', async ({ page }) => {
+    const overlapUrls: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('/api/v1/overlaps?')) overlapUrls.push(request.url())
+    })
+
+    await page.goto('/overlaps')
+    await expect(page.getByLabel('Saved views')).toBeVisible()
+    await page.getByLabel('Saved views').selectOption('dismissed')
+
+    await expect(page.getByLabel('Saved views')).toHaveValue('dismissed')
+    await expect.poll(() => overlapUrls.at(-1) ?? '').toContain('status=DISMISSED')
   })
 
   test('an unknown case shows a not-found state', async ({ page }) => {
@@ -267,11 +290,13 @@ test.describe('@states staff UI states', () => {
     await page.goto('/dashboard')
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Escalations needing attention' })).toBeVisible()
-    // Admin destinations also live in the persistent rail now; scope to the cards.
-    const main = page.locator('#main-content')
-    await expect(main.getByRole('link', { name: 'Representatives' })).toBeVisible()
-    await expect(main.getByRole('link', { name: 'Institution domains' })).toBeVisible()
-    await expect(main.getByRole('link', { name: 'Audit log' })).toBeVisible()
+    // Admin destinations also live in the rail and quick actions; scope to the hub cards.
+    const administration = page
+      .locator('#main-content')
+      .getByRole('region', { name: 'Administration' })
+    await expect(administration.getByRole('link', { name: /^Representatives\b/ })).toBeVisible()
+    await expect(administration.getByRole('link', { name: /^Institution domains\b/ })).toBeVisible()
+    await expect(administration.getByRole('link', { name: /^Audit log\b/ })).toBeVisible()
   })
 })
 

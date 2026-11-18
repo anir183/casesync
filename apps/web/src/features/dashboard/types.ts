@@ -43,9 +43,11 @@ export interface DashboardSummary extends StatusCounts {
   recentEscalations: RecentEscalation[]
 }
 
-export interface DashboardFilters {
-  dateFrom?: string
-  dateTo?: string
+export interface DashboardAction {
+  to: string
+  label: string
+  description?: string
+  primary?: boolean
 }
 
 export interface RoleLanding {
@@ -55,5 +57,8 @@ export interface RoleLanding {
   emptyTitle: string
   emptyDescription: string
   queueFilters: CaseFilters | null
-  links: Array<{ to: string; label: string }>
+  quickActions: DashboardAction[]
+  reportsTo: string
+  showAdminHub: boolean
+  showSystemHealth: boolean
 }

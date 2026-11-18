@@ -7,15 +7,11 @@ import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { SavedViewMenu } from '#/components/ui/saved-view-menu'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { useBureaus, useRegions } from '#/features/organization/api'
-import {
-  type Overlap,
-  type OverlapFilters,
-  type ReviewStatus,
-  useOverlaps,
-} from '#/features/overlaps/api'
+import { type Overlap, type OverlapFilters, useOverlaps } from '#/features/overlaps/api'
 import { MergeStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
   MATCH_TYPE_OPTIONS,
@@ -25,19 +21,15 @@ import {
   mergeStatusLabel,
   percent,
 } from '#/features/overlaps/labels'
+import {
+  OVERLAP_CUSTOM_VIEW,
+  OVERLAP_SAVED_VIEWS,
+  overlapViewForFilters,
+} from '#/features/overlaps/saved-views'
 import { formatDate } from '#/lib/utils'
 
-const TABS: Array<{ value: ReviewStatus; mergeStatus?: string; label: string }> = [
-  { value: 'PENDING', mergeStatus: 'candidate,manual_review', label: 'Awaiting review' },
-  { value: 'CONFIRMED', mergeStatus: 'auto_merged', label: 'Auto-merged' },
-  { value: 'CONFIRMED', mergeStatus: 'manual_merged', label: 'Manually merged' },
-  { value: 'PENDING', mergeStatus: 'reverted', label: 'Reverted' },
-  { value: 'DISMISSED', label: 'Dismissed' },
-]
-
 const DEFAULT_FILTERS: OverlapFilters = {
-  status: 'PENDING',
-  mergeStatus: TABS[0].mergeStatus,
+  ...OVERLAP_SAVED_VIEWS[0].filters,
   page: PAGINATION.DEFAULT_PAGE,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
 }
@@ -140,33 +132,48 @@ export function OverlapsPage() {
     }))
   }
 
+  function applySavedView(id: string) {
+    if (id === OVERLAP_CUSTOM_VIEW.id) return
+    const view = OVERLAP_SAVED_VIEWS.find((item) => item.id === id)
+    if (!view) return
+    setFilters((current) => ({
+      ...current,
+      status: view.filters.status,
+      mergeStatus: view.filters.mergeStatus,
+      bureauId: undefined,
+      regionId: undefined,
+      matchType: undefined,
+      institutionId: undefined,
+      q: undefined,
+      page: PAGINATION.DEFAULT_PAGE,
+    }))
+  }
+
+  const activeView = overlapViewForFilters(filters)
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={OVERLAP.HEADING}
         description="Cases concerning the same institution but handled by different Bureaus/Cells are surfaced here for review. High-confidence exact-institution pairs may be linked automatically under bounded rules; every other overlap needs a human decision."
+        actions={
+          <SavedViewMenu
+            views={[OVERLAP_CUSTOM_VIEW, ...OVERLAP_SAVED_VIEWS]}
+            value={activeView}
+            onChange={applySavedView}
+          />
+        }
       />
 
       <div className="flex flex-wrap gap-2">
-        {TABS.map((tab) => (
+        {OVERLAP_SAVED_VIEWS.map((view) => (
           <Button
-            key={`${tab.value}-${tab.mergeStatus ?? 'all'}`}
+            key={view.id}
             size="sm"
-            variant={
-              filters.status === tab.value && filters.mergeStatus === tab.mergeStatus
-                ? 'default'
-                : 'outline'
-            }
-            onClick={() =>
-              setFilters((current) => ({
-                ...current,
-                status: tab.value,
-                mergeStatus: tab.mergeStatus,
-                page: PAGINATION.DEFAULT_PAGE,
-              }))
-            }
+            variant={activeView === view.id ? 'default' : 'outline'}
+            onClick={() => applySavedView(view.id)}
           >
-            {tab.label}
+            {view.label}
           </Button>
         ))}
       </div>

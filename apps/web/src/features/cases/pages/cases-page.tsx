@@ -13,6 +13,7 @@ import { Pagination } from '#/components/shared/pagination'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { SavedViewMenu } from '#/components/ui/saved-view-menu'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { type CaseFilters, downloadCases, useCases } from '#/features/cases/api'
@@ -22,7 +23,13 @@ import {
   cleanCaseFilters,
   readCaseFilters,
 } from '#/features/cases/filters'
+import {
+  CASE_CUSTOM_VIEW,
+  CASE_SAVED_VIEWS,
+  caseViewForFilters,
+} from '#/features/cases/saved-views'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
+import { throwIfForcedRouteError } from '#/lib/route-error-probe'
 import { useCurrentUser } from '#/lib/session'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
@@ -37,6 +44,7 @@ const SORT_OPTIONS = [
 
 export function CasesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  throwIfForcedRouteError(searchParams)
   const filters = readCaseFilters(searchParams)
   const [draft, setDraft] = useState<CaseFilters>(() => readCaseFilters(searchParams))
   const [exportError, setExportError] = useState<string>()
@@ -75,6 +83,20 @@ export function CasesPage() {
     setExportError(undefined)
   }
 
+  function handleSavedView(id: string) {
+    if (id === CASE_CUSTOM_VIEW.id) return
+    const view = CASE_SAVED_VIEWS.find((item) => item.id === id)
+    if (!view) return
+    const nextFilters = {
+      ...view.filters,
+      page: PAGINATION.DEFAULT_PAGE,
+      pageSize: filters.pageSize,
+    }
+    setDraft(cleanCaseFilters(nextFilters))
+    setSearchParams(caseFiltersToSearchParams(nextFilters))
+    setExportError(undefined)
+  }
+
   async function handleExport() {
     setIsExporting(true)
     setExportError(undefined)
@@ -96,6 +118,11 @@ export function CasesPage() {
         description="Every institution-related complaint across Bureaus and Cells."
         actions={
           <>
+            <SavedViewMenu
+              views={[CASE_CUSTOM_VIEW, ...CASE_SAVED_VIEWS]}
+              value={caseViewForFilters(filters)}
+              onChange={handleSavedView}
+            />
             <Button
               variant="outline"
               size="sm"

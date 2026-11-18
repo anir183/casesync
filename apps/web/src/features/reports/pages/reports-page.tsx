@@ -1,5 +1,6 @@
 import { CASE_STATUS } from '@casesync/config'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { BarChart } from '#/components/charts/bar-chart'
 import { ChartCard } from '#/components/charts/chart-card'
 import { DonutChart } from '#/components/charts/donut-chart'
@@ -35,9 +36,37 @@ function titleCase(value: string) {
     .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
 }
 
+const REPORT_PARAM_KEYS: Array<keyof ReportFilters> = [
+  'dateFrom',
+  'dateTo',
+  'bureauId',
+  'regionId',
+  'status',
+  'category',
+]
+
+function readReportFilters(params: URLSearchParams): ReportFilters {
+  const filters: ReportFilters = {}
+  for (const key of REPORT_PARAM_KEYS) {
+    const value = params.get(key)
+    if (value) filters[key] = value
+  }
+  return filters
+}
+
+function reportFiltersToParams(filters: ReportFilters): URLSearchParams {
+  const params = new URLSearchParams()
+  for (const key of REPORT_PARAM_KEYS) {
+    const value = filters[key]
+    if (value) params.set(key, value)
+  }
+  return params
+}
+
 export function ReportsPage() {
-  const [draft, setDraft] = useState<ReportFilters>({})
-  const [filters, setFilters] = useState<ReportFilters>({})
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [draft, setDraft] = useState<ReportFilters>(() => readReportFilters(searchParams))
+  const [filters, setFilters] = useState<ReportFilters>(() => readReportFilters(searchParams))
   const [exportError, setExportError] = useState<string>()
   const [isExporting, setIsExporting] = useState(false)
   const { data, isLoading, isError, error } = useReports(filters)
@@ -46,24 +75,35 @@ export function ReportsPage() {
   const { data: regions } = useRegions()
   const { data: categories } = useCategories()
 
+  useEffect(() => {
+    const scoped = readReportFilters(searchParams)
+    setDraft(scoped)
+    setFilters(scoped)
+  }, [searchParams])
+
   function update(key: keyof ReportFilters, value: string) {
     setDraft((current) => ({ ...current, [key]: value || undefined }))
   }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setFilters(cleanFilters(draft))
+    const nextFilters = cleanFilters(draft)
+    setFilters(nextFilters)
+    setSearchParams(reportFiltersToParams(nextFilters))
   }
 
   function handleReset() {
     setDraft({})
     setFilters({})
+    setSearchParams(new URLSearchParams())
     setExportError(undefined)
   }
 
   function handleRegionSelect(region: GeoRegionRow) {
-    setDraft((current) => ({ ...current, regionId: region.regionId }))
-    setFilters((current) => ({ ...current, regionId: region.regionId }))
+    const nextFilters = { ...filters, regionId: region.regionId }
+    setDraft(nextFilters)
+    setFilters(nextFilters)
+    setSearchParams(reportFiltersToParams(nextFilters))
   }
 
   async function handleExport() {

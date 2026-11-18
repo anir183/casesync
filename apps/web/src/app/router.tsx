@@ -2,11 +2,20 @@ import { lazy } from 'react'
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '#/components/layout/app-shell'
 import { AuthGuard } from '#/components/layout/auth-guard'
-import { LoginPage } from '#/features/auth/pages/login-page'
 import { PortalGuard } from '#/features/portal/components/portal-guard'
 import { PortalLayout } from '#/features/portal/components/portal-layout'
 import { InstitutionGuard } from '#/features/representatives/components/institution-guard'
 import { InstitutionLayout } from '#/features/representatives/components/institution-layout'
+
+const lazyRouteError = () =>
+  import('#/components/layout/route-error-boundary').then((module) => ({
+    errorElement: <module.RouteErrorBoundary />,
+  }))
+const LoginPage = lazy(() =>
+  import('#/features/auth/pages/login-page').then((module) => ({
+    default: module.LoginPage,
+  })),
+)
 
 const AdminAuditPage = lazy(() =>
   import('#/features/admin/pages/admin-audit-page').then((module) => ({
@@ -173,10 +182,12 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+    lazy: lazyRouteError,
   },
   {
     path: '/portal',
     element: <PortalLayout />,
+    lazy: lazyRouteError,
     children: [
       { index: true, element: <PortalLandingPage /> },
       { path: 'login', element: <PortalLoginPage /> },
@@ -197,6 +208,7 @@ export const router = createBrowserRouter([
   {
     path: '/institution',
     element: <InstitutionLayout />,
+    lazy: lazyRouteError,
     children: [
       { index: true, element: <Navigate to="/institution/dashboard" replace /> },
       { path: 'sign-up', element: <InstitutionSignupPage /> },
@@ -219,6 +231,7 @@ export const router = createBrowserRouter([
         <AppShell />
       </AuthGuard>
     ),
+    lazy: lazyRouteError,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },

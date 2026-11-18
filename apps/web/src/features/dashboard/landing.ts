@@ -1,20 +1,37 @@
-// Role-specific dashboard landing copy and work-queue filters. Pure data; no
-// hooks or rendering, so it stays independent of the page and components.
+// Role-specific dashboard sections. Pure data; no hooks or rendering, so the
+// page, components, and tests share the same section contract.
 
 import { CASE_STATUS, ROLES } from '@casesync/config'
-import type { RoleLanding } from './types'
+import type { DashboardAction, RoleLanding } from './types'
+
+function scopedReportsTo(scope: { bureauId?: string; regionId?: string }) {
+  const params = new URLSearchParams()
+  if (scope.bureauId) params.set('bureauId', scope.bureauId)
+  if (scope.regionId) params.set('regionId', scope.regionId)
+  const query = params.toString()
+  return query ? `/reports?${query}` : '/reports'
+}
+
+function reportsAction(scope: { bureauId?: string; regionId?: string }): DashboardAction {
+  return {
+    to: scopedReportsTo(scope),
+    label: 'Reports',
+    description: 'Open the analytical workbench with this role scope.',
+  }
+}
 
 export function landingForRole(
   role: string | undefined,
   scope: { bureauId?: string; regionId?: string },
 ): RoleLanding {
+  const reportsTo = scopedReportsTo(scope)
+
   switch (role) {
     case ROLES.ADMIN:
       return {
         kicker: 'Administrator',
         queueTitle: 'Escalations needing attention',
-        summary:
-          'Platform-wide operations. Review escalated complaints, then work the representative, domain, verification, and audit queues.',
+        summary: 'Escalated complaints are shown first. Admin queues are grouped below.',
         emptyTitle: 'No escalations waiting',
         emptyDescription:
           'No case is escalated right now. The admin queues remain available below.',
@@ -23,20 +40,22 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
+        quickActions: [
+          { to: '/cases/new', label: 'Register case', primary: true },
           { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
           { to: '/admin/institution-representatives', label: 'Representatives' },
-          { to: '/admin/institution-domains', label: 'Institution domains' },
           { to: '/admin/verifications', label: 'Verifications' },
-          { to: '/admin/audit', label: 'Audit log' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: true,
+        showSystemHealth: true,
       }
     case ROLES.SENIOR_MANAGEMENT:
       return {
         kicker: 'Senior management',
         queueTitle: 'Escalations awaiting a decision',
-        summary:
-          'Review escalated cases, disposal decisions, and overlap coordination. Use reports to compare disposal performance across regions.',
+        summary: 'Escalations awaiting review or a disposal decision.',
         emptyTitle: 'No escalations waiting',
         emptyDescription:
           'No case is escalated right now. Continue monitoring disposal performance in reports.',
@@ -45,18 +64,20 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
-          { to: '/cases?status=ESCALATED', label: 'Escalated cases' },
+        quickActions: [
+          { to: '/cases?status=ESCALATED', label: 'Escalated cases', primary: true },
           { to: '/overlaps', label: 'Overlap queue' },
-          { to: '/reports', label: 'Reports' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
     case ROLES.COMPETENT_AUTHORITY:
       return {
         kicker: 'Competent authority',
         queueTitle: 'Complaints awaiting complainant input',
-        summary:
-          'Close the loop on information requests, then move assigned cases through review and disposal. SLA dates are shown on each case.',
+        summary: 'Cases waiting on complainant input, then under-process reviews.',
         emptyTitle: 'No complaints awaiting input',
         emptyDescription:
           'Every active complaint has what it needs. Review cases under process for the next disposal decision.',
@@ -65,18 +86,24 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
-          { to: '/cases?status=AWAITING_COMPLAINANT', label: 'Awaiting complainant' },
+        quickActions: [
+          {
+            to: '/cases?status=AWAITING_COMPLAINANT',
+            label: 'Awaiting complainant',
+            primary: true,
+          },
           { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
-          { to: '/reports', label: 'Reports' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
     case ROLES.BUREAU_OFFICER:
       return {
         kicker: 'Bureau officer',
         queueTitle: 'Assigned to your bureau',
-        summary:
-          'Work assigned complaints first, record the next action and due date, then respond to the complainant before the target decision date.',
+        summary: 'Cases assigned to your bureau, oldest action first.',
         emptyTitle: 'No newly assigned cases',
         emptyDescription:
           'Your bureau has no newly assigned cases. Check cases under process for follow-up work.',
@@ -86,22 +113,25 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
+        quickActions: [
+          { to: '/cases/new', label: 'Register case', primary: true },
           {
             to: scope.bureauId ? `/cases?bureauId=${scope.bureauId}` : '/cases',
             label: 'My bureau cases',
           },
           { to: '/cases?status=UNDER_PROCESS', label: 'Under process' },
-          { to: '/cases/new', label: 'Register case' },
           { to: '/overlaps', label: 'Overlap queue' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
     case ROLES.REGIONAL_OFFICER:
       return {
         kicker: 'Regional officer',
         queueTitle: 'Transfers in your region',
-        summary:
-          'Review transfers and regional workload. Confirm ownership or escalate cases that need senior management attention.',
+        summary: 'Transfers waiting for a regional ownership decision.',
         emptyTitle: 'No transfers waiting',
         emptyDescription:
           'No case is waiting for a transfer decision in your region. Review regional workload in reports.',
@@ -111,36 +141,42 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
+        quickActions: [
           {
             to: scope.regionId ? `/cases?regionId=${scope.regionId}` : '/cases',
             label: 'Regional cases',
+            primary: true,
           },
           { to: '/cases?status=TRANSFERRED', label: 'Transfers' },
-          { to: '/reports', label: 'Reports' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
     case ROLES.VIEWER:
       return {
         kicker: 'Read-only oversight',
         queueTitle: 'Your access is read-only',
-        summary:
-          'You can review cases, overlaps, and reports. Case actions, registration, and administrative changes stay hidden for this role.',
+        summary: 'Read-only access to cases, overlaps, and reports.',
         emptyTitle: 'Read-only oversight',
         emptyDescription:
           'Use the case registry and reports to review activity. No action queue is assigned to this role.',
         queueFilters: null,
-        links: [
-          { to: '/cases', label: 'Case registry' },
+        quickActions: [
+          { to: '/cases', label: 'Case registry', primary: true },
           { to: '/overlaps', label: 'Overlap queue' },
-          { to: '/reports', label: 'Reports' },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
     default:
       return {
         kicker: 'Operations',
         queueTitle: 'Cases needing attention',
-        summary: 'Review the active complaint posture across institutions, bureaus, and regions.',
+        summary: 'Cases waiting on an escalation or complainant response.',
         emptyTitle: 'Nothing needs attention',
         emptyDescription: 'No case is currently waiting on an escalation or complainant response.',
         queueFilters: {
@@ -148,10 +184,13 @@ export function landingForRole(
           pageSize: 5,
           sort: 'lastActionAt:asc',
         },
-        links: [
-          { to: '/cases', label: 'Case registry' },
-          { to: '/reports', label: 'Reports' },
+        quickActions: [
+          { to: '/cases', label: 'Case registry', primary: true },
+          reportsAction(scope),
         ],
+        reportsTo,
+        showAdminHub: false,
+        showSystemHealth: false,
       }
   }
 }

@@ -104,6 +104,9 @@ export default defineConfig({
       url: `http://localhost:${WEB_PORT}`,
       timeout: 180_000,
       reuseExistingServer: false,
+      env: {
+        VITE_ROUTE_ERROR_PROBE: '1',
+      },
     },
   ],
 })
