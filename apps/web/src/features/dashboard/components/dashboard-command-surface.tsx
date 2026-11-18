@@ -1,18 +1,20 @@
 // Presentational dashboard shell. The page owns queries; this component owns
-// the hierarchy: attention first, then metrics/actions, then context/admin.
+// the hierarchy: signals first, then the action deck, then context.
 
 import { ArrowUpRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
 import { buttonVariants } from '#/components/ui/button'
-import { KpiStrip } from '#/components/ui/kpi-strip'
-import { SectionHeader } from '#/components/ui/section-header'
 import type { CaseListItem } from '#/features/cases/api'
 import { AttentionQueue } from '#/features/dashboard/components/attention-queue'
+import { CasePosture } from '#/features/dashboard/components/case-posture'
+import { ChangeFeed } from '#/features/dashboard/components/change-feed'
 import { DashboardFreshness } from '#/features/dashboard/components/dashboard-freshness'
-import { QuickActions } from '#/features/dashboard/components/quick-actions'
-import { RecentActivity } from '#/features/dashboard/components/recent-activity'
+import { NextMoves } from '#/features/dashboard/components/next-moves'
+import { PressurePoints } from '#/features/dashboard/components/pressure-points'
+import { SignalBand } from '#/features/dashboard/components/signal-band'
+import { buildSignals } from '#/features/dashboard/insights'
 import type { DashboardSummary, RoleLanding } from '#/features/dashboard/types'
 import { cn } from '#/lib/utils'
 
@@ -48,9 +50,11 @@ export function DashboardCommandSurface({
   const data = summary.data
   const primaryAction = landing.quickActions.find((action) => action.primary)
   const isRefreshing = Boolean(summary.isFetching || queue.isFetching)
+  const waiting = queue.data?.total ?? queue.data?.items.length ?? 0
+  const signals = buildSignals(data, waiting, newCount, summary.isLoading)
 
   return (
-    <div className="space-y-section">
+    <div className="space-y-4">
       <PageHeader
         title="Dashboard"
         description={
@@ -80,85 +84,30 @@ export function DashboardCommandSurface({
         }
       />
 
-      <section aria-label="Needs attention">
-        <div className="mb-control">
-          <SectionHeader
-            title="Needs attention"
-            description="The highest-priority queue for your role."
-          />
-        </div>
-        <div className="grid gap-section lg:grid-cols-3">
-          <div className="min-w-0 lg:col-span-2">
-            <AttentionQueue landing={landing} queue={queue} newIds={newIds} now={now} />
-          </div>
-          <aside aria-label="Quick actions" className="min-w-0">
-            <SectionHeader title="Quick actions" />
-            <div className="mt-control">
-              <QuickActions actions={landing.quickActions} summary={landing.summary} />
-            </div>
-          </aside>
-        </div>
-      </section>
+      <SignalBand items={signals} />
 
-      <section aria-label="Critical metrics">
-        <div className="mb-control">
-          <SectionHeader
-            title="Critical metrics"
-            description="Operational totals for this role. Full analysis stays in Reports."
-          />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <section aria-label="Needs attention" className="min-w-0 xl:col-span-8">
+          <AttentionQueue landing={landing} queue={queue} newIds={newIds} now={now} />
+        </section>
+        <aside aria-label="Next moves and posture" className="min-w-0 space-y-4 xl:col-span-4">
+          <NextMoves actions={landing.quickActions} />
+          <CasePosture summary={data} />
+        </aside>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <div className="min-w-0 xl:col-span-8">
+          <ChangeFeed summary={data} isLoading={summary.isLoading} isError={summary.isError} />
         </div>
-        {summary.isError ? (
-          <p className="text-compact text-danger">Unable to load dashboard metrics.</p>
-        ) : (
-          <KpiStrip
-            items={[
-              {
-                label: 'Total cases',
-                value: summary.isLoading ? '—' : (data?.total ?? 0),
-                hint: `${data?.open ?? 0} currently open`,
-              },
-              {
-                label: 'Open cases',
-                value: summary.isLoading ? '—' : (data?.open ?? 0),
-                hint: `${data?.unassigned ?? 0} unassigned`,
-              },
-              {
-                label: 'Beyond timeline',
-                value: summary.isLoading ? '—' : (data?.beyondTimelines ?? 0),
-                hint:
-                  data && data.total > 0
-                    ? `${Math.round((data.beyondTimelines / data.total) * 100)}% of visible cases`
-                    : 'No visible cases',
-                tone: data?.beyondTimelines ? 'danger' : 'default',
-              },
-              {
-                label: 'Escalated',
-                value: summary.isLoading ? '—' : (data?.escalated ?? 0),
-                hint: 'Cases awaiting senior review',
-              },
-            ]}
-          />
-        )}
-      </section>
+        <div className="min-w-0 xl:col-span-4">
+          <PressurePoints summary={data} />
+        </div>
+      </div>
 
       {landing.showAdminHub && admin ? (
-        <section aria-label="Administration">
-          <div className="mb-control">
-            <SectionHeader
-              title="Administration"
-              description="Direct routes and live signals for administrative work."
-            />
-          </div>
-          {admin}
-        </section>
+        <section aria-label="Administration">{admin}</section>
       ) : null}
-
-      <section aria-label="Recent activity">
-        <div className="mb-control">
-          <SectionHeader title="Recent activity" description="Latest overlaps and escalations." />
-        </div>
-        <RecentActivity summary={data} isLoading={summary.isLoading} isError={summary.isError} />
-      </section>
     </div>
   )
 }

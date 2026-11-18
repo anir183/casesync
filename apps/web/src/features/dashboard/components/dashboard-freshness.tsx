@@ -2,8 +2,8 @@
 // the surrounding control never re-renders with motion or layout churn.
 
 import { RefreshCw } from 'lucide-react'
-import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { DashboardBadge } from '#/features/dashboard/components/dashboard-badge'
 import { getFreshness } from '#/features/dashboard/freshness'
 import { cn } from '#/lib/utils'
 
@@ -29,7 +29,7 @@ export function DashboardFreshness({
       <span
         aria-live="polite"
         className={cn(
-          'inline-flex items-center gap-1.5 text-meta tabular-nums',
+          'inline-flex items-center gap-1.5 text-xs tabular-nums',
           freshness.state === 'stale' ? 'text-warning-soft-foreground' : 'text-muted-foreground',
         )}
       >
@@ -47,9 +47,9 @@ export function DashboardFreshness({
         {freshness.text}
       </span>
       {newCount > 0 ? (
-        <Badge variant="primary" aria-live="polite">
+        <DashboardBadge variant="primary" aria-live="polite">
           {newCount} new since you looked
-        </Badge>
+        </DashboardBadge>
       ) : null}
       <Button
         variant="ghost"

@@ -85,15 +85,19 @@ function renderSurface(
 }
 
 describe('dashboard command surface', () => {
-  test('admin landing shows the attention queue, metrics, quick actions, and admin slot', () => {
+  test('admin landing shows the operating deck, signals, and admin slot', () => {
     renderSurface(ROLES.ADMIN, <p>Admin hub content</p>)
 
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeDefined()
     expect(screen.getByRole('region', { name: 'Needs attention' })).toBeDefined()
     expect(screen.getByRole('heading', { name: 'Escalations needing attention' })).toBeDefined()
-    expect(screen.getByText('Total cases')).toBeDefined()
+    expect(screen.getByText('Needs action')).toBeDefined()
+    expect(screen.getByRole('region', { name: 'Next moves' })).toBeDefined()
+    expect(screen.getByRole('region', { name: 'Case posture' })).toBeDefined()
+    expect(screen.getByRole('region', { name: 'Change feed' })).toBeDefined()
+    expect(screen.getByRole('region', { name: 'Pressure points' })).toBeDefined()
     expect(screen.getByRole('link', { name: 'Register case' })).toBeDefined()
-    expect(screen.getByRole('link', { name: 'Representatives' })).toBeDefined()
+    expect(screen.getByRole('link', { name: /Representatives/ })).toBeDefined()
     expect(screen.getByText('Admin hub content')).toBeDefined()
   })
 
@@ -195,14 +199,37 @@ describe('dashboard command surface', () => {
       now,
     })
 
-    expect(screen.getAllByText('Due now').length).toBeGreaterThan(1)
-    expect(screen.getAllByText('Due soon').length).toBeGreaterThan(1)
-    expect(screen.getAllByText('Watching').length).toBeGreaterThan(1)
+    expect(screen.getByRole('heading', { name: 'Due now' })).toBeDefined()
+    expect(screen.getByRole('heading', { name: 'Due soon' })).toBeDefined()
+    expect(screen.getByRole('heading', { name: 'Watching' })).toBeDefined()
     expect(screen.getAllByText('New')).toHaveLength(1)
     expect(screen.getByText('3h overdue')).toBeDefined()
-    expect(screen.getByRole('link', { name: /View all 5/ }).getAttribute('href')).toContain(
-      'status=ESCALATED',
-    )
+    const viewAll = screen.getByRole('link', { name: /View all 5/ })
+    expect(viewAll.getAttribute('href')).toContain('status=ESCALATED')
+    expect(viewAll.getAttribute('href')).not.toContain('pageSize=')
+  })
+
+  test('single-band escalation queue scrolls without a redundant band heading', () => {
+    const escalationQueue: typeof queue = {
+      isLoading: false,
+      isError: false,
+      data: {
+        total: 9,
+        items: Array.from({ length: 9 }, (_, index) => ({
+          id: `escalation-${index}`,
+          caseNumber: `CASE-${String(index + 1).padStart(3, '0')}`,
+          institutionId: 'institution-1',
+          status: CASE_STATUS.ESCALATED,
+          receivedAt: '2026-11-01T09:00:00.000Z',
+        })),
+      },
+    }
+
+    renderSurface(ROLES.ADMIN, undefined, { queue: escalationQueue })
+
+    expect(screen.queryByRole('heading', { name: 'Due now' })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Escalations needing attention rows' })).toBeDefined()
+    expect(screen.getAllByRole('link', { name: /CASE-00/ })).toHaveLength(9)
   })
 
   test('regional officer primary action is the scoped transfer queue', () => {

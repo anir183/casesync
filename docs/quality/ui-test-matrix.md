@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard plan created, not implemented).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
@@ -328,10 +328,10 @@ Playwright.
 | Two-zone top bar | Staff shell | **Covered** (left search with `Open` indicator while the keyboard palette owns input; right Create/Notifications/Theme/mobile cluster) |
 | Unhandled route error | All route groups | **Covered** — branded `errorElement` resolved through a route `lazy` hook, reusing `ErrorState` with "Return to dashboard" for staff and "Go to sign in" for public branches; forced-throw E2E checks include axe and 375 px |
 | Dashboard/report separation | `/dashboard`, `/reports` | **Covered** — dashboard is the quick-start/attention surface only; Reports is the sole analytical workbench and receives role scope through query params |
-| Operator attention deck, freshness, and `New since you looked` | Staff dashboard | **Covered** — unit/component coverage for urgency bands, Live/Stale/Waiting, manual refresh, scoped `View all N`, and session-local new markers; seeded loopback observation at 375/768/1024/1440 px in light/dark with no overflow, visible primary CTA, and preserved/retired selector checks; official visual refresh remains Phase 7 |
-| KPI meters, status ribbon, and top-5 pressure bars | Staff dashboard | **Blocked** — Stage 12 Phase 3.5; length/position signals with text legends and deep links to existing filtered views |
-| Unified dashboard change feed | Staff dashboard | **Blocked** — Stage 12 Phase 3.5; overlaps, escalations, and due-soon cases in one newest-first feed with `New` markers |
-| Admin command deck and long-session comfort | Staff dashboard | **Blocked** — Stage 12 Phase 3.5; grouped counts/health rail, light/dark semantic accents, 44px targets, stable tab order, no layout shift, and reduced motion |
+| Operator attention deck, freshness, and `New since you looked` | Staff dashboard | **Covered** — unit/component coverage for urgency bands, bounded 12-row scrolling, conditional band headings, Live/Stale/Waiting, manual refresh, scoped `View all N` without dashboard page size, and session-local new markers; seeded loopback observation at 375/768/1024/1440 px in light/dark with no overflow, visible primary CTA, and preserved/retired selector checks; official visual refresh remains Phase 7 |
+| Signal band, case posture, and top-3 pressure bars | Staff dashboard | **Covered** — four bounded signals, one status-mix bar, and a top-3 institution ranking with text legends; pure derivations and dashboard component tests pass, with 12px badge / 20px signal typography and no overflow at 375/768/1024/1440 px in light/dark |
+| Unified dashboard change feed | Staff dashboard | **Covered** — one newest-first overlap/escalation feed with deep links to existing routes; due-soon cases remain in the attention queue instead of duplicating the feed |
+| Admin command deck and long-session comfort | Staff dashboard | **Covered** — Phase 3 grouped admin hub/health rail retained; compact dashboard badges, 44px targets, tabular numbers, semantic light/dark accents, stable hierarchy, seeded responsive/selector observation, and targeted E2E 83/83 pass. Official visual refresh, reduced-motion sweep, and both manual gates remain Phase 7 / Stage 12 exit |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
 | Consolidated case timeline | `/cases/:id` | **Covered** (action + assignment history in one Timeline tab) |

@@ -37,7 +37,7 @@ export function landingForRole(
           'No case is escalated right now. The admin queues remain available below.',
         queueFilters: {
           status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [
@@ -61,7 +61,7 @@ export function landingForRole(
           'No case is escalated right now. Continue monitoring disposal performance in reports.',
         queueFilters: {
           status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [
@@ -83,7 +83,7 @@ export function landingForRole(
           'Every active complaint has what it needs. Review cases under process for the next disposal decision.',
         queueFilters: {
           status: CASE_STATUS.AWAITING_COMPLAINANT,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [
@@ -110,7 +110,7 @@ export function landingForRole(
         queueFilters: {
           status: CASE_STATUS.ASSIGNED,
           bureauId: scope.bureauId,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [
@@ -138,7 +138,7 @@ export function landingForRole(
         queueFilters: {
           status: CASE_STATUS.TRANSFERRED,
           regionId: scope.regionId,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [
@@ -186,7 +186,7 @@ export function landingForRole(
         emptyDescription: 'No case is currently waiting on an escalation or complainant response.',
         queueFilters: {
           status: CASE_STATUS.ESCALATED,
-          pageSize: 5,
+          pageSize: 12,
           sort: 'lastActionAt:asc',
         },
         quickActions: [

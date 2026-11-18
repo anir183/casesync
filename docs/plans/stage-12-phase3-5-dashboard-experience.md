@@ -1,9 +1,10 @@
 # CaseSync — Stage 12 Phase 3.5: Operator Dashboard Experience
 
-Status: **PLANNED — not started.** This document records the design and delivery plan only.
-No implementation, route, permission, data-contract, or visual-baseline change is part of this
-plan commit. Implementation remains gated by the phase authorization in
-[`todo-tracker.md`](todo-tracker.md).
+Status: **IMPLEMENTED and locally verified** 2026-11-18. Sections 1–14 remain the approved
+design record; §15 is authoritative for the shipped composition, deliberate deviations, and
+verification results. No route, permission, server contract, dependency, or visual baseline
+changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain held
+for the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-18
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
@@ -148,19 +149,20 @@ Design principles for this phase:
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │ Dashboard  [role kicker]        [freshness: Live · 14:32] [Primary CTA] │
+├─────────────────────────────────────────────────────────────────────┤
+│ SIGNAL BAND                                                           │
+│ Needs action | Beyond timeline | Escalated/reopened | New since seen │
 ├──────────────────────────────────────────┬──────────────────────────┤
-│ ATTENTION DECK                           │ NEXT BEST ACTIONS        │
+│ NEEDS ATTENTION                          │ NEXT MOVES               │
 │ Due now / Due soon / Watching            │ Primary action           │
-│ 5 priority rows with SLA countdown       │ 2–3 role links           │
-│ [Open case →]                            │ Reports deep link        │
-├──────────────────────────────────────────┴──────────────────────────┤
-│ PULSE STRIP                                                           │
-│ Open | Beyond timeline | Escalated | Unassigned                      │
-│ each with value, hint, and tiny progress/threshold bar               │
-├──────────────────────────────────────────┬──────────────────────────┤
-│ PRESSURE                                 │ CHANGE FEED              │
-│ Status ribbon + top 5 bureau/region bars │ overlaps, escalations,   │
-│ "4 weeks / cases above target"           │ new markers, View all    │
+│ scrollable priority rows with SLA time   │ 2–3 role links           │
+│ [Open case →]                            ├──────────────────────────┤
+│                                          │ CASE POSTURE             │
+│                                          │ compact status-mix bar   │
+├──────────────────────────────────────────┼──────────────────────────┤
+│ CHANGE FEED                              │ PRESSURE POINTS          │
+│ overlaps + escalations, newest first     │ top 3 institutions       │
+│ [Open change →]                          │ open/late length bars    │
 ├──────────────────────────────────────────┴──────────────────────────┤
 │ ADMIN COMMAND DECK (admin only) / TEAM CONTEXT (other roles)         │
 │ grouped links, real counts, health rail                              │
@@ -220,7 +222,12 @@ Redesign `AttentionQueue` into a priority ladder:
   - shape/icon;
   - subtle color accent on the left edge.
 - Never background-fill entire rows in red; use `bg-danger-soft` only for the due-now chip.
-- Keep the list to five items. If more exist, show `View all N` linking to the scoped case query.
+- Fetch up to 12 scoped cases and render them in a bounded vertical scroll area with the panel
+  header and footer fixed. If more exist, show `View all N` linking to the scoped case query
+  without the dashboard-only `pageSize` parameter.
+- Show band headings only when more than one band has items. Single-band escalation queues keep the
+  role-specific panel title and row-level `Escalated` reason chip instead of a redundant `Due now`
+  heading.
 
 Session-local quality-of-life:
 
@@ -238,66 +245,44 @@ Upgrade `QuickActions`:
 - Include a one-line “why” from `landing.summary`.
 - Keep Reports as a scoped deep link, not a filter form.
 
-### 6.4 Pulse strip
+### 6.4 Signal band
 
-Evolve `KpiStrip` without turning it into Reports:
+Ship a four-cell operational snapshot without turning it into Reports:
 
-- Keep four metrics: Total, Open, Beyond timeline, Escalated.
-- Add a thin inline **meter bar** derived from existing counts:
-  - Beyond timeline as % of total;
-  - Escalated as % of open;
-  - Unassigned as % of open;
-  - Open as % of total.
-- Add a small delta annotation only when client history is available, e.g. `+2 since morning`.
-- Keep hint text inside `<dd>` for the existing axe definition-list rule.
-- Tones:
-  - default indigo for Total/Open;
-  - amber for Due soon;
-  - red for Beyond timeline/Escalated;
-  - teal for healthy/on-track.
+- `Needs action` — scoped queue waiting count.
+- `Beyond timeline` — count plus percentage of the visible case total.
+- `Escalated / reopened` — count awaiting senior review.
+- `New since you looked` — session-local change count.
+- Each cell has a compact label, bounded value, hint, and semantic tone; loading renders `—`.
+- Values use tabular numbers at 20px; no meter bars, deltas, or client history were added.
 
 ### 6.5 Pressure panel — the “good flare”
 
 This replaces the old donut/gauge nostalgia with meaningful color:
 
-- **Status ribbon**: one horizontal stacked bar built from `DashboardSummary` status counts.
-  - Open, Assigned, Under process, Escalated, Disposed, Beyond timeline.
-  - Each segment has a text legend with value; color is secondary.
-- **Top 5 pressure bars**: ranked horizontal bars from `bureauWise` or `regionWise` by
-  `beyondTimelines` or `open`.
-  - Length encodes quantity.
-  - Color encodes risk band only.
-  - Clicking a bar deep-links to the narrowest existing filtered Cases/Reports view.
-- Use existing chart tokens `--chart-1` … `--chart-6`.
-- No new chart dependency; implement with CSS bars or the existing lightweight chart primitives.
+- **Case posture**: one compact stacked bar built from `DashboardSummary` status counts, with a
+  text legend and value for each visible segment.
+- **Pressure points**: a top-3 ranking from `institutionWise`, sorted by `beyondTimelines`, then
+  `open`, then `total`. Bar length encodes open volume; text states open/late counts. The ranking
+  is informational and deliberately does not add a new filtered view.
+- Use existing semantic and chart tokens; no new chart dependency.
 - No map, no export, no date filter form.
 
 ### 6.6 Change feed
 
-Replace two separate recent-activity cards with a unified **Change feed**:
+Replace two separate recent-activity cards with one bounded **Change feed**:
 
-- Newest first.
-- Item types: overlap, escalation, due-soon case.
-- Each item shows type icon/shape, title, scope, time, and `New` marker if applicable.
-- `View all overlaps` and `View escalated cases` links at the bottom.
-- Keep the `RecentActivity` data source unchanged; only presentation changes.
+- Newest first; item types are overlap and escalation only. Due-soon cases remain in the attention
+  queue instead of being duplicated here.
+- Each item has a text title, detail, date, and deep link to the existing overlap or case route.
+- Header text states `Latest overlaps and escalations`; no `New` markers are added to this feed.
+- Keep the existing summary data source unchanged; only presentation changes.
 
 ### 6.7 Admin command deck
 
-Rework `AdminHub` and `SystemHealthStrip`:
-
-- Four groups remain: People & access, Masters, Operations, Data quality.
-- Each group becomes a compact panel with:
-  - one headline count;
-  - a short purpose line;
-  - two to four direct links with inline counts.
-- Use subtle group accents, not full-color cards:
-  - People & access: primary/indigo;
-  - Masters: chart-2/teal;
-  - Operations: chart-3/amber;
-  - Data quality: danger or info.
-- System health becomes a **health rail**: status glyph + label + value + one-line detail.
-- Failed runs and pending approvals link to their owning admin pages.
+The Phase 3 `AdminHub` and `SystemHealthStrip` are retained unchanged because they already provide
+the grouped counts, direct links, and health rail required here. Phase 3.5 changes the dashboard
+composition around them, not the admin surfaces themselves.
 
 ### 6.8 Long-session comfort
 
@@ -370,6 +355,9 @@ Rules:
 
 ## 9. Work breakdown
 
+The breakdown below is retained for scope traceability. Completion and any deliberate deviation
+from the original wording are recorded in §15.
+
 ### 9.1 Phase 3.5.A — Observation and design contract
 
 - Capture the current dashboard at 1440/1024/768/375 px in light and dark with seeded data.
@@ -388,26 +376,26 @@ Rules:
 
 ### 9.3 Phase 3.5.C — Pulse and pressure layer
 
-- KPI meters.
-- Status ribbon.
-- Top-5 bureau/region pressure bars.
-- Deep links to existing filtered views.
-- Unified change feed.
+- Four-cell signal band.
+- Compact case-posture bar.
+- Top-3 institution pressure ranking.
+- Existing queue/feed deep links retained; no new filtered view was added for pressure rows.
+- Unified overlap/escalation change feed.
 - Regression test asserting no Reports filter/chart/map/export appears on Dashboard.
 
 ### 9.4 Phase 3.5.D — Admin and comfort pass
 
-- Admin command deck redesign.
-- Health rail.
+- Phase 3 admin command deck and health rail retained unchanged.
 - Color semantics in light and dark.
-- Keyboard, focus, reduced motion, 44px targets, and 200% zoom at dashboard routes only.
-- E2E selectors updated by role/label where accessible names changed.
+- Keyboard, focus, 44px targets, and stable hierarchy at dashboard routes.
+- Selector preservation checked by role/label where accessible names changed.
 
 ### 9.5 Phase 3.5.E — Validation and handoff
 
-- Full static gates, unit tests, build budget, and desktop E2E.
-- Mobile/reflow and axe checks for dashboard routes.
-- Product-owner review of the new visual language.
+- Full static gates, unit tests, build budget, and targeted non-visual E2E.
+- Responsive and selector observation at dashboard routes; full visual/reduced-motion sweep stays in
+  Phase 7.
+- Dashboard component and pure-derivation tests.
 - Docs reconciliation.
 - Visual baselines still untouched locally; official 48-baseline refresh remains Phase 7.
 
@@ -416,6 +404,10 @@ Rules:
 ## 10. Verification and acceptance
 
 ### 10.1 Automated
+
+The checklist below is the acceptance contract. Actual local results are in §15; the full desktop
+suite and official visual refresh remain in Phase 7, so the targeted non-visual E2E pass is the
+evidence for this phase.
 
 - `check:ci`, all typechecks, API/web unit tests.
 - Web component tests:
@@ -456,7 +448,7 @@ Manual QA gates remain held until Stage 12 exits.
 
 | Risk | Mitigation |
 |---|---|
-| Dashboard drifts back into a Reports clone | Only two derived visuals: status ribbon and top-5 pressure bars. No filters, export, map, or full chart grid. |
+| Dashboard drifts back into a Reports clone | Only two derived visuals: case posture and a top-3 institution ranking. No filters, export, map, or full chart grid. |
 | Color overload / alarm fatigue | Strict color budget; red only for overdue/escalated/failed; soft tints; labels always present. |
 | Session-local “new” state confuses users | Clearly labelled, session-scoped, keyed by user, no cross-user sharing. |
 | Layout shift on refresh | Reserved skeleton slots and stable grid. |
@@ -500,3 +492,61 @@ Approve this phase with:
 5. Visual baselines untouched locally.
 
 On approval, implement Phase 3.5 as a new phase after Phase 3 without renumbering Phases 4–7.
+
+---
+
+## 15. Implementation record — 2026-11-18
+
+### 15.1 Shipped composition
+
+Phase 3.5 was implemented after Phase 3 without renumbering Phases 4–7. `DashboardCommandSurface`
+owns the hierarchy: `PageHeader` with freshness and the single primary role CTA, a four-cell
+`SignalBand`, then two 12-column grids with 16px gaps at `xl`. The first grid puts
+`AttentionQueue` in eight columns and `NextMoves` plus `CasePosture` in a four-column rail; the
+second puts `ChangeFeed` in eight columns and `PressurePoints` in four. The Phase 3 admin hub and
+health rail remain below when present. `NextMoves` renders only secondary links; the primary CTA
+stays in `PageHeader.actions`. Regional officer links keep the dynamic `regionId` scope.
+
+Pure derivations live in `insights.ts`; presentation lives in the new dashboard components. The
+session-local newness key remains `casesync:dashboard:last-seen:<userId>`, and urgency bands remain
+`Due now`, `Due soon`, and `Watching`.
+
+### 15.2 Deliberate deviations from the design draft
+
+- The attention queue fetches 12 scoped cases and scrolls within a fixed height instead of showing
+  only five; pagination remains in the Cases workbench. Band headings are rendered only when more
+  than one urgency band has items, so escalation-only queues do not repeat `Due now`.
+- `View all N` drops the dashboard-only `pageSize` filter so the Cases page opens with its normal
+  page size.
+- The signal band is four bounded cells with values, hints, and tones; no meter bars or deltas.
+- Case posture is one compact status-mix bar with a text legend, not a large ribbon.
+- Pressure points show the top **3** institutions, sorted by late count then open volume. They are
+  informational and do not add a new filtered view.
+- The change feed contains overlaps and escalations only. Due-soon cases stay in the attention
+  queue to avoid duplicate signals.
+- The Phase 3 grouped admin hub and health rail were retained unchanged because they already met
+  the requirement; no separate admin rework was needed.
+- `Focus view` remains deferred.
+- Dashboard-only compact badges use standard `text-xs` values and `text-xl` signal values in
+  `cn()` contexts because `twMerge` removes custom semantic type utilities when a text-color
+  utility follows them.
+
+### 15.3 Verification
+
+- `bun run verify` passed: `check:ci`, all typechecks, API **116 pass / 74 skip**, web **66 pass /
+  0 fail**, and main chunk **492.67 kB / 139.25 kB gzip**, below the
+  `506.12 kB / 140.06 kB gzip` guardrail.
+- Targeted seeded loopback E2E passed **83 / 83** (`navigation`, `accessibility`, `coverage/states`).
+- Added component and derivation coverage in `dashboard-command-surface.test.tsx` and
+  `dashboard-insights.test.ts` for signals, posture, pressure, feed, urgency bands, newness,
+  refresh, role CTAs, admin retention, and Reports-control absence.
+- Seeded browser observation at 1440/1024/768/375 px in light and dark found no horizontal
+  overflow, a visible primary CTA, 12px badges, 20px signal values, preserved shell selectors,
+  and no retired selectors. The notification popover exposes `View all notifications`, the mobile
+  drawer exposes `<nav aria-label="Mobile">`, refresh issues a real `/dashboard/summary` request,
+  and the regional officer CTA carries the scoped `regionId`.
+- All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
+  `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred.
+- No routes, permissions, server contracts, dependencies, or visual baselines changed. The
+  official 48-baseline refresh, double CI run, and both manual QA gates remain deferred to the
+  Phase 7 / Stage 12 exit sweep. No deployment was authorized or performed.

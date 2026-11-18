@@ -1,12 +1,12 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-18 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`).
+**Last verified:** 2026-11-18 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign implemented and verified on loopback Mongo).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **planned, not started**; see `docs/plans/stage-12-phase3-5-dashboard-experience.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
+**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **implemented and locally verified** (compact signal band, urgency queue, next moves, case posture, change feed, and pressure points); the official 48-baseline refresh, double CI, and both manual gates remain held; see `docs/plans/stage-12-phase3-5-dashboard-experience.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -863,7 +863,7 @@ code split. No routes, permissions, data contracts, or new dependencies changed.
 baselines remain untouched locally; the official 48-baseline refresh and double CI run stay in
 Phase 7, and both manual QA gates remain held until Stage 12 exits.
 
-### Phase 3.5 — Operator dashboard experience (IN PROGRESS — 3.5.A+B complete; 3.5.C–E pending)
+### Phase 3.5 — Operator dashboard experience (IMPLEMENTED — 3.5.A–E complete locally; visual-baseline/double-CI sweep deferred to Phase 7)
 
 Full plan: `docs/plans/stage-12-phase3-5-dashboard-experience.md`. This phase follows Phase 3
 without renumbering Phases 4–7. It keeps Dashboard as the attention/quick-start surface and
@@ -877,17 +877,24 @@ gates remain held until Stage 12 exits.
       Local seeded observation is complete; official visual baselines remain untouched.
 - [x] **3.5.B — Attention and action layer:** add freshness/Live/Stale state, `New since you
       looked` (session-local), manual refresh, and the primary role CTA; rebuild the queue as
-      Due now / Due soon / Watching bands with five rows and a scoped `View all N` link; make
-      quick actions one dominant action plus quiet secondary links.
-- [ ] **3.5.C — Pulse and pressure layer:** add KPI meter bars, a status ribbon, top-5
-      bureau/region pressure bars, and a unified change feed; every signal deep-links to an
-      existing filtered view; assert no Reports filter/chart/map/export returns to Dashboard.
-- [ ] **3.5.D — Admin and comfort pass:** rework the admin command deck and health rail with
-      grouped counts and direct links; verify semantic accents in light/dark, 44px targets,
-      tabular numbers, stable tab order, no layout shift, and `prefers-reduced-motion`.
-- [ ] **3.5.E — Validation and handoff:** run static gates, all typechecks, API/web unit tests,
-      dashboard component tests, responsive/axe checks at 375/768/1024/1440 px, and the full
-      desktop E2E suite; review the build against `506.12 kB / 140.06 kB gzip`; reconcile docs.
+      Due now / Due soon / Watching bands with a scrollable 12-row scoped list and a clean
+      `View all N` link; suppress redundant band headings for single-band queues; make quick
+      actions one dominant action plus quiet secondary links.
+- [x] **3.5.C — Pulse and pressure layer:** add a four-cell signal band, a status-mix posture
+      bar, top-3 institution pressure bars, and one chronological overlap/escalation change
+      feed. Due-soon cases stay in the attention queue rather than duplicating the feed. Pure
+      derivations live in `insights.ts`; component tests cover every signal. No Reports
+      filter/chart/map/export was added to Dashboard.
+- [x] **3.5.D — Admin and comfort pass:** retain the Phase 3 grouped admin hub and health rail
+      (already compliant); rebuild the dashboard shell with compact 12px badges, 44px targets,
+      tabular numbers, stable tab order, semantic light/dark accents, and no nonessential motion.
+      Observation at 375/768/1024/1440 px in both themes found no overflow or layout shift.
+- [x] **3.5.E — Validation and handoff:** `bun run verify` passed with API 116 pass / 74 skip,
+      web 66 pass / 0 fail, and main chunk `492.67 kB / 139.25 kB gzip`; targeted non-visual
+      E2E passed 83/83; dashboard component and derivation tests were added; seeded browser
+      observation covered all four widths, both themes, preserved/retired selectors, freshness,
+      refresh, and role CTAs. The visual-baseline/double-CI sweep and manual gates stay in
+      Phase 7 / Stage 12 exit per the standing constraint.
 
 Acceptance: operators can answer “what needs me now?”, “what changed?”, “are we within target?”,
 and “where do I go next?” in one glance; the dashboard is visually alive but calm; the strict
