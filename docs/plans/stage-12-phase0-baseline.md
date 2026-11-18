@@ -1,6 +1,7 @@
 # Stage 12 — Phase 0 baseline evidence
 
-**Status:** Phase 0 complete 2026-11-18; Phase 1 not yet authorized.
+**Status:** historical Phase 0 evidence, captured 2026-11-18. Current phase status is in
+[`ui-modernization-plan.md`](ui-modernization-plan.md) and [`todo-tracker.md`](todo-tracker.md).
 **Plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md) §5 Phase 0.
 **Authority:** Stage 11 exit, CI dispatch `44122619636` on `main` (2026-11-17);
 Stage 10 coverage baseline retained by Stage 11. Captured against commit `3568489`,
@@ -16,7 +17,8 @@ Phase 0 changed **no UI code**. Routes, guards, permissions, data, product behav
 dependencies, and the 48 visual baselines are untouched. Baseline screenshots are local
 evidence under `storage/phase0-baseline/` (gitignored, 40 PNGs, 9.6 MB) — they are **not**
 a regeneration of the CI visual baselines. The product owner approved all five direction
-choices on 2026-11-18 (§8); the lock fixes direction only and does not authorize Phase 1.
+choices on 2026-11-18 (§8); the lock fixed direction only. Later phases were authorized and
+the shell detail was amended after product-owner review; see the current plan for that record.
 
 ## 2. Capture environment
 

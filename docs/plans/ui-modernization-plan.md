@@ -1,8 +1,10 @@
 # CaseSync — Stage 12 UI Modernization Plan
 
-Status: **Phase 0 complete** (audit, direction, and baselines) 2026-11-18; Phase 1 is not
-authorized yet. Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md).
-This plan does not authorize UI implementation, dependency changes, or test updates yet.
+Status: **Phases 0–2 implemented** 2026-11-18; **Phase 2 reopened for product-owner review
+remediation**, Phase 3 not authorized. Evidence:
+[`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md). Phase 0–1 history is retained;
+Phase 2 must pass the remediation exit criteria below before it is considered exited.
+Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
 runbook walkthrough) are **held until this stage completes**, because the UI refresh would
 invalidate a pass run now; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
@@ -150,11 +152,11 @@ only — it does **not** authorize Phase 1 implementation.
 
 | Decision | Locked choice |
 |---|---|
-| Shell | Desktop left rail (Dashboard, Cases, Institutions, Overlaps, Reports + admin group) with a context top bar: breadcrumb/title, `Ctrl/Cmd+K` command trigger, read-only scope indicator, quick-create, notification bell, theme, account. Command palette is a shortcut, not a replacement for visible navigation. Mobile keeps top bar + drawer. Route tree and permissions unchanged. |
+| Shell | Desktop left rail, collapsible to icons, with persistent grouped destinations (Workspace, Notifications where allowed, Admin/Oversight by role) and an upward profile menu containing identity and Sign out. No `More` dropdown in the rail. Context top bar uses two zones: left search + page context; right scope, quick-create, notifications, theme, mobile toggle. `Ctrl/Cmd+K` opens a centered modal; clicking the bar search keeps the input in place and drops results below it. Dashboard-root breadcrumbs are removed. Mobile keeps top bar + drawer. Route tree and permissions unchanged. |
 | Type / spacing / surface | Full token migration in Phase 1: one display/heading scale and one compact UI scale, 4 px spacing base with semantic gaps and one section gap, layered neutral surfaces with tinted status, tabular numerals for counts/dates. Keep indigo primary and teal accent. Migrate all 12 arbitrary `text-[10px]`/`text-[11px]` uses, the one `text-[28px]`, and the 3 inline styles. |
 | Motion | Tokenized 120/180/240 ms with the §3.3 easings; transform/opacity only; no layout-affecting animation; reduced-motion uses opacity-only or no transition; no animation library. |
 | GIS | Existing `leaflet` + `react-leaflet` only. Bundled simplified region GeoJSON, one active metric as a choropleth, institution points, legend, keyboard chips, always-present table fallback, no-tiles state. Label geometry as schematic unless it is an official boundary. Lazy-load map and geometry; no new GIS package. |
-| Portal hero | Action-first hero with one primary CTA and an inline track form, compact three-step strip, trust strip, concise FAQ, and prominent verification state. Move the long privacy card into help/tooltip. |
+| Portal hero | Action-first hero with one primary CTA and an inline track form, compact three-step strip, trust strip, concise FAQ, and prominent verification state. Move the long privacy card into help/tooltip. Portal shell is full-height so the footer sits at the bottom on short pages such as landing, login, and signup. |
 
 ## 4. Target information architecture
 
@@ -163,15 +165,25 @@ only — it does **not** authorize Phase 1 implementation.
 Adopt a **desktop rail + context top bar** instead of the current all-in-one top bar:
 
 - **Left rail:** primary destinations (Dashboard, Cases, Institutions, Overlaps, Reports),
-  collapsible to icons, with the active indicator and unread count on Notifications.
-- **Top bar:** breadcrumb/title, global search/command trigger, scope indicator, quick-create
-  action, notification bell, theme, account.
-- **Admin group:** a distinct rail section or hub entry, visible only to admin roles.
+  plus role-gated Notifications, Admin/Oversight groups. Every destination is persistent;
+  there is no `More` dropdown. The rail collapses to icon-only width with labelled tooltips,
+  and the active indicator remains visible in both states.
+- **Rail footer:** the user's name/email opens an upward `Account menu, {name}` containing
+  identity details and Sign out. Do not add placeholder settings links; leave a clean slot
+  for future real options.
+- **Top bar:** two explicit zones. Left holds the search trigger and optional page context.
+  Right holds the read-only scope indicator, quick-create action, notification bell, theme
+  toggle, and mobile toggle. Utility controls must not drift next to the search box.
 - **Mobile:** top bar + drawer; primary destinations remain reachable in one tap; no
   duplicated nav entries.
-- **Command palette:** `Ctrl/Cmd + K` for case/institution search and common actions
-  (new case, new institution, review overlaps, open reports). It is a shortcut, not a
-  replacement for visible navigation.
+- **Command palette:** two modes. `Ctrl/Cmd + K` opens a centered modal dialog with the
+  input focused. Clicking the top-bar search keeps the input in the bar and drops the result
+  panel beneath it; focus stays in the bar input. Both modes use the same role-gated results
+  and two-character content-search threshold. The search trigger shows a visible open state
+  and `aria-expanded="true"`.
+- **Breadcrumbs:** do not render a global `Dashboard > …` line. The active rail item and
+  page `PageHeader` carry location; nested detail pages may add a local `Back to …` link.
+  If a future route is genuinely deep, add a local breadcrumb inside that page only.
 - **Scope indicator:** explicit and read-only; it never looks like a filter that can widen
   access.
 
@@ -317,20 +329,64 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 - The shell passes axe and reduced-motion checks.
 - No route or permission changed.
 
+### Phase 2 review remediation (product owner, 2026-11-18)
+
+The implemented shell passed its first verification run, but product-owner review found
+usability defects. Phase 2 is therefore **not exited** until the following are implemented
+and reverified. This is an amendment to the locked shell direction, not a new product
+capability.
+
+**Work**
+
+- Replace the rail's static profile/footer with an upward `Account menu, {name}`; move Sign
+  out inside it and keep identity/email visible in the menu header.
+- Remove `More navigation` from the rail. Show role-gated destinations in persistent
+  Workspace, Notifications, Admin/Oversight groups; ensure no panel causes horizontal body
+  scroll or focus loss. This intentionally retires the `More navigation` E2E selector.
+- Add a persisted icon-only collapse state to the rail with accessible names/tooltips and
+  unchanged active-state semantics.
+- Split the command surface into keyboard-centered modal and click-inline dropdown modes.
+  Add a visible open state to the top-bar search trigger and preserve focus in the correct
+  input for each mode.
+- Change the top bar to a two-zone layout: left search/context, right utility cluster.
+- Remove global breadcrumbs. Rely on active rail state, page headers, and local back links
+  for nested routes.
+- Update `navigation.spec.ts`, unit tests, the UI matrix, and manual signoff for the
+  intentional selector and coverage changes.
+
+**Exit criteria**
+
+- No horizontal overflow or focus loss from any rail control at 375/768/1024/1440 px.
+- Profile menu, grouped rail, collapsed rail, both command modes, and two-zone top bar are
+  keyboard-accessible and covered by Playwright.
+- No global breadcrumb renders; nested pages still expose a clear way back.
+- Route tree, permissions, data contracts, and runbook steps remain unchanged.
+- Full static/unit/E2E/build chain is green and the main chunk remains under the
+  Phase 0 guardrail.
+
 ---
 
 ### Phase 3 — Dashboard and admin command surfaces
 
 **Goal:** replace card-and-copy landings with action-first surfaces.
 
+**Product-owner clarification (2026-11-18).** Dashboard and Reports have different jobs.
+Dashboard is the quick-start/attention surface; Reports is the analysis workbench. The
+current dashboard imports the reports queries, four chart components, and the map preview,
+which is why it reads as a second Reports page. Remove that duplication.
+
 **Work**
 
 - Rebuild the dashboard as role-aware sections:
-  - a “Needs attention” queue (overdue, unassigned, pending review, approvals);
-  - a compact KPI strip with one trend each;
-  - one primary chart and one map preview, not every chart at once;
+  - a “Needs attention” queue (overdue, unassigned, pending overlap review, approvals);
+  - a compact critical-metric strip, not a chart gallery;
+  - quick actions relevant to the role;
   - recent activity with deep links;
-  - quick actions relevant to the role.
+  - a link to Reports with the current role scope preserved.
+- Remove the dashboard's own date/bureau/region/status filter form, full chart grid, map
+  preview, and CSV export. Those belong on Reports.
+- Keep Reports as the single analytical surface: dimensional filters, full chart set,
+  tables, GIS/map view, and export.
 - Move explanatory text into labels, inline help, and empty states.
 - Replace equal-weight card grids with a hierarchy: primary queue, secondary metrics,
   tertiary context.
@@ -346,6 +402,8 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 **Exit criteria**
 
 - A role’s first screen answers “what needs me now?” without scrolling past prose.
+- Dashboard no longer renders the Reports filter/chart/map/export set; Reports remains the
+  only analytical workbench.
 - Every dashboard number still reconciles with the API and reports.
 - Admin pages are reachable from the hub, and each hub card shows a real signal.
 - The dashboard and admin hub pass axe, responsive, and reduced-motion checks.
@@ -420,8 +478,15 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 
 **Goal:** give complainants a clear, credible entry point and a short path to action.
 
+**Product-owner clarification (2026-11-18).** The current portal landing is still a card
+plus explanatory cards, and the portal shell does not fill the viewport on short pages, so
+the footer floats mid-screen on landing and login. Both are Phase 6 exit defects.
+
 **Work**
 
+- Make `PortalLayout` a full-height flex column with `main` as `flex-1`, so the footer sits
+  at the bottom on short pages and long pages still scroll normally. Apply the same
+  treatment to login and signup.
 - Rebuild `/portal` as a focused landing page:
   - a strong hero with one headline, one supporting sentence, and two primary actions
     (“File a complaint”, “Track a complaint”);
@@ -442,6 +507,8 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 **Exit criteria**
 
 - The primary action is visible without scrolling at 375 px and desktop.
+- Landing, login, and signup fill the viewport; the footer is bottom-anchored on short pages
+  and never floats mid-content.
 - The track path is one form away from the landing page.
 - No internal data, staff navigation, or private projection appears publicly.
 - The landing page passes axe, contrast, responsive, and reduced-motion checks.
@@ -493,17 +560,17 @@ disposition. Phase 0 artifacts are local evidence; they are not the CI visual ba
 | Screen | Current friction | Target |
 |---|---|---|
 | Login | Minimal but visually disconnected from the product | Split brand/context panel with the same tokens; clear error and focus states |
-| Staff shell | Cramped top bar; discovery via More | Desktop rail + context top bar + command search; mobile drawer |
-| Dashboard | Many equal-weight cards and text | Role-aware “needs attention” queue, KPI strip, one chart, map preview, quick actions |
+| Staff shell | Cramped top bar; discovery via More; hidden admin links; fixed-width rail | Collapsible grouped rail with profile menu; two-zone top bar; dual-mode command search; mobile drawer; no global breadcrumbs |
+| Dashboard | Many equal-weight cards and text; duplicates Reports | Role-aware “needs attention” queue, compact critical metrics, quick actions, recent activity; no Reports filters/charts/map |
 | Cases | Flat table; filters in a row | Sticky toolbar, saved views, chips, density, row actions, multi-select export |
 | Case detail | Long tab set and scattered actions | Sticky summary header, consolidated tabs, primary action bar, overflow for rare actions |
 | Institutions | Functional list/profile | Summary header, health signals, cross-bureau history, merge/alias context |
 | Overlaps | Queue plus detailed compare | Triage-first queue, keyboard shortcuts, score/evidence at a glance |
-| Reports | Long chart page | Saved filters, fewer default charts, chart/table toggle, drill-down |
-| Admin pages | Separate destinations in More | Admin hub with grouped jobs, counts, health, and direct actions |
+| Reports | Long chart page | Sole analytical workbench: saved filters, chart/table toggle, GIS/map, drill-down, export |
+| Admin pages | Separate destinations in More | Persistent grouped rail sections now; Phase 3 admin hub adds counts, health, and direct actions |
 | Admin users/org/SLA | Dense forms and tables | Consistent field/table primitives, inline validation, previews, clearer destructive dialogs |
 | Notifications | List with read state | Grouped, filterable notification center; unread obvious by icon + text |
-| Portal landing | Documentation-like cards | Hero, inline tracking, three-step flow, trust strip, concise FAQ |
+| Portal landing | Documentation-like cards; footer floats on short pages | Full-height shell, hero, inline tracking, three-step flow, trust strip, concise FAQ |
 | Portal dashboard/detail | Functional but text-heavy | Status-first cards, next-action callout, clear verification state |
 | Representative shell | Functional queue | Institution summary, open work, reply/evidence actions, profile status |
 | GIS map | Bubbles only | Bundled polygons, choropleth, points, drill-down, legend, fallback |
@@ -546,7 +613,10 @@ Stage 12 intentionally changes the UI, so Stage 10’s visual baseline is expect
 The refresh is part of the stage, not a bypass.
 
 - **Selectors:** prefer roles, labels, and accessible names. Update a selector only when
-  the redesign changed the accessible name; do not add `data-testid` as a first resort.
+  the redesign changed the accessible name; do not add `data-testid` as a first resort. The
+  Phase 2 review intentionally retires `More navigation` and global breadcrumb selectors;
+  replacement assertions target grouped rail sections, the profile menu, and the two command
+  modes.
 - **Routes:** the route tree and permissions stay unchanged. Any new route must be added to
   the matrix in the same change.
 - **Visual regression:** design sign-off happened in Phase 0 (2026-11-18). Phase 1 applies

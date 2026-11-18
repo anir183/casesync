@@ -8,6 +8,7 @@ import { CaseOverlapAssessment } from '#/models/case-overlap-assessment.model'
 import { CaseRelationship } from '#/models/case-relationship.model'
 import { Case } from '#/models/case.model'
 import { Institution } from '#/models/institution.model'
+import { escapeRegex } from '#/modules/cases/case-shared'
 
 interface OverlapDto {
   id: string
@@ -71,6 +72,7 @@ export interface OverlapFilters {
   matchType?: string
   institutionId?: string
   mergeStatus?: string | string[]
+  q?: string
   page?: number | string
   pageSize?: number | string
 }
@@ -235,6 +237,10 @@ function caseFilterFor(filters: OverlapFilters): Record<string, unknown> {
   if (filters.bureauId) filter.bureauId = filters.bureauId
   if (filters.regionId) filter.regionId = filters.regionId
   if (filters.institutionId) filter.institutionId = filters.institutionId
+  if (filters.q) {
+    const pattern = { $regex: escapeRegex(filters.q), $options: 'i' }
+    filter.$or = [{ caseNumber: pattern }, { description: pattern }]
+  }
   return filter
 }
 

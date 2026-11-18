@@ -1,13 +1,14 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stage 10. Last verified: 2026-11-08.
+Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Phase 2 review remediation planned; not implemented).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
 [`accessibility-audit.md`](accessibility-audit.md).
 
-This matrix is the progress measure for Stage 10. A row is **Covered** only when the
-route or action has a Playwright test asserting its visible behavior and its denied path.
+This matrix is the progress measure for the UI workstream (Stages 10–12). A row is
+**Covered** only when the route or action has a Playwright test asserting its visible
+behavior and its denied path.
 Test count is not progress; closed rows are.
 
 > **Stage 11–12 note.** Stage 11 (code audit) must leave this matrix and the visual
@@ -290,8 +291,12 @@ pending mutation, failed mutation, session expiry, the light/dark theme switch, 
 consolidated case timeline, the overflow action preselect, the admin and viewer role
 landings, and the portal next-step/resolution-loop surfaces. Step 5 closed the dialog
 focus, mobile drawer, reduced-motion, and 200% zoom rows through the accessibility and
-responsive specs. Rows below stay **Partial** where only one route or one side of the
-state is exercised.
+responsive specs. Stage 12 Phase 2 added shell/navigation rows from `navigation.spec.ts`;
+product-owner review then reopened Phase 2 for profile-menu, grouped/collapsible rail,
+dual-command-mode, two-zone top-bar, and no-breadcrumb remediation. New surfaces are marked
+**Blocked** with a named phase dependency until implemented. Rows stay **Partial** where only
+one route or one side of the state is exercised, or where a surface is asserted only outside
+Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -311,8 +316,17 @@ state is exercised.
 | Success toast | All mutations | **Partial** (mutation suite) |
 | Error toast | Failed mutation | **Partial** (case remark) |
 | Session expiry redirect | Staff and portal shells | **Partial** (staff) |
-| Mobile drawer open/close | Staff and portal shells | **Covered** (staff keyboard open and destination visibility) |
-| Notification bell preview | Staff shell | **Partial** |
+| Desktop rail and active nav | Staff shell | **Partial** (initial rail visibility and `aria-current` covered; grouped no-More layout, overflow fix, and role-gated sections pending Phase 2 remediation) |
+| Command palette | Staff shell | **Partial** (keyboard modal covered; click-to-inline dropdown mode and search open-state pending Phase 2 remediation) |
+| Quick create and scope indicator | Staff shell | **Covered** (admin actions and role name; viewer hides create and shows read-only scope) |
+| Mobile drawer open/close and focus return | Staff shell | **Covered** (keyboard open, role-gated destinations, close on navigation, opener focus restored) |
+| Notification bell preview | Staff shell | **Covered** (preview opens, `View all notifications` reaches the centre) |
+| Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
+| Profile menu in rail | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (upward menu, identity, Sign out inside) |
+| Icon-only collapsed rail | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (persisted toggle, labelled tooltips, no overflow) |
+| Two-zone top bar | Staff shell | **Blocked** — Stage 12 Phase 2 remediation (left search/context; right utility cluster) |
+| Dashboard/report separation | `/dashboard`, `/reports` | **Blocked** — Stage 12 Phase 3 (no dashboard filters/charts/map/export; Reports is sole workbench) |
+| Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
 | Consolidated case timeline | `/cases/:id` | **Covered** (action + assignment history in one Timeline tab) |
 | Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |
@@ -340,10 +354,13 @@ the staff dashboard, cases, institutions, overlaps, reports, notifications, and 
 users routes, the institution dashboard, case list, and profile, plus `/portal/track` and
 `/portal/dashboard`. It also proves tables scroll inside their container rather than the
 page (including the institution representatives queue), page and text-only 200% zoom
-reflow, and reduced-motion transition collapse. `navigation.spec.ts` covers the staff
-navigation row and mobile drawer, and `reports.spec.ts` covers the reports map at 375 px.
-Routes marked Deferred in §1 share one of these layout families; add a row only when a
-route introduces a new layout.
+reflow (including `/overlaps`), and reduced-motion transition collapse.
+`navigation.spec.ts` currently covers the initial rail at 375/768/1024/1440 px, active
+destination and More overflow, keyboard palette, quick-create/scope role treatment, and
+drawer focus return. Phase 2 remediation replaces the More assertions with grouped/collapsible
+rail, profile-menu, two-mode command, and two-zone top-bar coverage; global breadcrumbs are
+removed. `reports.spec.ts` covers the reports map at 375 px. Routes marked Deferred in §1
+share one of these layout families; add a row only when a route introduces a new layout.
 
 ## 5. Visual regression baseline set
 
@@ -410,7 +427,7 @@ shells also expose skip links and a focusable `main#main-content`.
 | Routes — admin | 1 | 6 | 0 | 0 | 0 |
 | Routes — representative | 0 | 6 | 1 | 0 | 0 |
 | Mutations | 33 | 7 | 15 | 0 | 0 |
-| UI states | 9 | 14 | 1 | 0 | 0 |
+| UI states | 12 | 15 | 2 | 5 | 0 |
 | Visual screens | 12 | 0 | 0 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts. A Partial

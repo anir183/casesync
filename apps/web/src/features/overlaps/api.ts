@@ -80,6 +80,7 @@ export interface OverlapFilters {
   regionId?: string
   matchType?: string
   institutionId?: string
+  q?: string
   page?: number
   pageSize?: number
 }

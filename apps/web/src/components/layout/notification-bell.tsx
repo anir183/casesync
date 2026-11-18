@@ -1,6 +1,10 @@
+import { NOTIFICATION_TYPE } from '@casesync/config'
 import { Bell } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '#/components/ui/badge'
+import { Button } from '#/components/ui/button'
+import { Select } from '#/components/ui/select'
 import type { AppNotification } from '#/features/notifications/api'
 import { notificationHref, notificationTypeLabel } from '#/features/notifications/links'
 import { cn, formatDate } from '#/lib/utils'
@@ -14,9 +18,181 @@ interface NotificationBellProps {
   isMarkingAllRead?: boolean
 }
 
+interface NotificationPanelProps {
+  items: AppNotification[]
+  unreadCount: number
+  onOpenNotification?: (id: string) => void
+  onMarkAllRead?: () => void
+  isMarkingAllRead?: boolean
+  close: () => void
+}
+
+const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
+
+function groupByType(items: AppNotification[]) {
+  const groups: Array<{ label: string; items: AppNotification[] }> = []
+  for (const item of items) {
+    const label = notificationTypeLabel(item.type)
+    const group = groups.find((entry) => entry.label === label)
+    if (group) group.items.push(item)
+    else groups.push({ label, items: [item] })
+  }
+  return groups
+}
+
 /**
- * The single unread indicator in the staff and portal bars. The preview shows
- * the five newest notifications and always links to the full centre.
+ * The preview groups the newest notifications by type and supports quick
+ * filtering without navigating away. All data comes from the shell's existing
+ * query so this component stays presentation-only.
+ */
+function NotificationPanel({
+  items,
+  unreadCount,
+  onOpenNotification,
+  onMarkAllRead,
+  isMarkingAllRead,
+  close,
+}: NotificationPanelProps) {
+  const [unreadOnly, setUnreadOnly] = useState(false)
+  const [type, setType] = useState('')
+
+  const visible = items
+    .filter((item) => !unreadOnly || !item.readAt)
+    .filter((item) => !type || item.type === type)
+    .slice(0, 5)
+  const groups = groupByType(visible)
+
+  return (
+    <div>
+      <div className="space-y-2 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-body font-semibold">Notifications</p>
+            <p className="text-meta text-muted-foreground">
+              {unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up'}
+            </p>
+          </div>
+          {onMarkAllRead && unreadCount > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onMarkAllRead}
+              disabled={isMarkingAllRead}
+            >
+              Mark all read
+            </Button>
+          )}
+        </div>
+        {items.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={unreadOnly ? 'default' : 'outline'}
+              onClick={() => setUnreadOnly((current) => !current)}
+            >
+              Unread only
+            </Button>
+            <Select
+              aria-label="Notification type"
+              className="h-8 w-auto min-w-36 text-meta"
+              value={type}
+              onChange={(event) => setType(event.target.value)}
+            >
+              <option value="">All types</option>
+              {TYPE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {notificationTypeLabel(option)}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
+      </div>
+
+      {groups.length === 0 ? (
+        <p className="px-4 py-8 text-center text-body text-muted-foreground">
+          {items.length === 0 ? 'No notifications yet.' : 'No notifications match these filters.'}
+        </p>
+      ) : (
+        <div className="max-h-80 divide-y divide-border overflow-y-auto">
+          {groups.map((group) => (
+            <section key={group.label} aria-label={group.label}>
+              <h3 className="bg-muted/50 px-4 py-1.5 text-meta font-semibold uppercase tracking-wide text-muted-foreground">
+                {group.label}
+              </h3>
+              <ul>
+                {group.items.map((item) => {
+                  const href = notificationHref(item) ?? '/notifications'
+                  const unread = !item.readAt
+                  return (
+                    <li key={item.id}>
+                      <Link
+                        to={href}
+                        onClick={() => {
+                          if (unread) onOpenNotification?.(item.id)
+                          close()
+                        }}
+                        className={cn(
+                          'block px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                          unread && 'bg-primary/[0.04]',
+                        )}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span
+                            aria-hidden
+                            className={cn(
+                              'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                              unread ? 'bg-primary' : 'bg-transparent',
+                            )}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p
+                              className={cn(
+                                'truncate text-body',
+                                unread ? 'font-medium' : 'text-muted-foreground',
+                              )}
+                            >
+                              {item.title ?? 'Notification'}
+                            </p>
+                            {item.message && (
+                              <p className="mt-0.5 line-clamp-2 text-meta text-muted-foreground">
+                                {item.message}
+                              </p>
+                            )}
+                            <p className="mt-1 text-meta text-muted-foreground">
+                              {formatDate(item.createdAt)}
+                            </p>
+                          </div>
+                          {unread && <Badge variant="muted">New</Badge>}
+                        </div>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-border p-2">
+        <Link
+          to="/notifications"
+          onClick={close}
+          className="block rounded-lg px-3 py-2.5 text-center text-body font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          View all notifications
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The single unread indicator in the staff shell. The panel groups recent
+ * notifications by type and filters them without leaving the shell.
  */
 export function NotificationBell({
   items,
@@ -27,14 +203,13 @@ export function NotificationBell({
 }: NotificationBellProps) {
   const badge = unreadCount > 99 ? '99+' : String(unreadCount)
   const label = unreadCount > 0 ? `Notifications, ${badge} unread` : 'Notifications'
-  const preview = items.slice(0, 5)
 
   return (
     <NavDropdown
       ariaLabel={label}
       align="right"
       panelLabel="Notification preview"
-      panelClassName="w-[min(22rem,calc(100vw-2rem))] p-0"
+      panelClassName="w-[min(24rem,calc(100vw-2rem))] p-0"
       triggerClassName="relative h-9 w-9 justify-center px-0"
       label={
         <>
@@ -48,97 +223,14 @@ export function NotificationBell({
       }
     >
       {(close) => (
-        <div>
-          <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-            <div>
-              <p className="text-sm font-semibold">Notifications</p>
-              <p className="text-xs text-muted-foreground">
-                {unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up'}
-              </p>
-            </div>
-            {onMarkAllRead && unreadCount > 0 && (
-              <button
-                type="button"
-                onClick={onMarkAllRead}
-                disabled={isMarkingAllRead}
-                className="rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-              >
-                Mark all read
-              </button>
-            )}
-          </div>
-
-          {preview.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-              No notifications yet.
-            </p>
-          ) : (
-            <ul className="max-h-96 divide-y divide-border overflow-y-auto">
-              {preview.map((item) => {
-                const href = notificationHref(item) ?? '/notifications'
-                const unread = !item.readAt
-                return (
-                  <li key={item.id}>
-                    <Link
-                      to={href}
-                      onClick={() => {
-                        if (unread) onOpenNotification?.(item.id)
-                        close()
-                      }}
-                      className={cn(
-                        'block px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                        unread && 'bg-primary/[0.04]',
-                      )}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                            unread ? 'bg-primary' : 'bg-transparent',
-                          )}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <p
-                              className={cn(
-                                'truncate text-sm',
-                                unread ? 'font-medium' : 'text-muted-foreground',
-                              )}
-                            >
-                              {item.title ?? 'Notification'}
-                            </p>
-                            <Badge variant="muted" className="shrink-0">
-                              {notificationTypeLabel(item.type)}
-                            </Badge>
-                          </div>
-                          {item.message && (
-                            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                              {item.message}
-                            </p>
-                          )}
-                          <p className="mt-1 text-meta text-muted-foreground">
-                            {formatDate(item.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-
-          <div className="border-t border-border p-2">
-            <Link
-              to="/notifications"
-              onClick={close}
-              className="block rounded-lg px-3 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              View all notifications
-            </Link>
-          </div>
-        </div>
+        <NotificationPanel
+          items={items}
+          unreadCount={unreadCount}
+          onOpenNotification={onOpenNotification}
+          onMarkAllRead={onMarkAllRead}
+          isMarkingAllRead={isMarkingAllRead}
+          close={close}
+        />
       )}
     </NavDropdown>
   )

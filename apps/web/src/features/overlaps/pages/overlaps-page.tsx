@@ -69,9 +69,11 @@ function OverlapCard({ overlap }: { overlap: Overlap }) {
         <div className="grid gap-3 md:grid-cols-2">
           {overlap.cases.map((item) => (
             <div key={item.id} className="rounded-md border border-border p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium">{item.caseNumber}</span>
-                <Badge variant="muted">{item.bureauName ?? 'Unassigned bureau'}</Badge>
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <span className="min-w-0 truncate font-medium">{item.caseNumber}</span>
+                <Badge variant="muted" className="max-w-full">
+                  {item.bureauName ?? 'Unassigned bureau'}
+                </Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 {item.category ?? 'Uncategorised'} · {item.status.replace(/_/g, ' ')}

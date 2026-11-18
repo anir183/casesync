@@ -133,10 +133,11 @@ touching routes, API calls, permissions, or test assertions.
 ## Layout
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Topbar (breadcrumb/title, theme toggle, notifications) │
+│ Topbar (left: search/context; right: scope/create/theme) │
 ├──────────┬──────────────────────────────────────────────┤
-│ Sidebar   │ Main content (max-width or fluid)             │
-│ (nav)     │ padding: 24px (desktop), 16px (mobile)       │
+│ Rail      │ Main content (max-width or fluid)             │
+│ (grouped, │ padding: 24px (desktop), 16px (mobile)       │
+│ collaps.) │                                              │
 └──────────┴──────────────────────────────────────────────┘
 ```
 
@@ -378,7 +379,9 @@ The five Stage 12 Phase 0 decisions are locked; evidence is in
 [`../plans/stage-12-phase0-baseline.md`](../plans/stage-12-phase0-baseline.md) §8.
 
 - **Shell:** desktop rail + context top bar; `Ctrl/Cmd+K` is a shortcut, not the only path;
-  mobile keeps top bar + drawer; route tree and permissions unchanged.
+  mobile keeps top bar + drawer; route tree and permissions unchanged. Product-owner review
+  amended the detail: grouped persistent rail with no `More`, collapsible icon-only mode,
+  upward profile menu, two-zone top bar, two command modes, and no global breadcrumbs.
 - **Type/spacing/surface:** full token migration in Phase 1 — one display scale and one
   compact UI scale, 4 px spacing base with semantic gaps, layered neutral surfaces with
   tinted status, tabular numerals; keep indigo/teal; remove all arbitrary text sizes and
@@ -391,12 +394,27 @@ The five Stage 12 Phase 0 decisions are locked; evidence is in
 - **Portal hero:** action-first hero with one primary CTA and inline tracking, compact
   three-step strip, trust strip, short FAQ, prominent verification state.
 
-The lock fixes direction only; Phase 1 implementation requires separate authorization.
+The lock fixed direction only. Phases 0–1 are complete and Phase 2 was implemented, then
+reopened for the review amendment below; Phase 3 still requires separate authorization.
+
+**Phase 2 product-owner review amendment (2026-11-18)**
+
+- Rail: persistent grouped destinations instead of `More`; role-gated Admin/Oversight
+  sections; collapsible icon-only mode with labelled tooltips; upward `Account menu, {name}`
+  with identity and Sign out inside.
+- Top bar: left search/context, right scope/Create/Notifications/Theme/mobile controls.
+- Command surface: `Cmd/Ctrl+K` opens a centered modal; clicking the bar search keeps input
+  in place and drops results below it. Search trigger shows an open state.
+- Context: remove global `Dashboard > …` breadcrumbs; use active rail, page headers, and
+  local back links.
+- Later phases: Dashboard must not duplicate Reports; Portal shell must fill the viewport
+  with a bottom-anchored footer and the landing must be an action-first hero.
 
 **Target surfaces**
 
-- **Shell:** desktop rail + context top bar, global command/search (`Ctrl/Cmd+K`),
-  notification center, quick-create, read-only scope indicator, mobile drawer parity.
+- **Shell:** collapsible grouped rail with profile menu, two-zone context top bar, dual-mode
+  global command/search (`Cmd/Ctrl+K` or click-to-inline), notification center, quick-create,
+  read-only scope indicator, mobile drawer parity, no global breadcrumbs.
 - **Role landings:** officer queue, senior/regional oversight, viewer read-only, admin
   health, representative work, complainant status.
 - **Admin hub:** people/access, masters, operations, and data-quality groups with real
@@ -419,7 +437,8 @@ contracts, or a new animation/chart/GIS library.
 ## DoD
 - [ ] Dark/light mode works, no flash of wrong theme
 - [ ] Single nav, no duplicated functionality; admin nav hidden from non-admins
-- [ ] All features accessible in ≤2 clicks from nav (or primary + More on mobile)
+- [ ] All staff destinations reachable from the grouped rail in ≤2 clicks, including in
+      collapsed icon-only mode; no `More` dependency
 - [ ] Overlap compare view is clear and unambiguous
 - [ ] Case can be registered and driven through its lifecycle entirely in the UI
 - [ ] Scope indicator reflects server-side scope; non-admins cannot widen it

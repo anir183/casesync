@@ -95,4 +95,36 @@ describe('notification bell', () => {
     expect(screen.getByText('No notifications yet.')).toBeDefined()
     expect(screen.getByText('You are all caught up')).toBeDefined()
   })
+
+  test('groups the preview by notification type', () => {
+    renderBell([
+      notification(1, { type: 'OVERLAP_ALERT' }),
+      notification(2, { type: 'COMPLAINT_SUBMITTED' }),
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications, 2 unread' }))
+
+    expect(screen.getByRole('heading', { name: 'overlap alert' })).toBeDefined()
+    expect(screen.getByRole('heading', { name: 'complaint submitted' })).toBeDefined()
+  })
+
+  test('filters the preview by unread state and type', () => {
+    renderBell([
+      notification(1, { type: 'OVERLAP_ALERT' }),
+      notification(2, { type: 'COMPLAINT_SUBMITTED', readAt: '2026-10-21T10:00:00.000Z' }),
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications, 1 unread' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Unread only' }))
+
+    expect(screen.getByText('Alert 1')).toBeDefined()
+    expect(screen.queryByText('Alert 2')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Unread only' }))
+    const typeSelect = screen.getByLabelText('Notification type')
+    fireEvent.change(typeSelect, { target: { value: 'COMPLAINT_SUBMITTED' } })
+
+    expect(screen.getByText('Alert 2')).toBeDefined()
+    expect(screen.queryByText('Alert 1')).toBeNull()
+  })
 })

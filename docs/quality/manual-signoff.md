@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-18 (Stage 12 Phase 0 in progress).
+Last updated: 2026-11-18 (Phase 2 review remediation planned; gates still held).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -52,6 +52,8 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | 2026-11-18 | Worksheet created from the Stage 9 Phase 6 plan; both gates marked held pending Stage 12 | — |
 | 2026-11-18 | Stage 12 Phase 0 started. Route inventory rechecked against `router.tsx`: 35 real routes, no additions; runbook §1 bundle claim corrected (main chunk 506.12 kB / 140.06 kB with a `>500 kB` warning). Step B4 still expects a warning-free build because this pass runs after Stage 12 exits and returning under 500 kB is a Stage 12 exit target. Evidence: `docs/plans/stage-12-phase0-baseline.md` | — |
 | 2026-11-18 | Stage 12 Phase 0 exited. Product owner approved the rail + top-bar shell, full token system, tokenized motion, bundled-polygon GIS, and action-first portal hero. No route, guard, or runbook step changed at the lock; both gates remain held until all Stage 12 phases complete. | — |
+| 2026-11-18 | Stage 12 Phase 2 shell/navigation implemented: desktop rail + context top bar, `Cmd/Ctrl+K` command palette, grouped/filterable notification preview, quick create, scope indicator, breadcrumbs, and reworked mobile drawer. No route, guard, data, or runbook step changed; the palette is a dialog surface, so §A.1 adds rows A13–A14. Both gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Product-owner review of the Phase 2 build. Phase 2 reopened for remediation: upward profile menu with Sign out inside, no rail `More`, persistent grouped/collapsible rail, two command modes (centered keyboard modal and inline click dropdown), two-zone top bar, and no global breadcrumbs. Phase 3 dashboard/report separation and Phase 6 full-height portal hero also clarified. §A.1 rows A13–A16 updated; gates remain held. | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the
@@ -120,10 +122,15 @@ Breadth surfaces — **required if present after Stage 12, otherwise N/A with re
 | A10 | `/admin/institution-representatives` | Admin | Approval queue, reject/revoke dialogs |
 | A11 | `/institution/dashboard` | Approved representative | Representative shell, case table |
 | A12 | `/portal/dashboard` and `/portal/complaints/:id` | Complainant | Public projections, conversation, resolve/reopen |
+| A13 | Command palette on any staff route | All staff roles | Two modes: `Cmd/Ctrl+K` opens a centered modal with focus in its input; clicking the top-bar search keeps the input in the bar and drops results below it. Check dialog/popover labelling, result names, arrow/Home/End/Enter, Escape, focus return to the correct trigger, visible open-state on the search box, role-gated actions, and the two-character content-search threshold. |
+| A14 | Staff shell chrome (rail, top bar, mobile drawer) | All staff roles | Grouped persistent rail with no `More`; active nav state; upward `Account menu, {name}` with identity and Sign out inside; icon-only collapse mode with labelled tooltips; two-zone top bar (left search/context, right scope/Create/Notifications/Theme/mobile); notification preview; thumb-reach drawer and focus return. Confirm no global `Dashboard > …` breadcrumb; nested pages use active rail, page header, and local back links. |
+| A15 | `/dashboard` and `/reports` separation | Officer/admin + all role landings | Dashboard leads with “Needs attention”, compact critical metrics, quick actions, and recent activity; it has no Reports filter form, full chart grid, map preview, or export. Reports remains the only analytical workbench. Numbers still reconcile with the API and each other. |
+| A16 | `/portal`, `/portal/login`, `/portal/signup` shell | Anonymous + complainant | Full-height flex shell with footer bottom-anchored on short pages; action-first hero with one dominant CTA and inline track path; no floating footer on login/signup; public projections and privacy unchanged. |
 
-> If Stage 12 adds a command/search surface, new admin pages, or a new GIS/portal view, add
-> rows A13+ here before executing. Do not skip a new surface because it was not in the Stage 9
-> inventory.
+> A15 and A16 land with Stage 12 Phases 3 and 6; verify them only after those phases are
+> implemented and Stage 12 exits. If Stage 12 adds another command/search surface, new admin
+> pages, or a new GIS/portal view, add further rows here before executing. Do not skip a new
+> surface because it was not in the Stage 9 inventory.
 
 ### A.2 Per-surface procedure
 
@@ -148,7 +155,8 @@ for any failure.
 ### A.3 Zoom checks (automated items are not re-tested)
 
 [`ui-test-matrix.md`](ui-test-matrix.md) §4 already covers 375/768/1024/1440 px reflow,
-table containment, and reduced motion. Manually check only the following:
+table containment, reduced motion, and (since Stage 12 Phase 2) text-only 200% zoom on
+`/overlaps`. Manually check only the following:
 
 - [ ] **Page zoom 200%** at a 1280 px viewport (effective ~640 px) on routes A2, A3, A5, A9
       and A12: no page-level horizontal overflow, no clipped content, primary actions reachable,
@@ -157,6 +165,8 @@ table containment, and reduced motion. Manually check only the following:
       overlap or truncate, focus indicators remain visible.
 - [ ] **Dialogs at 200%** on A5 and A10: full dialog content visible, buttons reachable,
       focus trap still works.
+- [ ] **Staff shell at 200%** on A14: expanded and collapsed rail, upward profile menu,
+      grouped destinations, and both command modes remain reachable without horizontal overflow.
 
 Record zoom result:
 

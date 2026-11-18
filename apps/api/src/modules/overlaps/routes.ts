@@ -75,6 +75,7 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
         matchType: query.matchType,
         institutionId: query.institutionId,
         mergeStatus: query.mergeStatus,
+        q: query.q,
         page: query.page,
         pageSize: query.pageSize,
       })
@@ -100,6 +101,7 @@ export const overlapsRoutes = new Elysia({ prefix: '/overlaps' })
         ),
         institutionId: t.Optional(t.String()),
         mergeStatus: t.Optional(t.String()),
+        q: t.Optional(t.String()),
         page: t.Optional(t.String()),
         pageSize: t.Optional(t.String()),
       }),

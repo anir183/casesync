@@ -14,6 +14,7 @@ export interface DialogProps {
   footer?: ReactNode
   className?: string
   overlayClassName?: string
+  id?: string
 }
 
 export function Dialog({
@@ -25,6 +26,7 @@ export function Dialog({
   footer,
   className,
   overlayClassName,
+  id,
 }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
@@ -100,6 +102,7 @@ export function Dialog({
     >
       <dialog
         ref={dialogRef}
+        id={id}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}

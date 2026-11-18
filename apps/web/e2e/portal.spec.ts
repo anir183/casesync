@@ -12,8 +12,11 @@ async function signInPortal(page: Parameters<typeof signIn>[0], email: string) {
 }
 
 async function signOut(page: Parameters<typeof signIn>[0]) {
-  await page.getByRole('button', { name: 'Account menu' }).click()
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  // The complainant portal still uses an account menu; the staff rail exposes
+  // sign-out directly.
+  const accountMenu = page.getByRole('button', { name: /^Account menu/ })
+  if ((await accountMenu.count()) > 0) await accountMenu.click()
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page).toHaveURL(/\/(portal|login)$/)
 }
 

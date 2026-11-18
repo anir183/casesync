@@ -1380,6 +1380,54 @@ suite('Stage 3 overlap correctness, coordination and notifications', () => {
     expect(cappedBody.pageSize).toBe(100)
   })
 
+  test('overlap queue q filter narrows results and escapes regex characters', async () => {
+    const parenthesized = await createCasePair('Q(PAREN)')
+    const plain = await createCasePair('QPAREN')
+    configureJev(false)
+    const actorId = userIds.get(email('admin')) as string
+    expect((await assessCaseOverlaps(parenthesized.caseAId, actorId)).created).toBe(1)
+    expect((await assessCaseOverlaps(plain.caseAId, actorId)).created).toBe(1)
+    await runtime.Case.updateOne(
+      { _id: parenthesized.caseAId },
+      { $set: { description: 'Q search unique description token' } },
+    )
+    const parenthesizedRelationship = await findRelationship(
+      parenthesized.caseAId,
+      parenthesized.caseBId,
+    )
+    const plainRelationship = await findRelationship(plain.caseAId, plain.caseBId)
+    expect(parenthesizedRelationship?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.PENDING)
+    expect(plainRelationship?.reviewStatus).toBe(RELATIONSHIP_REVIEW_STATUS.PENDING)
+
+    const unfiltered = await api(email('admin'), '/overlaps?status=PENDING')
+    expect(unfiltered.status).toBe(200)
+    const unfilteredBody = await json<PageBody<{ id: string }>>(unfiltered)
+    expect(unfilteredBody.total).toBeGreaterThan(1)
+
+    // Unescaped, "(" and ")" would form a group and also match the plain case number.
+    const query = `STAGE3-Q(PAREN)-${RUN_ID}-A`
+    const filtered = await api(
+      email('admin'),
+      `/overlaps?status=PENDING&q=${encodeURIComponent(query)}`,
+    )
+    expect(filtered.status).toBe(200)
+    const filteredBody = await json<PageBody<{ id: string }>>(filtered)
+    const filteredIds = filteredBody.items.map((item) => item.id)
+    expect(filteredIds).toContain(String(parenthesizedRelationship?._id))
+    expect(filteredIds).not.toContain(String(plainRelationship?._id))
+    expect(filteredBody.total).toBeLessThan(unfilteredBody.total)
+
+    const byDescription = await api(
+      email('admin'),
+      `/overlaps?status=PENDING&q=${encodeURIComponent('Q search unique description token')}`,
+    )
+    expect(byDescription.status).toBe(200)
+    const byDescriptionBody = await json<PageBody<{ id: string }>>(byDescription)
+    expect(byDescriptionBody.items.map((item) => item.id)).toContain(
+      String(parenthesizedRelationship?._id),
+    )
+  })
+
   test('transfer triggers re-assessment without duplicating the relationship', async () => {
     const pair = await createCasePair('REASSESS')
     configureJev(false)
