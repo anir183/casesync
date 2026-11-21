@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-18 (Phase 2 review remediation implemented and verified; gates still held).
+Last updated: 2026-11-18 (Phase 2 review remediation, Phase 3.5 dashboard, and Phase 4A cases surfaces implemented and verified; gates still held).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -60,7 +60,10 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | 2026-11-18 | Stage 12 Phase 3 implemented and verified on disposable loopback Mongo: attention-first role dashboards without Reports filters/charts/map/export, Reports as the sole workbench with role scope preserved, admin hub and system-health strip, saved views for cases and overlaps, and the branded route-error fallback pulled forward from Phase 7 with forced-throw E2E coverage. `check:ci`, four typechecks, API 116 pass / 74 skip, web 53 pass, full desktop E2E 207 pass, fresh web build `492.67 kB / 139.25 kB gzip`. No route, guard, data, or runbook step changed; both gates remain held until Stage 12 exits. | — |
 | 2026-11-18 | Stage 12 Phase 3.5 — Operator Dashboard Experience plan created as a docs-only change and wired into the tracker, parent plan, and UI test matrix. Implementation is not authorized by this change; no route, guard, data, dependency, selector, or visual baseline changed. Dashboard-specific motion/a11y observation is pulled forward, while the official 48-baseline refresh, double CI, and both manual gates remain held for later phases. Evidence: `docs/plans/stage-12-phase3-5-dashboard-experience.md` | — |
 | 2026-11-18 | Stage 12 Phase 3.5.A+B implemented on seeded loopback Mongo: freshness control with manual refresh, session-local `New since you looked`, urgency-banded attention deck with scoped `View all N`, and one dominant role CTA with quiet secondary links. Local observation at 375/768/1024/1440 px in light/dark found no overflow, visible primary CTA, preserved shell selectors, and no retired selectors. `check:ci`, four typechecks, API 116 pass / 74 skip, web 61 pass, targeted dashboard/navigation/a11y E2E 83 pass, fresh build `492.67 kB / 139.24 kB gzip`. No route, guard, data contract, dependency, or visual baseline changed; gates remain held until Stage 12 exits. | — |
-| 2026-11-18 | Stage 12 Phase 3.5 operator dashboard redesign implemented and locally verified on loopback Mongo: four-cell signal band, urgency queue plus quiet next-moves rail, compact case posture, one overlap/escalation change feed, and top-3 institution pressure ranking on a 12-column grid; Phase 3 admin hub/health rail retained. `bun run verify` passed (API 116 pass / 74 skip, web 66 pass / 0 fail, main chunk `492.67 kB / 139.25 kB gzip`) and targeted E2E passed 83/83. Seeded browser observation at 375/768/1024/1440 px in light/dark found no overflow, 12px badges, 20px signals, preserved/retired selectors, working refresh, notification preview, mobile drawer, and scoped role CTAs. No route, guard, data contract, dependency, visual baseline, or deployment changed; gates remain held until Stage 12 exits. | 2026-11-18 | Stage 12 Phase 3.5 scroll refinement: the dashboard queue now fetches 12 scoped cases into a fixed-height scroll region, shows urgency band headings only when more than one band has items, and strips the dashboard-only `pageSize` from `View all N`. Component coverage brought web tests to 66 pass / 0 fail; `bun run verify` passed with API 116 pass / 74 skip and main chunk `492.67 kB / 139.25 kB gzip`; targeted seeded loopback E2E passed 83/83. Seeded browser observation at 1440/1024/768/375 px in light/dark confirmed 12-row scrolling, all three band headings when applicable, no redundant `Due now` heading for admin, a `pageSize`-free deep link, no horizontal overflow, and preserved/retired shell selectors. No route, guard, data contract, dependency, visual baseline, or deployment changed; gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Stage 12 Phase 3.5 operator dashboard redesign implemented and locally verified on loopback Mongo: four-cell signal band, urgency queue plus quiet next-moves rail, compact case posture, one overlap/escalation change feed, and top-3 institution pressure ranking on a 12-column grid; Phase 3 admin hub/health rail retained. `bun run verify` passed (API 116 pass / 74 skip, web 66 pass / 0 fail, main chunk `492.67 kB / 139.25 kB gzip`) and targeted E2E passed 83/83. Seeded browser observation at 375/768/1024/1440 px in light/dark found no overflow, 12px badges, 20px signals, preserved/retired selectors, working refresh, notification preview, mobile drawer, and scoped role CTAs. No route, guard, data contract, dependency, visual baseline, or deployment changed; gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Stage 12 Phase 3.5 scroll refinement: the dashboard queue now fetches 12 scoped cases into a fixed-height scroll region, shows urgency band headings only when more than one band has items, and strips the dashboard-only `pageSize` from `View all N`. Component coverage brought web tests to 66 pass / 0 fail; `bun run verify` passed with API 116 pass / 74 skip and main chunk `492.67 kB / 139.25 kB gzip`; targeted seeded loopback E2E passed 83/83. Seeded browser observation at 1440/1024/768/375 px in light/dark confirmed 12-row scrolling, all three band headings when applicable, no redundant `Due now` heading for admin, a `pageSize`-free deep link, no horizontal overflow, and preserved/retired shell selectors. No route, guard, data contract, dependency, visual baseline, or deployment changed; gates remain held until Stage 12 exits. | — |
+| 2026-11-18 | Stage 12 Phase 4A cases surfaces implemented and locally verified on loopback Mongo: sticky registry toolbar/summary, compact primary filters plus `More filters`, active chips, client-only density, page-scoped selection and selected-row CSV, non-mutating row actions, shared `Tabs` roles, `Case controls` action bar, and grouped timeline. Intentional selector updates: `getByRole('tab')` for detail tabs, exact `Status` form lookup, `More filters` before `Sort`, `Case controls` action-bar label, and `Copy ID for <caseNumber>` for axe. `bun run verify` passed (API 116 pass / 74 skip, web 76 pass / 0 fail, main chunk `492.66 kB / 139.24 kB gzip`); targeted E2E 87/87. Seeded observation at 375/768/1024/1440 px in light/dark found no document overflow, sticky surfaces at 64px, preserved/retired shell selectors, and only the pre-existing favicon 404 console error. No route, guard, data contract, dependency, visual baseline, or deployment changed; bulk assignment and mutating row actions remain deferred. Gates remain held until Stage 12 exits. Evidence: `docs/plans/stage-12-phase4a-cases-surfaces.md` | — |
+| 2026-11-21 | 82-stop product-owner UI walkthrough completed across all seeded personas on the seeded loopback production build. Ten consolidated findings recorded in [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md); three apply to Phase 4A (W-5 registry table width, W-6 detail header spacing/badges, W-7 resolution-loop centering). Findings were logged, not fixed; this is not an execution of Part A or Part B, and both gates remain held until Stage 12 exits. | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the
@@ -116,7 +119,7 @@ Core surfaces named by [`accessibility-audit.md`](accessibility-audit.md) §4 �
 | A2 | `/dashboard` | Officer + admin | Landmarks, heading order, role briefing, queue tables |
 | A3 | `/reports` | Senior/admin | Charts have text equivalents; reconciliation with table |
 | A4 | `/reports/geo` (map) | Senior/admin | Keyboard region chips, announced text summary, data-table fallback, usable with tiles blocked |
-| A5 | `/cases/:id` | Officer | Timeline tab, action panel, dialog focus, not-found path |
+| A5 | `/cases/:id` | Officer | Sticky summary and `Case controls` action bar; five shared `Tabs` sections; grouped Timeline tab; action panel and dialog focus; not-found path |
 | A6 | `/overlaps/:id` (compare) | Officer/admin | Score breakdown, matched signals, merge/revert dialogs |
 
 Breadth surfaces — **required if present after Stage 12, otherwise N/A with reason**:
@@ -133,11 +136,12 @@ Breadth surfaces — **required if present after Stage 12, otherwise N/A with re
 | A14 | Staff shell chrome (rail, top bar, mobile drawer) | All staff roles | Grouped persistent rail with no `More`; active nav state; upward `Account menu, {name}` with identity and Sign out inside; icon-only collapse mode with labelled tooltips; two-zone top bar (left search/context, right scope/Create/Notifications/Theme/mobile); notification preview; thumb-reach drawer and focus return. Confirm no global `Dashboard > …` breadcrumb; nested pages use active rail, page header, and local back links. |
 | A15 | `/dashboard` and `/reports` separation | Officer/admin + all role landings | Dashboard leads with a four-cell operational signal band, the “Needs attention” urgency queue, and a quiet next-moves rail; the queue scrolls within a fixed height and only shows band headings when more than one band has items. Case posture, one overlap/escalation change feed, and a top-3 pressure ranking follow below. The Phase 3 admin hub/health rail remains for admins. It has no Reports filter form, full chart grid, map preview, or export. Reports remains the only analytical workbench. Numbers still reconcile with the API and each other. |
 | A16 | `/portal`, `/portal/login`, `/portal/signup` shell | Anonymous + complainant | Full-height flex shell with footer bottom-anchored on short pages; action-first hero with one dominant CTA and inline track path; no floating footer on login/signup; public projections and privacy unchanged. |
+| A17 | `/cases` | All staff roles | Sticky registry toolbar and search landmark; compact primary filters with `More filters`; removable active chips; comfortable/compact density; page-scoped selection and clearly labeled selected-row CSV; Open/Institution/Copy row actions; table containment and sticky offsets; retained saved views, role-gated register link, and full filtered server export. |
 
-> A15 lands with Stage 12 Phases 3 and 3.5, and A16 lands with Phase 6; verify them only after
-> those phases are implemented and Stage 12 exits. If Stage 12 adds another command/search surface,
-> new admin pages, or a new GIS/portal view, add further rows here before executing. Do not skip a
-> new surface because it was not in the Stage 9 inventory.
+> A15 lands with Stage 12 Phases 3 and 3.5, A17 lands with Phase 4A, and A16 lands with Phase 6;
+> verify them only after those phases are implemented and Stage 12 exits. If Stage 12 adds another
+> command/search surface, new admin pages, or a new GIS/portal view, add further rows here before
+> executing. Do not skip a new surface because it was not in the Stage 9 inventory.
 
 ### A.2 Per-surface procedure
 
@@ -165,9 +169,10 @@ for any failure.
 table containment, reduced motion, and (since Stage 12 Phase 2) text-only 200% zoom on
 `/overlaps`. Manually check only the following:
 
-- [ ] **Page zoom 200%** at a 1280 px viewport (effective ~640 px) on routes A2, A3, A5, A9
-      and A12: no page-level horizontal overflow, no clipped content, primary actions reachable,
-      tables scroll inside their container.
+- [ ] **Page zoom 200%** at a 1280 px viewport (effective ~640 px) on routes A2, A3, A5, A9,
+      A12 and A17: no page-level horizontal overflow, no clipped content, primary actions
+      reachable, tables scroll inside their container, and sticky registry/summary surfaces do not
+      obscure focused controls.
 - [ ] **Text-only zoom 200%** on the same routes: layout holds, labels and buttons do not
       overlap or truncate, focus indicators remain visible.
 - [ ] **Dialogs at 200%** on A5 and A10: full dialog content visible, buttons reachable,
@@ -184,6 +189,7 @@ Record zoom result:
 | A5 `/cases/:id` | | | | |
 | A9 `/admin/users` | | | | |
 | A12 portal surfaces | | | N/A | |
+| A17 `/cases` | | | N/A | |
 
 ### A.4 Findings and evidence
 

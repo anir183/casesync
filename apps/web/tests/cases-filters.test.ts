@@ -4,6 +4,7 @@ import {
   caseFiltersToSearchParams,
   cleanCaseFilters,
   readCaseFilters,
+  removeCaseFilter,
 } from '../src/features/cases/filters'
 
 describe('case URL filters', () => {
@@ -57,5 +58,14 @@ describe('case URL filters', () => {
       status: 'RECEIVED',
       page: 1,
     })
+  })
+
+  test('removing one chip preserves the rest and resets the page', () => {
+    expect(
+      removeCaseFilter(
+        { q: 'fees', status: 'ESCALATED', source: 'PORTAL', page: 4, pageSize: 50 },
+        'status',
+      ),
+    ).toEqual({ q: 'fees', source: 'PORTAL', page: PAGINATION.DEFAULT_PAGE, pageSize: 50 })
   })
 })

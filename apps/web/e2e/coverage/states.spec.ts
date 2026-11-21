@@ -96,6 +96,7 @@ test.describe('@states staff UI states', () => {
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(page.getByLabel('Case registry table')).toBeVisible()
 
+    await page.getByRole('button', { name: 'More filters' }).click()
     await page.getByLabel('Sort').selectOption('caseNumber:asc')
     await page.getByRole('button', { name: 'Apply filters' }).click()
     await expect(page).toHaveURL(/[?&]sort=caseNumber%3Aasc/)
@@ -108,7 +109,7 @@ test.describe('@states staff UI states', () => {
     await page.getByLabel('Saved views').selectOption('escalated')
 
     await expect(page).toHaveURL(/status=ESCALATED/)
-    await expect(page.getByLabel('Status')).toHaveValue('ESCALATED')
+    await expect(page.getByLabel('Status', { exact: true })).toHaveValue('ESCALATED')
   })
 
   test('the case registry exports a CSV file', async ({ page }) => {
@@ -247,7 +248,7 @@ test.describe('@states staff UI states', () => {
 
     await expect(page.getByRole('button', { name: 'Actions', exact: true })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Assignments', exact: true })).toHaveCount(0)
-    await page.getByRole('button', { name: 'Timeline', exact: true }).click()
+    await page.getByRole('tab', { name: 'Timeline', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Action history' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Assignment history' })).toBeVisible()
   })

@@ -261,15 +261,15 @@ Status legend:
   `docs/quality/ui-test-matrix.md` as the coverage measure, not the test count, and
   `docs/quality/testing-guide.md` for run cadence.
 - `src/seed.ts` is idempotent. `seed` creates 9 regions, 10 categories, 4 bureaus, and
-  7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 13
-  staff cases, 6 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60 institutions and 5,000 deterministic cases.
-- API/web/test typechecks, Biome, and production builds pass; the web build is
-  warning-free with every route lazy-loaded and a 483.90 kB main chunk (137.86 kB gzip).
-  `bun audit --audit-level=high` reports no vulnerabilities. Stage 8 local gates passed
-  (50 integration tests, 6 seeded browser tests); Stage 9 Phase 0/1/2/3/4 local gates pass
-  (62 integration tests; the representative journey passed on a targeted run). CI is green
-  on Stage 7 (`4abd2f3`) and Stage 8 (`5666cad`); the Stage 9 workflow changes are committed
-  but not pushed.
+  7 staff users plus a verified demo complainant. `seed:demo` adds 8 institutions, 14
+  staff cases, 7 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60
+  institutions and 5,000 deterministic cases.
+- API/web/test typechecks, Biome, and production builds pass; every route is lazy-loaded.
+  The latest local Phase 4A build is `492.66 kB / 139.24 kB gzip`, below the
+  `506.12 kB / 140.06 kB` Phase 0 guardrail; `483.90 kB / 137.86 kB` remains Stage 9
+  history. `bun audit --audit-level=high` reports no vulnerabilities. Stage 11 CI is green
+  on dispatch `44122619636`; Stage 12 Phase 3.5/4A verification is local-only. The official
+  visual-baseline refresh, double CI run, and manual gates remain Stage 12 Phase 7 work.
 
 ## 14. Documentation corrections applied
 

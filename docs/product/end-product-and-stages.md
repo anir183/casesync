@@ -232,7 +232,7 @@ layout.
 | 9 | Next phase: fixes, auto-merge, representatives, flows, UI/GIS, hardening | **Phases 0–6 implemented; manual a11y sign-off open** | Closes remaining product, usability, and operational gaps | Phases 0–5 pass and Phase 6 docs are finalized; manual screen-reader/200% zoom sign-off remains; gates in `../plans/next-phase-plan.md` |
 | 10 | Complete Playwright UI coverage | **Done** | Proves every route, role, mutation, state, accessibility requirement, and breakpoint in the final UI | Every matrix row covered, deferred with a reason, or blocked by a named Stage 9 flow; axe clean; responsive and visual baselines pass; full suite green twice; see `../plans/ui-testing-plan.md` |
 | 11 | Codebase audit, cleanup & convention hardening | **Implemented — exit verified, CI confirmed** | Removes import drift, duplicated contracts, oversized services, and inconsistent patterns before the UI churn | Alias/import guard in `check:ci`, one shared `Page<T>` and `buildQuery`, decomposed services, documented conventions; full suite passes and visual baseline unchanged (pinned CI authoritative); see `../plans/code-audit-plan.md` |
-| 12 | UI/UX modernization | **Planned** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
+| 12 | UI/UX modernization | **Phases 0–3, 3.5 and 4A implemented/local-verified; exit gates held** | Fluid, action-first UI; modern token/primitives system; better GIS; intuitive dashboard/admin command surfaces; stronger portal landing | Tokens/primitives, shell, role command surfaces, remaining core work surfaces, GIS, portal landing, motion/a11y, refreshed coverage baselines; see `../plans/ui-modernization-plan.md` |
 
 ### Current position (honest)
 
@@ -296,12 +296,14 @@ layout.
   (one recorded exception and one pre-existing fixture table). The plan is
   [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the frozen measurements and
   final baseline are in [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md).
-- Stage 12 is planned, not started. It begins only after Stage 11 exits so the UI pass
-  builds on clean imports, shared contracts, and decomposed services. It covers design
-  tokens and primitives, a rail/top-bar shell with command search, role-specific dashboards,
-  an admin hub, faster core work surfaces, bundled GIS geometry, a focused portal landing,
-  and a deliberate refresh of the Stage 10 selectors and visual baselines. The plan is
-  [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md).
+- Stage 12 is in progress after Stage 11 exited. Phases 0–3, Phase 3.5 (operator dashboard),
+  and Phase 4A (Cases registry and case detail) are implemented and locally verified; the
+  remaining Phase 4 surfaces, GIS, portal landing, and the Phase 7 exit sweep are still open.
+  Visual baselines are intentionally untouched locally. The official 48-baseline refresh,
+  double CI run, and both held manual gates remain Phase 7 / Stage 12 exit work. The plan is
+  [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md); the local
+  walkthrough record is
+  [`../quality/phase4a-ui-walkthrough-findings.md`](../quality/phase4a-ui-walkthrough-findings.md).
 
 ## 6. Stage details and expectations
 

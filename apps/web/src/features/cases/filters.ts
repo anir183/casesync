@@ -1,7 +1,7 @@
 import { PAGINATION } from '@casesync/config'
 import type { CaseFilters } from './api'
 
-const FILTER_KEYS = [
+export const CASE_FILTER_KEYS = [
   'q',
   'status',
   'bureauId',
@@ -12,7 +12,20 @@ const FILTER_KEYS = [
   'dateFrom',
   'dateTo',
   'sort',
-] as const
+] as const satisfies readonly (keyof CaseFilters)[]
+
+export const CASE_FILTER_LABELS: Record<(typeof CASE_FILTER_KEYS)[number], string> = {
+  q: 'Search',
+  status: 'Status',
+  bureauId: 'Bureau',
+  regionId: 'Region',
+  category: 'Category',
+  source: 'Source',
+  priority: 'Priority',
+  dateFrom: 'Received from',
+  dateTo: 'Received to',
+  sort: 'Sort',
+}
 
 export function cleanCaseFilters(input: CaseFilters): CaseFilters {
   return Object.fromEntries(
@@ -22,7 +35,7 @@ export function cleanCaseFilters(input: CaseFilters): CaseFilters {
 
 export function readCaseFilters(params: URLSearchParams): CaseFilters {
   const result: CaseFilters = {}
-  for (const key of FILTER_KEYS) {
+  for (const key of CASE_FILTER_KEYS) {
     const value = params.get(key)
     if (value) result[key] = value
   }
@@ -40,4 +53,11 @@ export function caseFiltersToSearchParams(filters: CaseFilters) {
     if (value !== undefined && value !== null && value !== '') params.set(key, String(value))
   }
   return params
+}
+
+/** Clear one filter while keeping the rest of the URL contract intact. */
+export function removeCaseFilter(filters: CaseFilters, key: keyof CaseFilters): CaseFilters {
+  const next = { ...filters }
+  delete next[key]
+  return { ...next, page: PAGINATION.DEFAULT_PAGE }
 }

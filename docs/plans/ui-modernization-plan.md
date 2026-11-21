@@ -2,10 +2,12 @@
 
 Status: **Phases 0–3 implemented and verified** 2026-11-18, including the Phase 2 review
 remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 implemented and locally
-verified** as the redesigned Operator Dashboard Experience. The official 48-baseline refresh,
-double CI, and both manual gates remain held for the Phase 7 / Stage 12 exit sweep.
-Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md) and
-[`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md).
+verified** as the redesigned Operator Dashboard Experience; **Phase 4A implemented and locally
+verified** for the Cases registry and case detail. The official 48-baseline refresh, double CI,
+and both manual gates remain held for the Phase 7 / Stage 12 exit sweep.
+Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
+[`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md), and
+[`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md).
 Phase 0–1 history is retained; the remediation record is kept below for traceability.
 Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
@@ -487,6 +489,17 @@ and a top-3 pressure ranking on a 12-column grid with 16px gaps at `xl`.
 - **Forms:** one field pattern, inline validation, sticky submit/cancel, and a summary of
   what will change for destructive actions.
 
+**Phase 4A implementation record (2026-11-18).** The Cases registry and case detail bullets above
+are implemented and locally verified; see
+[`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md). The registry keeps its
+URL contract while adding a sticky toolbar, compact primary filters, active chips, client-only
+density, page-scoped selection, non-mutating row actions, and separate full-filtered/selected-row
+exports. Case detail uses the shared `Tabs` primitive, a sticky summary, a `Case controls` action
+bar, and a grouped timeline. Bulk assignment and mutating row actions are deferred because no bulk
+server contract exists and the list payload cannot authorize mutations. Remaining Phase 4 surfaces
+stay in later slices. `bun run verify` and targeted loopback E2E 87/87 passed; the main chunk is
+`492.66 kB / 139.24 kB gzip`. Visual baselines, double CI, and both manual gates remain Phase 7.
+
 **Exit criteria**
 
 - The primary daily flow uses fewer clicks and less scrolling than the baseline.
@@ -494,6 +507,9 @@ and a top-3 pressure ranking on a 12-column grid with 16px gaps at `xl`.
 - Keyboard-only users can filter, open, act, and return without losing context.
 - Every list has loading, empty, error, and permission-denied states.
 - Existing mutation coverage still passes (selectors may be updated intentionally).
+
+Phase 4A satisfies these criteria for the Cases registry and case detail; the other Phase 4
+surfaces remain unimplemented.
 
 ---
 

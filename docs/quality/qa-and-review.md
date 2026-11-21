@@ -89,11 +89,10 @@ Stage 11 is implemented, verified and CI-confirmed on `main` by dispatch `441226
 - A module-level fetch guard fails the integration suite if anything calls
   `jevmodel.org`; Jev unit tests likewise mock `fetch`.
 - API, web, and web test/e2e typechecks pass; Biome is clean; API and web production
-  builds pass. Every route is lazy-loaded, but as of the Stage 12 Phase 0 rebuild the main
-  chunk is 506.12 kB (140.06 kB gzip), which exceeds the 500 kB budget and emits Vite's
-  `Some chunks are larger than 500 kB` warning. The earlier 483.90 kB / 137.86 kB
-  warning-free figure is dated Stage 9 evidence, not the current state; reducing the main
-  chunk is a Stage 12 exit criterion, not a release blocker closed here.
+  builds pass. Every route is lazy-loaded. The Stage 12 Phase 0 measurement was 506.12 kB
+  (140.06 kB gzip) with Vite's chunk-size warning; the latest local Phase 4A build is
+  `492.66 kB / 139.24 kB gzip`, below the Phase 0 guardrail. The 483.90 kB / 137.86 kB
+  figure is Stage 9 history. Bundle review remains part of the Phase 7 exit sweep.
 - The Phase 0.5 UI consistency pass is verified at 375/768/1024/1440 px in light and
   dark mode with no horizontal page overflow; axe stays clean on desktop routes and the
   mobile drawer.
@@ -402,6 +401,12 @@ Stage 11 (code audit) and Stage 12 (UI modernization) have different oracles:
   visual suite twice. Run the full Chromium suite twice against fresh production builds
   and `seed:demo`. Every route must pass axe, keyboard/focus, reduced-motion, 200% zoom,
   and the four breakpoints. No product behavior changes solely to satisfy a test.
+- Stage 12 Phase 4A local record: `bun run verify` passed with API 116 pass / 74 skip and
+  web 76 pass; targeted seeded loopback E2E passed 87/87; the 82-stop product-owner
+  walkthrough is recorded in
+  [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md). Findings are
+  recorded, not fixed. The visual refresh, double CI, and both manual gates stay held for
+  Phase 7.
 - Use the smallest layer from [`testing-guide.md`](testing-guide.md) while working and the
   full suites at the stage boundary. Keep the
   [`ui-test-matrix.md`](ui-test-matrix.md) and tracker current in the same change.

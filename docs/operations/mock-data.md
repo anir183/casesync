@@ -98,8 +98,10 @@ created. Complainant self-signup is enabled by default
 
 ## 4. Demo cases
 
-`seed:demo` creates 14 cases with relative dates from seed time. Every status is
-represented, including `REOPENED`, `TRANSFERRED`, `ESCALATED`, and `DISPOSED`.
+`seed:demo` creates 14 cases with relative dates from seed time. Seven statuses are
+represented (`RECEIVED`, `ASSIGNED`, `UNDER_PROCESS`, `TRANSFERRED`, `ESCALATED`,
+`DISPOSED`, `REOPENED`); `ACKNOWLEDGED`, `AWAITING_COMPLAINANT`, and `CLOSED` are reached
+through live flows rather than seeded.
 
 | Case number | Institution | Bureau | Category | Status | Age | SLA | Purpose |
 |---|---|---|---|---|---|---|---|

@@ -1,12 +1,12 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-18 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign implemented and verified on loopback Mongo).
+**Last verified:** 2026-11-21 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign and Phase 4A cases surfaces implemented; Phase 4A `bun run verify` and targeted loopback E2E 87/87 passed).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **implemented and locally verified** (compact signal band, urgency queue, next moves, case posture, change feed, and pressure points); the official 48-baseline refresh, double CI, and both manual gates remain held; see `docs/plans/stage-12-phase3-5-dashboard-experience.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
+**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **implemented and locally verified** (compact signal band, urgency queue, next moves, case posture, change feed, and pressure points), followed by **Phase 4A — Cases registry and case detail** (sticky toolbar/summary, compact filters, active chips, density, page-scoped selection/export, tab semantics, and grouped timeline); the official 48-baseline refresh, double CI, and both manual gates remain held; see `docs/plans/stage-12-phase3-5-dashboard-experience.md` and `docs/plans/stage-12-phase4a-cases-surfaces.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -26,6 +26,12 @@
 > accessibility including the mobile drawer, three navigation/bell journeys, map/reflow,
 > reduced-motion, and merge/revert).
 > Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
+>
+> **Latest local verification (2026-11-21, Stage 12 Phase 4A).** `bun run verify` passed:
+> API 116 pass / 74 skip, web 76 pass / 0 fail, and a `492.66 kB / 139.24 kB gzip` build
+> below the Phase 0 guardrail. Targeted seeded loopback E2E passed 87/87; use
+> `bun run test:e2e:spec <paths...>` for that inner-loop command. The full seeded suite,
+> 48-baseline refresh, double CI run, and both manual gates remain held for Phase 7.
 
 ## Rules
 
@@ -731,7 +737,7 @@ are the no-behavior-change oracle.
       remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified,
       committed, and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start.
 
-## Stage 12 — UI/UX modernization (PHASE 2 REMEDIATION VERIFIED — PHASE 3 COMPLETE — PHASE 3.5 PLANNED — ERROR FALLBACK PULLED FORWARD)
+## Stage 12 — UI/UX modernization (PHASE 2 REMEDIATION VERIFIED — PHASE 3 COMPLETE — PHASES 3.5 AND 4A IMPLEMENTED — ERROR FALLBACK PULLED FORWARD)
 
 Full plan: `docs/plans/ui-modernization-plan.md`. Phase 0 evidence:
 `docs/plans/stage-12-phase0-baseline.md`. Keeps the route tree, permissions, data, and
@@ -903,10 +909,21 @@ color budget is upheld with text/icon/shape on every signal; and Phase 7 still o
 
 ### Phase 4 — Core work surfaces
 
-- [ ] Cases registry: sticky toolbar, saved views, filter chips, density, row actions,
-      multi-select export/assignment where permitted.
-- [ ] Case detail: sticky summary header, consolidated tabs, primary action bar, overflow
-      for rare actions, readable timeline.
+**Phase 4A — Cases registry and case detail is implemented and locally verified.** Full
+implementation record: `docs/plans/stage-12-phase4a-cases-surfaces.md`. `bun run verify` passed
+with API 116 pass / 74 skip and web 76 pass / 0 fail; targeted loopback E2E passed 87/87; main
+chunk is `492.66 kB / 139.24 kB gzip`. Intentional selector changes, page-scoped export
+semantics, and deferred bulk assignment/mutating row actions are recorded in the Phase 4A
+record and the UI test matrix. An 82-stop product-owner UI walkthrough was consolidated in
+`docs/quality/phase4a-ui-walkthrough-findings.md`; W-5 (registry width), W-6 (header spacing/badges),
+and W-7 (resolution-loop centering) apply here and were recorded, not fixed. Visual baselines,
+double CI, and manual gates remain deferred.
+
+- [x] Cases registry: sticky toolbar, saved views, compact primary filters with `More filters`,
+      active filter chips, density, non-mutating row quick actions, and page-scoped multi-select
+      client-side export. Bulk assignment is deferred: no bulk-assignment server contract exists.
+- [x] Case detail: sticky summary header, shared `Tabs` semantics for the five existing sections,
+      primary `Case controls` action bar with secondary overflow, and grouped readable timeline.
 - [ ] Institution profile: summary header, health signals, cross-bureau history, merge/alias
       context.
 - [ ] Overlap queue: triage-first layout, keyboard next/previous/confirm/dismiss, visible
@@ -963,9 +980,10 @@ color budget is upheld with text/icon/shape on every signal; and Phase 7 still o
       `lazy` hook so it stays in its own chunk.
 - [x] Cover the error fallback with a forced-throw E2E route test and add a QA matrix row for
       unhandled route errors, including axe and 375 px checks. Also pulled forward into Phase 3.
-- [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker. The matrix,
-      QA change log, and this tracker are current; the testing guide and UI/UX plan remain part
-      of the full Phase 7 documentation pass.
+- [ ] Update the matrix, testing guide, QA evidence, UI/UX plan, and stage tracker. For Phase
+      4A the matrix, QA change log, testing guide's targeted-E2E workflow, UI/UX plan, and this
+      tracker are current; final selector/baseline evidence remains part of the full Phase 7
+      documentation pass.
 
 ## Testing Definition of Done
 
@@ -1014,6 +1032,6 @@ color budget is upheld with text/icon/shape on every signal; and Phase 7 still o
 - [x] Stage 10: 375/768/1024/1440 px checks pass on staff, portal, and institution route
       groups.
 - [x] Stage 10: visual baselines pass twice consecutively.
-- [ ] Stage 10: full Chromium suite passes twice against fresh builds and `seed:demo`.
-      Previously passed; rerun after the representative slice for the final exit record.
+- [x] Stage 10: full Chromium suite passed twice against fresh builds and `seed:demo` for
+      the Stage 10 exit. The authoritative post-UI rerun is Stage 12 Phase 7, above.
 - [x] Stage 10: CI smoke/full/cross-browser/visual jobs and docs agree.

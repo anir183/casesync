@@ -1,8 +1,9 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign and Phase 4A cases surfaces implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
+Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -295,9 +296,11 @@ focus, mobile drawer, reduced-motion, and 200% zoom rows through the accessibili
 responsive specs. Stage 12 Phase 2 added shell/navigation rows from `navigation.spec.ts`;
 product-owner review then reopened Phase 2 for profile-menu, grouped/collapsible rail,
 dual-command-mode, two-zone top-bar, and no-breadcrumb remediation; those rows are now
-**Covered** by the verified remediation. Rows stay **Partial** where only
-one route or one side of the state is exercised, or where a surface is asserted only outside
-Playwright.
+**Covered** by the verified remediation. Stage 12 Phase 4A adds
+`apps/web/e2e/cases-registry.spec.ts` with four cases-surface checks (chip removal, density
+persistence, page-scoped selected-row export, and tab/action-panel behavior). Rows stay
+**Partial** where only one route or one side of the state is exercised, or where a surface is
+asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -309,8 +312,8 @@ Playwright.
 | Not found | `/cases/:id`, `/institutions/:id`, `/overlaps/:id`, `/merge-groups/:id`, portal complaint | **Partial** (case detail) |
 | Pagination first/middle/last | Cases, institutions, overlaps, notifications | **Partial** (cases) |
 | Page-size change | Paginated lists | **Partial** (cases + unit) |
-| Filter/search/sort | Cases, institutions, overlaps, reports, audit | **Partial** (cases) |
-| CSV export | Cases, reports | **Partial** (cases) |
+| Filter/search/sort | Cases, institutions, overlaps, reports, audit | **Partial** (cases; sort is reached through `More filters` after Phase 4A) |
+| CSV export | Cases, reports | **Partial** (cases: unchanged full filtered server export plus page-scoped selected-row download; reports remains pending) |
 | Confirmation dialog cancel/confirm | Case actions, merge/revert, admin deactivate | **Partial** (cancel and merge confirm) |
 | Dialog focus trap and return | All dialogs | **Covered** (cancel/confirm focus cycle, Escape, trigger restore) |
 | Pending/disabled mutation | All mutation forms | **Partial** (case remark) |
@@ -332,9 +335,15 @@ Playwright.
 | Signal band, case posture, and top-3 pressure bars | Staff dashboard | **Covered** — four bounded signals, one status-mix bar, and a top-3 institution ranking with text legends; pure derivations and dashboard component tests pass, with 12px badge / 20px signal typography and no overflow at 375/768/1024/1440 px in light/dark |
 | Unified dashboard change feed | Staff dashboard | **Covered** — one newest-first overlap/escalation feed with deep links to existing routes; due-soon cases remain in the attention queue instead of duplicating the feed |
 | Admin command deck and long-session comfort | Staff dashboard | **Covered** — Phase 3 grouped admin hub/health rail retained; compact dashboard badges, 44px targets, tabular numbers, semantic light/dark accents, stable hierarchy, seeded responsive/selector observation, and targeted E2E 83/83 pass. Official visual refresh, reduced-motion sweep, and both manual gates remain Phase 7 / Stage 12 exit |
+| Active case filter chips | `/cases` | **Covered** — component and E2E coverage for one-field removal, page reset, and no pagination chips; URL filter keys are unchanged. `Status` form lookup is now exact to disambiguate from the chip |
+| Case row quick actions | `/cases` | **Covered** — labelled Open/Institution links and Copy ID button are component-tested, clipboard feedback is announced, and the accessible name includes the visible text (`Copy ID for <caseNumber>`) to satisfy axe |
+| Cases registry density, page selection, and selected-row export | `/cases` | **Covered** — client-only `casesync:cases:density` preference persists without URL changes; indeterminate/select-all and row selection are page-scoped; selected-row CSV download is clearly labeled and RFC 4180 escaped while the full filtered server export is unchanged |
+| Case detail sticky summary, tabs, and action controls | `/cases/:id` | **Covered** — shared `Tabs` roles/names/arrow keys, sticky summary at 64px after scroll, `Case controls` action bar sourced from `useCaseActionOptions`, and secondary actions return to the unchanged `#case-actions` panel; smoke/states selectors updated from `button` to `tab`. Seeded 375/768/1024/1440 px light/dark observation found no document overflow |
+| Bulk case assignment | `/cases` | **Deferred** — no bulk-assignment server contract exists; page selection is export-only |
+| Mutating row actions | `/cases` | **Deferred** — list data cannot safely reuse `useCaseActionOptions`; all mutations remain in case detail with existing role/transition authorization |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
-| Consolidated case timeline | `/cases/:id` | **Covered** (action + assignment history in one Timeline tab) |
+| Consolidated case timeline | `/cases/:id` | **Covered** — action + assignment history in one Timeline tab; Phase 4A groups append-only entries by day with time, actor, transitions, and remarks under the named `Case action history` list |
 | Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |
 | Resolution loop ownership | `/cases/:id`, `/portal/complaints/:id` | **Covered** (lifecycle, owner, and target date render) |
 | Light/dark theme | Staff and portal shells | **Covered** (staff; persists across reload) |
@@ -367,6 +376,11 @@ role treatment, two-zone top bar, and drawer focus return; global breadcrumbs ar
 absent. `reports.spec.ts` covers the reports map at 375 px. Routes marked Deferred in §1
 share one of these layout families; add a row only when a route introduces a new layout.
 
+Phase 4A adds seeded DOM/metric observation of `/cases` and `/cases/:id` at 375/768/1024/1440 px
+in light and dark: zero document-level overflow, sticky toolbar/summary settling at 64px, required
+shell selectors present, and retired selectors absent. Local screenshots are observation evidence
+only; the official 48-baseline refresh stays in Phase 7.
+
 ## 5. Visual regression baseline set
 
 | Screen | Light desktop | Dark desktop | Light mobile | Dark mobile | Status |
@@ -394,7 +408,8 @@ The visual set was regenerated on the pinned CI image on 2026-11-15 (run `437489
 `ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4), after the Stage 9 Phase 3 dashboard, case
 workspace, and portal dashboard changes. All 48 images were reviewed and committed in
 `f882bd1`. Flag-off dispatch `43750576126` verified the same baseline on the same runner
-image on 2026-11-16; Stage 10 exited on that run.
+image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5 and 4A left these committed
+baselines untouched; the official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 
@@ -413,11 +428,13 @@ route-change heading focus, the destructive-dialog focus cycle and restore, the 
 drawer, and the focusable table scroll region. Keyboard-only passes through filters, the
 case action panel, overlap merge/revert, and the institution shell are **Deferred**: the
 controls are native buttons, inputs, and the already-covered shared dialog, and API tests
-prove the guarded actions. The open-dialog axe scan and manual screen-reader sign-off
-remain outstanding.
+prove the guarded actions. Phase 4A kept the registry and detail axe scans green after renaming
+the Copy ID control to include its visible text. The open-dialog axe scan and manual
+screen-reader sign-off remain outstanding.
 
 Step 5 fixed four accessibility defects the scans surfaced: the notification bell's
-accessible name now matches its `99+` badge, case-detail tabs use `aria-pressed`, the
+accessible name now matches its `99+` badge, case-detail tabs received explicit selected state
+(later replaced in Phase 4A by the shared `Tabs` primitive with native `tab` roles), the
 shared confirmation dialog is a semantic `<dialog>` with a focus trap, and route changes
 move focus to the new page heading only after deliberate user navigation. Staff and portal
 shells also expose skip links and a focusable `main#main-content`.
@@ -432,7 +449,7 @@ shells also expose skip links and a focusable `main#main-content`.
 | Routes — admin | 1 | 6 | 0 | 0 | 0 |
 | Routes — representative | 0 | 6 | 1 | 0 | 0 |
 | Mutations | 33 | 7 | 15 | 0 | 0 |
-| UI states | 12 | 15 | 2 | 5 | 0 |
+| UI states | 27 | 13 | 4 | 1 | 0 |
 | Visual screens | 12 | 0 | 0 | 0 | 0 |
 
 Counts are a rough index, not the acceptance measure. Close rows, not counts. A Partial

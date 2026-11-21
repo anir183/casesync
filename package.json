@@ -18,6 +18,7 @@
     "test:api": "bun run --filter @casesync/api test",
     "test:web": "bun run --filter @casesync/web test",
     "test:e2e": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e'",
+    "test:e2e:spec": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e \"$@\"' --",
     "test:e2e:smoke": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:smoke'",
     "test:e2e:full": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:full'",
     "test:e2e:mobile": "bun run scripts/with-test-mongo.ts e2e -- bash -c 'bun run seed:demo && bun run --filter @casesync/web test:e2e:mobile'",

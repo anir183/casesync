@@ -93,6 +93,7 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:coverage` | Integration tests plus the coverage floor |
 | `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys (3 in `smoke.spec.ts` + 10 in `routes.spec.ts`) |
 | `bun run test:e2e` | 196 desktop functional tests, excluding `@performance` and `@visual` |
+| `bun run test:e2e:spec <paths...>` | Targeted seeded desktop specs; forwards Playwright arguments |
 | `bun run test:e2e:full` | 216 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
@@ -103,35 +104,45 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 
 ### Targeted Playwright runs
 
-Use these while developing instead of the full script:
+Use the root `test:e2e:spec` shortcut while developing. It resolves the isolated
+`casesync_e2e` target through `with-test-mongo.ts`, seeds `seed:demo`, and forwards
+arguments to Playwright:
 
 ```bash
-cd apps/web
-
 # One spec
-bunx playwright test e2e/coverage/mutations.spec.ts --project=chromium-desktop
+bun run test:e2e:spec e2e/coverage/mutations.spec.ts
 
-# One test by title
-bunx playwright test e2e/coverage/mutations.spec.ts --project=chromium-desktop \
-  --grep "invites, deactivates, and resets"
+# Several specs
+bun run test:e2e:spec \
+  e2e/navigation.spec.ts \
+  e2e/accessibility.spec.ts \
+  e2e/coverage/states.spec.ts \
+  e2e/cases-registry.spec.ts
 
-# One route family
-bunx playwright test e2e/coverage/routes.spec.ts --project=chromium-desktop \
-  --grep "dashboard"
+# One test by title, or one route family
+bun run test:e2e:spec e2e/coverage/mutations.spec.ts --grep "invites, deactivates, and resets"
+bun run test:e2e:spec e2e/coverage/routes.spec.ts --grep "dashboard"
 
 # Accessibility or responsive slice
-bunx playwright test e2e/accessibility.spec.ts --project=chromium-desktop
-bunx playwright test e2e/responsive.spec.ts --project=chromium-mobile
-
-# Smoke only
-bunx playwright test --project=chromium-desktop --grep "@smoke"
+bun run test:e2e:spec e2e/accessibility.spec.ts
+bun run test:e2e:spec e2e/responsive.spec.ts
 ```
 
-The root scripts run `seed:demo` for you. If you invoke Playwright directly, seed first:
+Direct `bunx playwright` runs are an advanced debugging path: they bypass the DB
+wrapper and do not seed. Use them only when iterating on selectors, and seed first with
+`bun run seed:demo`.
+
+If your local MongoDB is not on the default loopback port, override the target instead of
+writing a long wrapper command by hand:
 
 ```bash
-bun run seed:demo
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  bun run test:e2e:spec e2e/navigation.spec.ts
 ```
+
+Leave `ALLOW_REMOTE_MONGO` unset for local runs. Long `env -u ... TEST_MONGODB_URI=...`
+invocations in investigation notes are diagnostic commands for a non-default local port,
+not the developer workflow.
 
 ## 5. Checkpoints
 
@@ -208,10 +219,10 @@ and CI-generated baselines.
 1. Read the trace, screenshot, or `error-context.md` under `apps/web/test-results/`.
    The HTML report is in `apps/web/playwright-report/`.
 2. Re-run only the failing test.
-3. If it depends on seed data that earlier specs mutated, reseed and run it alone:
+3. If it depends on seed data that earlier specs mutated, run it alone through the
+   seeded wrapper:
    ```bash
-   bun run seed:demo
-   cd apps/web && bunx playwright test e2e/<spec>.spec.ts --project=chromium-desktop --grep "<title>"
+   bun run test:e2e:spec e2e/<spec>.spec.ts --grep "<title>"
    ```
 4. Fix the cause, not the symptom. Do not add retries to hide a race, and do not change
    application behavior solely to satisfy a test.

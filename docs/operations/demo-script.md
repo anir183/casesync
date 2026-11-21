@@ -147,7 +147,8 @@ All sections below are demoable; do not fake missing behaviour.
 ## 4. Acceptance checklist for the demo seed
 
 - [x] Every role has a working login and correct scope.
-- [x] Every case status appears at least once.
+- [x] Seven of ten case statuses are seeded; `ACKNOWLEDGED`, `AWAITING_COMPLAINANT`, and
+      `CLOSED` are reachable through live flows.
 - [x] Exact and fuzzy overlap scenarios appear.
 - [x] A Jev-disabled run still produces overlap relationships.
 - [x] A Jev failure scenario is demonstrable without blocking case creation.

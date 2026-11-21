@@ -143,7 +143,7 @@ export function CaseActionPanel({
   const showNextAction = kind === 'nextAction'
 
   return (
-    <Card id="case-actions" className="scroll-mt-24">
+    <Card id="case-actions" className="scroll-mt-44">
       <CardHeader>
         <CardTitle>Case actions</CardTitle>
       </CardHeader>
