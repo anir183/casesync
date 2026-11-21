@@ -1,6 +1,6 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red from stale smoke selectors, which were corrected and re-verified with smoke 13/13 locally).
+**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
@@ -962,9 +962,10 @@ are unchanged behind a Tables/Charts toggle. Export, query keys, URL keys, serve
 contract are unchanged. No route, permission, server contract, dependency, seed data, dashboard
 filter, chart library, map preview, visual baseline, or deployment changed; the slice was pushed as
 `6ac651a`, and baselines, double CI, and manual gates remain deferred. Post-push CI run
-`44935311824` failed only on two stale smoke assertions from Phases 3.5/4A; both selectors were
-corrected and seeded smoke passed 13/13 locally on loopback Mongo. Full Chromium E2E from that run
-was still in progress at the last check and is reviewed before Phase 4F starts.
+`44935311824` recorded 235/237 passing; the only failures were two stale selectors from Phases
+3.5/4A. The smoke dashboard assertion and exact case link were corrected, and the portal mutation
+now clicks the `Conversation` tab by tab role; seeded smoke passed 13/13 and the portal mutation
+1/1 locally on loopback Mongo.
 
 - [x] Cases registry: sticky toolbar, saved views, compact primary filters with `More filters`,
       active filter chips, density, non-mutating row quick actions, and page-scoped multi-select

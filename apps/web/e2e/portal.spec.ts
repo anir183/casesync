@@ -80,7 +80,7 @@ test.describe('@mutation public complainant portal', () => {
     await signIn(page, 'admin@casesync.test')
     await page.goto(`/cases/${complaintId}`)
     await expect(page.getByRole('heading', { name: caseNumber as string })).toBeVisible()
-    await page.getByRole('button', { name: 'Conversation', exact: true }).click()
+    await page.getByRole('tab', { name: 'Conversation', exact: true }).click()
     await page.getByRole('button', { name: 'Acknowledge complaint' }).click()
     await expect(page.getByText('Complaint acknowledged')).toBeVisible()
 

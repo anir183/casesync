@@ -545,8 +545,10 @@ the CSV contract are unchanged. No new chart library, map preview, GIS layer, ro
 dashboard filter, or dependency was added. `check:ci`, both web typechecks, web tests 93/0, fresh
 build `492.75 kB / 139.28 kB gzip`, and targeted seeded E2E 12/12 passed; the committed `/reports`
 baselines predate this layout and stay held for Phase 7. The slice was pushed as `6ac651a`;
-post-push CI run `44935311824` was red only from stale smoke selectors, which were corrected and
-re-verified with seeded smoke 13/13 locally. Forms remains the only unimplemented Phase 4 surface.
+post-push CI run `44935311824` recorded 235/237 passing, with the only failures coming from stale
+smoke/portal selectors left by Phases 3.5/4A. Those selectors were corrected and re-verified locally
+with seeded smoke 13/13 and portal mutation 1/1. Forms remains the only unimplemented Phase 4
+surface.
 
 **Exit criteria**
 
