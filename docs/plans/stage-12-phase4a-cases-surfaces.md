@@ -90,8 +90,9 @@ global breadcrumb selectors, and `Current scope` remain absent.
 - **Mutating row actions:** the list payload does not carry the case state needed to reuse
   `useCaseActionOptions`. Row quick actions are navigation and clipboard only; all mutations stay
   in case detail where existing authorization logic can run.
-- **Remaining Phase 4 surfaces:** institution profile, overlap queue, Reports, Notifications, and
-  Forms are unchanged and stay in later slices.
+- **Remaining Phase 4 surfaces at the time of this slice:** institution profile and overlap queue
+  were deferred and later delivered in Phases 4B and 4C; Reports, Notifications, and Forms remain
+  in later slices.
 - **Visual/CI/manual gates:** local screenshots were captured for observation only. Baselines are
   untouched; the official 48-baseline refresh, double CI run, and manual sign-offs remain Phase 7 /
   Stage 12 exit work.

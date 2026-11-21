@@ -85,3 +85,22 @@ export function percent(value?: number) {
   if (value === undefined || value === null) return '—'
   return `${Math.round(value * 100)}%`
 }
+
+const OVERLAP_SIGNAL_LABELS: Record<string, string> = {
+  textSimilarity: 'Complaint text similarity',
+  institutionMatch: 'Institution ID match',
+  categoryMatch: 'Category match',
+  regionMatch: 'Region match',
+  dateProximity: 'Date proximity',
+  matchType: 'Match type',
+}
+
+export function signalLabel(signal: string) {
+  return OVERLAP_SIGNAL_LABELS[signal] ?? signal.replace(/([A-Z])/g, ' $1')
+}
+
+export function topSignals(signals?: Record<string, number>, limit = 3) {
+  return Object.entries(signals ?? {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+}

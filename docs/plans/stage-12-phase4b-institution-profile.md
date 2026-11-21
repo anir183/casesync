@@ -1,15 +1,16 @@
 # CaseSync — Stage 12 Phase 4B: Institution profile
 
-Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the second implementation slice
-of Phase 4; the overlap queue, Reports, Notifications, and Forms work remains in later slices. No
-route, permission, server contract, dependency, seed data, or visual baseline changed. The official
+Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the second implementation slice of
+Phase 4; the overlap queue was later delivered in Phase 4C, while Reports, Notifications, and Forms
+work remains in later slices. No route, permission, server contract, dependency, seed data, or
+visual baseline changed. The official
 48-baseline refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12
 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4A — Cases registry and case detail
-- **Successor:** remaining Stage 12 Phase 4 surfaces
+- **Successor:** Stage 12 Phase 4C — Overlap queue and compare view
 - **Manual gates:** both remain held until Stage 12 exits; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
@@ -87,7 +88,8 @@ institution`, and the visible alias after a merge. No `data-testid` was added.
 
 ## 4. Deferrals
 
-- **Remaining Phase 4 surfaces:** overlap queue, Reports, Notifications, and Forms are unchanged.
+- **Remaining Phase 4 surfaces:** overlap queue was later delivered in Phase 4C; Reports,
+  Notifications, and Forms are unchanged.
 - **Alias change UI:** alias normalization and the admin merge guard remain covered by API
   integration tests; this slice only presents existing aliases and the existing merge form.
 - **Computed health score:** no new score field or server contract was added; the six cards use the
@@ -113,8 +115,8 @@ institution`, and the visible alias after a merge. No `data-testid` was added.
   4** at 375/768/1024/1440 px, including the representative profile touched by W-10.
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred.
-- No routes, permissions, data contracts, dependencies, seed data, visual baselines, push, or
-  deployment changed. Phase 4B remains uncommitted pending user authorization.
+- No routes, permissions, data contracts, dependencies, seed data, visual baselines, or deployment
+  changed. Phase 4B was committed locally as `e8983a2` and pushed by the user after verification.
 
 ## 6. Documentation impact
 

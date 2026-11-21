@@ -14,18 +14,9 @@ import {
   useRevertOverlap,
 } from '#/features/overlaps/api'
 import { MergeStatusBadge } from '#/features/overlaps/components/status-badges'
-import { mergeStatusLabel, mergeVetoLabel, percent } from '#/features/overlaps/labels'
+import { mergeStatusLabel, mergeVetoLabel, percent, signalLabel } from '#/features/overlaps/labels'
 import { useCurrentUser } from '#/lib/session'
 import { formatDate } from '#/lib/utils'
-
-const SIGNAL_LABELS: Record<string, string> = {
-  textSimilarity: 'Complaint text similarity',
-  institutionMatch: 'Institution ID match',
-  categoryMatch: 'Category match',
-  regionMatch: 'Region match',
-  dateProximity: 'Date proximity',
-  matchType: 'Match type',
-}
 
 type MergeAction = 'merge' | 'revert' | 'clear'
 
@@ -132,13 +123,12 @@ export function MergeDecisionPanel({ overlap }: { overlap: Overlap }) {
                   : 'Not scored'}
               </span>
             </div>
-            {overlap.matchSignals &&
-              Object.entries(overlap.matchSignals).map(([signal, value]) => (
-                <div key={signal} className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">{SIGNAL_LABELS[signal] ?? signal}</span>
-                  <span>{percent(value)}</span>
-                </div>
-              ))}
+            {Object.entries(overlap.matchSignals ?? {}).map(([signal, value]) => (
+              <div key={signal} className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">{signalLabel(signal)}</span>
+                <span>{percent(value)}</span>
+              </div>
+            ))}
           </div>
           <div className="space-y-2 rounded-lg border border-border p-3 text-sm">
             {overlap.mergeGroupId && (

@@ -86,7 +86,7 @@ the public sign-up API.
 | `/institutions/:id` | Scoped staff | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Deferred | N/A | **Partial** |
 | `/overlaps` | Staff with overlap access | Covered | Covered | Covered | Covered | Covered | **Covered** |
-| `/overlaps/:id` | Staff with overlap access | Covered | Covered | Covered | Deferred | Covered | **Partial** |
+| `/overlaps/:id` | Staff with overlap access | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/merge-groups/:id` | Staff with overlap access | Covered | Covered | Covered | Deferred | N/A | **Partial** |
 | `/reports` | All staff roles | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/notifications` | All staff roles | Covered | Covered | Covered | Covered | Covered | **Covered** |
@@ -301,8 +301,10 @@ dual-command-mode, two-zone top-bar, and no-breadcrumb remediation; those rows a
 persistence, page-scoped selected-row export, and tab/action-panel behavior). Phase 4B adds
 `apps/web/e2e/institution-profile.spec.ts` with profile landmarks and 375px overflow checks,
 plus component coverage for the sticky summary, health cues, alias context, and bureau grouping.
-Rows stay **Partial** where only one route or one side of the state is exercised, or where a
-surface is asserted only outside Playwright.
+Phase 4C adds `apps/web/e2e/overlap-triage.spec.ts` with queue evidence/keyboard/role checks, a
+guarded queue confirm, and desktop/375px compare-header checks, plus component coverage for the
+triage card, shortcut guards, and compare header. Rows stay **Partial** where only one route or one
+side of the state is exercised, or where a surface is asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -343,6 +345,8 @@ surface is asserted only outside Playwright.
 | Case detail sticky summary, tabs, and action controls | `/cases/:id` | **Covered** — shared `Tabs` roles/names/arrow keys, sticky summary at 64px after scroll, `Case controls` action bar sourced from `useCaseActionOptions`, and secondary actions return to the unchanged `#case-actions` panel; smoke/states selectors updated from `button` to `tab`. Seeded 375/768/1024/1440 px light/dark observation found no document overflow |
 | Institution profile summary, health, aliases, and history | `/institutions/:id` | **Covered** — sticky identity/verification summary preserves role-gated quick actions and all merge selectors; six existing-summary health cards use text cues; aliases are a labelled duplicate-context list; scoped compact case table sits in `Institution case history` with unchanged pagination. Component and seeded E2E checks pass, including desktop/375px overflow |
 | Representative institution card spacing | `/institution/profile` | **Covered** — W-10 closed by tightening card header/body padding without changing labels or form fields; seeded responsive reflow passes at 375/768/1024/1440 px |
+| Overlap triage toolbar, evidence, and keyboard review | `/overlaps` | **Covered** — sticky named toolbar preserves saved views/filters; top existing match signals render with a no-signals fallback; `↑/↓`/`J/K` select loaded rows and `C`/`D` open the existing confirm dialog only for reviewers; typing/dialog/modifier guards are component-tested; read-only staff see no queue decisions or shortcut hint |
+| Overlap compare summary | `/overlaps/:id` | **Covered** — sticky `Overlap comparison` header keeps identity, badges, case numbers, scores, and assessment view visible; `Go to review decision` reaches the unchanged `#overlap-decision` card only where allowed; desktop and 375px overflow checks pass without touching `Assessment summary` or action selectors |
 | Bulk case assignment | `/cases` | **Deferred** — no bulk-assignment server contract exists; page selection is export-only |
 | Mutating row actions | `/cases` | **Deferred** — list data cannot safely reuse `useCaseActionOptions`; all mutations remain in case detail with existing role/transition authorization |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
@@ -384,8 +388,10 @@ Phase 4A adds seeded DOM/metric observation of `/cases` and `/cases/:id` at 375/
 in light and dark: zero document-level overflow, sticky toolbar/summary settling at 64px, required
 shell selectors present, and retired selectors absent. Phase 4B adds the same profile-landmark and
 overflow observation at desktop and 375px, plus seeded institution reflow at all four widths
-including the representative profile touched by W-10. Local screenshots are observation evidence
-only; the official 48-baseline refresh stays in Phase 7.
+including the representative profile touched by W-10. Phase 4C adds a 375px overflow check for the
+sticky compare header in `overlap-triage.spec.ts`; the shared responsive loop still covers
+`/overlaps` at all four widths. Local screenshots are observation evidence only; the official
+48-baseline refresh stays in Phase 7.
 
 ## 5. Visual regression baseline set
 
@@ -415,7 +421,9 @@ The visual set was regenerated on the pinned CI image on 2026-11-15 (run `437489
 workspace, and portal dashboard changes. All 48 images were reviewed and committed in
 `f882bd1`. Flag-off dispatch `43750576126` verified the same baseline on the same runner
 image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5, 4A, and 4B left these
-committed baselines untouched; the official refresh and review remain in Phase 7.
+committed baselines untouched. Phase 4C also left them untouched, so the `/overlaps` and
+`/overlaps/:id` images now predate the triage toolbar and compare header; the official refresh and
+review remain in Phase 7.
 
 ## 6. Accessibility coverage
 

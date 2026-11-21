@@ -2,7 +2,6 @@ import { OVERLAP, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ConfirmDialog } from '#/components/shared/confirm-dialog'
-import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -11,7 +10,8 @@ import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import type { OverlapCase, ReviewAction } from '#/features/overlaps/api'
 import { useOverlap, useReviewOverlap, useUnlinkOverlap } from '#/features/overlaps/api'
 import { MergeDecisionPanel } from '#/features/overlaps/components/merge-decision-panel'
-import { CaseStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
+import { OverlapCompareHeader } from '#/features/overlaps/components/overlap-compare-header'
+import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
   assessmentStatusLabel,
   choiceLabel,
@@ -155,27 +155,10 @@ export function OverlapDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <Link to="/overlaps" className="text-sm text-muted-foreground underline underline-offset-4">
-          ← Back to overlap queue
-        </Link>
-        <PageHeader
-          title={OVERLAP.HEADING}
-          description={
-            <div className="space-y-1">
-              <div>
-                <ReviewStatusBadge status={overlap.reviewStatus} />
-              </div>
-              <p>
-                {overlap.institution?.name ?? 'Unknown institution'}
-                {overlap.institution?.aictePermanentId
-                  ? ` · AICTE ID ${overlap.institution.aictePermanentId}`
-                  : ''}
-              </p>
-            </div>
-          }
-        />
-      </div>
+      <OverlapCompareHeader
+        overlap={overlap}
+        showDecisionLink={!isMerged && overlap.reviewStatus === 'PENDING' && canReview}
+      />
 
       <Card>
         <CardHeader>
@@ -246,7 +229,7 @@ export function OverlapDetailPage() {
       <MergeDecisionPanel overlap={overlap} />
 
       {!isMerged && (
-        <Card>
+        <Card id="overlap-decision" className="scroll-mt-32">
           <CardHeader>
             <CardTitle>Human decision</CardTitle>
           </CardHeader>

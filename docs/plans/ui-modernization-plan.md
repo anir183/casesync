@@ -511,6 +511,17 @@ remain recorded. `check:ci`, both web typechecks, web tests 80/0, targeted seede
 institution responsive reflow 4/4 passed. Remaining Phase 4 surfaces stay in later slices; visual
 baselines, double CI, and both manual gates remain Phase 7.
 
+**Phase 4C implementation record (2026-11-21).** The overlap-queue bullet above is implemented and
+locally verified; see
+[`stage-12-phase4c-overlap-queue.md`](stage-12-phase4c-overlap-queue.md). The queue gains a sticky
+triage toolbar, card-level coordination/merge scores with the strongest existing match signals, and
+keyboard row navigation plus guarded confirm/dismiss through the existing dialog and mutation. The
+detail route gains a sticky compare header with identity, scores, case numbers, and a jump to the
+unchanged decision card. Role gates, saved views, pagination, server order, route scope, and all
+established mutation selectors are unchanged. `check:ci`, both web typechecks, web tests 84/0,
+targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Reports, Notifications, and Forms remain
+in later slices; visual baselines, double CI, and both manual gates remain Phase 7.
+
 **Exit criteria**
 
 - The primary daily flow uses fewer clicks and less scrolling than the baseline.
@@ -519,8 +530,9 @@ baselines, double CI, and both manual gates remain Phase 7.
 - Every list has loading, empty, error, and permission-denied states.
 - Existing mutation coverage still passes (selectors may be updated intentionally).
 
-Phase 4A satisfies these criteria for the Cases registry and case detail; the other Phase 4
-surfaces remain unimplemented.
+Phase 4A satisfies these criteria for the Cases registry and case detail; Phase 4B does so for the
+institution profile; Phase 4C does so for the overlap queue and compare view. Reports,
+Notifications, and Forms remain unimplemented.
 
 ---
 

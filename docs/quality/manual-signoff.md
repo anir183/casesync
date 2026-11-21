@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-21 (Phase 2 review remediation, Phase 3.5 dashboard, Phase 4A cases surfaces, and Phase 4B institution profile implemented and verified; gates still held).
+Last updated: 2026-11-21 (Phase 2 review remediation, Phase 3.5 dashboard, Phase 4A cases surfaces, Phase 4B institution profile, and Phase 4C overlap queue implemented and verified; gates still held).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -65,6 +65,7 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | 2026-11-18 | Stage 12 Phase 4A cases surfaces implemented and locally verified on loopback Mongo: sticky registry toolbar/summary, compact primary filters plus `More filters`, active chips, client-only density, page-scoped selection and selected-row CSV, non-mutating row actions, shared `Tabs` roles, `Case controls` action bar, and grouped timeline. Intentional selector updates: `getByRole('tab')` for detail tabs, exact `Status` form lookup, `More filters` before `Sort`, `Case controls` action-bar label, and `Copy ID for <caseNumber>` for axe. `bun run verify` passed (API 116 pass / 74 skip, web 76 pass / 0 fail, main chunk `492.66 kB / 139.24 kB gzip`); targeted E2E 87/87. Seeded observation at 375/768/1024/1440 px in light/dark found no document overflow, sticky surfaces at 64px, preserved/retired shell selectors, and only the pre-existing favicon 404 console error. No route, guard, data contract, dependency, visual baseline, or deployment changed; bulk assignment and mutating row actions remain deferred. Gates remain held until Stage 12 exits. Evidence: `docs/plans/stage-12-phase4a-cases-surfaces.md` | — |
 | 2026-11-21 | 82-stop product-owner UI walkthrough completed across all seeded personas on the seeded loopback production build. Ten consolidated findings recorded in [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md); three apply to Phase 4A (W-5 registry table width, W-6 detail header spacing/badges, W-7 resolution-loop centering). Findings were logged, not fixed; this is not an execution of Part A or Part B, and both gates remain held until Stage 12 exits. | — |
 | 2026-11-21 | Stage 12 Phase 4B institution profile implemented and locally verified on loopback Mongo: sticky identity/verification summary, six text-cued health cards from the existing case summary, alias/duplicate context, and cross-bureau history with the existing scoped table and pagination. Role gates, merge selectors, detail API contract, seed data, and visual baselines are unchanged. Walkthrough W-10 closed by tightening representative card heading/body spacing; W-1–W-9 remain recorded. `check:ci` clean, both web typechecks clean, web 80 pass / 0 fail, targeted institution E2E 43/43, and institution responsive reflow 4/4 at 375/768/1024/1440 px. No route, guard, data contract, dependency, visual baseline, push, or deployment changed; both gates remain held until Stage 12 exits. Evidence: `docs/plans/stage-12-phase4b-institution-profile.md` | — |
+| 2026-11-21 | Stage 12 Phase 4C overlap queue and compare view implemented and locally verified on seeded loopback Mongo: sticky triage toolbar, card-level coordination/merge scores with top existing match signals, page-scoped keyboard row selection with guarded confirm/dismiss, and a sticky compare header with identity, case pair, scores, and a jump to the unchanged decision card. Role gates, saved views, pagination, server order, route scope, seed data, and all established mutation selectors are unchanged. `check:ci` clean, both web typechecks clean, web 84 pass / 0 fail, targeted overlap E2E 24/24, overlap smoke 1/1, plus desktop and 375px compare-header overflow checks. No route, guard, data contract, dependency, visual baseline, push, or deployment changed; committed baselines for `/overlaps` and `/overlaps/:id` now predate this slice and stay held for Phase 7 refresh. Evidence: `docs/plans/stage-12-phase4c-overlap-queue.md` | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the
@@ -121,13 +122,13 @@ Core surfaces named by [`accessibility-audit.md`](accessibility-audit.md) §4 �
 | A3 | `/reports` | Senior/admin | Charts have text equivalents; reconciliation with table |
 | A4 | `/reports/geo` (map) | Senior/admin | Keyboard region chips, announced text summary, data-table fallback, usable with tiles blocked |
 | A5 | `/cases/:id` | Officer | Sticky summary and `Case controls` action bar; five shared `Tabs` sections; grouped Timeline tab; action panel and dialog focus; not-found path |
-| A6 | `/overlaps/:id` (compare) | Officer/admin | Score breakdown, matched signals, merge/revert dialogs |
+| A6 | `/overlaps/:id` (compare) | Officer/admin | Sticky compare header with institution identity, both case numbers, coordination/merge scores and assessment view; `Go to review decision` jump where allowed; score breakdown, matched signals, and merge/revert dialogs |
 
 Breadth surfaces — **required if present after Stage 12, otherwise N/A with reason**:
 
 | # | Route | Role | What to verify |
 |---|---|---|---|
-| A7 | `/overlaps` | Officer | Queue views, filter controls, row actions |
+| A7 | `/overlaps` | Officer | Queue views, filter controls, sticky triage toolbar, visible score/evidence, active row state, `↑/↓`/`J/K` navigation and reviewer-only `C`/`D` confirm/dismiss; verify shortcuts do not fire while typing or with a dialog open |
 | A8 | `/institutions/:id` | Officer | Detail tables, edit controls |
 | A9 | `/admin/users` | Admin | User table, invite/reset/deactivate dialogs |
 | A10 | `/admin/institution-representatives` | Admin | Approval queue, reject/revoke dialogs |
@@ -140,7 +141,8 @@ Breadth surfaces — **required if present after Stage 12, otherwise N/A with re
 | A17 | `/cases` | All staff roles | Sticky registry toolbar and search landmark; compact primary filters with `More filters`; removable active chips; comfortable/compact density; page-scoped selection and clearly labeled selected-row CSV; Open/Institution/Copy row actions; table containment and sticky offsets; retained saved views, role-gated register link, and full filtered server export. |
 
 > A15 lands with Stage 12 Phases 3 and 3.5, A17 lands with Phase 4A, and A16 lands with Phase 6;
-> verify them only after those phases are implemented and Stage 12 exits. If Stage 12 adds another
+> A6/A7 include Phase 4C refinements to existing routes. Verify them only after those phases are
+> implemented and Stage 12 exits. If Stage 12 adds another
 > command/search surface, new admin pages, or a new GIS/portal view, add further rows here before
 > executing. Do not skip a new surface because it was not in the Stage 9 inventory.
 
@@ -255,7 +257,7 @@ the expected column, or any runbook step that is missing, ambiguous, or stale.
 | B14 | §4.1 Portal | `/portal/track` with a wrong case/email pair and with the correct pair | Both wrong inputs return the same 404; correct pair shows the complaint | | |
 | B15 | §4.1 Portal | Staff sends public and internal messages; complainant views the complaint | Public visible to complainant; internal never exposed | | |
 | B16 | §4.1 Portal | Complainant accepts resolution, then reopens within `COMPLAINT_REOPEN_DAYS` | Case closes; reopen succeeds only inside the window | | |
-| B17 | §4.2 Merge/revert | Inspect Overlap queue views; open an auto-merged pair; check score/signals and group members | Views populate; breakdown and group link render; no cross-complainant PII in the banner | | |
+| B17 | §4.2 Merge/revert | Inspect Overlap queue views and triage card evidence; use `↑/↓`/`J/K` and reviewer-only `C`/`D`; open an auto-merged pair and check the sticky compare header, score/signals, and group members | Views populate; active row and shortcuts behave as described; breakdown and group link render; no cross-complainant PII in the banner | | |
 | B18 | §4.2 Merge/revert | Revert a merge with a reason, then attempt automatic re-merge | Pair returns to manual review; re-merge suppressed until an admin clears it | | |
 | B19 | §4.2 Merge/revert | Set `OVERLAP_AUTO_MERGE_ENABLED=false`, restart API, assess a new eligible pair | No new auto-merge; manual review still available | | |
 | B20 | §4.2 Merge/revert | Check `/admin/audit` for merge/revert actions | Append-only entries with actor, reason, and score present | | |

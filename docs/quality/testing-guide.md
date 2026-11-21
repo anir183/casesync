@@ -74,7 +74,10 @@ Counts are for the desktop project unless noted.
 | `responsive.spec.ts` | `@responsive` | 16 | Staff/portal/institution reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
 | `navigation.spec.ts` | `@responsive` | 3 | One-row staff nav, mobile drawer destinations, notification bell preview | Header, nav, drawer, or notification changes |
 | `reports.spec.ts` | `@responsive`, `@a11y` | 2 | Reports map keyboard focus/mobile reflow; chart-heavy reduced motion | Map, chart, or reports changes |
+| `cases-registry.spec.ts` | `@cases` | 4 | Chip removal, density persistence, page-scoped selected-row export, and detail tab/action-panel behavior | Cases registry or detail presentation changes |
+| `institution-profile.spec.ts` | — | 1 | Profile landmarks and desktop/375px overflow | Institution profile presentation changes |
 | `merge.spec.ts` | `@mutation` | 1 | Auto-merged overlap group is visible and reverts to human review | Overlap merge/revert changes |
+| `overlap-triage.spec.ts` | — | 3 | Queue evidence, active-row keyboard movement, guarded queue confirm, read-only gating, and desktop/375px compare header | Overlap queue or compare presentation changes |
 | `portal.spec.ts` | `@mutation` | 2 | End-to-end portal filing, conversation, resolve/accept; mismatched tracking denial | Portal journey or public tracking changes |
 | `performance.spec.ts` | `@performance` | 1 | Dashboard, list, report, and detail budgets under stress data | Before demos/releases; never in the normal suite |
 | `visual.spec.ts` | `@visual` | 24 per visual project (48 total) | 12 routes × light/dark at 1440 px and 375 px | Intentional visual changes and release gates |
@@ -92,9 +95,9 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:integration` | Mongo-backed API integration tests |
 | `bun run test:coverage` | Integration tests plus the coverage floor |
 | `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys (3 in `smoke.spec.ts` + 10 in `routes.spec.ts`) |
-| `bun run test:e2e` | 197 desktop functional tests, excluding `@performance` and `@visual` |
+| `bun run test:e2e` | 200 desktop functional tests, excluding `@performance` and `@visual` |
 | `bun run test:e2e:spec <paths...>` | Targeted seeded desktop specs; forwards Playwright arguments |
-| `bun run test:e2e:full` | 217 desktop + mobile functional tests |
+| `bun run test:e2e:full` | 223 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally, then review the diff |
@@ -130,6 +133,18 @@ bun run test:e2e:spec \
   e2e/accessibility.spec.ts \
   e2e/coverage/mutations.spec.ts \
   --grep "institution"
+
+# Overlap triage render, deny, axe, queue state, review/merge, responsive, and zoom paths
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  bun run test:e2e:spec \
+    e2e/overlap-triage.spec.ts \
+    e2e/coverage/routes.spec.ts \
+    e2e/coverage/states.spec.ts \
+    e2e/coverage/mutations.spec.ts \
+    e2e/merge.spec.ts \
+    e2e/accessibility.spec.ts \
+    e2e/responsive.spec.ts \
+    --grep "overlap|merge group|auto-merged pair|staff routes reflow|text-only 200% zoom"
 
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts

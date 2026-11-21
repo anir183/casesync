@@ -1,32 +1,31 @@
-import { OVERLAP, PAGINATION } from '@casesync/config'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { OVERLAP, PAGINATION, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
+import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '#/components/shared/confirm-dialog'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
-import { Badge } from '#/components/ui/badge'
-import { Button, buttonVariants } from '#/components/ui/button'
-import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Button } from '#/components/ui/button'
+import { Card, CardBody } from '#/components/ui/card'
 import { SavedViewMenu } from '#/components/ui/saved-view-menu'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { useBureaus, useRegions } from '#/features/organization/api'
-import { type Overlap, type OverlapFilters, useOverlaps } from '#/features/overlaps/api'
-import { MergeStatusBadge, ReviewStatusBadge } from '#/features/overlaps/components/status-badges'
 import {
-  MATCH_TYPE_OPTIONS,
-  assessmentStatusLabel,
-  choiceLabel,
-  matchTypeLabel,
-  mergeStatusLabel,
-  percent,
-} from '#/features/overlaps/labels'
+  type Overlap,
+  type OverlapFilters,
+  type ReviewAction,
+  useOverlaps,
+  useReviewOverlap,
+} from '#/features/overlaps/api'
+import { OverlapTriageCard } from '#/features/overlaps/components/overlap-triage-card'
+import { MATCH_TYPE_OPTIONS } from '#/features/overlaps/labels'
+import { useOverlapTriageShortcuts } from '#/features/overlaps/overlap-triage-shortcuts'
 import {
   OVERLAP_CUSTOM_VIEW,
   OVERLAP_SAVED_VIEWS,
   overlapViewForFilters,
 } from '#/features/overlaps/saved-views'
-import { formatDate } from '#/lib/utils'
+import { useCurrentUser } from '#/lib/session'
 
 const DEFAULT_FILTERS: OverlapFilters = {
   ...OVERLAP_SAVED_VIEWS[0].filters,
@@ -34,97 +33,41 @@ const DEFAULT_FILTERS: OverlapFilters = {
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
 }
 
-function OverlapCard({ overlap }: { overlap: Overlap }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <CardTitle>{overlap.institution?.name ?? 'Unknown institution'}</CardTitle>
-            <ReviewStatusBadge status={overlap.reviewStatus} />
-            <MergeStatusBadge status={overlap.mergeStatus} />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {overlap.institution?.aictePermanentId
-              ? `AICTE ID ${overlap.institution.aictePermanentId}`
-              : 'No AICTE permanent ID on record'}
-          </p>
-        </div>
-        <Link
-          to={`/overlaps/${overlap.id}`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          Review
-        </Link>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2">
-          {overlap.cases.map((item) => (
-            <div key={item.id} className="rounded-md border border-border p-3">
-              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-                <span className="min-w-0 truncate font-medium">{item.caseNumber}</span>
-                <Badge variant="muted" className="max-w-full">
-                  {item.bureauName ?? 'Unassigned bureau'}
-                </Badge>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {item.category ?? 'Uncategorised'} · {item.status.replace(/_/g, ' ')}
-              </p>
-              {item.description && <p className="mt-2 line-clamp-2 text-sm">{item.description}</p>}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <span>
-            <span className="text-muted-foreground">Match: </span>
-            {matchTypeLabel(overlap.matchType)}
-          </span>
-          <span>
-            <span className="text-muted-foreground">Assessment: </span>
-            {assessmentStatusLabel(overlap.assessment?.status)}
-          </span>
-          {overlap.assessment?.relationshipChoice && (
-            <span>
-              <span className="text-muted-foreground">AI view: </span>
-              {choiceLabel(overlap.assessment.relationshipChoice)}
-            </span>
-          )}
-          {overlap.assessment?.coordinationReviewNoul !== undefined && (
-            <span>
-              <span className="text-muted-foreground">Coordination score: </span>
-              {percent(overlap.assessment.coordinationReviewNoul)}
-            </span>
-          )}
-          {overlap.confidenceScore !== undefined && (
-            <span>
-              <span className="text-muted-foreground">Merge score: </span>
-              {percent(overlap.confidenceScore)}
-            </span>
-          )}
-          <span>
-            <span className="text-muted-foreground">Merge state: </span>
-            {mergeStatusLabel(overlap.mergeStatus)}
-          </span>
-          <span>
-            <span className="text-muted-foreground">Flagged: </span>
-            {formatDate(overlap.createdAt)}
-          </span>
-        </div>
-
-        {overlap.reason && <p className="text-sm text-muted-foreground">{overlap.reason}</p>}
-      </CardContent>
-    </Card>
-  )
+interface PendingReview {
+  action: ReviewAction
+  overlapId: string
+  institution: string
 }
 
 export function OverlapsPage() {
   const [filters, setFilters] = useState<OverlapFilters>(DEFAULT_FILTERS)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [pendingReview, setPendingReview] = useState<PendingReview | null>(null)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
   const { data, isLoading, isError, error, refetch } = useOverlaps(filters)
   const { data: bureaus } = useBureaus()
   const { data: regions } = useRegions()
+  const { user } = useCurrentUser()
+  const review = useReviewOverlap(pendingReview?.overlapId ?? '')
+  const canReview = hasAnyRole(user?.role, ROLE_GROUPS.OVERLAP_REVIEW)
+  const items = data?.items ?? []
+  const activeOverlap = items[activeIndex]
+  const canDecide = Boolean(canReview && activeOverlap?.reviewStatus === 'PENDING')
+
+  useEffect(() => {
+    if (activeIndex >= items.length && items.length > 0) setActiveIndex(0)
+  }, [activeIndex, items.length])
+
+  useEffect(() => {
+    const node = document.querySelector(`[data-overlap-index="${activeIndex}"]`)
+    if (node instanceof HTMLElement && typeof node.scrollIntoView === 'function') {
+      node.scrollIntoView({ block: 'nearest' })
+    }
+  }, [activeIndex])
 
   function updateFilter(key: keyof OverlapFilters, value: string) {
+    setActiveIndex(0)
     setFilters((current) => ({
       ...current,
       [key]: value || undefined,
@@ -136,6 +79,7 @@ export function OverlapsPage() {
     if (id === OVERLAP_CUSTOM_VIEW.id) return
     const view = OVERLAP_SAVED_VIEWS.find((item) => item.id === id)
     if (!view) return
+    setActiveIndex(0)
     setFilters((current) => ({
       ...current,
       status: view.filters.status,
@@ -148,6 +92,55 @@ export function OverlapsPage() {
       page: PAGINATION.DEFAULT_PAGE,
     }))
   }
+
+  function openReviewFor(overlap: Overlap, action: ReviewAction) {
+    if (!canReview || overlap.reviewStatus !== 'PENDING') return
+    setFeedback(null)
+    setReviewError(null)
+    setPendingReview({
+      action,
+      overlapId: overlap.id,
+      institution: overlap.institution?.name ?? 'this institution',
+    })
+  }
+
+  function submitReview() {
+    if (!pendingReview) return
+    const action = pendingReview.action
+    review.mutate(
+      { action },
+      {
+        onSuccess: () => {
+          setPendingReview(null)
+          setFeedback(
+            action === 'confirm'
+              ? 'Overlap confirmed from the queue.'
+              : 'Overlap dismissed from the queue.',
+          )
+        },
+        onError: (mutationError) => {
+          setPendingReview(null)
+          setReviewError(
+            mutationError instanceof Error ? mutationError.message : 'Review could not be saved',
+          )
+        },
+      },
+    )
+  }
+
+  useOverlapTriageShortcuts({
+    itemCount: items.length,
+    activeIndex,
+    canDecide,
+    dialogOpen: pendingReview !== null,
+    onActiveChange: setActiveIndex,
+    onConfirm: () => {
+      if (activeOverlap) openReviewFor(activeOverlap, 'confirm')
+    },
+    onDismiss: () => {
+      if (activeOverlap) openReviewFor(activeOverlap, 'dismiss')
+    },
+  })
 
   const activeView = overlapViewForFilters(filters)
 
@@ -165,59 +158,80 @@ export function OverlapsPage() {
         }
       />
 
-      <div className="flex flex-wrap gap-2">
-        {OVERLAP_SAVED_VIEWS.map((view) => (
-          <Button
-            key={view.id}
-            size="sm"
-            variant={activeView === view.id ? 'default' : 'outline'}
-            onClick={() => applySavedView(view.id)}
-          >
-            {view.label}
-          </Button>
-        ))}
-      </div>
-
-      <Card>
-        <CardBody className="grid gap-3 md:grid-cols-3">
-          <Select
-            aria-label="Filter by bureau"
-            value={filters.bureauId ?? ''}
-            onChange={(event) => updateFilter('bureauId', event.target.value)}
-          >
-            <option value="">All bureaus/cells</option>
-            {bureaus?.map((bureau) => (
-              <option key={bureau.id} value={bureau.id}>
-                {bureau.name}
-              </option>
+      <section
+        aria-label="Overlap triage"
+        className="sticky top-16 z-30 scroll-mt-32 border-b border-border bg-background/95 backdrop-blur"
+      >
+        <div className="space-y-3 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-meta text-muted-foreground">
+              {data?.total ?? items.length} alerts · {items.length} on this page
+            </p>
+            <p className="text-compact text-muted-foreground">
+              ↑/↓ or J/K to move{canReview ? ' · C to confirm · D to dismiss' : ''}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {OVERLAP_SAVED_VIEWS.map((view) => (
+              <Button
+                key={view.id}
+                size="sm"
+                variant={activeView === view.id ? 'default' : 'outline'}
+                onClick={() => applySavedView(view.id)}
+              >
+                {view.label}
+              </Button>
             ))}
-          </Select>
-          <Select
-            aria-label="Filter by region"
-            value={filters.regionId ?? ''}
-            onChange={(event) => updateFilter('regionId', event.target.value)}
-          >
-            <option value="">All regions</option>
-            {regions?.map((region) => (
-              <option key={region.id} value={region.id}>
-                {region.name}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label="Filter by match type"
-            value={filters.matchType ?? ''}
-            onChange={(event) => updateFilter('matchType', event.target.value)}
-          >
-            <option value="">All match types</option>
-            {MATCH_TYPE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </CardBody>
-      </Card>
+          </div>
+          <Card>
+            <CardBody className="grid gap-3 md:grid-cols-3">
+              <Select
+                aria-label="Filter by bureau"
+                value={filters.bureauId ?? ''}
+                onChange={(event) => updateFilter('bureauId', event.target.value)}
+              >
+                <option value="">All bureaus/cells</option>
+                {bureaus?.map((bureau) => (
+                  <option key={bureau.id} value={bureau.id}>
+                    {bureau.name}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                aria-label="Filter by region"
+                value={filters.regionId ?? ''}
+                onChange={(event) => updateFilter('regionId', event.target.value)}
+              >
+                <option value="">All regions</option>
+                {regions?.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                aria-label="Filter by match type"
+                value={filters.matchType ?? ''}
+                onChange={(event) => updateFilter('matchType', event.target.value)}
+              >
+                <option value="">All match types</option>
+                {MATCH_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </CardBody>
+          </Card>
+          {feedback && <output className="block text-sm text-success">{feedback}</output>}
+          {reviewError && <p className="text-sm text-danger">{reviewError}</p>}
+          {items.length > 0 && (
+            <output className="sr-only">
+              Overlap {activeIndex + 1} of {items.length} selected for triage.
+            </output>
+          )}
+        </div>
+      </section>
 
       {isLoading && (
         <div className="space-y-4" aria-busy="true" aria-label="Loading overlap queue">
@@ -248,8 +262,16 @@ export function OverlapsPage() {
       )}
 
       <div className="space-y-4">
-        {data?.items.map((overlap) => (
-          <OverlapCard key={overlap.id} overlap={overlap} />
+        {items.map((overlap, index) => (
+          <OverlapTriageCard
+            key={overlap.id}
+            overlap={overlap}
+            position={index}
+            isActive={index === activeIndex}
+            canReview={canReview}
+            onActivate={() => setActiveIndex(index)}
+            onQuickReview={(action) => openReviewFor(overlap, action)}
+          />
         ))}
       </div>
 
@@ -258,12 +280,27 @@ export function OverlapsPage() {
           page={data.page}
           pageSize={data.pageSize}
           total={data.total}
-          onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
-          onPageSizeChange={(pageSize) =>
+          onPageChange={(page) => {
+            setActiveIndex(0)
+            setFilters((current) => ({ ...current, page }))
+          }}
+          onPageSizeChange={(pageSize) => {
+            setActiveIndex(0)
             setFilters((current) => ({ ...current, page: 1, pageSize }))
-          }
+          }}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingReview !== null}
+        title={pendingReview?.action === 'dismiss' ? 'Dismiss overlap?' : 'Confirm overlap?'}
+        description={`This decision will be recorded for ${pendingReview?.institution ?? 'this institution'} and written to both case histories.`}
+        confirmLabel={pendingReview?.action === 'dismiss' ? 'Dismiss overlap' : 'Confirm overlap'}
+        destructive={pendingReview?.action === 'dismiss'}
+        pending={review.isPending}
+        onCancel={() => setPendingReview(null)}
+        onConfirm={submitReview}
+      />
     </div>
   )
 }
