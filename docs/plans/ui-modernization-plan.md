@@ -519,8 +519,20 @@ keyboard row navigation plus guarded confirm/dismiss through the existing dialog
 detail route gains a sticky compare header with identity, scores, case numbers, and a jump to the
 unchanged decision card. Role gates, saved views, pagination, server order, route scope, and all
 established mutation selectors are unchanged. `check:ci`, both web typechecks, web tests 84/0,
-targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Reports, Notifications, and Forms remain
-in later slices; visual baselines, double CI, and both manual gates remain Phase 7.
+targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Reports and Forms remain in later slices;
+Notifications was later delivered in Phase 4D; visual baselines, double CI, and both manual gates
+remain Phase 7.
+
+**Phase 4D implementation record (2026-11-21).** The notifications-centre bullet above is
+implemented and locally verified; see
+[`stage-12-phase4d-notifications.md`](stage-12-phase4d-notifications.md). The shared staff, portal,
+and institution notifications page gains a sticky named triage toolbar with saved views, type and
+unread filters, an announced toggle state, loaded-page type groups with counts, and textual `Unread`
+badges. `Open record`, `Mark as read`, `Mark all as read`, pagination, states, query filters, and
+owner-scoped mutations are unchanged; the bell only shares the grouping helper. `check:ci`, both web
+typechecks, web tests 89/0, targeted seeded E2E 16/16, and a fresh-seed notification spec 1/1 passed.
+Reports and Forms remain in later slices; visual baselines, double CI, and both manual gates remain
+Phase 7.
 
 **Exit criteria**
 
@@ -531,8 +543,8 @@ in later slices; visual baselines, double CI, and both manual gates remain Phase
 - Existing mutation coverage still passes (selectors may be updated intentionally).
 
 Phase 4A satisfies these criteria for the Cases registry and case detail; Phase 4B does so for the
-institution profile; Phase 4C does so for the overlap queue and compare view. Reports,
-Notifications, and Forms remain unimplemented.
+institution profile; Phase 4C does so for the overlap queue and compare view; Phase 4D does so for
+the notifications centre. Reports and Forms remain unimplemented.
 
 ---
 

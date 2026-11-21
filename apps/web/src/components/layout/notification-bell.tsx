@@ -6,6 +6,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Select } from '#/components/ui/select'
 import type { AppNotification } from '#/features/notifications/api'
+import { groupNotificationsByType } from '#/features/notifications/groups'
 import { notificationHref, notificationTypeLabel } from '#/features/notifications/links'
 import { cn, formatDate } from '#/lib/utils'
 import { NavDropdown } from './nav-dropdown'
@@ -29,17 +30,6 @@ interface NotificationPanelProps {
 
 const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
 
-function groupByType(items: AppNotification[]) {
-  const groups: Array<{ label: string; items: AppNotification[] }> = []
-  for (const item of items) {
-    const label = notificationTypeLabel(item.type)
-    const group = groups.find((entry) => entry.label === label)
-    if (group) group.items.push(item)
-    else groups.push({ label, items: [item] })
-  }
-  return groups
-}
-
 /**
  * The preview groups the newest notifications by type and supports quick
  * filtering without navigating away. All data comes from the shell's existing
@@ -60,7 +50,7 @@ function NotificationPanel({
     .filter((item) => !unreadOnly || !item.readAt)
     .filter((item) => !type || item.type === type)
     .slice(0, 8)
-  const groups = groupByType(visible)
+  const groups = groupNotificationsByType(visible)
 
   return (
     <div>

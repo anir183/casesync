@@ -1,9 +1,9 @@
 # CaseSync — Stage 12 Phase 4C: Overlap queue and compare view
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the third implementation slice of
-Phase 4; Reports, Notifications, and Forms work remains in later slices. No route, permission,
-server contract, dependency, seed data, dashboard filter, chart, map, CSV contract, or visual
-baseline changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain
+Phase 4; Reports and Forms work remains in later slices, and notifications was later delivered in
+Phase 4D. No route, permission, server contract, dependency, seed data, dashboard filter, chart, map,
+CSV contract, or visual baseline changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain
 held for the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-21
@@ -89,7 +89,8 @@ titles/labels, and the role-denial copy. No `data-testid` was added.
 
 ## 4. Deferrals
 
-- **Remaining Phase 4 surfaces:** Reports, Notifications, and Forms are unchanged.
+- **Remaining Phase 4 surfaces:** Reports and Forms are unchanged; notifications was later
+  delivered in Phase 4D.
 - **Global priority ranking:** the queue still uses the server's existing `createdAt` order; this
   slice does not re-rank across pages or add server preferences.
 - **Cross-page keyboard traversal:** `J`/`K` cycle through the current page only; pagination uses
@@ -117,8 +118,8 @@ titles/labels, and the role-denial copy. No `data-testid` was added.
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
   stopped afterward.
-- No routes, permissions, data contracts, dependencies, seed data, visual baselines, push, or
-  deployment changed. Phase 4C remains uncommitted pending user authorization.
+- No routes, permissions, data contracts, dependencies, seed data, visual baselines, or deployment
+  changed. Phase 4C was committed as `be1ed15` and pushed by the user.
 
 ## 6. Documentation impact
 

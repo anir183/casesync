@@ -1,13 +1,11 @@
-import { NOTIFICATION_TYPE, PAGINATION } from '@casesync/config'
+import { PAGINATION } from '@casesync/config'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
 import { Pagination } from '#/components/shared/pagination'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
-import { Card, CardBody } from '#/components/ui/card'
-import { Select } from '#/components/ui/select'
+import { Card } from '#/components/ui/card'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   type NotificationFilters,
@@ -15,10 +13,14 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from '#/features/notifications/api'
-import { notificationHref, notificationTypeLabel } from '#/features/notifications/links'
-import { cn, formatDate } from '#/lib/utils'
+import { NotificationGroupCard } from '#/features/notifications/components/notification-group'
+import { NotificationTriageToolbar } from '#/features/notifications/components/notification-triage-toolbar'
+import { groupNotificationsByType } from '#/features/notifications/groups'
+import {
+  NOTIFICATION_SAVED_VIEWS,
+  notificationViewForFilters,
+} from '#/features/notifications/saved-views'
 
-const TYPE_OPTIONS = Object.values(NOTIFICATION_TYPE)
 const DEFAULT_FILTERS: NotificationFilters = {
   page: PAGINATION.DEFAULT_PAGE,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
@@ -30,13 +32,26 @@ export function NotificationsPage() {
   const markRead = useMarkNotificationRead()
   const markAllRead = useMarkAllNotificationsRead()
   const items = data?.items ?? []
+  const groups = groupNotificationsByType(items)
   const hasFilters = Boolean(filters.type || filters.unread)
+  const activeView = notificationViewForFilters(filters)
 
-  function updateFilter(key: keyof NotificationFilters, value: string | undefined) {
+  function updateFilter(key: 'unread' | 'type', value: string | undefined) {
     setFilters((current) => ({
       ...current,
       [key]: value || undefined,
       page: PAGINATION.DEFAULT_PAGE,
+    }))
+  }
+
+  function applySavedView(id: string) {
+    const view = NOTIFICATION_SAVED_VIEWS.find((entry) => entry.id === id)
+    if (!view) return
+    setFilters((current) => ({
+      page: PAGINATION.DEFAULT_PAGE,
+      pageSize: current.pageSize,
+      unread: view.filters.unread,
+      type: view.filters.type,
     }))
   }
 
@@ -66,48 +81,24 @@ export function NotificationsPage() {
         }
       />
 
-      <Card>
-        <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              aria-label="Notification type"
-              className="w-full sm:w-56"
-              value={filters.type ?? ''}
-              onChange={(event) => updateFilter('type', event.target.value)}
-            >
-              <option value="">All types</option>
-              {TYPE_OPTIONS.map((type) => (
-                <option key={type} value={type}>
-                  {notificationTypeLabel(type)}
-                </option>
-              ))}
-            </Select>
-            <Button
-              variant={filters.unread === 'true' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => updateFilter('unread', filters.unread === 'true' ? undefined : 'true')}
-            >
-              Unread only
-            </Button>
-            {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            )}
-          </div>
-          <span className="text-sm text-muted-foreground">
-            {data?.total ?? 0} matching notification{data?.total === 1 ? '' : 's'}
-          </span>
-        </CardBody>
-      </Card>
+      <NotificationTriageToolbar
+        filters={filters}
+        activeView={activeView}
+        total={data?.total ?? 0}
+        unreadCount={data?.unreadCount ?? 0}
+        hasFilters={hasFilters}
+        onSavedViewChange={applySavedView}
+        onFilterChange={updateFilter}
+        onClearFilters={clearFilters}
+      />
 
-      {isError && (
+      {isError ? (
         <div className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger-soft-foreground">
           {error instanceof Error ? error.message : 'Unable to load notifications'}
         </div>
-      )}
+      ) : null}
 
-      {isLoading && (
+      {isLoading ? (
         <Card>
           <div className="divide-y divide-border">
             {[0, 1, 2].map((row) => (
@@ -119,9 +110,9 @@ export function NotificationsPage() {
             ))}
           </div>
         </Card>
-      )}
+      ) : null}
 
-      {!isLoading && !isError && items.length === 0 && (
+      {!isLoading && !isError && items.length === 0 ? (
         <EmptyState
           title={hasFilters ? 'No matching notifications' : 'No notifications yet'}
           description={
@@ -137,80 +128,22 @@ export function NotificationsPage() {
             ) : undefined
           }
         />
-      )}
+      ) : null}
 
-      {items.length > 0 && (
-        <Card>
-          <ul className="divide-y divide-border">
-            {items.map((item) => {
-              const link = notificationHref(item)
-              const unread = !item.readAt
-              return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    'group px-5 py-4 transition-colors hover:bg-muted/40',
-                    unread && 'bg-primary/[0.04]',
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                        unread ? 'bg-primary' : 'bg-transparent',
-                      )}
-                    />
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p
-                            className={cn(
-                              'text-sm',
-                              unread ? 'font-semibold text-foreground' : 'font-medium',
-                            )}
-                          >
-                            {item.title ?? 'Notification'}
-                          </p>
-                          <Badge variant="muted">{notificationTypeLabel(item.type)}</Badge>
-                        </div>
-                        <time className="text-xs text-muted-foreground">
-                          {formatDate(item.createdAt)}
-                        </time>
-                      </div>
-                      {item.message && (
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                          {item.message}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3 pt-0.5 text-sm">
-                        {link && (
-                          <Link to={link} className="underline underline-offset-4">
-                            Open record
-                          </Link>
-                        )}
-                        {unread && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
-                            disabled={markRead.isPending}
-                            onClick={() => markRead.mutate(item.id)}
-                          >
-                            Mark as read
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        </Card>
-      )}
+      {groups.length > 0 ? (
+        <div className="space-y-4">
+          {groups.map((group) => (
+            <NotificationGroupCard
+              key={group.label}
+              group={group}
+              isMarkingRead={markRead.isPending}
+              onMarkRead={(id) => markRead.mutate(id)}
+            />
+          ))}
+        </div>
+      ) : null}
 
-      {data && data.total > 0 && (
+      {data && data.total > 0 ? (
         <Pagination
           page={data.page}
           pageSize={data.pageSize}
@@ -224,7 +157,7 @@ export function NotificationsPage() {
             }))
           }
         />
-      )}
+      ) : null}
     </div>
   )
 }

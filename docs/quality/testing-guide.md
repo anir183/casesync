@@ -73,6 +73,7 @@ Counts are for the desktop project unless noted.
 | `coverage/states.spec.ts` | `@states` | 16 | Loading, empty, pagination, filters/sort, CSV export, error recovery, not-found, dialog cancel, pending/failed save, session expiry, workspace timeline, overflow menu, theme persistence, and role landings | Touching a list, table, filter, dialog, toast, or session state |
 | `responsive.spec.ts` | `@responsive` | 16 | Staff/portal/institution reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
 | `navigation.spec.ts` | `@responsive` | 3 | One-row staff nav, mobile drawer destinations, notification bell preview | Header, nav, drawer, or notification changes |
+| `notification-centre.spec.ts` | — | 1 | Triage toolbar, type groups, unread cue, saved-view switching, and 375px overflow | Notifications page or shared bell grouping changes |
 | `reports.spec.ts` | `@responsive`, `@a11y` | 2 | Reports map keyboard focus/mobile reflow; chart-heavy reduced motion | Map, chart, or reports changes |
 | `cases-registry.spec.ts` | `@cases` | 4 | Chip removal, density persistence, page-scoped selected-row export, and detail tab/action-panel behavior | Cases registry or detail presentation changes |
 | `institution-profile.spec.ts` | — | 1 | Profile landmarks and desktop/375px overflow | Institution profile presentation changes |
@@ -95,9 +96,9 @@ Run root scripts from the repository root. The E2E scripts seed demo data first.
 | `bun run test:integration` | Mongo-backed API integration tests |
 | `bun run test:coverage` | Integration tests plus the coverage floor |
 | `bun run test:e2e:smoke` | 13 tagged `@smoke` journeys (3 in `smoke.spec.ts` + 10 in `routes.spec.ts`) |
-| `bun run test:e2e` | 200 desktop functional tests, excluding `@performance` and `@visual` |
+| `bun run test:e2e` | 201 desktop functional tests, excluding `@performance` and `@visual` |
 | `bun run test:e2e:spec <paths...>` | Targeted seeded desktop specs; forwards Playwright arguments |
-| `bun run test:e2e:full` | 223 desktop + mobile functional tests |
+| `bun run test:e2e:full` | 224 desktop + mobile functional tests |
 | `bun run test:e2e:mobile` | The 375 px mobile project only |
 | `bun run test:e2e:visual` | Reset/seed a disposable visual DB, then 48 comparisons |
 | `bun run test:e2e:update-snapshots` | Regenerate visual baselines intentionally, then review the diff |
@@ -145,6 +146,23 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
     e2e/accessibility.spec.ts \
     e2e/responsive.spec.ts \
     --grep "overlap|merge group|auto-merged pair|staff routes reflow|text-only 200% zoom"
+
+# Notification centre toolbar, grouping, unread cue, saved views, bell, routes, axe, and reflow
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec \
+    e2e/notification-centre.spec.ts \
+    e2e/coverage/routes.spec.ts \
+    e2e/coverage/mutations.spec.ts \
+    e2e/navigation.spec.ts \
+    e2e/accessibility.spec.ts \
+    e2e/responsive.spec.ts \
+    --grep "notification|notifications|staff routes reflow"
+
+# Fresh-seed branch with unread rows present
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/notification-centre.spec.ts
 
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts

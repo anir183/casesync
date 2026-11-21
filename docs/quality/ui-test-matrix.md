@@ -1,9 +1,10 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, and Phase 4B institution profile implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, and Phase 4D notifications centre implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
+Notifications plan: [`../plans/stage-12-phase4d-notifications.md`](../plans/stage-12-phase4d-notifications.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -229,7 +230,9 @@ Role groups used below come from `@casesync/config`:
 |---|---|---|---|
 | Mark one read | Recipient | Other user (API denial) | **Covered** |
 | Mark all read | Recipient | Other user | **Covered** |
-| Follow deep link | Recipient with access | Recipient without access | **Deferred** — route denial matrix proves access control for the destination |
+| Saved views and type/unread filters | Recipient | N/A | **Covered** — toolbar maps to the existing `type`/`unread` server filters and announces the toggle state |
+| Grouped rows and textual unread cue | Recipient | N/A | **Covered** — current-page groups with counts, row-scoped `Unread` badge, and visible `Open record`/`Mark as read` |
+| Follow deep link | Recipient with access | Recipient without access | **Deferred** — link rendering is asserted by the Phase 4D spec; destination access remains proved by the route denial matrix |
 
 ### Admin
 
@@ -303,8 +306,11 @@ persistence, page-scoped selected-row export, and tab/action-panel behavior). Ph
 plus component coverage for the sticky summary, health cues, alias context, and bureau grouping.
 Phase 4C adds `apps/web/e2e/overlap-triage.spec.ts` with queue evidence/keyboard/role checks, a
 guarded queue confirm, and desktop/375px compare-header checks, plus component coverage for the
-triage card, shortcut guards, and compare header. Rows stay **Partial** where only one route or one
-side of the state is exercised, or where a surface is asserted only outside Playwright.
+triage card, shortcut guards, and compare header. Phase 4D adds
+`apps/web/e2e/notification-centre.spec.ts` with toolbar, grouping, unread-cue, saved-view, and 375px
+checks, plus component coverage for the toolbar, group card, and filter mapping. Rows stay
+**Partial** where only one route or one side of the state is exercised, or where a surface is
+asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -316,7 +322,7 @@ side of the state is exercised, or where a surface is asserted only outside Play
 | Not found | `/cases/:id`, `/institutions/:id`, `/overlaps/:id`, `/merge-groups/:id`, portal complaint | **Partial** (case detail) |
 | Pagination first/middle/last | Cases, institutions, overlaps, notifications | **Partial** (cases) |
 | Page-size change | Paginated lists | **Partial** (cases + unit) |
-| Filter/search/sort | Cases, institutions, overlaps, reports, audit | **Partial** (cases; sort is reached through `More filters` after Phase 4A) |
+| Filter/search/sort | Cases, institutions, overlaps, reports, audit, notifications | **Partial** (cases; notifications saved views, type, and unread filters covered by Phase 4D) |
 | CSV export | Cases, reports | **Partial** (cases: unchanged full filtered server export plus page-scoped selected-row download; reports remains pending) |
 | Confirmation dialog cancel/confirm | Case actions, merge/revert, admin deactivate | **Partial** (cancel and merge confirm) |
 | Dialog focus trap and return | All dialogs | **Covered** (cancel/confirm focus cycle, Escape, trigger restore) |
@@ -329,6 +335,8 @@ side of the state is exercised, or where a surface is asserted only outside Play
 | Quick create follows signed-in role | Staff shell | **Covered** (admin actions; viewer hides create and role-gated sections) |
 | Mobile drawer open/close and focus return | Staff shell | **Covered** (keyboard open, role-gated destinations, close on navigation, opener focus restored) |
 | Notification bell preview | Staff shell | **Covered** (preview opens, `View all notifications` reaches the centre) |
+| Notification triage toolbar | `/notifications` | **Covered** — named sticky region, saved views, server-backed type/unread filters, announced pressed state, and 375px overflow check |
+| Notification grouping and unread cue | `/notifications` | **Covered** — current-page type groups with counts, row-scoped textual `Unread`, and visible `Open record`/`Mark as read`; verified with fresh and post-mutation read states |
 | Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
 | Profile menu in rail | Staff shell | **Covered** (upward menu, identity/email header, Sign out inside, axe-clean accessible name) |
 | Icon-only collapsed rail | Staff shell | **Covered** (persisted toggle, labelled links/tooltips, no page overflow) |
@@ -390,8 +398,10 @@ shell selectors present, and retired selectors absent. Phase 4B adds the same pr
 overflow observation at desktop and 375px, plus seeded institution reflow at all four widths
 including the representative profile touched by W-10. Phase 4C adds a 375px overflow check for the
 sticky compare header in `overlap-triage.spec.ts`; the shared responsive loop still covers
-`/overlaps` at all four widths. Local screenshots are observation evidence only; the official
-48-baseline refresh stays in Phase 7.
+`/overlaps` at all four widths. Phase 4D adds a 375px toolbar-visibility and overflow check in
+`notification-centre.spec.ts`; the shared responsive loop still covers `/notifications` at all four
+widths. Local screenshots are observation evidence only; the official 48-baseline refresh stays in
+Phase 7.
 
 ## 5. Visual regression baseline set
 
@@ -422,8 +432,9 @@ workspace, and portal dashboard changes. All 48 images were reviewed and committ
 `f882bd1`. Flag-off dispatch `43750576126` verified the same baseline on the same runner
 image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5, 4A, and 4B left these
 committed baselines untouched. Phase 4C also left them untouched, so the `/overlaps` and
-`/overlaps/:id` images now predate the triage toolbar and compare header; the official refresh and
-review remain in Phase 7.
+`/overlaps/:id` images now predate the triage toolbar and compare header. Phase 4D likewise left
+them untouched, so the `/notifications` image now predates the triage toolbar and type groups; the
+official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 
@@ -443,8 +454,9 @@ drawer, and the focusable table scroll region. Keyboard-only passes through filt
 case action panel, overlap merge/revert, and the institution shell are **Deferred**: the
 controls are native buttons, inputs, and the already-covered shared dialog, and API tests
 prove the guarded actions. Phase 4A kept the registry and detail axe scans green after renaming
-the Copy ID control to include its visible text. The open-dialog axe scan and manual
-screen-reader sign-off remain outstanding.
+the Copy ID control to include its visible text. Phase 4D kept the notification route and bell axe
+scans green after adding the named toolbar, grouped sections, and `aria-pressed` unread toggle. The
+open-dialog axe scan and manual screen-reader sign-off remain outstanding.
 
 Step 5 fixed four accessibility defects the scans surfaced: the notification bell's
 accessible name now matches its `99+` badge, case-detail tabs received explicit selected state

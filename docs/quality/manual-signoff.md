@@ -1,7 +1,7 @@
 # CaseSync — Manual QA Sign-off Worksheet
 
 Status: **living worksheet — not yet executed; held until Stage 12 completes.**
-Last updated: 2026-11-21 (Phase 2 review remediation, Phase 3.5 dashboard, Phase 4A cases surfaces, Phase 4B institution profile, and Phase 4C overlap queue implemented and verified; gates still held).
+Last updated: 2026-11-21 (Phase 2 review remediation, Phase 3.5 dashboard, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, and Phase 4D notifications centre implemented and verified; gates still held).
 Owner: QA reviewer (Part B **must** be someone other than the author of the runbook).
 Companions: [`qa-and-review.md`](qa-and-review.md) §14–§15,
 [`accessibility-audit.md`](accessibility-audit.md) §4,
@@ -66,6 +66,7 @@ parts **after** Stage 12 exits, against the Stage 12 build.
 | 2026-11-21 | 82-stop product-owner UI walkthrough completed across all seeded personas on the seeded loopback production build. Ten consolidated findings recorded in [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md); three apply to Phase 4A (W-5 registry table width, W-6 detail header spacing/badges, W-7 resolution-loop centering). Findings were logged, not fixed; this is not an execution of Part A or Part B, and both gates remain held until Stage 12 exits. | — |
 | 2026-11-21 | Stage 12 Phase 4B institution profile implemented and locally verified on loopback Mongo: sticky identity/verification summary, six text-cued health cards from the existing case summary, alias/duplicate context, and cross-bureau history with the existing scoped table and pagination. Role gates, merge selectors, detail API contract, seed data, and visual baselines are unchanged. Walkthrough W-10 closed by tightening representative card heading/body spacing; W-1–W-9 remain recorded. `check:ci` clean, both web typechecks clean, web 80 pass / 0 fail, targeted institution E2E 43/43, and institution responsive reflow 4/4 at 375/768/1024/1440 px. No route, guard, data contract, dependency, visual baseline, push, or deployment changed; both gates remain held until Stage 12 exits. Evidence: `docs/plans/stage-12-phase4b-institution-profile.md` | — |
 | 2026-11-21 | Stage 12 Phase 4C overlap queue and compare view implemented and locally verified on seeded loopback Mongo: sticky triage toolbar, card-level coordination/merge scores with top existing match signals, page-scoped keyboard row selection with guarded confirm/dismiss, and a sticky compare header with identity, case pair, scores, and a jump to the unchanged decision card. Role gates, saved views, pagination, server order, route scope, seed data, and all established mutation selectors are unchanged. `check:ci` clean, both web typechecks clean, web 84 pass / 0 fail, targeted overlap E2E 24/24, overlap smoke 1/1, plus desktop and 375px compare-header overflow checks. No route, guard, data contract, dependency, visual baseline, push, or deployment changed; committed baselines for `/overlaps` and `/overlaps/:id` now predate this slice and stay held for Phase 7 refresh. Evidence: `docs/plans/stage-12-phase4c-overlap-queue.md` | — |
+| 2026-11-21 | Stage 12 Phase 4D notifications centre implemented and locally verified on seeded loopback Mongo: named sticky triage toolbar with saved views, server-backed type/unread filters and announced toggle state, current-page type groups with counts, and textual `Unread` badges with visible deep links and recipient-scoped read actions. `Open record`, `Mark as read`, `Mark all as read`, pagination, query filters, states, role gates, seed data, and the bell's established selectors are unchanged; the bell only shares the grouping helper. `check:ci` clean, both web typechecks clean, web 89 pass / 0 fail, targeted notification E2E 16/16, and a fresh-seed notification spec 1/1, including a 375px toolbar overflow check. No route, guard, data contract, dependency, visual baseline, push, or deployment changed; committed `/notifications` baselines now predate this slice and stay held for Phase 7 refresh. Evidence: `docs/plans/stage-12-phase4d-notifications.md` | — |
 
 Keep this table current: every route/runbook change, reviewer assignment, attempt, and result
 gets a row. When the manual pass is completed, append the result here and flip only the
@@ -135,14 +136,15 @@ Breadth surfaces — **required if present after Stage 12, otherwise N/A with re
 | A11 | `/institution/dashboard` | Approved representative | Representative shell, case table |
 | A12 | `/portal/dashboard` and `/portal/complaints/:id` | Complainant | Public projections, conversation, resolve/reopen |
 | A13 | Command palette on any staff route | All staff roles | Two modes: `Cmd/Ctrl+K` opens a centered modal with focus in its input; clicking the top-bar search keeps the input in the bar and drops results below it. Check dialog/popover labelling, result names, arrow/Home/End/Enter, Escape, focus return to the correct trigger, visible open-state on the search box, role-gated actions, and the two-character content-search threshold. |
-| A14 | Staff shell chrome (rail, top bar, mobile drawer) | All staff roles | Grouped persistent rail with no `More`; active nav state; upward `Account menu, {name}` with identity and Sign out inside; icon-only collapse mode with labelled tooltips; two-zone top bar (left search/context, right scope/Create/Notifications/Theme/mobile); notification preview; thumb-reach drawer and focus return. Confirm no global `Dashboard > …` breadcrumb; nested pages use active rail, page header, and local back links. |
+| A14 | Staff shell chrome (rail, top bar, mobile drawer) | All staff roles | Grouped persistent rail with no `More`; active nav state; upward `Account menu, {name}` with identity and Sign out inside; icon-only collapse mode with labelled tooltips; two-zone top bar (left search/context, right scope/Create/Notifications/Theme/mobile); notification preview still shows type headings, `New`, `Mark all read`, and `View all notifications` with unchanged trigger/focus behavior; thumb-reach drawer and focus return. Confirm no global `Dashboard > …` breadcrumb; nested pages use active rail, page header, and local back links. |
 | A15 | `/dashboard` and `/reports` separation | Officer/admin + all role landings | Dashboard leads with a four-cell operational signal band, the “Needs attention” urgency queue, and a quiet next-moves rail; the queue scrolls within a fixed height and only shows band headings when more than one band has items. Case posture, one overlap/escalation change feed, and a top-3 pressure ranking follow below. The Phase 3 admin hub/health rail remains for admins. It has no Reports filter form, full chart grid, map preview, or export. Reports remains the only analytical workbench. Numbers still reconcile with the API and each other. |
 | A16 | `/portal`, `/portal/login`, `/portal/signup` shell | Anonymous + complainant | Full-height flex shell with footer bottom-anchored on short pages; action-first hero with one dominant CTA and inline track path; no floating footer on login/signup; public projections and privacy unchanged. |
 | A17 | `/cases` | All staff roles | Sticky registry toolbar and search landmark; compact primary filters with `More filters`; removable active chips; comfortable/compact density; page-scoped selection and clearly labeled selected-row CSV; Open/Institution/Copy row actions; table containment and sticky offsets; retained saved views, role-gated register link, and full filtered server export. |
+| A18 | `/notifications` | All staff roles | Named `Notification triage` toolbar below the 64px shell bar; saved views and type/unread filters mapped to existing server parameters; `Unread only` announces pressed state; current-page type groups with counts; textual `Unread` badges distinguish state without colour; `Open record` and `Mark as read` stay visible; exact `N unread` header badge, pagination, and empty/error states remain intact at 375/768/1024/1440 px. |
 
-> A15 lands with Stage 12 Phases 3 and 3.5, A17 lands with Phase 4A, and A16 lands with Phase 6;
-> A6/A7 include Phase 4C refinements to existing routes. Verify them only after those phases are
-> implemented and Stage 12 exits. If Stage 12 adds another
+> A15 lands with Stage 12 Phases 3 and 3.5, A17 lands with Phase 4A, A18 lands with Phase 4D, and
+> A16 lands with Phase 6; A6/A7 include Phase 4C refinements to existing routes. Verify them only
+> after those phases are implemented and Stage 12 exits. If Stage 12 adds another
 > command/search surface, new admin pages, or a new GIS/portal view, add further rows here before
 > executing. Do not skip a new surface because it was not in the Stage 9 inventory.
 
@@ -173,9 +175,9 @@ table containment, reduced motion, and (since Stage 12 Phase 2) text-only 200% z
 `/overlaps`. Manually check only the following:
 
 - [ ] **Page zoom 200%** at a 1280 px viewport (effective ~640 px) on routes A2, A3, A5, A9,
-      A12 and A17: no page-level horizontal overflow, no clipped content, primary actions
-      reachable, tables scroll inside their container, and sticky registry/summary surfaces do not
-      obscure focused controls.
+      A12, A17 and A18: no page-level horizontal overflow, no clipped content, primary actions
+      reachable, tables scroll inside their container, and sticky registry/summary/triage surfaces
+      do not obscure focused controls.
 - [ ] **Text-only zoom 200%** on the same routes: layout holds, labels and buttons do not
       overlap or truncate, focus indicators remain visible.
 - [ ] **Dialogs at 200%** on A5 and A10: full dialog content visible, buttons reachable,
@@ -193,6 +195,7 @@ Record zoom result:
 | A9 `/admin/users` | | | | |
 | A12 portal surfaces | | | N/A | |
 | A17 `/cases` | | | N/A | |
+| A18 `/notifications` | | | N/A | |
 
 ### A.4 Findings and evidence
 

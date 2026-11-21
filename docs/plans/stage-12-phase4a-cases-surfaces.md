@@ -1,8 +1,9 @@
 # CaseSync — Stage 12 Phase 4A: Cases registry and case detail
 
 Status: **IMPLEMENTED and locally verified** 2026-11-18. This is the first implementation slice
-of Phase 4; the institution profile, overlap queue, Reports, Notifications, and Forms work remains
-in later slices. No route, permission, server contract, dependency, or visual baseline changed.
+of Phase 4; the institution profile, overlap queue, and notifications centre were later delivered in
+Phases 4B, 4C, and 4D, while Reports and Forms work remains in later slices. No route, permission,
+server contract, dependency, or visual baseline changed.
 The official 48-baseline refresh, double CI run, and both manual QA gates remain held for the
 Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
@@ -90,9 +91,9 @@ global breadcrumb selectors, and `Current scope` remain absent.
 - **Mutating row actions:** the list payload does not carry the case state needed to reuse
   `useCaseActionOptions`. Row quick actions are navigation and clipboard only; all mutations stay
   in case detail where existing authorization logic can run.
-- **Remaining Phase 4 surfaces at the time of this slice:** institution profile and overlap queue
-  were deferred and later delivered in Phases 4B and 4C; Reports, Notifications, and Forms remain
-  in later slices.
+- **Remaining Phase 4 surfaces at the time of this slice:** institution profile, overlap queue, and
+  notifications centre were deferred and later delivered in Phases 4B, 4C, and 4D; Reports and Forms
+  remain in later slices.
 - **Visual/CI/manual gates:** local screenshots were captured for observation only. Baselines are
   untouched; the official 48-baseline refresh, double CI run, and manual sign-offs remain Phase 7 /
   Stage 12 exit work.
@@ -117,8 +118,8 @@ global breadcrumb selectors, and `Current scope` remain absent.
   `View all notifications`. The only console error was the pre-existing `/favicon.ico` 404.
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred.
-- No routes, permissions, data contracts, dependencies, visual baselines, push, or deployment
-  changed. Phase 4A remains uncommitted pending user authorization.
+- No routes, permissions, data contracts, dependencies, visual baselines, or deployment changed.
+  Phase 4A was committed locally as `fb1223c` and pushed by the user.
 
 ## 6. Documentation impact
 

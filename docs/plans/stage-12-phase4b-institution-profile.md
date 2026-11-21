@@ -1,9 +1,9 @@
 # CaseSync — Stage 12 Phase 4B: Institution profile
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the second implementation slice of
-Phase 4; the overlap queue was later delivered in Phase 4C, while Reports, Notifications, and Forms
-work remains in later slices. No route, permission, server contract, dependency, seed data, or
-visual baseline changed. The official
+Phase 4; the overlap queue was later delivered in Phase 4C and the notifications centre in Phase 4D,
+while Reports and Forms work remains in later slices. No route, permission, server contract,
+dependency, seed data, or visual baseline changed. The official
 48-baseline refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12
 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
@@ -88,8 +88,8 @@ institution`, and the visible alias after a merge. No `data-testid` was added.
 
 ## 4. Deferrals
 
-- **Remaining Phase 4 surfaces:** overlap queue was later delivered in Phase 4C; Reports,
-  Notifications, and Forms are unchanged.
+- **Remaining Phase 4 surfaces:** overlap queue was later delivered in Phase 4C and the
+  notifications centre in Phase 4D; Reports and Forms are unchanged.
 - **Alias change UI:** alias normalization and the admin merge guard remain covered by API
   integration tests; this slice only presents existing aliases and the existing merge form.
 - **Computed health score:** no new score field or server contract was added; the six cards use the
