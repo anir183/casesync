@@ -544,8 +544,9 @@ region chips still apply the same scoped `regionId`; query keys, server scope, e
 the CSV contract are unchanged. No new chart library, map preview, GIS layer, route, permission,
 dashboard filter, or dependency was added. `check:ci`, both web typechecks, web tests 93/0, fresh
 build `492.75 kB / 139.28 kB gzip`, and targeted seeded E2E 12/12 passed; the committed `/reports`
-baselines predate this layout and stay held for Phase 7. Forms remains the only unimplemented
-Phase 4 surface.
+baselines predate this layout and stay held for Phase 7. The slice was pushed as `6ac651a`;
+post-push CI run `44935311824` was red only from stale smoke selectors, which were corrected and
+re-verified with seeded smoke 13/13 locally. Forms remains the only unimplemented Phase 4 surface.
 
 **Exit criteria**
 

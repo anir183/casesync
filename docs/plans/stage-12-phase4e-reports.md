@@ -132,7 +132,16 @@ wrapped in a disclosure, and all report chart captions. No `data-testid` was add
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
   stopped afterward.
 - No routes, permissions, data contracts, dependencies, seed data, visual baselines, or deployment
-  changed. Phase 4E was committed locally and remains unpushed.
+  changed. Phase 4E was committed as `6ac651a` and pushed by the user.
+- Post-push CI run `44935311824` was red because `smoke.spec.ts` still asserted the pre-Phase-3.5
+  dashboard `Total cases` landmark and used a non-exact `PGRC-2026-001` link matcher that became
+  ambiguous after the Phase 4A registry added `Open` and `Institution` links. Both assertions were
+  corrected to the `Operational signals` region and an exact case link; the seeded smoke suite then
+  passed **13 / 13** on loopback Mongo with `ALLOW_REMOTE_MONGO` unset. This was a test-selector
+  correction only, with no product, contract, dependency, or baseline change. At the same check,
+  lint/typecheck, unit/component, production builds, integration/coverage, and dependency audit were
+  green; Visual regression was skipped. Full Chromium E2E was still running and is reviewed before
+  the next phase starts.
 
 ## 6. Documentation impact
 

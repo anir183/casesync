@@ -5,14 +5,14 @@ test.describe('@smoke critical staff smoke journeys', () => {
   test('officer signs in, filters cases and reviews the audit timeline', async ({ page }) => {
     await signIn(page, 'pgrc.officer@casesync.test')
 
-    await expect(page.getByText('Total cases')).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Operational signals' })).toBeVisible()
     await page.getByRole('link', { name: 'Cases', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Case registry' })).toBeVisible()
 
     await page.getByLabel('Search cases').fill('PGRC-2026-001')
     await page.getByRole('button', { name: 'Apply filters' }).click()
     await expect(page).toHaveURL(/q=PGRC-2026-001/)
-    await page.getByRole('link', { name: 'PGRC-2026-001' }).click()
+    await page.getByRole('link', { name: 'PGRC-2026-001', exact: true }).click()
 
     await expect(page.getByRole('heading', { name: 'PGRC-2026-001' })).toBeVisible()
     await expect(page.getByText('Case actions')).toBeVisible()
