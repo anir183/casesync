@@ -26,7 +26,7 @@ test('@a11y chart-heavy routes respect reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await signIn(page, 'admin@casesync.test')
   await page.goto('/dashboard')
-  await expect(page.getByText('Total cases')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Operational signals' })).toBeVisible()
 
   const durations = await page.evaluate(() =>
     Array.from(document.querySelectorAll('[class*="transition"]')).map(

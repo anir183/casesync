@@ -1,10 +1,11 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, and Phase 4D notifications centre implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
 Notifications plan: [`../plans/stage-12-phase4d-notifications.md`](../plans/stage-12-phase4d-notifications.md).
+Reports plan: [`../plans/stage-12-phase4e-reports.md`](../plans/stage-12-phase4e-reports.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -308,9 +309,11 @@ Phase 4C adds `apps/web/e2e/overlap-triage.spec.ts` with queue evidence/keyboard
 guarded queue confirm, and desktop/375px compare-header checks, plus component coverage for the
 triage card, shortcut guards, and compare header. Phase 4D adds
 `apps/web/e2e/notification-centre.spec.ts` with toolbar, grouping, unread-cue, saved-view, and 375px
-checks, plus component coverage for the toolbar, group card, and filter mapping. Rows stay
-**Partial** where only one route or one side of the state is exercised, or where a surface is
-asserted only outside Playwright.
+checks, plus component coverage for the toolbar, group card, and filter mapping. Phase 4E adds
+`apps/web/e2e/reports-workbench.spec.ts` with named workbench, saved-view application, chip removal,
+table-first default, chart-toggle, region-chip, and 375px checks, plus component coverage for the
+toolbar and filter helpers. Rows stay **Partial** where only one route or one side of the state is
+exercised, or where a surface is asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -322,8 +325,8 @@ asserted only outside Playwright.
 | Not found | `/cases/:id`, `/institutions/:id`, `/overlaps/:id`, `/merge-groups/:id`, portal complaint | **Partial** (case detail) |
 | Pagination first/middle/last | Cases, institutions, overlaps, notifications | **Partial** (cases) |
 | Page-size change | Paginated lists | **Partial** (cases + unit) |
-| Filter/search/sort | Cases, institutions, overlaps, reports, audit, notifications | **Partial** (cases; notifications saved views, type, and unread filters covered by Phase 4D) |
-| CSV export | Cases, reports | **Partial** (cases: unchanged full filtered server export plus page-scoped selected-row download; reports remains pending) |
+| Filter/search/sort | Cases, institutions, overlaps, reports, audit, notifications | **Partial** (cases; notifications saved views/type/unread in Phase 4D; reports saved views, six URL filters, and chips in Phase 4E) |
+| CSV export | Cases, reports | **Partial** (cases: unchanged full filtered server export plus page-scoped selected-row download; reports: unchanged same-filter server export and visible button, download contract not asserted in browser) |
 | Confirmation dialog cancel/confirm | Case actions, merge/revert, admin deactivate | **Partial** (cancel and merge confirm) |
 | Dialog focus trap and return | All dialogs | **Covered** (cancel/confirm focus cycle, Escape, trigger restore) |
 | Pending/disabled mutation | All mutation forms | **Partial** (case remark) |
@@ -337,6 +340,7 @@ asserted only outside Playwright.
 | Notification bell preview | Staff shell | **Covered** (preview opens, `View all notifications` reaches the centre) |
 | Notification triage toolbar | `/notifications` | **Covered** — named sticky region, saved views, server-backed type/unread filters, announced pressed state, and 375px overflow check |
 | Notification grouping and unread cue | `/notifications` | **Covered** — current-page type groups with counts, row-scoped textual `Unread`, and visible `Open record`/`Mark as read`; verified with fresh and post-mutation read states |
+| Reports workbench and table-first toggle | `/reports` | **Covered** — sticky `Reports workbench` region, `Reports filters` search landmark, saved views mapped to existing URL filters, removable chips, exact tables before the existing charts, `Tables`/`Charts` toggle, and preserved region chip; 375px overflow check passes |
 | Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
 | Profile menu in rail | Staff shell | **Covered** (upward menu, identity/email header, Sign out inside, axe-clean accessible name) |
 | Icon-only collapsed rail | Staff shell | **Covered** (persisted toggle, labelled links/tooltips, no page overflow) |
@@ -400,8 +404,10 @@ including the representative profile touched by W-10. Phase 4C adds a 375px over
 sticky compare header in `overlap-triage.spec.ts`; the shared responsive loop still covers
 `/overlaps` at all four widths. Phase 4D adds a 375px toolbar-visibility and overflow check in
 `notification-centre.spec.ts`; the shared responsive loop still covers `/notifications` at all four
-widths. Local screenshots are observation evidence only; the official 48-baseline refresh stays in
-Phase 7.
+widths. Phase 4E adds a 375px workbench-visibility and overflow check in
+`reports-workbench.spec.ts`; the shared loop still covers `/reports` at all four widths, including
+the table-first default view. Local screenshots are observation evidence only; the official
+48-baseline refresh stays in Phase 7.
 
 ## 5. Visual regression baseline set
 
@@ -433,8 +439,9 @@ workspace, and portal dashboard changes. All 48 images were reviewed and committ
 image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5, 4A, and 4B left these
 committed baselines untouched. Phase 4C also left them untouched, so the `/overlaps` and
 `/overlaps/:id` images now predate the triage toolbar and compare header. Phase 4D likewise left
-them untouched, so the `/notifications` image now predates the triage toolbar and type groups; the
-official refresh and review remain in Phase 7.
+them untouched, so the `/notifications` image now predates the triage toolbar and type groups.
+Phase 4E likewise left them untouched, so the `/reports` image predates the named workbench and
+table-first default; the official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 

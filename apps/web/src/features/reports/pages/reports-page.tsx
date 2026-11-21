@@ -1,67 +1,27 @@
 import { CASE_STATUS } from '@casesync/config'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { BarChart } from '#/components/charts/bar-chart'
-import { ChartCard } from '#/components/charts/chart-card'
-import { DonutChart } from '#/components/charts/donut-chart'
-import { GaugeChart } from '#/components/charts/gauge-chart'
-import { TrendChart } from '#/components/charts/trend-chart'
 import { PageHeader } from '#/components/shared/page-header'
 import { StatCard } from '#/components/shared/stat-card'
 import { Button } from '#/components/ui/button'
-import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { Input } from '#/components/ui/input'
-import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
+import { Tabs } from '#/components/ui/tabs'
 import { useBureaus, useCategories, useRegions } from '#/features/organization/api'
-import { matchTypeLabel } from '#/features/overlaps/labels'
 import type { GeoRegionRow, ReportFilters } from '#/features/reports/api'
 import { downloadReports, useReports, useReportsGeo } from '#/features/reports/api'
-import { RegionMap } from '#/features/reports/components/region-map'
-import { CountTable, GroupTable } from '#/features/reports/components/report-tables'
+import { ReportCharts } from '#/features/reports/components/report-charts'
+import { ReportControlBand } from '#/features/reports/components/report-control-band'
+import { ReportEvidence } from '#/features/reports/components/report-evidence'
+import {
+  cleanReportFilters,
+  readReportFilters,
+  reportFiltersToParams,
+  titleCase,
+} from '#/features/reports/filters'
+import { REPORT_SAVED_VIEWS, reportViewForFilters } from '#/features/reports/saved-views'
 import { formatDate } from '#/lib/utils'
 
 const STATUS_OPTIONS = Object.values(CASE_STATUS)
-
-function cleanFilters(input: ReportFilters): ReportFilters {
-  return Object.fromEntries(
-    Object.entries(input).filter(([, value]) => Boolean(value)),
-  ) as ReportFilters
-}
-
-function titleCase(value: string) {
-  return value
-    .replace(/_/g, ' ')
-    .toLowerCase()
-    .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())
-}
-
-const REPORT_PARAM_KEYS: Array<keyof ReportFilters> = [
-  'dateFrom',
-  'dateTo',
-  'bureauId',
-  'regionId',
-  'status',
-  'category',
-]
-
-function readReportFilters(params: URLSearchParams): ReportFilters {
-  const filters: ReportFilters = {}
-  for (const key of REPORT_PARAM_KEYS) {
-    const value = params.get(key)
-    if (value) filters[key] = value
-  }
-  return filters
-}
-
-function reportFiltersToParams(filters: ReportFilters): URLSearchParams {
-  const params = new URLSearchParams()
-  for (const key of REPORT_PARAM_KEYS) {
-    const value = filters[key]
-    if (value) params.set(key, value)
-  }
-  return params
-}
 
 export function ReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -85,25 +45,36 @@ export function ReportsPage() {
     setDraft((current) => ({ ...current, [key]: value || undefined }))
   }
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    const nextFilters = cleanFilters(draft)
-    setFilters(nextFilters)
-    setSearchParams(reportFiltersToParams(nextFilters))
-  }
-
-  function handleReset() {
-    setDraft({})
-    setFilters({})
-    setSearchParams(new URLSearchParams())
-    setExportError(undefined)
-  }
-
-  function handleRegionSelect(region: GeoRegionRow) {
-    const nextFilters = { ...filters, regionId: region.regionId }
+  function applyFilterSet(next: ReportFilters) {
+    const nextFilters = cleanReportFilters(next)
     setDraft(nextFilters)
     setFilters(nextFilters)
     setSearchParams(reportFiltersToParams(nextFilters))
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    applyFilterSet(draft)
+  }
+
+  function handleReset() {
+    applyFilterSet({})
+    setExportError(undefined)
+  }
+
+  function handleSavedViewChange(id: string) {
+    const view = REPORT_SAVED_VIEWS.find((candidate) => candidate.id === id)
+    if (view) applyFilterSet(view.filters)
+  }
+
+  function handleFilterRemove(key: keyof ReportFilters) {
+    const next = { ...filters }
+    delete next[key]
+    applyFilterSet(next)
+  }
+
+  function handleRegionSelect(region: GeoRegionRow) {
+    applyFilterSet({ ...filters, regionId: region.regionId })
   }
 
   async function handleExport() {
@@ -120,9 +91,21 @@ export function ReportsPage() {
     }
   }
 
-  const statusData = (data?.byStatus ?? []).map((item) => ({
-    label: titleCase(item.status),
-    value: item.count,
+  const statusOptions = STATUS_OPTIONS.map((status) => ({
+    value: status,
+    label: titleCase(status),
+  }))
+  const bureauOptions = (bureaus ?? []).map((bureau) => ({
+    value: bureau.id,
+    label: bureau.name,
+  }))
+  const regionOptions = (regions ?? []).map((region) => ({
+    value: region.id,
+    label: region.name,
+  }))
+  const categoryOptions = (categories ?? []).map((category) => ({
+    value: category.code,
+    label: category.name,
   }))
 
   return (
@@ -142,90 +125,22 @@ export function ReportsPage() {
         }
       />
 
-      <Card>
-        <CardBody>
-          <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" htmlFor="report-from">
-                Received from
-              </label>
-              <Input
-                id="report-from"
-                type="date"
-                value={draft.dateFrom ?? ''}
-                onChange={(event) => update('dateFrom', event.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" htmlFor="report-to">
-                Received to
-              </label>
-              <Input
-                id="report-to"
-                type="date"
-                value={draft.dateTo ?? ''}
-                onChange={(event) => update('dateTo', event.target.value)}
-              />
-            </div>
-            <Select
-              aria-label="Bureau"
-              value={draft.bureauId ?? ''}
-              onChange={(event) => update('bureauId', event.target.value)}
-            >
-              <option value="">All bureaus/cells</option>
-              {bureaus?.map((bureau) => (
-                <option key={bureau.id} value={bureau.id}>
-                  {bureau.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Region"
-              value={draft.regionId ?? ''}
-              onChange={(event) => update('regionId', event.target.value)}
-            >
-              <option value="">All regions</option>
-              {regions?.map((region) => (
-                <option key={region.id} value={region.id}>
-                  {region.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Status"
-              value={draft.status ?? ''}
-              onChange={(event) => update('status', event.target.value)}
-            >
-              <option value="">All statuses</option>
-              {STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>
-                  {titleCase(status)}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Category"
-              value={draft.category ?? ''}
-              onChange={(event) => update('category', event.target.value)}
-            >
-              <option value="">All categories</option>
-              {categories?.map((category) => (
-                <option key={category.id} value={category.code}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-            <div className="flex gap-2 md:col-span-3">
-              <Button type="submit" size="sm">
-                Apply
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={handleReset}>
-                Reset
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+      <ReportControlBand
+        draft={draft}
+        appliedFilters={filters}
+        activeView={reportViewForFilters(filters)}
+        resultCount={data?.totals.total}
+        isLoading={isLoading}
+        statusOptions={statusOptions}
+        bureauOptions={bureauOptions}
+        regionOptions={regionOptions}
+        categoryOptions={categoryOptions}
+        onDraftChange={update}
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        onSavedViewChange={handleSavedViewChange}
+        onFilterRemove={handleFilterRemove}
+      />
 
       {exportError && <p className="text-sm text-danger-soft-foreground">{exportError}</p>}
       {isError && (
@@ -264,179 +179,30 @@ export function ReportsPage() {
               : ''}
           </p>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <ChartCard
-              title="Received vs disposal actions"
-              description="Monthly volume over the selected range."
-              className="lg:col-span-2"
-            >
-              <TrendChart
-                data={data.monthly.map((item) => ({
-                  label: item.month,
-                  received: item.received,
-                  disposed: item.disposed,
-                }))}
-                caption="Monthly received versus disposal actions"
-              />
-            </ChartCard>
-            <ChartCard title="Status mix" description="Current status distribution.">
-              <DonutChart data={statusData} caption="Cases by status" centerLabel="Cases" />
-            </ChartCard>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            <ChartCard title="Categories" description="Top complaint categories.">
-              <BarChart
-                data={data.byCategory.map((item) => ({
-                  label: titleCase(item.category),
-                  value: item.count,
-                }))}
-                caption="Cases by category"
-              />
-            </ChartCard>
-            <ChartCard title="Pending case ageing" description="Open cases by age band.">
-              <BarChart
-                data={data.ageBuckets.map((item) => ({
-                  label: item.label,
-                  value: item.count,
-                }))}
-                caption="Pending case ageing"
-                color="var(--color-chart-3)"
-              />
-            </ChartCard>
-            <ChartCard title="Disposal rate" description="Disposed cases as a share of the total.">
-              <GaugeChart
-                value={data.totals.disposalRate}
-                label="disposed"
-                caption="Disposal rate"
-                tone={data.totals.disposalRate >= 70 ? 'success' : 'primary'}
-              />
-            </ChartCard>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <ChartCard title="Bureau comparison" description="Volume by bureau or cell.">
-              <BarChart
-                data={data.byBureau.map((item) => ({ label: item.name, value: item.total }))}
-                caption="Cases by bureau"
-              />
-            </ChartCard>
-            <ChartCard title="Region comparison" description="Volume by region.">
-              <BarChart
-                data={data.byRegion.map((item) => ({ label: item.name, value: item.total }))}
-                caption="Cases by region"
-                color="var(--color-chart-2)"
-              />
-            </ChartCard>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            <ChartCard
-              title="Regional pressure"
-              description="Select a region marker or chip to apply the region filter."
-              className="lg:col-span-2"
-            >
-              {geo.isLoading ? (
-                <Skeleton className="h-56 w-full" />
-              ) : geo.data?.regions.length ? (
-                <RegionMap
-                  regions={geo.data.regions}
-                  caption="Regional case pressure"
-                  selectedRegionId={filters.regionId}
-                  onSelect={handleRegionSelect}
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">No mapped regions are in scope.</p>
-              )}
-            </ChartCard>
-            <ChartCard title="Overlap outcomes" description="Relationships by review state.">
-              <DonutChart
-                data={[
-                  { label: 'Pending review', value: data.overlaps.pending },
-                  { label: 'Confirmed', value: data.overlaps.confirmed },
-                  { label: 'Dismissed', value: data.overlaps.dismissed },
-                ]}
-                caption="Overlap review outcomes"
-                centerLabel="Relationships"
-              />
-              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Assessments</p>
-                  <p className="font-semibold">{data.overlaps.assessments}</p>
-                </div>
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Relationships</p>
-                  <p className="font-semibold">{data.overlaps.total}</p>
-                </div>
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Auto-merged</p>
-                  <p className="font-semibold">{data.overlaps.autoMerged}</p>
-                </div>
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Manually merged</p>
-                  <p className="font-semibold">{data.overlaps.manuallyMerged}</p>
-                </div>
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Manual review</p>
-                  <p className="font-semibold">{data.overlaps.manualReview}</p>
-                </div>
-                <div className="rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Reverted</p>
-                  <p className="font-semibold">{data.overlaps.reverted}</p>
-                </div>
-                <div className="col-span-2 rounded-lg bg-muted/60 p-2">
-                  <p className="text-xs text-muted-foreground">Average time to review</p>
-                  <p className="font-semibold">{data.overlaps.averageReviewHours} hours</p>
-                </div>
-              </div>
-            </ChartCard>
-          </div>
-
-          <details className="rounded-xl border border-border bg-card p-4 shadow-card">
-            <summary className="cursor-pointer select-none font-medium">
-              Detailed tables and breakdowns
-            </summary>
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
-              <GroupTable title="Bureau/Cell-wise" rows={data.byBureau} />
-              <GroupTable title="Institution-wise" rows={data.byInstitution} />
-              <GroupTable title="Region-wise" rows={data.byRegion} />
-              <CountTable
-                title="Cases by status"
-                rows={data.byStatus.map((item) => ({
-                  status: titleCase(item.status),
-                  count: item.count,
-                }))}
-                labelKey="status"
-              />
-              <CountTable
-                title="Cases by category"
-                rows={data.byCategory.map((item) => ({
-                  category: titleCase(item.category),
-                  count: item.count,
-                }))}
-                labelKey="category"
-              />
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Overlap match types</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {data.overlaps.byMatchType.length === 0 ? (
-                    <p className="text-muted-foreground">No overlap relationships.</p>
-                  ) : (
-                    data.overlaps.byMatchType.map((item) => (
-                      <div key={item.matchType} className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {matchTypeLabel(item.matchType)}
-                        </span>
-                        <span className="font-medium">{item.count}</span>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </details>
+          <Tabs
+            ariaLabel="Reports views"
+            defaultValue="tables"
+            items={[
+              {
+                id: 'tables',
+                label: 'Tables',
+                content: (
+                  <ReportEvidence
+                    data={data}
+                    geoRegions={geo.data?.regions}
+                    isGeoLoading={geo.isLoading}
+                    selectedRegionId={filters.regionId}
+                    onRegionSelect={handleRegionSelect}
+                  />
+                ),
+              },
+              {
+                id: 'charts',
+                label: 'Charts',
+                content: <ReportCharts data={data} />,
+              },
+            ]}
+          />
         </>
       ) : null}
     </div>

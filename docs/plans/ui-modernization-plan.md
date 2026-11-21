@@ -2,12 +2,14 @@
 
 Status: **Phases 0–3 implemented and verified** 2026-11-18, including the Phase 2 review
 remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 implemented and locally
-verified** as the redesigned Operator Dashboard Experience; **Phase 4A implemented and locally
-verified** for the Cases registry and case detail. The official 48-baseline refresh, double CI,
-and both manual gates remain held for the Phase 7 / Stage 12 exit sweep.
+verified** as the redesigned Operator Dashboard Experience; **Phases 4A–4E implemented and locally
+verified** for cases surfaces, institution profile, overlap queue, notifications centre, and reports
+workbench. The official 48-baseline refresh, double CI, and both manual gates remain held for the
+Phase 7 / Stage 12 exit sweep.
 Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
-[`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md), and
-[`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md).
+[`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md),
+[`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md), and
+[`stage-12-phase4e-reports.md`](stage-12-phase4e-reports.md), with Phase 4B–4D records linked below.
 Phase 0–1 history is retained; the remediation record is kept below for traceability.
 Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
@@ -519,9 +521,9 @@ keyboard row navigation plus guarded confirm/dismiss through the existing dialog
 detail route gains a sticky compare header with identity, scores, case numbers, and a jump to the
 unchanged decision card. Role gates, saved views, pagination, server order, route scope, and all
 established mutation selectors are unchanged. `check:ci`, both web typechecks, web tests 84/0,
-targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Reports and Forms remain in later slices;
-Notifications was later delivered in Phase 4D; visual baselines, double CI, and both manual gates
-remain Phase 7.
+targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Notifications was later delivered in
+Phase 4D and Reports in Phase 4E; Forms remains in a later slice; visual baselines, double CI, and
+both manual gates remain Phase 7.
 
 **Phase 4D implementation record (2026-11-21).** The notifications-centre bullet above is
 implemented and locally verified; see
@@ -531,8 +533,19 @@ unread filters, an announced toggle state, loaded-page type groups with counts, 
 badges. `Open record`, `Mark as read`, `Mark all as read`, pagination, states, query filters, and
 owner-scoped mutations are unchanged; the bell only shares the grouping helper. `check:ci`, both web
 typechecks, web tests 89/0, targeted seeded E2E 16/16, and a fresh-seed notification spec 1/1 passed.
-Reports and Forms remain in later slices; visual baselines, double CI, and both manual gates remain
-Phase 7.
+Reports was later delivered in Phase 4E; Forms remains in a later slice; visual baselines, double CI,
+and both manual gates remain Phase 7.
+
+**Phase 4E implementation record (2026-11-21).** The reports bullet above is implemented and locally
+verified; see [`stage-12-phase4e-reports.md`](stage-12-phase4e-reports.md). `/reports` gains a sticky
+named workbench with saved views mapped to the existing six URL filters, removable active chips,
+table-first exact evidence, and the existing chart panels behind a `Tables` / `Charts` toggle. The
+region chips still apply the same scoped `regionId`; query keys, server scope, export behavior, and
+the CSV contract are unchanged. No new chart library, map preview, GIS layer, route, permission,
+dashboard filter, or dependency was added. `check:ci`, both web typechecks, web tests 93/0, fresh
+build `492.75 kB / 139.28 kB gzip`, and targeted seeded E2E 12/12 passed; the committed `/reports`
+baselines predate this layout and stay held for Phase 7. Forms remains the only unimplemented
+Phase 4 surface.
 
 **Exit criteria**
 
@@ -544,7 +557,7 @@ Phase 7.
 
 Phase 4A satisfies these criteria for the Cases registry and case detail; Phase 4B does so for the
 institution profile; Phase 4C does so for the overlap queue and compare view; Phase 4D does so for
-the notifications centre. Reports and Forms remain unimplemented.
+the notifications centre; Phase 4E does so for the reports workbench. Forms remains unimplemented.
 
 ---
 
@@ -670,7 +683,7 @@ the footer floats mid-screen on landing and login. Both are Phase 6 exit defects
 | Case detail | Long tab set and scattered actions | Sticky summary header, consolidated tabs, primary action bar, overflow for rare actions |
 | Institutions | Functional list/profile | Summary header, health signals, cross-bureau history, merge/alias context |
 | Overlaps | Queue plus detailed compare | Triage-first queue, keyboard shortcuts, score/evidence at a glance |
-| Reports | Long chart page | Sole analytical workbench: saved filters, chart/table toggle, GIS/map, drill-down, export |
+| Reports | Long chart page | Sole analytical workbench: saved filters, table-first evidence, existing charts toggle, same-filter export; full GIS remains Phase 5 |
 | Admin pages | Separate destinations in More | Persistent grouped rail sections now; Phase 3 admin hub adds counts, health, and direct actions |
 | Admin users/org/SLA | Dense forms and tables | Consistent field/table primitives, inline validation, previews, clearer destructive dialogs |
 | Notifications | List with read state | Grouped, filterable notification center; unread obvious by icon + text |

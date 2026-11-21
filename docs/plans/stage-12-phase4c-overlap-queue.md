@@ -1,10 +1,11 @@
 # CaseSync — Stage 12 Phase 4C: Overlap queue and compare view
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the third implementation slice of
-Phase 4; Reports and Forms work remains in later slices, and notifications was later delivered in
-Phase 4D. No route, permission, server contract, dependency, seed data, dashboard filter, chart, map,
-CSV contract, or visual baseline changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain
-held for the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+Phase 4; notifications was later delivered in Phase 4D and Reports in Phase 4E, while Forms work
+remains in a later slice. No route, permission, server contract, dependency, seed data, dashboard
+filter, chart, map, CSV contract, or visual baseline changed. The official 48-baseline refresh,
+double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
+[`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
@@ -89,8 +90,8 @@ titles/labels, and the role-denial copy. No `data-testid` was added.
 
 ## 4. Deferrals
 
-- **Remaining Phase 4 surfaces:** Reports and Forms are unchanged; notifications was later
-  delivered in Phase 4D.
+- **Remaining Phase 4 surfaces:** notifications was later delivered in Phase 4D and Reports in
+  Phase 4E; Forms is unchanged.
 - **Global priority ranking:** the queue still uses the server's existing `createdAt` order; this
   slice does not re-rank across pages or add server preferences.
 - **Cross-page keyboard traversal:** `J`/`K` cycle through the current page only; pagination uses

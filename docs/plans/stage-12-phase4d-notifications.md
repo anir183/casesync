@@ -1,10 +1,11 @@
 # CaseSync — Stage 12 Phase 4D: Notifications centre
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the fourth implementation slice of
-Phase 4; Reports and Forms work remains in later slices. No route, permission, server contract,
-dependency, seed data, dashboard filter, chart, map, CSV contract, or visual baseline changed. The
-official 48-baseline refresh, double CI run, and both manual QA gates remain held for the Phase 7 /
-Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+Phase 4; Reports was later delivered in Phase 4E, while Forms work remains in a later slice. No
+route, permission, server contract, dependency, seed data, dashboard filter, chart, map, CSV
+contract, or visual baseline changed. The official 48-baseline refresh, double CI run, and both
+manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
+[`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
@@ -87,7 +88,7 @@ error copy, `Rows per page`, `Previous`, `Next`, the bell trigger names, `New`, 
 
 ## 4. Deferrals
 
-- **Remaining Phase 4 surfaces:** Reports and Forms are unchanged.
+- **Remaining Phase 4 surfaces:** Reports was later delivered in Phase 4E; Forms is unchanged.
 - **Cross-page grouping:** groups are computed from the current page only; pagination and the
   server's newest-first order are unchanged. The toolbar says so explicitly.
 - **Exact-type saved views:** the server accepts a single `type` value, so saved views do not pretend
@@ -98,9 +99,9 @@ error copy, `Rows per page`, `Previous`, `Next`, the bell trigger names, `New`, 
   filter behavior changed.
 - **Simulation seed:** still blocked pending explicit confirmation of naming, scale, database,
   reset semantics, and actor set. No simulation data was added.
-- **Visual/CI/manual gates:** no baseline refresh, double CI run, manual sign-off, commit, push, or
-  deployment was performed. The committed notification baselines now predate this layout and are
-  intentionally left for the Phase 7 refresh.
+- **Visual/CI/manual gates:** no baseline refresh, double CI run, manual sign-off, or deployment was
+  performed. The committed notification baselines now predate this layout and are intentionally
+  left for the Phase 7 refresh.
 
 ## 5. Verification
 
@@ -119,8 +120,8 @@ error copy, `Rows per page`, `Previous`, `Next`, the bell trigger names, `New`, 
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
   stopped afterward.
-- No routes, permissions, data contracts, dependencies, seed data, visual baselines, push, or
-  deployment changed. Phase 4D was committed locally and has not been pushed.
+- No routes, permissions, data contracts, dependencies, seed data, visual baselines, or deployment
+  changed. Phase 4D was committed as `86def0a` and pushed by the user.
 
 ## 6. Documentation impact
 

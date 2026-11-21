@@ -19,7 +19,7 @@ export function CountTable({
   labelKey: string
 }) {
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -27,7 +27,7 @@ export function CountTable({
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <TableScroll label={title}>
+          <TableScroll label={title} className="min-w-0">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
@@ -53,7 +53,7 @@ export function CountTable({
 
 export function GroupTable({ title, rows }: { title: string; rows: ReportGroupRow[] }) {
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -61,7 +61,7 @@ export function GroupTable({ title, rows }: { title: string; rows: ReportGroupRo
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          <TableScroll label={title}>
+          <TableScroll label={title} className="min-w-0">
             <table className="w-full min-w-[360px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border">
