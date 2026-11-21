@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-18 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign and Phase 4A cases surfaces implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, and Phase 4B institution profile implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -83,7 +83,7 @@ the public sign-up API.
 | `/cases/:id` | Scoped staff | Covered | Covered | Covered | Deferred | Covered | **Partial** |
 | `/institutions` | All staff roles | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions/new` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Deferred | N/A | **Partial** |
-| `/institutions/:id` | Scoped staff | Covered | Covered | Covered | Deferred | Covered | **Partial** |
+| `/institutions/:id` | Scoped staff | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/institutions/:id/edit` | `ADMIN`, `BUREAU_OFFICER`, `REGIONAL_OFFICER` | Covered | Covered | Covered | Deferred | N/A | **Partial** |
 | `/overlaps` | Staff with overlap access | Covered | Covered | Covered | Covered | Covered | **Covered** |
 | `/overlaps/:id` | Staff with overlap access | Covered | Covered | Covered | Deferred | Covered | **Partial** |
@@ -128,10 +128,10 @@ institution dashboard, case list, and profile, plus `/portal/track` and
 `/portal/dashboard`) and by the reports/navigation specs.
 
 Responsive rows marked **Deferred** share a layout family already sampled at all four
-widths: the centered auth card, the portal form/detail card, the staff form page, the
-admin list shell, or the institution detail card. The browser pass samples each family
-rather than every URL. Reopen a deferred row if that route gains a distinct layout or a
-reported reflow defect.
+widths: the centered auth card, the portal form/detail card, the staff form page, and the
+admin list shell. The browser pass samples each family rather than every URL. Institution
+detail was reopened in Phase 4B and is now sampled directly at all four widths; reopen any
+other deferred row if that route gains a distinct layout or a reported reflow defect.
 
 **Visual** cells marked N/A are outside the agreed 12-route subset. The subset is chosen
 for stable, high-traffic layouts, not for exhaustive screen capture.
@@ -298,9 +298,11 @@ product-owner review then reopened Phase 2 for profile-menu, grouped/collapsible
 dual-command-mode, two-zone top-bar, and no-breadcrumb remediation; those rows are now
 **Covered** by the verified remediation. Stage 12 Phase 4A adds
 `apps/web/e2e/cases-registry.spec.ts` with four cases-surface checks (chip removal, density
-persistence, page-scoped selected-row export, and tab/action-panel behavior). Rows stay
-**Partial** where only one route or one side of the state is exercised, or where a surface is
-asserted only outside Playwright.
+persistence, page-scoped selected-row export, and tab/action-panel behavior). Phase 4B adds
+`apps/web/e2e/institution-profile.spec.ts` with profile landmarks and 375px overflow checks,
+plus component coverage for the sticky summary, health cues, alias context, and bureau grouping.
+Rows stay **Partial** where only one route or one side of the state is exercised, or where a
+surface is asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -339,6 +341,8 @@ asserted only outside Playwright.
 | Case row quick actions | `/cases` | **Covered** — labelled Open/Institution links and Copy ID button are component-tested, clipboard feedback is announced, and the accessible name includes the visible text (`Copy ID for <caseNumber>`) to satisfy axe |
 | Cases registry density, page selection, and selected-row export | `/cases` | **Covered** — client-only `casesync:cases:density` preference persists without URL changes; indeterminate/select-all and row selection are page-scoped; selected-row CSV download is clearly labeled and RFC 4180 escaped while the full filtered server export is unchanged |
 | Case detail sticky summary, tabs, and action controls | `/cases/:id` | **Covered** — shared `Tabs` roles/names/arrow keys, sticky summary at 64px after scroll, `Case controls` action bar sourced from `useCaseActionOptions`, and secondary actions return to the unchanged `#case-actions` panel; smoke/states selectors updated from `button` to `tab`. Seeded 375/768/1024/1440 px light/dark observation found no document overflow |
+| Institution profile summary, health, aliases, and history | `/institutions/:id` | **Covered** — sticky identity/verification summary preserves role-gated quick actions and all merge selectors; six existing-summary health cards use text cues; aliases are a labelled duplicate-context list; scoped compact case table sits in `Institution case history` with unchanged pagination. Component and seeded E2E checks pass, including desktop/375px overflow |
+| Representative institution card spacing | `/institution/profile` | **Covered** — W-10 closed by tightening card header/body padding without changing labels or form fields; seeded responsive reflow passes at 375/768/1024/1440 px |
 | Bulk case assignment | `/cases` | **Deferred** — no bulk-assignment server contract exists; page selection is export-only |
 | Mutating row actions | `/cases` | **Deferred** — list data cannot safely reuse `useCaseActionOptions`; all mutations remain in case detail with existing role/transition authorization |
 | Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
@@ -378,7 +382,9 @@ share one of these layout families; add a row only when a route introduces a new
 
 Phase 4A adds seeded DOM/metric observation of `/cases` and `/cases/:id` at 375/768/1024/1440 px
 in light and dark: zero document-level overflow, sticky toolbar/summary settling at 64px, required
-shell selectors present, and retired selectors absent. Local screenshots are observation evidence
+shell selectors present, and retired selectors absent. Phase 4B adds the same profile-landmark and
+overflow observation at desktop and 375px, plus seeded institution reflow at all four widths
+including the representative profile touched by W-10. Local screenshots are observation evidence
 only; the official 48-baseline refresh stays in Phase 7.
 
 ## 5. Visual regression baseline set
@@ -408,8 +414,8 @@ The visual set was regenerated on the pinned CI image on 2026-11-15 (run `437489
 `ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4), after the Stage 9 Phase 3 dashboard, case
 workspace, and portal dashboard changes. All 48 images were reviewed and committed in
 `f882bd1`. Flag-off dispatch `43750576126` verified the same baseline on the same runner
-image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5 and 4A left these committed
-baselines untouched; the official refresh and review remain in Phase 7.
+image on 2026-11-16; Stage 10 exited on that run. Stage 12 Phases 3.5, 4A, and 4B left these
+committed baselines untouched; the official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 

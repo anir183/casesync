@@ -9,7 +9,7 @@ Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 - **Plan date:** 2026-11-18
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 3.5 — Operator dashboard experience (complete)
-- **Successor:** remaining Stage 12 Phase 4 surfaces
+- **Successor:** Stage 12 Phase 4B — Institution profile
 - **Manual gates:** both remain held until Stage 12 exits; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
@@ -130,4 +130,6 @@ global breadcrumb selectors, and `Current scope` remain absent.
 - [`../quality/phase4a-ui-walkthrough-findings.md`](../quality/phase4a-ui-walkthrough-findings.md):
   82-stop product-owner UI walkthrough consolidated. Findings W-5 (registry table width), W-6
   (detail header spacing/badges), and W-7 (resolution-loop centering) apply to this slice; W-1–W-4,
-  W-8, W-9, and W-10 belong to other surfaces. Findings were recorded, not fixed.
+  W-8, W-9, and W-10 belong to other surfaces. Findings were recorded, not fixed in Phase 4A.
+   W-10 was later folded into Phase 4B and is closed; see
+   [`stage-12-phase4b-institution-profile.md`](stage-12-phase4b-institution-profile.md).

@@ -40,7 +40,7 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
 | W-7 | Case detail resolution loop | 11, 23, 34, 39, 44, 53, 62 — seven staff personas, including viewer | Step text is not centered; in step 6 `Reopen` and `Optional` wrap so `Optional` sits under the label instead of being centered. | Center step number and label on both axes; treat `Optional` as a centered sublabel. | Seven-column grid with `152px` items; item 6 `textAlign=start`, `align-items=normal`; `6Reopen` at `x=1095,y=438,w=130,h=20`, `Optional` at `x=1095,y=462,w=130,h=16`. | P3 | Open |
 | W-8 | Staff `Create` menu | 18, 30, 41, 49, 58 — admin, senior, PGRC, RB, regional | `Quick create` opens over the `+ Create` button rather than below it. Reviewer noted functionality is unaffected. | Anchor below the trigger with a small gap, or use collision-aware placement. | Button `x=1168,y=13,w=91,h=38,bottom=51`; menu `x=1035,y=17,w=224,h=82,bottom=99` (senior menu `bottom=63`). | P3 | Open |
 | W-9 | Dashboard urgency queue | 42, 51, 60 — RB officer, regional officer, viewer | Empty/small `… rows` panes still capture the wheel when content fits, so hovering and scrolling does not move the page. Reviewer noted it also applies to the prior account and suggested letting the page scroll when the pane has nothing to scroll. | Capture wheel only when the pane actually overflows; otherwise let the event bubble. | Panes report `clientHeight=scrollHeight` with `overflow-y:auto` and `overscroll-behavior-y:contain`: bureau queue `327/327` (document `scrollHeight=1060`, viewport `951`, `scrollY=109` unchanged after wheel), regional transfer queue `231/231` (`scrollY=0` unchanged), viewer read-only queue `275/275` (`scrollY=57` unchanged). Same component appears on other staff dashboards. | P2 | Open |
-| W-10 | Institution profile cards | 78, 80 — approved and pending representatives | Noticeable empty space between card headings (`Access status`, `Institution`, `Account details`) and their content; reviewer asked to reduce it and reaffirmed it on the pending profile. | Tighten heading-to-content spacing while keeping readable card padding. | Approved profile gaps `18px`, `12px`, `12px`; pending profile gaps `18px`, `12px`, `38px`; wrappers compute `padding:20px 20px 12px`. | P3 | Open |
+| W-10 | Institution profile cards | 78, 80 — approved and pending representatives | Noticeable empty space between card headings (`Access status`, `Institution`, `Account details`) and their content; reviewer asked to reduce it and reaffirmed it on the pending profile. | Tighten heading-to-content spacing while keeping readable card padding. | Approved profile gaps `18px`, `12px`, `12px`; pending profile gaps `18px`, `12px`, `38px`; wrappers compute `padding:20px 20px 12px`. | P3 | Closed in Phase 4B — header/body padding tightened; responsive checks pass at 375/768/1024/1440 px |
 
 ## 3. Checked with no additional findings
 
@@ -62,7 +62,7 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
 ## 4. Scope notes
 
 - W-1 through W-4 and W-8 belong to earlier shell/portal phases; W-5 through W-7 belong to the
-  Phase 4A cases surfaces; W-9 belongs to Phase 3.5 dashboards; W-10 belongs to the later
-  institution-profile slice. No fix is authorized by this record.
+  Phase 4A cases surfaces; W-9 belongs to Phase 3.5 dashboards. W-10 was folded into the Phase 4B
+  institution-profile slice and is closed; no other fix is authorized by this record.
 - This review does not close either manual gate in [`manual-signoff.md`](manual-signoff.md), does
   not refresh visual baselines, and does not authorize a commit, push, or deployment.

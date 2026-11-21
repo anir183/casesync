@@ -60,11 +60,11 @@ function StatusCard({ profile }: { profile: RepresentativeProfile }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 pb-1">
         <CardTitle className="text-base">Access status</CardTitle>
         <Badge variant={status.variant}>{status.label}</Badge>
       </CardHeader>
-      <CardBody className="space-y-2 text-sm">
+      <CardBody className="space-y-2 pt-2 text-sm">
         <p>{status.message}</p>
         {profile.requestedAt && (
           <p className="text-muted-foreground">
@@ -153,10 +153,10 @@ export function InstitutionProfilePage() {
       <StatusCard profile={data} />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle className="text-base">Institution</CardTitle>
         </CardHeader>
-        <CardBody className="space-y-2 text-sm">
+        <CardBody className="space-y-2 pt-2 text-sm">
           <p className="font-medium">{data.institutionName ?? 'Not assigned'}</p>
           <p className="text-muted-foreground">
             Multiple representatives may be attached to one institution. One representative account
@@ -166,7 +166,7 @@ export function InstitutionProfilePage() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle className="text-base">Account details</CardTitle>
           {!approved && (
             <p className="text-sm text-muted-foreground">
@@ -174,7 +174,7 @@ export function InstitutionProfilePage() {
             </p>
           )}
         </CardHeader>
-        <CardBody>
+        <CardBody className="pt-2">
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <FieldLabel htmlFor="representative-profile-name">Full name</FieldLabel>

@@ -919,13 +919,25 @@ record and the UI test matrix. An 82-stop product-owner UI walkthrough was conso
 and W-7 (resolution-loop centering) apply here and were recorded, not fixed. Visual baselines,
 double CI, and manual gates remain deferred.
 
+**Phase 4B — Institution profile is implemented and locally verified.** Full implementation record:
+`docs/plans/stage-12-phase4b-institution-profile.md`. `bun run check:ci` and both web typechecks
+passed; web tests are 80 pass / 0 fail. Targeted seeded loopback E2E passed 43/43 across the new
+profile spec, institution render/deny routes, axe scans, and verify/merge mutations; institution
+responsive reflow passed 4/4 at 375/768/1024/1440 px. The sticky summary, text-cued health signals,
+alias context, and cross-bureau history reuse the existing detail contract and role gates. W-10 was
+closed on the representative profile cards; W-1–W-9 remain recorded. No route, permission, server
+contract, dependency, seed data, or visual baseline changed; baselines, double CI, and manual gates
+remain deferred.
+
 - [x] Cases registry: sticky toolbar, saved views, compact primary filters with `More filters`,
       active filter chips, density, non-mutating row quick actions, and page-scoped multi-select
       client-side export. Bulk assignment is deferred: no bulk-assignment server contract exists.
 - [x] Case detail: sticky summary header, shared `Tabs` semantics for the five existing sections,
       primary `Case controls` action bar with secondary overflow, and grouped readable timeline.
-- [ ] Institution profile: summary header, health signals, cross-bureau history, merge/alias
-      context.
+- [x] Institution profile: sticky summary header, text-cued health signals, alias/duplicate
+      context, cross-bureau history with scoped compact table and preserved pagination, and
+      unchanged role-gated quick actions and admin merge flow. W-10 representative card spacing
+      closed; implementation record: `docs/plans/stage-12-phase4b-institution-profile.md`.
 - [ ] Overlap queue: triage-first layout, keyboard next/previous/confirm/dismiss, visible
       score/evidence, clear compare view.
 - [ ] Reports: saved filters, chart/table toggle, fewer default charts, drill-down.

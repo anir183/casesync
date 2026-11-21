@@ -2,32 +2,24 @@ import { PAGINATION, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ConfirmDialog } from '#/components/shared/confirm-dialog'
-import { PageHeader } from '#/components/shared/page-header'
-import { Pagination } from '#/components/shared/pagination'
-import { Badge } from '#/components/ui/badge'
-import { Button, buttonVariants } from '#/components/ui/button'
+import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
-import { CaseTable } from '#/features/cases/components/case-table'
 import {
   useInstitution,
   useInstitutions,
   useMergeInstitution,
   useUpdateInstitution,
 } from '#/features/institutions/api'
+import { InstitutionDetailHeader } from '#/features/institutions/components/institution-detail-header'
+import {
+  InstitutionCaseHistory,
+  InstitutionHealthSignals,
+  InstitutionIdentityCard,
+} from '#/features/institutions/components/institution-detail-sections'
 import { useCurrentUser } from '#/lib/session'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
-import { formatDate } from '#/lib/utils'
-
-function DetailRow({ label, value }: { label: string; value?: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-1.5 text-sm">
-      <span className="shrink-0 text-muted-foreground">{label}</span>
-      <span className="text-right">{value ?? '—'}</span>
-    </div>
-  )
-}
 
 function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
   const [query, setQuery] = useState('')
@@ -181,119 +173,29 @@ export function InstitutionDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <Link
-          to="/institutions"
-          className="text-sm text-muted-foreground underline underline-offset-4"
-        >
-          ← Back to institutions
-        </Link>
-        <PageHeader
-          title={institution.name}
-          description={
-            <div className="space-y-1">
-              <div>
-                <Badge variant={institution.verified ? 'success' : 'warning'}>
-                  {institution.verified ? 'Verified' : 'Unverified'}
-                </Badge>
-              </div>
-              <p>Consolidated complaint history across all Bureaus and Cells.</p>
-            </div>
-          }
-          actions={
-            <>
-              {canWrite && (
-                <Link
-                  to={`/institutions/${institution.id}/edit`}
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                >
-                  Edit institution
-                </Link>
-              )}
-              {canWrite && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleVerified}
-                  disabled={updateInstitution.isPending}
-                >
-                  {updateInstitution.isPending
-                    ? 'Saving...'
-                    : institution.verified
-                      ? 'Mark unverified'
-                      : 'Mark verified'}
-                </Button>
-              )}
-              {canRegister && (
-                <Link
-                  to={`/cases/new?institutionId=${institution.id}`}
-                  className={buttonVariants({ size: 'sm' })}
-                >
-                  Register case
-                </Link>
-              )}
-            </>
-          }
-        />
-        {feedback && <p className="text-sm text-success">{feedback}</p>}
-        {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Institution profile</CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border">
-            <DetailRow label="AICTE permanent ID" value={institution.aictePermanentId} />
-            <DetailRow
-              label="Aliases"
-              value={institution.aliases?.length ? institution.aliases.join(', ') : undefined}
-            />
-            <DetailRow label="Address" value={institution.address} />
-            <DetailRow label="Region" value={institution.regionName} />
-            <DetailRow label="Created" value={formatDate(institution.createdAt)} />
-            <DetailRow label="Updated" value={formatDate(institution.updatedAt)} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Case summary</CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-border">
-            <DetailRow label="Total cases" value={summary.total} />
-            <DetailRow label="Open" value={summary.open} />
-            <DetailRow label="Disposed" value={summary.disposed} />
-            <DetailRow label="Beyond timeline" value={summary.beyondTimelines} />
-            <DetailRow label="Reopened" value={summary.reopened} />
-            <DetailRow label="Unassigned" value={summary.unassigned} />
-          </CardContent>
-        </Card>
-      </div>
-
-      {user?.role === ROLES.ADMIN && <InstitutionMergePanel institutionId={institution.id} />}
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-2">
-          <CardTitle>All cases</CardTitle>
-          <span className="text-sm text-muted-foreground">{total} total</span>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <CaseTable cases={cases} />
-          {total > 0 && (
-            <Pagination
-              page={data.page}
-              pageSize={data.pageSize}
-              total={total}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size)
-                setPage(PAGINATION.DEFAULT_PAGE)
-              }}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <InstitutionDetailHeader
+        institution={institution}
+        canWrite={canWrite}
+        canRegister={canRegister}
+        isUpdating={updateInstitution.isPending}
+        onToggleVerified={toggleVerified}
+      />
+      {feedback && <p className="text-sm text-success">{feedback}</p>}
+      {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
+      <InstitutionHealthSignals summary={summary} total={total} />
+      <InstitutionIdentityCard institution={institution} />
+      {user?.role === ROLES.ADMIN ? <InstitutionMergePanel institutionId={institution.id} /> : null}
+      <InstitutionCaseHistory
+        cases={cases}
+        total={total}
+        page={data.page}
+        pageSize={data.pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setPage(PAGINATION.DEFAULT_PAGE)
+        }}
+      />
     </div>
   )
 }

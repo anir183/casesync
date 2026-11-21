@@ -14,6 +14,7 @@ const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase trac
 export interface CaseTableProps {
   cases: CaseListItem[]
   density?: CaseDensity
+  label?: string
   selectedIds?: ReadonlySet<string>
   onToggleCase?: (id: string, selected: boolean) => void
   onTogglePage?: (selected: boolean) => void
@@ -22,6 +23,7 @@ export interface CaseTableProps {
 export function CaseTable({
   cases,
   density = 'comfortable',
+  label = 'Case registry table',
   selectedIds,
   onToggleCase,
   onTogglePage,
@@ -54,7 +56,7 @@ export function CaseTable({
 
   return (
     <>
-      <TableScroll label="Case registry table" data-density={density}>
+      <TableScroll label={label} data-density={density}>
         <table className="w-full min-w-[1280px] border-collapse text-left">
           <thead>
             <tr className="border-b border-border">
