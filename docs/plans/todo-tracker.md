@@ -1,6 +1,6 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget).
+**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
@@ -1064,22 +1064,35 @@ URL filter, payload, role gate, seed file, dependency, CSV contract, visual base
 `data-testid` changed. The official 48-baseline refresh, double full CI run, both manual gates, and
 push remain held. Implementation record: `docs/plans/stage-12-phase5-gis.md`.
 
-### Phase 6 — Portal landing and public experience
+### Phase 6 — Portal landing and public experience (implemented and locally verified 2026-11-22)
 
 - [x] Make `PortalLayout` a full-height flex column with `main` as `flex-1`; the footer sits
       at the bottom on landing, login, and signup and long pages still scroll normally. Closed in
-      W-A; the remaining portal hero work stays in this phase.
-- [ ] Rebuild `/portal` with a focused hero, one supporting sentence, and one dominant
+      W-A and re-verified here with a landing-page footer geometry check.
+- [x] Rebuild `/portal` with a focused hero, one supporting sentence, and one dominant
       primary action plus a track path; replace the current card-plus-explanation layout.
-- [ ] Put an inline track form above the fold.
-- [ ] Add a three-step visual flow, trust/privacy strip, and concise FAQ.
-- [ ] Replace long explanatory cards with concise feature rows and progressive disclosure.
-- [ ] Keep public projections/privacy unchanged; keep staff sign-in out of the primary path.
-- [ ] Align portal sign-in/signup/dashboard/detail with the staff visual language without
-      exposing staff navigation.
-- [ ] Add a clear verification-status explanation and next action.
-- [ ] Verify 375/768/1024/1440 px, axe, and footer placement on landing/login/signup; the
+- [x] Put an inline track form above the fold; `/portal` and `/portal/track` share one
+      `TrackComplaintForm` and the same `/public/track` request.
+- [x] Add a three-step visual flow, trust/privacy strip, and native `<details>` FAQ.
+- [x] Replace long explanatory cards with concise feature rows and progressive disclosure.
+- [x] Keep public projections/privacy unchanged; keep staff sign-in out of the primary path
+      (footer only) and preserve the asserted landing/track strings.
+- [x] Align portal sign-in/signup/dashboard/detail with the staff visual language without
+      exposing staff navigation; add a quiet public context panel to the auth screens.
+- [x] Add a clear verification-status explanation and next action on the dashboard, verification
+      screen, and complaint detail.
+- [x] Verify 375/768/1024/1440 px, axe, and footer placement on landing/login/signup; the
       footer is never mid-content on a short page.
+
+Implementation note: `bun run check:ci`, both web typechecks, web 104 pass / 0 fail, targeted
+seeded loopback E2E 107/107 in two targeted runs (81/81 portal shell, portal, responsive,
+accessibility; 26/26 portal auth, states, presentation fixes), and a fresh web build
+(`493.07 kB / 139.45 kB gzip` main chunk; lazy map chunk unchanged) passed. Signup spacing was
+tightened to restore the 900 px footer anchor. No route, permission, server contract, query key,
+URL filter, payload, role gate, seed/CSV, dependency, visual baseline, `data-testid`, push, or
+deployment changed. The pushed Phase 5 CI run `45007487981` was red for the signup height (fixed
+here) and an order-dependent auto-merged overlap fixture in `presentation-fixes.spec.ts`; that
+fixture remains a separate test-isolation follow-up. Both manual gates remain held.
 
 ### Phase 7 — Motion, accessibility, performance, and coverage refresh
 

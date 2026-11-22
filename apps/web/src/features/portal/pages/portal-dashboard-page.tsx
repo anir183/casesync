@@ -1,3 +1,4 @@
+import { BadgeCheck, CircleAlert, ClipboardList } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
@@ -40,21 +41,23 @@ export function PortalDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="My complaints"
-        description={`Welcome back, ${user?.name ?? 'complainant'}.`}
-        actions={
-          verified ? (
-            <Link to="/portal/complaints/new" className={buttonVariants()}>
-              File a complaint
-            </Link>
-          ) : (
-            <Link to="/portal/verification" className={buttonVariants()}>
-              Verify to file a complaint
-            </Link>
-          )
-        }
-      />
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <PageHeader
+          title="My complaints"
+          description={`Welcome back, ${user?.name ?? 'complainant'}.`}
+          actions={
+            verified ? (
+              <Link to="/portal/complaints/new" className={buttonVariants()}>
+                File a complaint
+              </Link>
+            ) : (
+              <Link to="/portal/verification" className={buttonVariants()}>
+                Verify to file a complaint
+              </Link>
+            )
+          }
+        />
+      </div>
 
       {profile.error && (
         <p className="text-sm text-danger">
@@ -63,9 +66,12 @@ export function PortalDashboardPage() {
       )}
 
       {profile.data && !verified && (
-        <Card>
+        <Card className="border-warning/40 bg-warning-soft/30">
           <CardHeader>
-            <CardTitle className="text-base">Institution verification required</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CircleAlert aria-hidden className="h-4 w-4 text-warning-soft-foreground" />
+              Institution verification required
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
@@ -75,7 +81,13 @@ export function PortalDashboardPage() {
                 : ' No institution has been selected yet.'}
             </p>
             <p>You can only file a complaint after your institution is verified.</p>
-            <Link to="/portal/verification" className="inline-block underline underline-offset-4">
+            <p className="font-medium text-foreground">
+              Next step: complete verification, then return here to file your complaint.
+            </p>
+            <Link
+              to="/portal/verification"
+              className="inline-flex min-h-9 items-center underline underline-offset-4"
+            >
               Continue verification
             </Link>
           </CardContent>
@@ -83,15 +95,22 @@ export function PortalDashboardPage() {
       )}
 
       {profile.data && verified && (
-        <p className="text-sm text-muted-foreground">
-          Verified institution:{' '}
-          <span className="font-medium text-foreground">{profile.data.institutionName}</span>
-        </p>
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-success/30 bg-success-soft/40 px-3 py-2 text-sm">
+          <BadgeCheck aria-hidden className="h-4 w-4 text-success" />
+          <span className="text-muted-foreground">
+            Verified institution:{' '}
+            <span className="font-medium text-foreground">{profile.data.institutionName}</span>
+          </span>
+          <span className="ml-auto text-xs font-medium text-success">Ready to file</span>
+        </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Your next step</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ClipboardList aria-hidden className="h-4 w-4 text-primary" />
+            Your next step
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {complaints.isLoading && (

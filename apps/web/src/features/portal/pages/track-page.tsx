@@ -1,38 +1,13 @@
-import { type FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
-import { Button } from '#/components/ui/button'
-import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { Input } from '#/components/ui/input'
-import { FieldLabel } from '#/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import type { ComplaintDetail } from '#/features/portal/api'
 import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
-import { apiClient } from '#/lib/api-client'
+import { TrackComplaintForm } from '#/features/portal/components/track-complaint-form'
 
 export function TrackPage() {
-  const [caseNumber, setCaseNumber] = useState('')
-  const [email, setEmail] = useState('')
   const [result, setResult] = useState<ComplaintDetail | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    setError(null)
-    setResult(null)
-    setLoading(true)
-    try {
-      const data = await apiClient.post<ComplaintDetail>('/public/track', {
-        caseNumber: caseNumber.trim(),
-        email: email.trim(),
-      })
-      setResult(data)
-    } catch {
-      setError('No complaint matches that number and email address.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -42,36 +17,9 @@ export function TrackPage() {
       />
 
       <Card>
-        <CardBody>
-          <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="track-number">Complaint number</FieldLabel>
-              <Input
-                id="track-number"
-                required
-                placeholder="CMP-2026-000001"
-                value={caseNumber}
-                onChange={(event) => setCaseNumber(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="track-email">Email address</FieldLabel>
-              <Input
-                id="track-email"
-                type="email"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Checking...' : 'Track complaint'}
-              </Button>
-            </div>
-          </form>
-          {error && <p className="mt-4 text-sm text-danger">{error}</p>}
-        </CardBody>
+        <div className="p-5">
+          <TrackComplaintForm idPrefix="track" onTracked={setResult} />
+        </div>
       </Card>
 
       {result && (

@@ -1,4 +1,5 @@
 import { COMPLAINT } from '@casesync/config'
+import { ArrowRight } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
@@ -17,6 +18,19 @@ import {
   useUploadComplaintAttachment,
 } from '#/features/portal/api'
 import { ComplaintStatusBadge } from '#/features/portal/components/complaint-status-badge'
+
+function nextStepFor(status: string) {
+  switch (status) {
+    case 'AWAITING_COMPLAINANT':
+      return 'Next step: respond to the information request in Messages.'
+    case 'DISPOSED':
+      return 'Next step: review the resolution, then accept it or request a reopen.'
+    case 'CLOSED':
+      return 'No action is needed while this complaint remains closed.'
+    default:
+      return 'Next step: the case team is reviewing. Public updates will appear here.'
+  }
+}
 
 export function PortalComplaintDetailPage() {
   const { id = '' } = useParams()
@@ -91,19 +105,26 @@ export function PortalComplaintDetailPage() {
       <Link to="/portal/dashboard" className="text-sm underline underline-offset-4">
         Back to my complaints
       </Link>
-      <PageHeader
-        title={item.subject ?? 'Complaint'}
-        description={
-          <>
-            <p className="font-mono text-xs">{item.caseNumber}</p>
-            <p>
-              {item.institutionName ?? 'Institution'} · Submitted{' '}
-              {new Date(item.submittedAt).toLocaleDateString()}
-            </p>
-          </>
-        }
-        actions={<ComplaintStatusBadge status={item.status} label={item.statusLabel} />}
-      />
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <PageHeader
+          title={item.subject ?? 'Complaint'}
+          description={
+            <>
+              <p className="font-mono text-xs">{item.caseNumber}</p>
+              <p>
+                {item.institutionName ?? 'Institution'} · Submitted{' '}
+                {new Date(item.submittedAt).toLocaleDateString()}
+              </p>
+            </>
+          }
+          actions={<ComplaintStatusBadge status={item.status} label={item.statusLabel} />}
+        />
+      </div>
+
+      <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium">
+        <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-primary" />
+        {nextStepFor(item.status)}
+      </div>
 
       <ResolutionLoop
         audience="complainant"

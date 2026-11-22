@@ -80,7 +80,8 @@ Counts are for the desktop project unless noted.
 | `institution-profile.spec.ts` | — | 1 | Profile landmarks and desktop/375px overflow | Institution profile presentation changes |
 | `merge.spec.ts` | `@mutation` | 1 | Auto-merged overlap group is visible and reverts to human review | Overlap merge/revert changes |
 | `overlap-triage.spec.ts` | — | 3 | Queue evidence, active-row keyboard movement, guarded queue confirm, read-only gating, and desktop/375px compare header | Overlap queue or compare presentation changes |
-| `portal.spec.ts` | `@mutation` | 2 | End-to-end portal filing, conversation, resolve/accept; mismatched tracking denial | Portal journey or public tracking changes |
+| `portal.spec.ts` | `@mutation` | 3 | End-to-end portal filing, conversation, resolve/accept; mismatched tracking denial; landing tracker uses the same privacy-preserving response | Portal journey or public tracking changes |
+| `portal-shell.spec.ts` | — | 8 | Footer anchoring on short anonymous/complainant pages, current-auth header links, landing action/tracker above the fold, footer-only staff sign-in, and FAQ disclosure | Portal shell, landing, auth, or footer presentation changes |
 | `performance.spec.ts` | `@performance` | 1 | Dashboard, list, report, and detail budgets under stress data | Before demos/releases; never in the normal suite |
 | `visual.spec.ts` | `@visual` | 24 per visual project (48 total) | 12 routes × light/dark at 1440 px and 375 px | Intentional visual changes and release gates |
 

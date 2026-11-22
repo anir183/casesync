@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { ArrowRight } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
@@ -9,6 +10,19 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { FieldLabel, Textarea } from '#/components/ui/textarea'
 import { portalKeys, usePortalProfile, usePublicInstitutions } from '#/features/portal/api'
 import { apiClient } from '#/lib/api-client'
+
+function nextActionFor(status: string | undefined) {
+  switch (status) {
+    case 'VERIFIED':
+      return 'Next step: your account is ready. File a complaint from your dashboard.'
+    case 'PENDING_REVIEW':
+      return 'Next step: wait for the administrator decision. We will notify you when it changes.'
+    case 'REJECTED':
+      return 'Next step: review the rejection reason and submit a new verification request below.'
+    default:
+      return 'Next step: enter an exact AICTE permanent ID or upload a supporting document below.'
+  }
+}
 
 export function PortalVerificationPage() {
   const profile = usePortalProfile()
@@ -125,6 +139,10 @@ export function PortalVerificationPage() {
                 Your note: {profile.data.latestVerification.note}
               </p>
             )}
+            <p className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 font-medium text-foreground">
+              <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-primary" />
+              {nextActionFor(status)}
+            </p>
           </CardContent>
         </Card>
       )}

@@ -116,4 +116,16 @@ test.describe('@mutation public complainant portal', () => {
       page.getByText('No complaint matches that number and email address.'),
     ).toBeVisible()
   })
+
+  test('the landing tracker uses the same privacy-preserving response', async ({ page }) => {
+    await page.goto('/portal')
+    const panel = page.locator('#track-complaint')
+    const form = panel.getByRole('form', { name: 'Track complaint' })
+    await form.getByLabel('Complaint number').fill('CMP-2026-999999')
+    await form.getByLabel('Email address').fill('unknown@example.com')
+    await form.getByRole('button', { name: 'Track complaint' }).click()
+    await expect(
+      panel.getByText('No complaint matches that number and email address.'),
+    ).toBeVisible()
+  })
 })

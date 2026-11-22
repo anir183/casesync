@@ -64,6 +64,13 @@ test.describe('@responsive portal reflow', () => {
     test(`portal routes reflow at ${width}px without page overflow`, async ({ page }) => {
       test.setTimeout(180_000)
       await page.setViewportSize({ width, height })
+      await page.goto('/portal')
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Raise a concern. Follow it to resolution.' }),
+      ).toBeVisible()
+      await page.waitForLoadState('networkidle')
+      expect(await documentOverflow(page), `portal landing at ${width}px`).toBeLessThanOrEqual(1)
+
       await page.goto('/portal/track')
       await expect(page.getByRole('heading', { name: 'Track a complaint' })).toBeVisible()
       expect(await documentOverflow(page), `portal track at ${width}px`).toBeLessThanOrEqual(1)

@@ -380,7 +380,7 @@ asserted only outside Playwright.
 | Overlap compare summary | `/overlaps/:id` | **Covered** — sticky `Overlap comparison` header keeps identity, badges, case numbers, scores, and assessment view visible; `Go to review decision` reaches the unchanged `#overlap-decision` card only where allowed; desktop and 375px overflow checks pass without touching `Assessment summary` or action selectors |
 | Bulk case assignment | `/cases` | **Deferred** — no bulk-assignment server contract exists; page selection is export-only |
 | Mutating row actions | `/cases` | **Deferred** — list data cannot safely reuse `useCaseActionOptions`; all mutations remain in case detail with existing role/transition authorization |
-| Portal full-height shell and current-auth links | `/portal/login`, `/portal/signup`, `/portal/track`, `/portal/dashboard`, `/portal/verification` | **Partial** — W-1–W-4 footer geometry covered at 1440×900 for anonymous and complainant pages, and desktop/mobile header links omit the current auth screen; action-first hero remains Phase 6 |
+| Portal full-height shell, landing, and current-auth links | `/portal`, `/portal/login`, `/portal/signup`, `/portal/track`, `/portal/dashboard`, `/portal/verification`, `/portal/complaints/:id` | **Covered** — W-1–W-4 footer geometry at 1440×900; Phase 6 checks primary action/inline tracker above the fold at 375 and 1440 px, landing footer placement, native FAQ disclosure, footer-only staff sign-in, shared tracker error, auth context, and explicit status next actions; desktop/mobile headers omit the current auth screen |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
 | Consolidated case timeline | `/cases/:id` | **Covered** — action + assignment history in one Timeline tab; Phase 4A groups append-only entries by day with time, actor, transitions, and remarks under the named `Case action history` list |
 | Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |
@@ -405,9 +405,9 @@ first had just applied. `Pagination` now delegates the page reset to
 
 `apps/web/e2e/responsive.spec.ts` asserts document-level overflow at all four widths for
 the staff dashboard, cases, institutions, overlaps, reports, notifications, and admin
-users routes, the institution dashboard, case list, and profile, plus `/portal/track` and
-`/portal/dashboard`. It also proves tables scroll inside their container rather than the
-page (including the institution representatives queue), page and text-only 200% zoom
+users routes, the institution dashboard, case list, and profile, plus `/portal`,
+`/portal/track`, and `/portal/dashboard`. It also proves tables scroll inside their container rather
+than the page (including the institution representatives queue), page and text-only 200% zoom
 reflow (including `/overlaps`), and reduced-motion transition collapse.
 `navigation.spec.ts` covers the rail at 375/768/1024/1440 px, active destination, grouped
 no-More rail, persisted icon-only collapse, profile menu, both command modes, quick-create/scope

@@ -677,6 +677,15 @@ the footer floats mid-screen on landing and login. Both are Phase 6 exit defects
 - The landing page passes axe, contrast, responsive, and reduced-motion checks.
 - Portal E2E and ownership/denial coverage still pass.
 
+**Completion note (2026-11-22).** `/portal` now leads with the `AICTE public complaints` eyebrow,
+one headline, one supporting sentence, and one dominant action, followed immediately by the inline
+track form. The three-step flow, privacy strip, and native `<details>` FAQ replace the old
+explanatory cards. `TrackComplaintForm` is shared with the unchanged `/portal/track` route and
+keeps the exact privacy-preserving error; staff sign-in remains footer-only. Login/signup use a
+quiet public context panel, and dashboard/verification/detail add explicit next actions. Verified
+with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 in two runs, and a fresh build;
+the committed visual baselines were not touched and remain a Phase 7 refresh.
+
 ---
 
 ### Phase 7 — Motion, accessibility, performance, and coverage refresh
