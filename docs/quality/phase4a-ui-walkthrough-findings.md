@@ -2,7 +2,8 @@
 
 Status: **consolidated 2026-11-21; all findings remediated or verified by 2026-11-22.** W-10 closed
 in Phase 4B; W-1–W-3 closed and W-4 verified in W-A portal-shell remediation; W-6–W-9 closed in W-B
-staff-presentation remediation; W-5 closed in the registry presentation remediation. This is a
+staff-presentation remediation; W-5 closed in the registry presentation remediation. A fresh
+simulation-layer rewalk on 2026-11-22 found no regressions or new findings; see §8. This is a
 product-owner screen-by-screen UI review, not the independent manual sign-off in
 [`manual-signoff.md`](manual-signoff.md). Both manual gates remain held until Stage 12 exits.
 
@@ -134,3 +135,49 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
   registry E2E passed 5/5; fresh build is `492.96 kB / 139.41 kB gzip`, below the documented
   guardrail. No route, permission, contract, payload, validation rule, dependency, seed data, visual
   baseline, dashboard filter, chart/map behavior, CSV contract, push, or deployment changed.
+
+## 8. Fresh simulation-layer rewalk (2026-11-22)
+
+A pre-baseline rewalk used the production web build on `127.0.0.1:4173` against the API on
+`localhost:3000` and a locally seeded `127.0.0.1:27019/casesync_e2e` database with
+`ALLOW_REMOTE_MONGO` unset. Eleven isolated browser contexts covered anonymous, complainant,
+admin, senior management, competent authority, PGRC, RB, regional, viewer, approved representative,
+and pending representative personas. No visual baseline file was opened for update, no pixel
+comparison was accepted, and no application code changed.
+
+**Recorded findings rechecked; no regressions.**
+
+- W-1–W-4: `/portal/track`, `/portal/login`, and `/portal/signup` footers bottom-anchor at 900 px
+  at 375/768/1024/1440 px; taller 375 px signup scrolls normally (`scrollHeight=1116`). Header
+  links hide only the action for the current auth screen at every width. The asserted strings
+  `AICTE public complaints`, `Complainant sign in`, `Create a complainant account`,
+  `Track a complaint`, `Track complaint`, and `No complaint matches that number and email address.`
+  remain present in their expected screens.
+- W-5: `/cases` region `clientWidth=1083`, `scrollWidth=1617`, overflow hint visible. After
+  `scrollLeft=300`, the selection and case-number cells stayed at `x=285`/`x=333` with sticky
+  offsets `0`/`48px`, while the third cell moved `509 → 209`; document overflow stayed false.
+- W-6/W-7: the sticky case header starts at the staff gutter (`main x=240`, back link `x=288`,
+  inner padding `24px`) with compact local badge padding `0 8px`, `26px` height. All seven
+  lifecycle steps are centered, including centered `Optional` sublabels.
+- W-8: `Create` trigger bottom `51px`, dropdown top `55px`; panel opens below the trigger.
+- W-9: a 352 px queue pane reported `clientHeight=scrollHeight` with `overscroll-behavior-y:auto`;
+  a wheel over it moved the page `0 → 500`.
+- W-10: representative profile heading-to-content gaps were `10px`, `4px`, and `4px`.
+
+**Phase claims sampled.** Reports showed the existing `Tables`/`Charts` workbench, filters, and
+schematic-map notice. The overlap compare route kept its case pair and review decision. Admin
+surfaces showed 5 audit rows, 3 SLA job runs (one synthetic failure), and the pending
+`sim.pending.complainant@casesync.test` verification. The complainant dashboard showed all three
+`SIM-PUB-2026-*` cases; public detail and valid tracking showed public updates only, while PGRC
+staff saw the internal note and internal attachment and the representative shell showed the public
+reply plus its privacy notice. Role-scoped notifications showed the expected regional overdue,
+senior/competent escalation, PGRC SLA/overlap, and complainant status messages. Pending
+representative routes redirected to `/institution/profile` with `Awaiting review`; the viewer
+account menu and command palette offered no `New case` or `New institution`.
+
+A 48-check sweep (12 routes at 375/1440 px in light/dark) found no document overflow, missing main
+landmark, or sign-out. Reduced-motion emulation reduced sampled transition/animation durations to
+`1e-05s`. No new console errors appeared; the recurring warning was the existing React Router
+future-flag notice. An intentionally invalid public-track lookup produced the expected 404 and the
+asserted no-match message. These observations are local evidence only: visual baselines, two full
+Chromium runs, the held manual gates, push, and deployment remain unchanged and unauthorized.

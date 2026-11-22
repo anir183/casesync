@@ -9,6 +9,8 @@
     "seed": "bun run --filter @casesync/api seed",
     "seed:demo": "bun run --filter @casesync/api seed:demo",
     "seed:reset": "bun run --filter @casesync/api seed:reset",
+    "seed:simulation": "bun run --filter @casesync/api seed:simulation",
+    "seed:simulation:reset": "bun run --filter @casesync/api seed:simulation:reset",
     "build": "bun run --filter @casesync/api build && bun run --filter @casesync/web build",
     "lint": "biome check .",
     "format": "biome format --write .",

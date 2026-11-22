@@ -1158,13 +1158,48 @@ and simulation boundary, the demo script's SLA-notification wording and simulati
 and the tracker's latest implementation evidence. No application code, seed data, test
 fixture, visual baseline, CI gate, push, or deployment changed in this reconciliation.
 
+Implementation note (production-like simulation seed, 2026-11-22): added a separate
+`seed:simulation` layer over the unchanged `seed:demo` dataset. It uses stable `SIM-`
+case numbers and hashed simulation IDs, and adds 3 public cases, 18 messages, 13 actions,
+3 assignments, 3 attachments, 1 confirmed coordination-only overlap, 15 per-user
+notifications, 5 marked audit entries, 3 SLA job runs, 1 pending document-review request,
+and 1 pending complainant account. `seed:simulation:reset` removes only simulation-owned
+records and restores demo `lastActionAt` values. On a disposable `127.0.0.1:27019/casesync_e2e`
+database, two consecutive `seed:simulation` runs produced identical counts (3 cases,
+18 messages, 15 simulation notifications, 3 job runs, 5 audit entries) with no duplicates;
+guarded reset then removed all simulation records while leaving 14 demo cases, 62 demo
+actions, 13 assignments, and 7 relationships intact. A subsequent non-interactive
+`seed:simulation:reset` without `SEED_RESET_CONFIRM=YES` exited 1 with the standard guard message
+and left the seeded data intact. `bun run verify` was clean (`check:ci`, three typechecks, API
+121 pass / 74 skip, web 105 pass / 0 fail, fresh build `493.42 kB / 139.49 kB gzip`). No route,
+permission, server contract, query key, URL parameter, payload, dashboard filter, `seed:demo`
+fixture, visual baseline, `data-testid`, push, or deployment changed. This is locally verified
+only; the held gates remain held.
+
+Pre-baseline UI rewalk note (2026-11-22): the production web build was rewalked on a fresh
+`seed:simulation` dataset over loopback Mongo with `ALLOW_REMOTE_MONGO` unset. Eleven isolated
+persona contexts rechecked W-1–W-10, the asserted public strings, the simulation cross-account
+stories, privacy projections, role-gated menus, reports, overlaps, and admin history. A 48-check
+sweep (12 routes at 375/1440 px in light/dark) found no document overflow or missing landmarks;
+reduced-motion emulation collapsed sampled durations; no new console errors appeared. No new UI
+finding or code change resulted, and no baseline was accepted or refreshed. Evidence:
+`docs/quality/phase4a-ui-walkthrough-findings.md` §8. The held gates remain held.
+
+Authorized Atlas seed note (2026-11-22): with explicit user authorization, `bun run seed:simulation`
+was run once against the credentialed `casesync-mumbai.iriccmf.mongodb.net` target from the ignored
+`.env` file. No reset was run, `ALLOW_REMOTE_MONGO` stayed unset, and no URI or secret was recorded.
+The command completed with demo counts `Institutions: 8, cases: 14, overlaps: 7, SLA configs: 5`
+and simulation counts `Cases: 3, messages: 18, notifications: 15, SLA job runs: 3, audit entries: 5`.
+This is a remote data-population action only; it does not satisfy CI, visual, Chromium, manual,
+push, or deployment gates.
+
 Bounded next steps:
 - [x] Reconcile contributor/agent documentation and current seed/demo evidence.
-- [ ] Implement a separate, idempotent production-like simulation seed with pre-seeded
+- [x] Implement a separate, idempotent production-like simulation seed with pre-seeded
       cross-account messages, escalations, SLA history, overlap decisions, verification,
       audit/job history, and matching reset support; keep `seed:demo` and test fixtures stable.
-- [ ] Re-walk the recorded UI findings and phase claims against a fresh seeded build before
-      accepting visual baselines.
+- [x] Re-walk the recorded UI findings and phase claims against a fresh seeded build before
+      accepting visual baselines; no new finding or code change resulted.
 - [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
       two visual passes, two dedicated full Chromium runs, manual gates, then deployment.
 

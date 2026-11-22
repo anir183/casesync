@@ -4,6 +4,7 @@ import { connectDb } from '#/db/connection'
 import { seedDemoData } from '#/seed/demo-seed'
 import { SEED_PASSWORD, seedMasters } from '#/seed/masters'
 import { resetDemoData } from '#/seed/reset'
+import { resetSimulationData, seedSimulationData } from '#/seed/simulation-seed'
 import { resetStressData, seedStressData } from '#/seed/stress'
 
 function hasFlag(name: string) {
@@ -51,7 +52,7 @@ async function confirmReset() {
   }
   const rl = createInterface({ input: process.stdin, output: process.stdout })
   const answer = await rl.question(
-    `Reset CaseSync demo data on ${targetLabel(env.MONGODB_URI)}? Type RESET to continue: `,
+    `Reset CaseSync seed-owned data on ${targetLabel(env.MONGODB_URI)}? Type RESET to continue: `,
   )
   rl.close()
   if (answer.trim() !== 'RESET') throw new Error('Reset cancelled.')
@@ -61,9 +62,11 @@ async function main() {
   assertSeedAllowed()
   const stress = hasFlag('--stress')
   const stressReset = hasFlag('--stress-reset')
-  const demo = hasFlag('--demo') || hasFlag('--reset')
+  const simulation = hasFlag('--simulation')
+  const simulationReset = hasFlag('--simulation-reset')
+  const demo = hasFlag('--demo') || hasFlag('--reset') || simulation
   const reset = hasFlag('--reset')
-  if (reset) await confirmReset()
+  if (reset || simulationReset) await confirmReset()
 
   await connectDb()
   console.log(`Seeding ${targetLabel(env.MONGODB_URI)}`)
@@ -72,6 +75,12 @@ async function main() {
     const removed = await resetStressData()
     console.log(
       `Stress reset complete. Removed ${removed.cases} cases from ${removed.institutions} institutions.`,
+    )
+  }
+  if (simulationReset) {
+    const removed = await resetSimulationData()
+    console.log(
+      `Simulation reset complete. Removed ${removed.cases} cases, ${removed.messages} messages, and ${removed.notifications} notifications.`,
     )
   }
   if (stress) {
@@ -92,16 +101,24 @@ async function main() {
     console.log(
       `Demo seed complete. Institutions: ${counts.institutions}, cases: ${counts.cases}, overlaps: ${counts.relationships}, SLA configs: ${counts.slaConfigs}. Anchor: ${now.toISOString()}.`,
     )
+    if (simulation) {
+      const simulationCounts = await seedSimulationData(masters, now)
+      console.log(
+        `Simulation seed complete. Cases: ${simulationCounts.cases}, messages: ${simulationCounts.messages}, notifications: ${simulationCounts.notifications}, SLA job runs: ${simulationCounts.jobRuns}, audit entries: ${simulationCounts.auditEntries}. Anchor: ${now.toISOString()}.`,
+      )
+    }
   }
   console.log(
     `Master seed complete. Staff users: 7, complainant users: 1, representatives: 2. Password: ${SEED_PASSWORD}`,
   )
+}
 
+try {
+  await main()
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error)
+  process.exitCode = 1
+} finally {
   const { default: mongoose } = await import('mongoose')
   await mongoose.disconnect()
 }
-
-await main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error)
-  process.exitCode = 1
-})

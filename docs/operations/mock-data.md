@@ -16,6 +16,8 @@ bun run seed:demo   # masters + users + full demo dataset (idempotent, additive)
 bun run seed:reset  # delete demo-owned records, then run the demo seed
 bun run seed:stress # 60 STRESS- institutions + 5,000 cases (STRESS_CASES overrides)
 bun run seed:stress:reset # remove only stress-owned records
+bun run seed:simulation # demo seed + production-like cross-account simulation layer
+bun run seed:simulation:reset # remove only simulation-owned records
 ```
 
 `seed:demo` upserts by stable natural keys and can be run repeatedly without duplicates.
@@ -23,11 +25,18 @@ bun run seed:stress:reset # remove only stress-owned records
 relationships, assessments, actions, assignments, demo SLA configs, and notifications
 linked to demo cases. It reseeds immediately after reset.
 
+`seed:simulation` runs the unchanged `seed:demo` first, then adds an idempotent
+production-like layer on top. The simulation layer resets its own records before each
+run, so repeated invocations do not duplicate conversations, history, or notifications.
+`seed:simulation:reset` removes only simulation-owned records and restores demo case
+`lastActionAt` values; it leaves the demo/E2E dataset intact.
+
 Safety guards:
 
 - Any seed in production requires `ALLOW_SEED=true`.
 - Production reset additionally requires `ALLOW_SEED_RESET=true`.
-- Non-interactive reset requires `SEED_RESET_CONFIRM=YES`.
+- Non-interactive reset requires `SEED_RESET_CONFIRM=YES`; this also applies to
+  `seed:simulation:reset`.
 - The script prints the target Atlas host/database (redacted) before writing.
 - `seed:stress` is deterministic and uses `STRESS-` / `AICTE-STRESS-` prefixes;
   `seed:stress:reset` removes only stress-owned cases, actions, assignments,
@@ -131,8 +140,9 @@ live scan or the manual `/admin/sla` trigger.
 **Simulation boundary.** `seed:demo` is the deterministic functional demo/E2E
 dataset. It does not create public `case_messages`, attachments, audit-log
 entries, job-run history, pending verification requests, or SLA notification
-history. A separate production-like simulation seed remains planned so full
-cross-account histories can be presented without changing this test-facing seed.
+history. Those are added only by `seed:simulation`; see
+[Production-like simulation layer](#7-production-like-simulation-layer). The
+functional seed and integration fixtures remain unchanged.
 
 ## 5. Demo overlaps
 
@@ -160,13 +170,56 @@ enriches the assessment. The seed does not call the real Jev provider.
 while new cases derive deadlines from these rules. Dashboard/report “beyond timeline”
 uses the same shared calculation as the SLA scan.
 
-## 7. Local caveat
+## 7. Production-like simulation layer
+
+`bun run seed:simulation` is the full-prototype demo seed. It runs `seed:demo`
+unchanged, then adds a separate simulation layer with stable `SIM-` case numbers
+and deterministic `simulationId()` keys. Use it only for local/disposable demo
+databases. It adds no routes, permissions, API contracts, query parameters,
+payloads, dashboard filters, or visual baselines.
+
+| Area | What it adds |
+|---|---|
+| Public complaints | 3 `SIM-PUB-2026-*` cases at `dit`: information requested and overdue, resolution available, and accepted/closed |
+| Conversation | 18 `case_messages` across public and internal visibility, including complainant, staff, representative, and system authors |
+| History | 13 case actions, 3 assignments, and one confirmed coordination-only overlap linking a simulation complaint to `PGRC-2026-001` |
+| Documents | 3 synthetic `text/plain` attachments under the simulation-owned attachment directory |
+| Notifications | 15 per-user notifications with `periodKey: SIMULATION`, covering acknowledgement, messages, status/resolution/closure, escalation, SLA, verification, and overlap |
+| Admin context | 5 audit entries marked `metadata.simulation: true` and 3 `SLA_SCAN` job runs (two successful, one synthetic failure) |
+| Verification | One pending document-review request and one pending complainant account, `sim.pending.complainant@casesync.test` |
+
+All simulation users use the same `Passw0rd!123` default as the demo seed.
+The account-by-account story map is also exported as `SIMULATION_ACCOUNTS` for
+fixture tests and documentation:
+
+| Account | Story |
+|---|---|
+| `admin@casesync.test` | Audit trail, job runs, verification queue, and overlap notifications |
+| `senior@casesync.test` | Escalation review, internal notes, and deadline notifications |
+| `competent@casesync.test` | Escalation decision and disposal review |
+| `pgrc.officer@casesync.test` | Public replies, internal notes, SLA alerts, and overlap coordination |
+| `rb.officer@casesync.test` | Cross-bureau history, escalation, and resolution messages |
+| `regional.north@casesync.test` | Region-scoped overdue notification on a north-region case |
+| `viewer@casesync.test` | Read-only audit and registry view with no mutation actions |
+| `complainant@casesync.test` | Three public complaints: info requested, resolution available, and closed |
+| `representative@casesync.test` | Institution-scoped public replies and evidence on Delhi Institute cases |
+| `sim.pending.complainant@casesync.test` | Pending verification request for the admin review queue |
+| `pending.representative@casesync.test` | Access-gated representative profile state; no privileged case access |
+
+`bun run seed:simulation:reset` removes simulation cases, messages, actions,
+assignments, attachments, relationships, notifications, audit entries, job
+runs, the pending verification request/account, and synthetic attachment files.
+It restores demo case `lastActionAt` values and never truncates collections.
+Like the other reset commands, non-interactive use requires
+`SEED_RESET_CONFIRM=YES`.
+
+## 8. Local caveat
 
 The Atlas database may also contain manual or older demo records. Query by the documented
 natural keys before presenting. Do not treat arbitrary records in the database as
 fixtures.
 
-## 8. Test fixtures
+## 9. Test fixtures
 
 Integration tests do not use the demo seed. They create run-scoped users, regions,
 bureaus, institutions, and cases with a unique `RUN_ID`, and clean up by ID/email because

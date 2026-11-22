@@ -11,7 +11,9 @@
     "seed:reset": "bun run src/seed.ts --reset",
     "test": "bun test",
     "seed:stress": "bun run src/seed.ts --stress",
-    "seed:stress:reset": "bun run src/seed.ts --stress-reset"
+    "seed:stress:reset": "bun run src/seed.ts --stress-reset",
+    "seed:simulation": "bun run src/seed.ts --simulation",
+    "seed:simulation:reset": "bun run src/seed.ts --simulation-reset"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",

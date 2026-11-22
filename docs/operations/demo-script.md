@@ -33,7 +33,10 @@ All sections below are demoable; do not fake missing behaviour.
 - API and web running; database reachable; `JEV_ENABLED` set as intended.
 - Run `bun run seed:demo`. It idempotently creates masters, 7 staff users, the verified
   demo complainant, 8 institutions, 14 staff cases, 7 overlap scenarios, related
-  history, notifications, and 5 SLA configs.
+  history, notifications, and 5 SLA configs. For a fully populated cross-account
+  rehearsal, run `bun run seed:simulation` instead; it runs the same demo seed and
+  then adds pre-seeded conversations, SLA/audit/job history, and a pending
+  verification request without changing the functional seed.
 - Portal credentials: `complainant@casesync.test` / `Passw0rd!123` (linked to `dit`).
 - Optional release rehearsal: `bun run verify && bun run test:e2e && bun run test:perf`
   (performance uses 5,000 stress cases and resets them automatically).
@@ -146,14 +149,35 @@ All sections below are demoable; do not fake missing behaviour.
 - For CI/E2E, use run-scoped fixtures (as the integration suite does) and do not reset the
   demo database from tests.
 
-### 3.1 Simulation boundary
+### 3.1 Production-like simulation walkthrough
 
-This script is a repeatable demo walkthrough, not a pre-seeded production-like
-simulation. The seed does not create `case_messages`, attachments, audit-log
-entries, job-run history, pending verification requests, or SLA notification
-history; those are demonstrated live or produced by the SLA job. A separate,
-idempotent simulation seed is the planned way to present fully populated
-cross-account histories without changing the E2E seed contract.
+`bun run seed:simulation` is idempotent and uses stable `SIM-` keys. It runs the
+unchanged demo seed first, then adds pre-seeded data on top. Use a disposable
+local database. `bun run seed:simulation:reset` removes only the simulation
+layer and restores demo `lastActionAt` values; non-interactive reset still needs
+`SEED_RESET_CONFIRM=YES`.
+
+A short cross-account rehearsal:
+
+1. As `complainant@casesync.test`, open `/portal/dashboard`. Show three public
+   complaints at DIT: `SIM-PUB-2026-001` (information requested and overdue),
+   `SIM-PUB-2026-002` (resolution available), and `SIM-PUB-2026-003` (accepted
+   and closed). Compare the public conversation with the status timeline.
+2. As `pgrc.officer@casesync.test`, open `SIM-PUB-2026-001`. Show the public
+   thread, the internal ledger note that stays out of the portal, the synthetic
+   bank-reference attachment, and the overdue notification in the bell.
+3. As `representative@casesync.test`, open the institution shell and show the
+   DIT public reply and refund evidence; internal notes remain absent.
+4. As `admin@casesync.test`, show the pending document-review request for
+   `sim.pending.complainant@casesync.test`, the marked audit entries, three
+   `SLA_SCAN` job runs, and the confirmed coordination-only overlap with
+   `PGRC-2026-001`. No case was merged or deleted.
+5. As `senior@casesync.test` and `regional.north@casesync.test`, show the
+   escalation and region-scoped SLA notifications created for the simulation.
+
+This layer is for presentation only. The `seed:demo` records and integration
+fixtures are unchanged, and no product contract or visual baseline changes with
+this command.
 
 ## 4. Acceptance checklist for the demo seed
 

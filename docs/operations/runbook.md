@@ -1,9 +1,9 @@
 # CaseSync — Operations Runbook
 
 Status: Stage 7–9 runbook (Stage 9 Phases 0–6 implemented; Phase 5 CI-confirmed) plus
-Stage 10 UI coverage commands, local-first MongoDB target isolation, and the Stage 12
-Phase 4A local verification record.
-Last verified: 2026-11-21.
+Stage 10 UI coverage commands, local-first MongoDB target isolation, the Stage 12
+Phase 4A local verification record, and the separate simulation seed.
+Last verified: 2026-11-22.
 Companions: [`backup-and-retention.md`](backup-and-retention.md),
 [`mock-data.md`](mock-data.md), [`demo-script.md`](demo-script.md).
 
@@ -66,11 +66,18 @@ bun run seed:demo         # idempotent full demo dataset
 bun run seed:reset        # guarded demo-only reset, then reseed
 bun run seed:stress       # 60 institutions + 5,000 cases (STRESS_CASES overrides)
 bun run seed:stress:reset # remove stress-owned cases/institutions
+bun run seed:simulation   # demo seed + production-like cross-account layer
+bun run seed:simulation:reset # remove only simulation-owned records
 ```
 
 Production writes require `ALLOW_SEED=true`; production reset also requires
-`ALLOW_SEED_RESET=true`. Non-interactive reset requires `SEED_RESET_CONFIRM=YES`.
-Stress records use `STRESS-` / `AICTE-STRESS-` prefixes and are safe to remove.
+`ALLOW_SEED_RESET=true`. Non-interactive reset requires `SEED_RESET_CONFIRM=YES`;
+this includes `seed:simulation:reset`. Stress records use `STRESS-` /
+`AICTE-STRESS-` prefixes and are safe to remove. `seed:simulation` runs the
+unchanged demo seed, then adds a separate idempotent layer with `SIM-` cases,
+conversations, SLA/audit/job history, a pending verification request, and
+per-user notifications. Its reset removes only those owned records. See
+[`mock-data.md`](mock-data.md) §7 for the exact dataset and account stories.
 
 The demo seed includes a verified complainant: `complainant@casesync.test` /
 `Passw0rd!123`, linked to the `dit` institution. It also seeds auto-merged,

@@ -72,6 +72,8 @@ bun run test:e2e:spec <paths>  # targeted seeded specs
 bun run test:e2e:visual        # 48 pinned visual comparisons
 bun run seed:demo
 bun run seed:reset
+bun run seed:simulation       # demo + production-like cross-account layer
+bun run seed:simulation:reset # simulation-owned records only
 bun run seed:stress
 bun run seed:stress:reset
 bun run test:perf              # local-only stress/perf suite with automatic reset
@@ -136,9 +138,11 @@ observed result and cite the evidence.
 
 - `seed:demo` is the deterministic functional demo/E2E seed. Keep it stable; many tests depend on it.
 - Integration tests use run-scoped fixtures and must not reuse demo ObjectIds or emails.
-- A full production-like simulation seed remains a separate planned task. It should be
-  idempotent, local/disposable, and should not change product contracts or test isolation.
-- Any new seeded collection must have matching reset support.
+- `seed:simulation` is a separate idempotent, local/disposable layer over `seed:demo`.
+  It adds pre-seeded conversations, SLA/audit/job history, verification, and
+  cross-account notifications without changing product contracts or test isolation.
+- Any new seeded collection must have matching reset support; use
+  `seed:simulation:reset` for simulation-owned records.
 
 ## 11. Current high-level status
 
