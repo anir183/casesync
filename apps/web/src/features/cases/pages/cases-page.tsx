@@ -358,6 +358,8 @@ export function CasesPage() {
               selectedIds={selectedIds}
               onToggleCase={toggleCase}
               onTogglePage={togglePage}
+              stickyColumns
+              scrollHint="Scroll horizontally to see all columns"
             />
           )}
           {cases && cases.total > 0 && (

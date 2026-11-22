@@ -215,6 +215,12 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
   env -u ALLOW_REMOTE_MONGO \
   bun run test:e2e:spec e2e/presentation-fixes.spec.ts
 
+# W-5 registry width: sticky identity columns and horizontal scroll hint
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/cases-registry.spec.ts \
+    --grep 'registry identity columns stay in place'
+
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts
 bun run test:e2e:spec e2e/responsive.spec.ts

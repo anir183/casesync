@@ -509,7 +509,8 @@ route gains a sticky identity/verification summary, six text-cued health cards f
 case summary, an alias/duplicate-context card, and a cross-bureau history built from the existing
 scoped case list and table. Role gates, merge selectors, pagination, and the detail API contract
 are unchanged. Walkthrough finding W-10 is closed on the representative profile cards; W-1–W-3
-were later closed and W-4 verified in W-A, W-6–W-9 were closed in W-B, and only W-5 remains open.
+were later closed and W-4 verified in W-A, W-6–W-9 were closed in W-B, and W-5 was closed in the
+registry presentation remediation.
 `check:ci`, both web typechecks, web tests 80/0, targeted seeded E2E 43/43, and
 institution responsive reflow 4/4 passed. Remaining Phase 4 surfaces stay in later slices; visual
 baselines, double CI, and both manual gates remain Phase 7.

@@ -7,9 +7,15 @@ import type { CaseDensity } from '#/features/cases/case-density'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { cn, formatDateOnly } from '#/lib/utils'
 
-const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
+const ROW_CLASS = 'group border-b border-border transition-colors last:border-0 hover:bg-muted/40'
 const CELL_CLASS = 'px-4 py-[var(--density-row-y)] text-sm leading-[var(--density-row-leading)]'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
+const STICKY_SELECT_HEAD_CLASS = 'sticky left-0 z-20 w-12 min-w-12'
+const STICKY_CASE_HEAD_CLASS =
+  'sticky left-12 z-20 w-44 min-w-44 border-r border-border shadow-[4px_0_6px_-6px_rgba(15,23,42,0.45)]'
+const STICKY_SELECT_CELL_CLASS = 'sticky left-0 z-10 w-12 min-w-12 group-hover:bg-muted/40'
+const STICKY_CASE_CELL_CLASS =
+  'sticky left-12 z-10 w-44 min-w-44 whitespace-nowrap border-r border-border shadow-[4px_0_6px_-6px_rgba(15,23,42,0.45)] group-hover:bg-muted/40'
 
 export interface CaseTableProps {
   cases: CaseListItem[]
@@ -18,6 +24,8 @@ export interface CaseTableProps {
   selectedIds?: ReadonlySet<string>
   onToggleCase?: (id: string, selected: boolean) => void
   onTogglePage?: (selected: boolean) => void
+  stickyColumns?: boolean
+  scrollHint?: string
 }
 
 export function CaseTable({
@@ -27,6 +35,8 @@ export function CaseTable({
   selectedIds,
   onToggleCase,
   onTogglePage,
+  stickyColumns = false,
+  scrollHint,
 }: CaseTableProps) {
   const selectAllRef = useRef<HTMLInputElement>(null)
   const [copyStatus, setCopyStatus] = useState('')
@@ -56,11 +66,15 @@ export function CaseTable({
 
   return (
     <>
-      <TableScroll label={label} data-density={density}>
+      <TableScroll
+        label={label}
+        data-density={density}
+        hint={stickyColumns ? scrollHint : undefined}
+      >
         <table className="w-full min-w-[1280px] border-collapse text-left">
           <thead>
             <tr className="border-b border-border">
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={cn(HEAD_CLASS, stickyColumns && STICKY_SELECT_HEAD_CLASS)}>
                 <input
                   ref={selectAllRef}
                   type="checkbox"
@@ -71,7 +85,7 @@ export function CaseTable({
                   className="h-4 w-4 accent-primary"
                 />
               </th>
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={cn(HEAD_CLASS, stickyColumns && STICKY_CASE_HEAD_CLASS)}>
                 Case
               </th>
               <th scope="col" className={HEAD_CLASS}>
@@ -112,6 +126,7 @@ export function CaseTable({
           <tbody>
             {cases.map((item) => {
               const isSelected = Boolean(selectedIds?.has(item.id))
+              const stickyRowBackground = isSelected ? 'bg-primary/5' : 'bg-background'
               return (
                 <tr
                   key={item.id}
@@ -121,7 +136,13 @@ export function CaseTable({
                     isSelected && 'bg-primary/5',
                   )}
                 >
-                  <td className={CELL_CLASS}>
+                  <td
+                    className={cn(
+                      CELL_CLASS,
+                      stickyColumns && STICKY_SELECT_CELL_CLASS,
+                      stickyColumns && stickyRowBackground,
+                    )}
+                  >
                     <input
                       type="checkbox"
                       aria-label={`${isSelected ? 'Deselect' : 'Select'} ${item.caseNumber}`}
@@ -131,7 +152,13 @@ export function CaseTable({
                       className="h-4 w-4 accent-primary"
                     />
                   </td>
-                  <td className={CELL_CLASS}>
+                  <td
+                    className={cn(
+                      CELL_CLASS,
+                      stickyColumns && STICKY_CASE_CELL_CLASS,
+                      stickyColumns && stickyRowBackground,
+                    )}
+                  >
                     <Link
                       to={`/cases/${item.id}`}
                       className="scroll-mt-32 font-medium underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

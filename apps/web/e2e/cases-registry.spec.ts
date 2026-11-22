@@ -47,6 +47,46 @@ test.describe('@cases Phase 4A cases surfaces', () => {
     expect(await download.failure()).toBeNull()
   })
 
+  test('registry identity columns stay in place while the table scrolls horizontally', async ({
+    page,
+  }) => {
+    await page.goto('/cases')
+    const region = page.getByLabel('Case registry table')
+    await expect(region).toBeVisible()
+    await expect(page.getByText('Scroll horizontally to see all columns')).toBeVisible()
+
+    const metrics = async () =>
+      region.evaluate((element) => {
+        const headers = Array.from(element.querySelectorAll('thead th'))
+        return {
+          scrollLeft: element.scrollLeft,
+          overflow: element.scrollWidth - element.clientWidth,
+          firstX: headers[0]?.getBoundingClientRect().x ?? 0,
+          secondX: headers[1]?.getBoundingClientRect().x ?? 0,
+          thirdX: headers[2]?.getBoundingClientRect().x ?? 0,
+        }
+      })
+
+    const before = await metrics()
+    expect(before.overflow).toBeGreaterThan(100)
+
+    await region.evaluate((element) => {
+      element.scrollLeft = 240
+    })
+    await expect.poll(async () => (await metrics()).scrollLeft).toBeGreaterThan(200)
+
+    const after = await metrics()
+    expect(Math.abs(after.firstX - before.firstX)).toBeLessThan(2)
+    expect(Math.abs(after.secondX - before.secondX)).toBeLessThan(2)
+    expect(after.thirdX).toBeLessThan(before.thirdX - 200)
+
+    const documentOverflow = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }))
+    expect(documentOverflow.scrollWidth).toBeLessThanOrEqual(documentOverflow.clientWidth + 1)
+  })
+
   test('detail tabs use tab roles and secondary actions return to the action panel', async ({
     page,
   }) => {

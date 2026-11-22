@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A portal-shell remediation, and W-B staff-presentation remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A portal-shell remediation, W-B staff-presentation remediation, and W-5 registry presentation remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -319,7 +319,9 @@ adds component coverage for default and summary `ConfirmDialog` rendering, reuse
 journeys, adds one cancel-only email-domain dialog check, and extends staff reflow/route checks. W-A
 adds `apps/web/e2e/portal-shell.spec.ts` for footer geometry and current-auth header links. W-B adds
 `apps/web/e2e/presentation-fixes.spec.ts` plus component assertions for header spacing, centered
-steps, dropdown placement, and wheel bubbling; no `data-testid` was introduced. Rows stay
+steps, dropdown placement, and wheel bubbling. W-5 extends `apps/web/e2e/cases-registry.spec.ts`
+with overflow, sticky-column, scroll-hint, and document-overflow assertions, and extends the registry
+component test with opt-in/default sticky-cell checks; no `data-testid` was introduced. Rows stay
 **Partial** where only one route or one side of the state is exercised, or where a surface is
 asserted only outside Playwright.
 

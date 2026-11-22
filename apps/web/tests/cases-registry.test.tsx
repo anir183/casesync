@@ -148,6 +148,46 @@ describe('case registry table', () => {
     )
   })
 
+  test('the registry can opt into sticky identity columns without changing the table', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <CaseTable
+          cases={cases}
+          selectedIds={new Set(['case-1'])}
+          stickyColumns
+          scrollHint="Scroll horizontally to see all columns"
+        />
+      </MemoryRouter>,
+    )
+
+    const headerCells = container.querySelectorAll('thead th')
+    const selectedCells = container.querySelectorAll('tbody tr:first-child td')
+    const unselectedCells = container.querySelectorAll('tbody tr:nth-child(2) td')
+    expect(headerCells).toHaveLength(13)
+    expect(selectedCells).toHaveLength(13)
+    expect(headerCells[0]?.className).toContain('sticky')
+    expect(headerCells[1]?.className).toContain('left-12')
+    expect(selectedCells[0]?.className).toContain('bg-primary/5')
+    expect(selectedCells[1]?.className).toContain('sticky')
+    expect(selectedCells[1]?.className).toContain('bg-primary/5')
+    expect(unselectedCells[0]?.className).toContain('bg-background')
+    expect(unselectedCells[1]?.className).toContain('sticky')
+    expect(screen.getByRole('checkbox', { name: 'Deselect PGRC-2026-001' })).toBeDefined()
+  })
+
+  test('shared case tables keep non-sticky cells by default', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <CaseTable cases={[cases[1] as CaseListItem]} label="Institution case history" />
+      </MemoryRouter>,
+    )
+
+    expect(container.querySelectorAll('thead th')[0]?.className).not.toContain('sticky')
+    expect(container.querySelectorAll('tbody tr:first-child td')[0]?.className).not.toContain(
+      'sticky',
+    )
+  })
+
   test('row actions are keyboard reachable and copy feedback is announced', async () => {
     const writeText = mock((_value: string) => Promise.resolve())
     Object.defineProperty(navigator, 'clipboard', {

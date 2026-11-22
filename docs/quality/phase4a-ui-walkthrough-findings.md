@@ -1,10 +1,10 @@
 # CaseSync — Phase 4A product-owner UI walkthrough findings
 
-Status: **consolidated 2026-11-21; triaged and remediated except W-5 on 2026-11-22.** W-10 closed
+Status: **consolidated 2026-11-21; all findings remediated or verified by 2026-11-22.** W-10 closed
 in Phase 4B; W-1–W-3 closed and W-4 verified in W-A portal-shell remediation; W-6–W-9 closed in W-B
-staff-presentation remediation; W-5 remains open. This is a product-owner screen-by-screen UI review,
-not the independent manual sign-off in [`manual-signoff.md`](manual-signoff.md). Both manual gates
-remain held until Stage 12 exits.
+staff-presentation remediation; W-5 closed in the registry presentation remediation. This is a
+product-owner screen-by-screen UI review, not the independent manual sign-off in
+[`manual-signoff.md`](manual-signoff.md). Both manual gates remain held until Stage 12 exits.
 
 Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md),
 [`ui-test-matrix.md`](ui-test-matrix.md),
@@ -37,7 +37,7 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
 | W-2 | Portal sign-in footer | 5 — anonymous | `/portal/login` shows the same non-anchored footer as W-1. | Footer bottom-anchored on short pages. | `footerTop=512`, `footerBottom=561`, `mainBottom=512`, viewport `900`, `document.scrollHeight=900`. | P2 | Closed in W-A — the same shell fix anchors the `/portal/login` footer |
 | W-3 | Portal header | 5–6 — anonymous | The header links back to the current auth screen: `Sign in` on `/portal/login` and `Create account` on `/portal/signup`. | Hide the action for the current auth screen; show `Sign in` only off the login page and `Create account` only off the signup page. | DOM: `header a` text `Sign in`, `href=/portal/login`; on signup, `header a` text `Create account`, `href=/portal/signup`. | P3 | Closed in W-A — desktop and mobile header links are gated on the current auth pathname |
 | W-4 | Portal form footers | 6, 69 — anonymous, complainant | Possible instance of W-1 on taller forms; visually acceptable but likely only because the form fills the page. Reviewer explicitly flagged it as unconfirmed. | Verify after the W-1 shell fix; only treat as a defect if the same root cause remains. | `/portal/signup`: `footerBottom=871`, viewport `900` (29px gap). `/portal/complaints/new`: `footerBottom=1053`, `document.scrollHeight=1053`, viewport `951`. | P3 | Verified in W-A — no remaining defect; signup footer anchors at 900px and taller forms still scroll normally |
-| W-5 | Cases registry table | 8–9, 22, 33, 38, 43, 52, 61 — seven staff personas, including viewer | The table is ~400px wider than its container. Reviewer noted every column looks relevant but asked for a better rendering method; Chromium shows no visible horizontal scrollbar while Firefox does. | Keep all data reachable without an awkward 400px horizontal scroll — e.g. a small primary column set plus expandable rows/column manager/cards — and show a visible scroll affordance when overflow exists. | Region `aria-label="Case registry table"`: `clientWidth=1110`, `scrollWidth=1514`, `overflow-x:auto`; table `1514px`, 13 columns; largest columns Actions `218px`, Case `167px`, Subject `141px`, Status `122px`. Document has no page overflow (`scrollWidth=1440`). Senior capture: `clientWidth=1110`, `scrollWidth=1509`, `scrollbar-width:auto`, no visible bar in Chromium 156. | P2 | Open |
+| W-5 | Cases registry table | 8–9, 22, 33, 38, 43, 52, 61 — seven staff personas, including viewer | The table is ~400px wider than its container. Reviewer noted every column looks relevant but asked for a better rendering method; Chromium shows no visible horizontal scrollbar while Firefox does. | Keep all data reachable without an awkward 400px horizontal scroll — e.g. a small primary column set plus expandable rows/column manager/cards — and show a visible scroll affordance when overflow exists. | Region `aria-label="Case registry table"`: `clientWidth=1110`, `scrollWidth=1514`, `overflow-x:auto`; table `1514px`, 13 columns; largest columns Actions `218px`, Case `167px`, Subject `141px`, Status `122px`. Document has no page overflow (`scrollWidth=1440`). Senior capture: `clientWidth=1110`, `scrollWidth=1509`, `scrollbar-width:auto`, no visible bar in Chromium 156. | P2 | Closed in W-5 remediation — selection and case-number columns stay sticky, a hint appears only on overflow, and all 13 columns and selectors remain reachable in the contained scroll region; broader column manager/expandable rows deferred as a separate product decision |
 | W-6 | Case detail summary header | 11–13, 23–24, 34–35, 39, 44, 53, 62 — seven staff personas, including viewer | The back link, case number, metadata, and badges hug the left edge with no consistent gutter; badges are larger than needed. Reaffirmed on the Timeline tab and with `More actions` open. | Consistent horizontal gutter and vertical rhythm in the sticky header; compact badge typography/height. | Header container `x=264`, `w=1152`, computed `padding=0px`; all header content starts at `x=264`. Badges `escalated` and `Officer: RB Officer`: `fontSize=16px`, `height=30px`, `padding=2px 10px`, `lineHeight=24px`. | P3 | Closed in W-B — sticky header uses the staff content gutter and compact local badge padding |
 | W-7 | Case detail resolution loop | 11, 23, 34, 39, 44, 53, 62 — seven staff personas, including viewer | Step text is not centered; in step 6 `Reopen` and `Optional` wrap so `Optional` sits under the label instead of being centered. | Center step number and label on both axes; treat `Optional` as a centered sublabel. | Seven-column grid with `152px` items; item 6 `textAlign=start`, `align-items=normal`; `6Reopen` at `x=1095,y=438,w=130,h=20`, `Optional` at `x=1095,y=462,w=130,h=16`. | P3 | Closed in W-B — lifecycle steps use centered flex columns with centered `Optional` sublabels |
 | W-8 | Staff `Create` menu | 18, 30, 41, 49, 58 — admin, senior, PGRC, RB, regional | `Quick create` opens over the `+ Create` button rather than below it. Reviewer noted functionality is unaffected. | Anchor below the trigger with a small gap, or use collision-aware placement. | Button `x=1168,y=13,w=91,h=38,bottom=51`; menu `x=1035,y=17,w=224,h=82,bottom=99` (senior menu `bottom=63`). | P3 | Closed in W-B — shared dropdown menu is anchored below its trigger with `top-full` |
@@ -66,7 +66,10 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
 - W-1 through W-4 and W-8 belong to earlier shell/portal phases; W-5 through W-7 belong to the
   Phase 4A cases surfaces; W-9 belongs to Phase 3.5 dashboards. W-10 was folded into the Phase 4B
   institution-profile slice and is closed. W-A closed W-1–W-3 and verified W-4; W-B closed
-  W-6–W-9; W-5 remains a separate bounded decision.
+  W-6–W-9; W-5 was closed in the registry presentation remediation.
+- W-5 was closed with a bounded registry-presentation remediation: sticky identity columns and a
+  visible overflow hint. A larger column manager or expandable-row redesign remains a separate
+  product decision and is not part of this finding's closure.
 - This review does not close either manual gate in [`manual-signoff.md`](manual-signoff.md), does
   not refresh visual baselines, and does not authorize a push or deployment. Commits require
   separate explicit approval.
@@ -109,3 +112,25 @@ Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-ph
   E2E passed 3/3; fresh build is `492.96 kB / 139.42 kB gzip`, below the documented guardrail. No
   route, permission, contract, payload, validation rule, dependency, seed data, visual baseline,
   dashboard filter, chart/map behavior, CSV contract, push, or deployment changed.
+
+## 7. W-5 implementation record (2026-11-22)
+
+- `TableScroll` accepts an optional `hint` and renders it only when the measured region actually
+  overflows horizontally. Existing table scroll regions pass no hint and keep their original DOM.
+  The registry uses the text `Scroll horizontally to see all columns`; its scroll region remains
+  keyboard focusable and keeps the existing `aria-label` and `data-density` passthrough.
+- `CaseTable` accepts opt-in `stickyColumns` and `scrollHint` props. On the full case registry only,
+  the selection and case-number columns stick at `left-0`/`left-12` with row-aware backgrounds and
+  a right-edge divider; the remaining 11 columns still scroll beneath them. Institution case
+  history and all other `CaseTable`/`TableScroll` call sites keep their existing non-sticky cells.
+- Column order, labels, links, row actions, `Copy ID` feedback, selection semantics, density, query
+  params, filters, pagination, CSV exports, role gates, and all 13 columns are unchanged. Document
+  overflow remains contained; a broader column manager or expandable-row redesign is deferred.
+- Component coverage confirms the opt-in sticky classes, selected/unselected row backgrounds, and
+  unchanged default table cells. `apps/web/e2e/cases-registry.spec.ts` confirms the hint, actual
+  overflow, retained identity-column positions after horizontal scrolling, movement of the third
+  column, and no document-level overflow. No `data-testid` was introduced.
+- Verification: `check:ci`, both web typechecks, and web tests 98/0 passed; targeted seeded loopback
+  registry E2E passed 5/5; fresh build is `492.96 kB / 139.41 kB gzip`, below the documented
+  guardrail. No route, permission, contract, payload, validation rule, dependency, seed data, visual
+  baseline, dashboard filter, chart/map behavior, CSV contract, push, or deployment changed.
