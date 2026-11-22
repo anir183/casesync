@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, Phase 5 GIS/data visualization, Phase 6 portal landing, and the bounded Phase 7 motion/reduced-motion slice implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, Phase 5 GIS/data visualization, Phase 6 portal landing, and the bounded Phase 7 motion/reduced-motion slice implemented, locally verified, and CI-confirmed on `45014617505`; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).

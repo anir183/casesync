@@ -736,8 +736,10 @@ overlap, and notification lists use a layout-stable opacity-only content reveal.
 no transform, occupies its final box from the first frame, and resolves to `animation: none;
 opacity: 1` under reduced motion. No animation/chart/map dependency was added. Verified with
 `check:ci`, both web typechecks, web 105/0, seeded loopback E2E 90/90 including axe and the
-responsive motion checks, and a fresh `493.42 kB / 139.49 kB gzip` main build. The gated
-baseline refresh, double full Chromium run, manual reviews, and deployment remain pending.
+responsive motion checks, and a fresh `493.42 kB / 139.49 kB gzip` main build. Pushed as
+`25aa369`; CI run `45014617505` is green across every active job, including Full Chromium
+E2E, with visual, cross-browser, and optional Atlas jobs held. The gated baseline refresh,
+double full Chromium run, manual reviews, and deployment remain pending.
 
 ## 6. Screen-by-screen target
 
