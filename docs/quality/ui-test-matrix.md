@@ -1,11 +1,12 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A portal-shell remediation, W-B staff-presentation remediation, and W-5 registry presentation remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, and Phase 5 GIS/data visualization implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
 Notifications plan: [`../plans/stage-12-phase4d-notifications.md`](../plans/stage-12-phase4d-notifications.md).
 Reports plan: [`../plans/stage-12-phase4e-reports.md`](../plans/stage-12-phase4e-reports.md).
+GIS plan: [`../plans/stage-12-phase5-gis.md`](../plans/stage-12-phase5-gis.md).
 Forms plan: [`../plans/stage-12-phase4f-forms.md`](../plans/stage-12-phase4f-forms.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
@@ -321,7 +322,11 @@ adds `apps/web/e2e/portal-shell.spec.ts` for footer geometry and current-auth he
 `apps/web/e2e/presentation-fixes.spec.ts` plus component assertions for header spacing, centered
 steps, dropdown placement, and wheel bubbling. W-5 extends `apps/web/e2e/cases-registry.spec.ts`
 with overflow, sticky-column, scroll-hint, and document-overflow assertions, and extends the registry
-component test with opt-in/default sticky-cell checks; no `data-testid` was introduced. Rows stay
+component test with opt-in/default sticky-cell checks; no `data-testid` was introduced. Phase 5
+extends `apps/web/e2e/reports.spec.ts` with a blocked-tile choropleth check that switches metrics,
+asserts the no-tiles notice, focuses a polygon, presses Enter, and verifies the `regionId` drill-down;
+component tests cover metric switching and the empty-region state, and a new asset test guards the
+Natural Earth geometry metadata and feature order. Rows stay
 **Partial** where only one route or one side of the state is exercised, or where a surface is
 asserted only outside Playwright.
 
@@ -351,6 +356,7 @@ asserted only outside Playwright.
 | Notification triage toolbar | `/notifications` | **Covered** — named sticky region, saved views, server-backed type/unread filters, announced pressed state, and 375px overflow check |
 | Notification grouping and unread cue | `/notifications` | **Covered** — current-page type groups with counts, row-scoped textual `Unread`, and visible `Open record`/`Mark as read`; verified with fresh and post-mutation read states |
 | Reports workbench and table-first toggle | `/reports` | **Covered** — sticky `Reports workbench` region, `Reports filters` search landmark, saved views mapped to existing URL filters, removable chips, exact tables before the existing charts, `Tables`/`Charts` toggle, and preserved region chip; 375px overflow check passes |
+| Regional choropleth and no-tile fallback | `/reports` | **Covered** — four pressed-state metric buttons, helper-driven legend and chip swatches, nine bundled schematic catchments as keyboard-operable polygons with tooltip/Enter/Space drill-down, blocked-tile notice, empty-region copy, and unchanged exact data table; E2E 3/3 in `reports.spec.ts` plus asset/metric component tests |
 | Long-form field pattern and sticky actions | Case registration, institution create/edit, portal complaint filing, representative sign-up | **Covered** — shared `Field` label/help/error semantics, inline existing validation messages, presentation-only sticky `FormActions` submit/cancel row, and preserved native/Zod validation, payloads, query parameters, role gates, selectors, and pending/error strings; component check plus targeted seeded E2E 4/4 |
 | Destructive change summaries and admin density | Institution merge, password reset, organization/SLA/domain deletes, overlap merge/revert/clear, admin users/masters/domains/SLA | **Covered** — optional `ConfirmDialog` summary leaves default focus/selectors/labels/`Saving...` unchanged; shared `Field` grids and help text preserve derived IDs, permissions, payload coercion, and asserted errors; component check plus targeted seeded E2E 8/8 (six admin mutations plus two domain route checks) |
 | Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
@@ -419,7 +425,9 @@ sticky compare header in `overlap-triage.spec.ts`; the shared responsive loop st
 `notification-centre.spec.ts`; the shared responsive loop still covers `/notifications` at all four
 widths. Phase 4E adds a 375px workbench-visibility and overflow check in
 `reports-workbench.spec.ts`; the shared loop still covers `/reports` at all four widths, including
-the table-first default view. Local screenshots are observation evidence only; the official
+the table-first default view. Phase 5 keeps that four-width loop green and adds a 375 px map check with
+tile requests blocked: polygon focus, metric switch, no-tiles notice, and `regionId` drill-down all
+work without the raster layer. Local screenshots are observation evidence only; the official
 48-baseline refresh stays in Phase 7.
 
 ## 5. Visual regression baseline set
@@ -455,8 +463,9 @@ committed baselines untouched. Phase 4C also left them untouched, so the `/overl
 them untouched, so the `/notifications` image now predates the triage toolbar and type groups.
 Phase 4E likewise left them untouched, so the `/reports` image predates the named workbench and
 table-first default. Phase 4F likewise left them untouched, so form-route and admin images predate
-the shared field pattern, sticky action rows, change summaries, and denser admin grids; the official
-refresh and review remain in Phase 7.
+the shared field pattern, sticky action rows, change summaries, and denser admin grids. Phase 5
+also left them untouched: the `/reports` image remains masked over `.leaflet-container`, so it now
+predates the polygons and metric controls; the official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 
@@ -477,8 +486,11 @@ case action panel, overlap merge/revert, and the institution shell are **Deferre
 controls are native buttons, inputs, and the already-covered shared dialog, and API tests
 prove the guarded actions. Phase 4A kept the registry and detail axe scans green after renaming
 the Copy ID control to include its visible text. Phase 4D kept the notification route and bell axe
-scans green after adding the named toolbar, grouped sections, and `aria-pressed` unread toggle. The
-open-dialog axe scan and manual screen-reader sign-off remain outstanding.
+scans green after adding the named toolbar, grouped sections, and `aria-pressed` unread toggle. Phase
+5 keeps the reports axe scan green and adds keyboard polygon focus, announced active-metric labels,
+tooltip text, `aria-pressed` drill-down state, a textual legend, and a no-tiles notice without new
+`data-testid` selectors; manual screen-reader verification of these controls remains part of Part A.
+The open-dialog axe scan and manual screen-reader sign-off remain outstanding.
 
 Step 5 fixed four accessibility defects the scans surfaced: the notification bell's
 accessible name now matches its `99+` badge, case-detail tabs received explicit selected state

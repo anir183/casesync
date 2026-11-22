@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { niceMax, percentage, sumValues } from '../src/components/charts/chart-utils'
 import { DonutChart } from '../src/components/charts/donut-chart'
 import type { GeoRegionRow } from '../src/features/reports/api'
@@ -90,5 +90,29 @@ describe('regional map', () => {
     fireEvent.click(north)
     expect(selected?.regionId).toBe('north')
     expect(screen.getByText('View data table')).toBeDefined()
+  })
+
+  test('switches the choropleth metric without changing the region picker contract', () => {
+    render(<RegionMap caption="Regional pressure" regions={regions} showMap={false} />)
+
+    const metrics = screen.getByRole('group', { name: 'Map metric' })
+    const overdue = within(metrics).getByRole('button', { name: 'Overdue rate' })
+    const total = within(metrics).getByRole('button', { name: 'Total' })
+    expect(overdue.getAttribute('aria-pressed')).toBe('true')
+    expect(total.getAttribute('aria-pressed')).toBe('false')
+
+    fireEvent.click(total)
+    expect(total.getAttribute('aria-pressed')).toBe('true')
+    expect(overdue.getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByText(/Shading shows total/)).toBeDefined()
+    expect(screen.getByRole('button', { name: /NOR, Northern Region/ })).toBeDefined()
+    expect(screen.getByText('View data table')).toBeDefined()
+  })
+
+  test('explains an empty region scope and keeps the data-table heading', () => {
+    render(<RegionMap caption="Regional pressure" regions={[]} showMap={false} />)
+
+    expect(screen.getByText('No region data is available for the selected filters.')).toBeDefined()
+    expect(screen.queryByRole('button', { name: /NOR, Northern Region/ })).toBeNull()
   })
 })

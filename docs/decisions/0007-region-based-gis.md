@@ -27,9 +27,10 @@ The map is **region-based, local-data-driven, and key-free**:
    The default tile URL is `https://tile.openstreetmap.org/{z}/{x}/{y}.png` with OSM
    attribution; deployments can set `VITE_MAP_TILE_URL` to a self-hosted or regional provider
    without changing the component.
-4. The view is bounded to India (including island territories). Bubble radius scales with
-   the square root of the regional total; colour encodes the overdue rate. Keyboard region
-   chips and a data table provide full access to the same figures.
+4. The view is bounded to India (including island territories). The Stage 9 baseline used a
+   square-root bubble radius and overdue-rate colour; the Stage 12 Phase 5 amendment below
+   replaces that with grouped polygon choropleths and a metric switcher. Keyboard region chips
+   and a data table provide full access to the same figures.
 5. Because raster tiles are network-dependent, the map area is masked in visual baselines.
    The 48 CI-image baselines remain authoritative; no local snapshot is a release oracle.
 
@@ -49,3 +50,21 @@ The map is **region-based, local-data-driven, and key-free**:
   deterministic offline.
 - Accessibility and responsive suites cover keyboard region chips, the table fallback, and
   reflow at the supported breakpoints.
+
+## 2026-11-22 amendment — Stage 12 Phase 5
+
+The region-based, local-data-driven, key-free decision stands. Phase 5 keeps the existing
+`/reports` section, `/reports/geo` contract, India bounds, lazy Leaflet boundary, and OSM tile
+configuration, but replaces the circle-marker preview with nine bundled Natural Earth Admin 1
+state/province polygons grouped into schematic regional catchments. The geometry is public domain,
+labelled "Made with Natural Earth", and explicitly not presented as official AICTE boundaries.
+One of four region metrics (total, open, overdue rate, resolved rate) drives a helper-shared
+choropleth, legend, chip swatch, and announced summary. Polygons are keyboard reachable with
+tooltips and Enter/Space drill-down; blocked tiles show a non-blocking notice while chips and the
+exact table remain authoritative.
+
+Institution points remain deferred: the reports geo DTO exposes only region-level coordinates, and
+those coordinates locate regional offices rather than institutions. No geocoding service,
+clustering plugin, route, server contract, or new dependency was added. See
+[`../plans/stage-12-phase5-gis.md`](../plans/stage-12-phase5-gis.md) for provenance, grouping,
+thresholds, and verification.

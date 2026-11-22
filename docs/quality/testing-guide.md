@@ -74,7 +74,7 @@ Counts are for the desktop project unless noted.
 | `responsive.spec.ts` | `@responsive` | 16 | Staff/portal/institution reflow at 375/768/1024/1440, table containment, 200% page and text zoom, reduced motion | Layout, breakpoint, table, or motion changes |
 | `navigation.spec.ts` | `@responsive` | 3 | One-row staff nav, mobile drawer destinations, notification bell preview | Header, nav, drawer, or notification changes |
 | `notification-centre.spec.ts` | — | 1 | Triage toolbar, type groups, unread cue, saved-view switching, and 375px overflow | Notifications page or shared bell grouping changes |
-| `reports.spec.ts` | `@responsive`, `@a11y` | 2 | Reports map keyboard focus/mobile reflow; chart-heavy reduced motion | Map, chart, or reports changes |
+| `reports.spec.ts` | `@responsive`, `@a11y` | 3 | Reports map keyboard focus/mobile reflow; blocked-tile choropleth with metric switch and polygon drill-down; chart-heavy reduced motion | Map, chart, or reports changes |
 | `reports-workbench.spec.ts` | — | 1 | Named toolbar, saved views, chip removal, table-first default, chart toggle, region chip, and 375px overflow | Reports workbench, filter, or evidence presentation changes |
 | `cases-registry.spec.ts` | `@cases` | 4 | Chip removal, density persistence, page-scoped selected-row export, and detail tab/action-panel behavior | Cases registry or detail presentation changes |
 | `institution-profile.spec.ts` | — | 1 | Profile landmarks and desktop/375px overflow | Institution profile presentation changes |

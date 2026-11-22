@@ -4,8 +4,10 @@ Status: **Phases 0–3 implemented and verified** 2026-11-18, including the Phas
 remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 implemented and locally
 verified** as the redesigned Operator Dashboard Experience; **Phases 4A–4E implemented and locally
 verified** for cases surfaces, institution profile, overlap queue, notifications centre, and reports
-workbench. The official 48-baseline refresh, double CI, and both manual gates remain held for the
-Phase 7 / Stage 12 exit sweep.
+workbench; **Phase 4F Forms and the W walkthrough remediations are implemented and locally
+verified**; **Phase 5 GIS/data visualization is implemented and locally verified**. The official
+48-baseline refresh, double CI, and both manual gates remain held for the Phase 7 / Stage 12 exit
+sweep.
 Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
 [`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md),
 [`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md), and
@@ -620,6 +622,19 @@ long Forms surfaces and the destructive confirmations with denser admin forms.
 - No new GIS dependency is added; the GeoJSON source/license is recorded.
 - The reports page remains within the documented performance budget.
 
+**Implementation note (2026-11-22).** Phase 5 was delivered as one bounded slice inside the
+existing `Regional pressure` section of `/reports`; see
+[`stage-12-phase5-gis.md`](stage-12-phase5-gis.md). Nine grouped Natural Earth Admin 1 catchments
+are bundled as schematic, public-domain GeoJSON with source/license metadata and an explicit
+"not official AICTE boundaries" label. A four-metric switcher drives one helper-defined choropleth
+scale, legend, chip swatches, and announced summary. Polygons are keyboard reachable with
+tooltips, Enter/Space drill-down, and pressed state; blocked tiles show a non-blocking notice while
+shapes, chips, and the exact table remain usable. Institution points are deliberately deferred
+because the geo DTO exposes only region-level coordinates and no clustering dependency was
+authorized. `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh
+main chunk `492.97 kB / 139.42 kB gzip` passed. No route, permission, server contract, query key,
+URL filter, payload, seed file, dependency, CSV contract, visual baseline, or `data-testid` changed.
+
 ---
 
 ### Phase 6 — Portal landing and public experience
@@ -727,10 +742,14 @@ the footer floats mid-screen on landing and login. Both are Phase 6 exit defects
 
 - **Library:** existing `leaflet` + `react-leaflet`; no new GIS or mapping package.
 - **Geometry:** bundled simplified GeoJSON under the reports feature; source and license
-  recorded in the data file and the plan.
+  recorded in the data file and the plan. Implemented with nine grouped Natural Earth Admin 1
+  catchments; internal state borders remain visible because polygons are grouped, not unioned.
 - **Semantics:** if the geometry is schematic, the UI says so. Do not present it as an
-  official boundary unless it is one.
+  official boundary unless it is one. The UI labels these as grouped catchments, not AICTE
+  boundaries.
 - **Layers:** polygons (choropleth), optional institution points, region chips, table.
+  Institution points are deferred because the geo DTO has no institution coordinates; region
+  office coordinates must not be represented as institution points.
 - **Metric:** total, open, overdue rate, or resolution rate; one active metric at a time.
 - **Interaction:** hover/focus highlight, click to filter/drill down, keyboard chips.
 - **Fallback:** no tiles → geometry and table still work; no coordinates → region still
