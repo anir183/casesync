@@ -1,15 +1,15 @@
 import { ROLES } from '@casesync/config'
 import { type FormEvent, useState } from 'react'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
-import { FieldLabel } from '#/components/ui/textarea'
 import {
   type AdminUser,
   type UserInput,
@@ -153,18 +153,28 @@ export function AdminUsersPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="user-name">Name</FieldLabel>
+          <form className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" onSubmit={handleSubmit}>
+            <Field
+              label="Name"
+              htmlFor="user-name"
+              help="Shown in the staff directory and audit trail."
+            >
               <Input
                 id="user-name"
                 required
                 value={form.name}
                 onChange={(event) => update('name', event.target.value)}
               />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="user-email">Email</FieldLabel>
+            </Field>
+            <Field
+              label="Email"
+              htmlFor="user-email"
+              help={
+                editingId
+                  ? 'Sign-in address; fixed after invitation.'
+                  : 'Sign-in address for the invitation.'
+              }
+            >
               <Input
                 id="user-email"
                 type="email"
@@ -173,9 +183,12 @@ export function AdminUsersPage() {
                 value={form.email}
                 onChange={(event) => update('email', event.target.value)}
               />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="user-role">Role</FieldLabel>
+            </Field>
+            <Field
+              label="Role"
+              htmlFor="user-role"
+              help="Controls which routes and actions are available."
+            >
               <Select
                 id="user-role"
                 value={form.role}
@@ -187,10 +200,9 @@ export function AdminUsersPage() {
                   </option>
                 ))}
               </Select>
-            </div>
+            </Field>
             {form.role === ROLES.BUREAU_OFFICER && (
-              <div className="space-y-1">
-                <FieldLabel htmlFor="user-bureau">Bureau</FieldLabel>
+              <Field label="Bureau" htmlFor="user-bureau" help="Limits this officer to one bureau.">
                 <Select
                   id="user-bureau"
                   required
@@ -204,11 +216,10 @@ export function AdminUsersPage() {
                     </option>
                   ))}
                 </Select>
-              </div>
+              </Field>
             )}
             {form.role === ROLES.REGIONAL_OFFICER && (
-              <div className="space-y-1">
-                <FieldLabel htmlFor="user-region">Region</FieldLabel>
+              <Field label="Region" htmlFor="user-region" help="Limits this officer to one region.">
                 <Select
                   id="user-region"
                   required
@@ -222,7 +233,7 @@ export function AdminUsersPage() {
                     </option>
                   ))}
                 </Select>
-              </div>
+              </Field>
             )}
             {editingId && (
               <label className="flex items-center gap-2 self-end pb-2 text-sm">
@@ -334,6 +345,18 @@ export function AdminUsersPage() {
         confirmLabel="Reset password"
         destructive
         pending={resetPassword.isPending}
+        summary={
+          <ConfirmSummary
+            entries={[
+              {
+                label: 'Account',
+                value: resetTarget ? `${resetTarget.name} · ${resetTarget.email}` : 'this user',
+              },
+              { label: 'Role', value: resetTarget?.role?.replace(/_/g, ' ') ?? '—' },
+              { label: 'Sessions', value: 'Active sessions revoked' },
+            ]}
+          />
+        }
         onCancel={() => setResetTarget(null)}
         onConfirm={() => void confirmReset()}
       />

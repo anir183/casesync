@@ -1,7 +1,7 @@
 import { PAGINATION, ROLES, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
@@ -21,7 +21,13 @@ import {
 import { useCurrentUser } from '#/lib/session'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
 
-function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
+function InstitutionMergePanel({
+  institutionId,
+  institutionName,
+}: {
+  institutionId: string
+  institutionName: string
+}) {
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, 400)
   const { data, isFetching } = useInstitutions(
@@ -102,6 +108,15 @@ function InstitutionMergePanel({ institutionId }: { institutionId: string }) {
         description={`Merge this institution into “${mergeTarget?.name ?? ''}”? Its cases and aliases will move to the target.`}
         confirmLabel="Merge institution"
         destructive
+        summary={
+          <ConfirmSummary
+            entries={[
+              { label: 'Target', value: mergeTarget?.name ?? '' },
+              { label: 'Source', value: institutionName },
+              { label: 'Moves to target', value: 'Cases, aliases, and search identity' },
+            ]}
+          />
+        }
         onCancel={() => setMergeTarget(null)}
         onConfirm={confirmMerge}
       />
@@ -184,7 +199,9 @@ export function InstitutionDetailPage() {
       {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
       <InstitutionHealthSignals summary={summary} total={total} />
       <InstitutionIdentityCard institution={institution} />
-      {user?.role === ROLES.ADMIN ? <InstitutionMergePanel institutionId={institution.id} /> : null}
+      {user?.role === ROLES.ADMIN ? (
+        <InstitutionMergePanel institutionId={institution.id} institutionName={institution.name} />
+      ) : null}
       <InstitutionCaseHistory
         cases={cases}
         total={total}

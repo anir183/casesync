@@ -522,9 +522,8 @@ detail route gains a sticky compare header with identity, scores, case numbers, 
 unchanged decision card. Role gates, saved views, pagination, server order, route scope, and all
 established mutation selectors are unchanged. `check:ci`, both web typechecks, web tests 84/0,
 targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Notifications was later delivered in
-Phase 4D, Reports in Phase 4E, and the Forms field pattern in Phase 4F-A; destructive change
-summaries and admin density remain in 4F-B; visual baselines, double CI, and both manual gates
-remain Phase 7.
+Phase 4D, Reports in Phase 4E, and Forms in Phase 4F (field pattern and change summaries); visual
+baselines, double CI, and both manual gates remain Phase 7.
 
 **Phase 4D implementation record (2026-11-21).** The notifications-centre bullet above is
 implemented and locally verified; see
@@ -534,9 +533,8 @@ unread filters, an announced toggle state, loaded-page type groups with counts, 
 badges. `Open record`, `Mark as read`, `Mark all as read`, pagination, states, query filters, and
 owner-scoped mutations are unchanged; the bell only shares the grouping helper. `check:ci`, both web
 typechecks, web tests 89/0, targeted seeded E2E 16/16, and a fresh-seed notification spec 1/1 passed.
-Reports was later delivered in Phase 4E and the Forms field pattern in Phase 4F-A; destructive
-change summaries and admin density remain in 4F-B; visual baselines, double CI, and both manual
-gates remain Phase 7.
+Reports was later delivered in Phase 4E and Forms in Phase 4F (field pattern and change summaries);
+visual baselines, double CI, and both manual gates remain Phase 7.
 
 **Phase 4E implementation record (2026-11-21).** The reports bullet above is implemented and locally
 verified; see [`stage-12-phase4e-reports.md`](stage-12-phase4e-reports.md). `/reports` gains a sticky
@@ -549,8 +547,8 @@ build `492.75 kB / 139.28 kB gzip`, and targeted seeded E2E 12/12 passed; the co
 baselines predate this layout and stay held for Phase 7. The slice was pushed as `6ac651a`;
 post-push CI run `44935311824` recorded 235/237 passing, with the only failures coming from stale
 smoke/portal selectors left by Phases 3.5/4A. Those selectors were corrected and re-verified locally
-with seeded smoke 13/13 and portal mutation 1/1. Phase 4F-A later delivered the shared Forms field
-pattern; Phase 4F-B remains the only unimplemented Phase 4 work.
+with seeded smoke 13/13 and portal mutation 1/1. Phase 4F later delivered the complete Forms
+slice; Phase 4 is now complete.
 
 **Phase 4F-A implementation record (2026-11-22).** The field-pattern portion of the Forms bullet is
 implemented and locally verified; see
@@ -562,7 +560,20 @@ selectors, and exact pending/error strings are unchanged. `check:ci`, both web t
 94/0, targeted seeded E2E 4/4, and fresh build `492.79 kB / 139.33 kB gzip` passed. A visual required
 marker was removed after it changed exact `getByLabel` matching; native and Zod validation were not
 changed. No route, permission, contract, dependency, seed data, visual baseline, chart/map behavior,
-CSV contract, or `data-testid` changed. 4F-B destructive summaries and admin density remain.
+CSV contract, or `data-testid` changed.
+
+**Phase 4F-B implementation record (2026-11-22).** The change-summary and admin-density portion of
+the Forms bullet is implemented and locally verified; see
+[`stage-12-phase4f-forms.md`](stage-12-phase4f-forms.md). `ConfirmDialog` gained an optional
+presentation-only `summary` slot and a shared `ConfirmSummary` definition list, applied to
+institution merge, password reset, organization/SLA/domain deletes, and overlap merge/revert/clear.
+Default dialog rendering, focus handling, Escape, Tab trap, titles, descriptions, labels, and
+`Saving...` are unchanged. Admin users, organization masters, email domains, and SLA rules now use
+the shared `Field` pattern with consistent grids and help text while preserving derived IDs,
+`aria-label` selectors, permissions, payload coercion, and asserted error strings. `check:ci`, both
+web typechecks, web tests 95/0, targeted seeded E2E 12/12, and fresh build
+`492.84 kB / 139.34 kB gzip` passed. No route, permission, contract, dependency, seed data, visual
+baseline, chart/map behavior, CSV contract, or `data-testid` changed. Phase 4F is complete.
 
 **Exit criteria**
 
@@ -574,8 +585,8 @@ CSV contract, or `data-testid` changed. 4F-B destructive summaries and admin den
 
 Phase 4A satisfies these criteria for the Cases registry and case detail; Phase 4B does so for the
 institution profile; Phase 4C does so for the overlap queue and compare view; Phase 4D does so for
-the notifications centre; Phase 4E does so for the reports workbench; Phase 4F-A does so for the
-four long Forms surfaces. Phase 4F-B destructive summaries and admin density remain.
+the notifications centre; Phase 4E does so for the reports workbench; Phase 4F does so for the four
+long Forms surfaces and the destructive confirmations with denser admin forms.
 
 ---
 

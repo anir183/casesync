@@ -1,9 +1,8 @@
 # CaseSync — Stage 12 Phase 4D: Notifications centre
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the fourth implementation slice of
-Phase 4; Reports was later delivered in Phase 4E, the Forms field pattern in Phase 4F-A, and
-destructive change summaries remain in 4F-B. No route, permission, server contract, dependency,
-seed data, dashboard filter, chart, map, CSV
+Phase 4; Reports was later delivered in Phase 4E and Forms in Phase 4F. No route, permission,
+server contract, dependency, seed data, dashboard filter, chart, map, CSV
 contract, or visual baseline changed. The official 48-baseline refresh, double CI run, and both
 manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
 [`todo-tracker.md`](todo-tracker.md).

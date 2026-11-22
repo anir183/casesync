@@ -192,6 +192,19 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
     e2e/coverage/representative.spec.ts \
     --grep 'domain suggestion'
 
+# Phase 4F-B change summaries and admin density
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec \
+    e2e/coverage/mutations.spec.ts \
+    --grep 'an admin (merges a duplicate institution|merges, reverts|invites, deactivates|maintains a category master|maintains an SLA rule|sees a change summary before deleting an email domain)'
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/responsive.spec.ts --grep 'staff routes reflow'
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/coverage/routes.spec.ts --grep 'admin institution domains'
+
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts
 bun run test:e2e:spec e2e/responsive.spec.ts

@@ -699,6 +699,31 @@ test.describe('@mutation staff and admin write paths', () => {
     }
   })
 
+  test('an admin sees a change summary before deleting an email domain', async ({ page }) => {
+    await signIn(page, 'admin')
+    await page.goto('/admin/institution-domains')
+    await expect(page.getByRole('heading', { name: 'Institution email domains' })).toBeVisible()
+
+    const row = page
+      .getByRole('row')
+      .filter({ has: page.getByRole('button', { name: 'Delete' }) })
+      .first()
+    await expect(row).toBeVisible()
+    const domain = (await row.locator('td').first().locator('p').first().innerText()).trim()
+    await row.getByRole('button', { name: 'Delete' }).click()
+
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('heading', { name: 'Remove this email domain?' })).toBeVisible()
+    await expect(dialog.getByText('Domain', { exact: true })).toBeVisible()
+    await expect(dialog.getByText(domain, { exact: true }).first()).toBeVisible()
+    await expect(dialog.getByText('Institution', { exact: true })).toBeVisible()
+    await expect(dialog.getByText('Status', { exact: true })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Remove domain' })).toBeVisible()
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(dialog).toHaveCount(0)
+  })
+
   test('an admin approves a pending complainant verification', async ({ page }) => {
     const data = await loadSeedData()
     const requestUser = await submitPendingVerification(data.institutions.north.id)

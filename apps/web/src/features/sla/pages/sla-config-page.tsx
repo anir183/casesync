@@ -1,9 +1,10 @@
 import { type FormEvent, useState } from 'react'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
@@ -176,47 +177,63 @@ export function SlaConfigPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
-            <Select
-              aria-label="Bureau override"
-              value={form.bureauId}
-              onChange={(event) => update('bureauId', event.target.value)}
-            >
-              <option value="">Any bureau</option>
-              {bureaus?.map((bureau) => (
-                <option key={bureau.id} value={bureau.id}>
-                  {bureau.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Category override"
-              value={form.category}
-              onChange={(event) => update('category', event.target.value)}
-            >
-              <option value="">Any category</option>
-              {categories?.map((category) => (
-                <option key={category.id} value={category.code}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Region override"
-              value={form.regionId}
-              onChange={(event) => update('regionId', event.target.value)}
-            >
-              <option value="">Any region</option>
-              {regions?.map((region) => (
-                <option key={region.id} value={region.id}>
-                  {region.name}
-                </option>
-              ))}
-            </Select>
+          <form className="grid gap-4 md:grid-cols-3" onSubmit={handleSubmit}>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" htmlFor="sla-days">
-                Resolution days
-              </label>
+              <Select
+                aria-label="Bureau override"
+                value={form.bureauId}
+                onChange={(event) => update('bureauId', event.target.value)}
+              >
+                <option value="">Any bureau</option>
+                {bureaus?.map((bureau) => (
+                  <option key={bureau.id} value={bureau.id}>
+                    {bureau.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-meta text-muted-foreground">
+                Leave blank to apply to every bureau.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <Select
+                aria-label="Category override"
+                value={form.category}
+                onChange={(event) => update('category', event.target.value)}
+              >
+                <option value="">Any category</option>
+                {categories?.map((category) => (
+                  <option key={category.id} value={category.code}>
+                    {category.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-meta text-muted-foreground">
+                Leave blank to apply to every category.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <Select
+                aria-label="Region override"
+                value={form.regionId}
+                onChange={(event) => update('regionId', event.target.value)}
+              >
+                <option value="">Any region</option>
+                {regions?.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-meta text-muted-foreground">
+                Leave blank to apply to every region.
+              </p>
+            </div>
+            <Field
+              label="Resolution days"
+              htmlFor="sla-days"
+              help="Target resolution time for this scope."
+            >
               <Input
                 id="sla-days"
                 type="number"
@@ -226,11 +243,12 @@ export function SlaConfigPage() {
                 value={form.slaDays}
                 onChange={(event) => update('slaDays', event.target.value)}
               />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" htmlFor="sla-pending-days">
-                Pending reminder days
-              </label>
+            </Field>
+            <Field
+              label="Pending reminder days"
+              htmlFor="sla-pending-days"
+              help="Reminder lead time while a case is pending."
+            >
               <Input
                 id="sla-pending-days"
                 type="number"
@@ -239,18 +257,19 @@ export function SlaConfigPage() {
                 value={form.pendingReminderDays}
                 onChange={(event) => update('pendingReminderDays', event.target.value)}
               />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" htmlFor="sla-reminder-days">
-                Approaching thresholds
-              </label>
+            </Field>
+            <Field
+              label="Approaching thresholds"
+              htmlFor="sla-reminder-days"
+              help="Comma-separated days before the due date."
+            >
               <Input
                 id="sla-reminder-days"
                 placeholder="7,3,1"
                 value={form.reminderDays}
                 onChange={(event) => update('reminderDays', event.target.value)}
               />
-            </div>
+            </Field>
             <label className="flex items-center gap-2 text-sm md:col-span-2">
               <input
                 type="checkbox"
@@ -394,6 +413,18 @@ export function SlaConfigPage() {
         confirmLabel="Delete rule"
         destructive
         pending={deleteConfig.isPending}
+        summary={
+          <ConfirmSummary
+            entries={[
+              { label: 'Scope', value: deleteTarget ? scopeLabel(deleteTarget) : '' },
+              {
+                label: 'Resolution days',
+                value: deleteTarget ? `${deleteTarget.slaDays} days` : '',
+              },
+              { label: 'Status', value: deleteTarget?.active ? 'Active' : 'Inactive' },
+            ]}
+          />
+        }
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => void confirmDelete()}
       />

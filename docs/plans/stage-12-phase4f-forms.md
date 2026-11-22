@@ -1,7 +1,7 @@
 # CaseSync — Stage 12 Phase 4F: Forms
 
-Status: **4F-A IMPLEMENTED and locally verified** 2026-11-22; **4F-B remains**. This is the final
-Phase 4 slice. Phase 4F is split into two bounded sub-slices because the read-only inventory found
+Status: **IMPLEMENTED and locally verified** 2026-11-22 (4F-A and 4F-B complete). This is the final
+Phase 4 slice. Phase 4F was split into two bounded sub-slices because the read-only inventory found
 roughly 20 mutation forms, 9 filter-like surfaces, and 9 `ConfirmDialog` call sites. No route,
 permission, server contract, payload, validation rule, dependency, seed data, visual baseline,
 dashboard filter, chart/map behavior, CSV contract, or `data-testid` changed. The official
@@ -11,7 +11,7 @@ exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 - **Plan date:** 2026-11-22
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4E — Reports workbench
-- **Successor:** Phase 5 — GIS and data visualization, after 4F-B
+- **Successor:** Phase 5 — GIS and data visualization
 - **Manual gates:** both remain held until Stage 12 exits; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
@@ -87,32 +87,49 @@ instead of only in the form-level error line. Other server errors remain in the 
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
   stopped afterward.
-- 4F-A is not yet committed and has not been pushed.
+- 4F-A was committed locally as `18116fa` after explicit authorization. 4F-B is not yet committed
+  and has not been pushed.
 
-## 4. Remaining Phase 4F-B work
+## 4. Phase 4F-B implementation record (2026-11-22)
 
-The second bounded slice will cover destructive change summaries and admin form density:
+The second bounded slice covers destructive change summaries and admin form density.
 
-1. Add an optional change-summary slot to `apps/web/src/components/shared/confirm-dialog.tsx`
-   without changing default rendering, focus-on-cancel, tab trap, Escape behavior, focus return,
-   titles, descriptions, confirm/cancel labels, or `Saving...`.
-2. Apply summaries to institution merge, admin password reset, organization master/SLA/domain
-   deletes, and overlap merge/revert/clear.
-3. Normalize field grids and help text in admin users, organization masters, email domains, and SLA
-   rules while preserving derived IDs such as `#Categories-code` and `#Categories-name`,
-   permissions, payload coercion, and asserted error strings.
-4. Add component and targeted seeded E2E coverage, reconcile docs, and ask before committing.
-
-No visual baselines will be refreshed and no full double-CI run will be performed for either
-sub-slice; both remain Phase 7 / Stage 12 exit work.
+- `ConfirmDialog` gains an optional `summary?: ReactNode` slot. When omitted, the dialog DOM is
+  byte-for-byte unchanged: the same title, description, Cancel/`confirmLabel` buttons, `Saving...`
+  pending label, focus-on-open, focus return, Escape guard, and Tab trap. A small exported
+  `ConfirmSummary` renders a `<dl>` of label/value rows with presentation-only classes and no
+  behavior, ARIA, or data attributes.
+- The summary is applied to institution merge, admin password reset, organization master deletes,
+  SLA rule deletes, email-domain removes, and overlap merge/revert/clear. All existing titles,
+  descriptions, confirm/cancel labels, destructive flags, pending states, role gates, and mutation
+  handlers are unchanged; a summary never adds a new focusable element.
+- Admin users, organization masters, email domains, and SLA rules now share the `Field`
+  label/help wrapper and consistent `gap-4` grids. Derived IDs such as `#Categories-code` and
+  `#Categories-name`, `aria-label` selectors such as `Category override`, checkbox labels such as
+  `Active`, role-based field visibility, payload coercion, and asserted error strings are unchanged.
+  No filter form was touched.
+- Verification: `check:ci` passed; both web typechecks passed; `bun run test:web` passed
+  **95 pass / 0 fail** after one new `ConfirmDialog` component check for default and summary
+  rendering. Targeted seeded Chromium E2E passed **12 / 12**: five existing admin mutation journeys
+  (institution merge, overlap merge/revert/clear, user invite/reset, category master, SLA rule), one
+  new cancel-only email-domain change-summary check, four staff reflow widths, and two admin-domain
+  route checks. No new `data-testid` was added.
+- Fresh web build is **492.84 kB / 139.34 kB gzip**, below the documented
+  `506.12 kB / 140.06 kB gzip` guardrail.
+- All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
+  `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
+  stopped afterward.
+- No visual baseline was refreshed and no full double-CI run was performed; both remain Phase 7 /
+  Stage 12 exit work.
 
 ## 5. Documentation impact
 
-- [`todo-tracker.md`](todo-tracker.md): 4F-A record and remaining 4F-B item.
+- [`todo-tracker.md`](todo-tracker.md): 4F-A and 4F-B records; Phase 4 Forms is complete.
 - [`ui-modernization-plan.md`](ui-modernization-plan.md): Phase 4 Forms note and exit-criteria
-  summary extended.
-- [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md): Forms field/action-bar coverage
-  row added; baseline rows remain held.
-- [`../quality/testing-guide.md`](../quality/testing-guide.md): targeted Forms command added.
-- [`../quality/manual-signoff.md`](../quality/manual-signoff.md): change log updated; both gates
-  remain held.
+  summary updated to complete.
+- [`../quality/ui-test-matrix.md`](../quality/ui-test-matrix.md): Forms field/action-bar and
+  change-summary/admin-density rows added; baseline rows remain held.
+- [`../quality/testing-guide.md`](../quality/testing-guide.md): targeted Forms and 4F-B commands
+  added.
+- [`../quality/manual-signoff.md`](../quality/manual-signoff.md): change log updated for both
+  sub-slices; both gates remain held.

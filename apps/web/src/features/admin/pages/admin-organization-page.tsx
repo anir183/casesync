@@ -1,12 +1,12 @@
 import { type FormEvent, useState } from 'react'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { TableScroll } from '#/components/ui/table-scroll'
-import { FieldLabel } from '#/components/ui/textarea'
 import {
   type Bureau,
   type Category,
@@ -136,39 +136,51 @@ function MasterSection({
           <p className="text-sm text-muted-foreground">{description}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form className="grid gap-3 md:grid-cols-5" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <FieldLabel htmlFor={`${title}-code`}>Code</FieldLabel>
+          <form className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" onSubmit={handleSubmit}>
+            <Field
+              label="Code"
+              htmlFor={`${title}-code`}
+              help="Stable identifier used across records and reports."
+            >
               <Input
                 id={`${title}-code`}
                 required
                 value={code}
                 onChange={(event) => setCode(event.target.value)}
               />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <FieldLabel htmlFor={`${title}-name`}>Name</FieldLabel>
+            </Field>
+            <Field
+              label="Name"
+              htmlFor={`${title}-name`}
+              help="Display name shown throughout the app."
+            >
               <Input
                 id={`${title}-name`}
                 required
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
-            </div>
+            </Field>
             {withOfficeCity && (
-              <div className="space-y-1">
-                <FieldLabel htmlFor={`${title}-city`}>Office city</FieldLabel>
+              <Field
+                label="Office city"
+                htmlFor={`${title}-city`}
+                help="Optional location for this office."
+              >
                 <Input
                   id={`${title}-city`}
                   value={officeCity}
                   onChange={(event) => setOfficeCity(event.target.value)}
                 />
-              </div>
+              </Field>
             )}
             {withCoordinates && (
               <>
-                <div className="space-y-1">
-                  <FieldLabel htmlFor={`${title}-latitude`}>Latitude</FieldLabel>
+                <Field
+                  label="Latitude"
+                  htmlFor={`${title}-latitude`}
+                  help="Decimal degrees; leave blank to omit."
+                >
                   <Input
                     id={`${title}-latitude`}
                     type="number"
@@ -178,9 +190,12 @@ function MasterSection({
                     value={latitude}
                     onChange={(event) => setLatitude(event.target.value)}
                   />
-                </div>
-                <div className="space-y-1">
-                  <FieldLabel htmlFor={`${title}-longitude`}>Longitude</FieldLabel>
+                </Field>
+                <Field
+                  label="Longitude"
+                  htmlFor={`${title}-longitude`}
+                  help="Decimal degrees; leave blank to omit."
+                >
                   <Input
                     id={`${title}-longitude`}
                     type="number"
@@ -190,7 +205,7 @@ function MasterSection({
                     value={longitude}
                     onChange={(event) => setLongitude(event.target.value)}
                   />
-                </div>
+                </Field>
               </>
             )}
             <label className="flex items-center gap-2 self-end pb-2 text-sm">
@@ -201,7 +216,7 @@ function MasterSection({
               />
               Active
             </label>
-            <div className="flex items-end gap-2 md:col-span-5 md:justify-end">
+            <div className="flex items-end gap-2 md:col-span-full md:justify-end">
               {editingId && (
                 <Button type="button" variant="outline" size="sm" onClick={reset}>
                   Cancel
@@ -284,6 +299,15 @@ function MasterSection({
         confirmLabel="Delete"
         destructive
         pending={remove.isPending}
+        summary={
+          <ConfirmSummary
+            entries={[
+              { label: 'Record', value: deleteTarget?.name ?? '' },
+              { label: 'Code', value: deleteTarget?.code ?? '' },
+              { label: 'Status', value: deleteTarget?.active ? 'Active' : 'Inactive' },
+            ]}
+          />
+        }
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => void confirmDelete()}
       />

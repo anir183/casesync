@@ -1,8 +1,8 @@
 # CaseSync — Stage 12 Phase 4E: Reports workbench
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the fifth implementation slice of
-Phase 4; the Forms field pattern was later delivered in Phase 4F-A and destructive change summaries
-remain in 4F-B. No route, permission, server contract, dependency,
+Phase 4; Forms was later delivered in Phase 4F (field pattern and change summaries). No route,
+permission, server contract, dependency,
 seed data, dashboard filter, chart library, GIS/map preview, CSV contract, or visual baseline
 changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain held for
 the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
@@ -10,7 +10,7 @@ the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4D — Notifications centre
-- **Successor:** Stage 12 Phase 4F Forms (4F-A delivered; 4F-B remains)
+- **Successor:** Stage 12 Phase 4F Forms (complete)
 - **Manual gates:** both remain held until Stage 12 exits; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 

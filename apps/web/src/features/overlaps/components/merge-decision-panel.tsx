@@ -1,7 +1,7 @@
 import { OVERLAP, ROLE_GROUPS, hasAnyRole } from '@casesync/config'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
@@ -249,6 +249,23 @@ export function MergeDecisionPanel({ overlap }: { overlap: Overlap }) {
         }
         destructive={pendingAction === 'revert'}
         pending={pending}
+        summary={
+          <ConfirmSummary
+            entries={[
+              { label: 'Cases', value: overlap.cases.map((item) => item.caseNumber).join(', ') },
+              {
+                label: 'Canonical',
+                value:
+                  pendingAction === 'merge'
+                    ? (overlap.cases.find((item) => item.id === canonicalCaseId)?.caseNumber ??
+                      overlap.cases[0]?.caseNumber ??
+                      '—')
+                    : '—',
+              },
+              { label: 'Reason', value: reason.trim() || 'Required before confirming' },
+            ]}
+          />
+        }
         onCancel={() => setPendingAction(null)}
         onConfirm={confirmAction}
       />

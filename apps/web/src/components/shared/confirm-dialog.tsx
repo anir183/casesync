@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { Button } from '#/components/ui/button'
 
 interface ConfirmDialogProps {
@@ -8,8 +9,28 @@ interface ConfirmDialogProps {
   confirmLabel: string
   destructive?: boolean
   pending?: boolean
+  summary?: ReactNode
   onConfirm: () => void
   onCancel: () => void
+}
+
+export interface ConfirmSummaryEntry {
+  label: string
+  value: string
+}
+
+/** Presentation-only change summary for destructive confirmations. */
+export function ConfirmSummary({ entries }: { entries: ConfirmSummaryEntry[] }) {
+  return (
+    <dl className="mt-4 space-y-1.5 rounded-md border border-border bg-muted/40 p-3 text-sm">
+      {entries.map((entry) => (
+        <div key={entry.label} className="flex items-start justify-between gap-3">
+          <dt className="shrink-0 text-muted-foreground">{entry.label}</dt>
+          <dd className="min-w-0 break-words text-right font-medium">{entry.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
 }
 
 const FOCUSABLE =
@@ -22,6 +43,7 @@ export function ConfirmDialog({
   confirmLabel,
   destructive,
   pending,
+  summary,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -96,6 +118,7 @@ export function ConfirmDialog({
         <p id={descriptionId} className="mt-2 text-sm text-muted-foreground">
           {description}
         </p>
+        {summary}
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="outline" onClick={onCancel} disabled={pending}>
             Cancel

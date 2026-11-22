@@ -1,15 +1,16 @@
 import { type FormEvent, useState } from 'react'
-import { ConfirmDialog } from '#/components/shared/confirm-dialog'
+import { ConfirmDialog, ConfirmSummary } from '#/components/shared/confirm-dialog'
 import { EmptyState } from '#/components/shared/empty-state'
 import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import { TableScroll } from '#/components/ui/table-scroll'
-import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { Textarea } from '#/components/ui/textarea'
 import { useInstitutions } from '#/features/institutions/api'
 import {
   useCreateInstitutionDomain,
@@ -35,7 +36,12 @@ export function AdminDomainsPage() {
   const [active, setActive] = useState(true)
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; domain: string } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string
+    domain: string
+    institutionName: string
+    active: boolean
+  } | null>(null)
 
   const domains = useInstitutionDomains({
     q: domainQuery || undefined,
@@ -151,9 +157,12 @@ export function AdminDomainsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-2" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="domain-name">Domain</FieldLabel>
+          <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+            <Field
+              label="Domain"
+              htmlFor="domain-name"
+              help="Email domain matched during representative sign-up."
+            >
               <Input
                 id="domain-name"
                 required
@@ -162,15 +171,20 @@ export function AdminDomainsPage() {
                 value={domain}
                 onChange={(event) => setDomain(event.target.value)}
               />
-            </div>
+            </Field>
             <div className="space-y-1">
-              <FieldLabel htmlFor="domain-institution-search">Institution</FieldLabel>
-              <Input
-                id="domain-institution-search"
-                placeholder="Search institutions"
-                value={institutionQuery}
-                onChange={(event) => setInstitutionQuery(event.target.value)}
-              />
+              <Field
+                label="Institution"
+                htmlFor="domain-institution-search"
+                help="Search and choose the institution this domain belongs to."
+              >
+                <Input
+                  id="domain-institution-search"
+                  placeholder="Search institutions"
+                  value={institutionQuery}
+                  onChange={(event) => setInstitutionQuery(event.target.value)}
+                />
+              </Field>
               <Select
                 aria-label="Institution"
                 required
@@ -191,8 +205,11 @@ export function AdminDomainsPage() {
                 ))}
               </Select>
             </div>
-            <div className="space-y-1 md:col-span-2">
-              <FieldLabel htmlFor="domain-notes">Notes (optional)</FieldLabel>
+            <Field
+              label="Notes (optional)"
+              htmlFor="domain-notes"
+              help="Internal context for reviewers; not shown to representatives."
+            >
               <Textarea
                 id="domain-notes"
                 rows={2}
@@ -200,7 +217,7 @@ export function AdminDomainsPage() {
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
               />
-            </div>
+            </Field>
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -355,7 +372,12 @@ export function AdminDomainsPage() {
                             variant="destructive"
                             disabled={busy}
                             onClick={() =>
-                              setDeleteTarget({ id: item.id, domain: item.domainNormalized })
+                              setDeleteTarget({
+                                id: item.id,
+                                domain: item.domainNormalized,
+                                institutionName: item.institutionName ?? '—',
+                                active: item.active,
+                              })
                             }
                           >
                             Delete
@@ -378,6 +400,15 @@ export function AdminDomainsPage() {
         confirmLabel="Remove domain"
         destructive
         pending={remove.isPending}
+        summary={
+          <ConfirmSummary
+            entries={[
+              { label: 'Domain', value: deleteTarget?.domain ?? '' },
+              { label: 'Institution', value: deleteTarget?.institutionName ?? '' },
+              { label: 'Status', value: deleteTarget?.active ? 'Active' : 'Inactive' },
+            ]}
+          />
+        }
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => void confirmDelete()}
       />
