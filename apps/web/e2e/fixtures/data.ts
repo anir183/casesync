@@ -93,6 +93,28 @@ async function findInstitution(api: APIRequestContext, name: string): Promise<In
   return item
 }
 
+/**
+ * A mutation spec can revert the seeded auto-merge, which changes both its
+ * merge status and its review status. Look for the merge group in either
+ * review queue so route fixtures stay usable regardless of spec order.
+ */
+async function findMergeGroupOverlap(
+  api: APIRequestContext,
+  caseNumber: string,
+): Promise<OverlapRow & { mergeGroupId: string }> {
+  for (const status of ['CONFIRMED', 'PENDING']) {
+    const page = await getJson<PageResponse<OverlapRow>>(
+      api,
+      `/api/v1/overlaps?status=${status}&pageSize=100`,
+    )
+    const overlap = page.items.find(
+      (row) => row.mergeGroupId && row.cases.some((item) => item.caseNumber === caseNumber),
+    )
+    if (overlap?.mergeGroupId) return overlap as OverlapRow & { mergeGroupId: string }
+  }
+  throw new Error(`The seeded ${caseNumber} overlap with a merge group was not found`)
+}
+
 async function findOrCreateComplaint(api: APIRequestContext): Promise<ComplaintRow> {
   const profile = await getJson<PortalProfile>(api, '/api/v1/portal/me')
   const existing = await getJson<PageResponse<ComplaintRow>>(
@@ -129,27 +151,17 @@ async function fetchSeedData(): Promise<SeedData> {
   const complainant = await signedInApi('complainant')
   const representative = await signedInApi('representative')
   try {
-    const [pgrc, rb, east, north, west, overlaps, complaint, representativeCase] =
-      await Promise.all([
-        findCase(admin, 'PGRC-2026-001'),
-        findCase(admin, 'RB-2026-001'),
-        findCase(admin, 'PGRC-2026-004'),
-        findInstitution(admin, 'Delhi Institute of Technology'),
-        findInstitution(admin, 'Mumbai Institute of Engineering'),
-        getJson<PageResponse<OverlapRow>>(
-          admin,
-          '/api/v1/overlaps?status=CONFIRMED&mergeStatus=auto_merged&pageSize=100',
-        ),
-        findOrCreateComplaint(complainant),
-        findRepresentativeCase(representative, 'PGRC-2026-001'),
-      ])
+    const [pgrc, rb, east, north, west, complaint, representativeCase] = await Promise.all([
+      findCase(admin, 'PGRC-2026-001'),
+      findCase(admin, 'RB-2026-001'),
+      findCase(admin, 'PGRC-2026-004'),
+      findInstitution(admin, 'Delhi Institute of Technology'),
+      findInstitution(admin, 'Mumbai Institute of Engineering'),
+      findOrCreateComplaint(complainant),
+      findRepresentativeCase(representative, 'PGRC-2026-001'),
+    ])
 
-    const overlap = overlaps.items.find((row) =>
-      row.cases.some((item) => item.caseNumber === east.caseNumber),
-    )
-    if (!overlap?.mergeGroupId) {
-      throw new Error('The auto-merged PGRC-2026-004 overlap was not found in the demo seed')
-    }
+    const overlap = await findMergeGroupOverlap(admin, east.caseNumber)
 
     return {
       cases: { pgrc, rb, east },
