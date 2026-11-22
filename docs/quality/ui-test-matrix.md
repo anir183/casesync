@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, and W-A portal-shell remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A portal-shell remediation, and W-B staff-presentation remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -317,9 +317,11 @@ toolbar and filter helpers. Phase 4F-A reuses the existing E2E mutation journeys
 converted long forms and adds component coverage for the sticky `FormActions` primitive. Phase 4F-B
 adds component coverage for default and summary `ConfirmDialog` rendering, reuses five admin mutation
 journeys, adds one cancel-only email-domain dialog check, and extends staff reflow/route checks. W-A
-adds `apps/web/e2e/portal-shell.spec.ts` for footer geometry and current-auth header links; no
-`data-testid` was introduced. Rows stay **Partial** where only one route or one side of the state is
-exercised, or where a surface is asserted only outside Playwright.
+adds `apps/web/e2e/portal-shell.spec.ts` for footer geometry and current-auth header links. W-B adds
+`apps/web/e2e/presentation-fixes.spec.ts` plus component assertions for header spacing, centered
+steps, dropdown placement, and wheel bubbling; no `data-testid` was introduced. Rows stay
+**Partial** where only one route or one side of the state is exercised, or where a surface is
+asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -363,6 +365,7 @@ exercised, or where a surface is asserted only outside Playwright.
 | Case row quick actions | `/cases` | **Covered** — labelled Open/Institution links and Copy ID button are component-tested, clipboard feedback is announced, and the accessible name includes the visible text (`Copy ID for <caseNumber>`) to satisfy axe |
 | Cases registry density, page selection, and selected-row export | `/cases` | **Covered** — client-only `casesync:cases:density` preference persists without URL changes; indeterminate/select-all and row selection are page-scoped; selected-row CSV download is clearly labeled and RFC 4180 escaped while the full filtered server export is unchanged |
 | Case detail sticky summary, tabs, and action controls | `/cases/:id` | **Covered** — shared `Tabs` roles/names/arrow keys, sticky summary at 64px after scroll, `Case controls` action bar sourced from `useCaseActionOptions`, and secondary actions return to the unchanged `#case-actions` panel; smoke/states selectors updated from `button` to `tab`. Seeded 375/768/1024/1440 px light/dark observation found no document overflow |
+| Staff walkthrough presentation fixes | Case detail, top-bar `Create` menu, staff dashboards | **Covered** — W-6 header gutter/compact local badges, W-7 centered lifecycle steps and `Optional` sublabels, W-8 dropdown below trigger, and W-9 wheel bubbling from small queues; component checks plus targeted seeded E2E 3/3 |
 | Institution profile summary, health, aliases, and history | `/institutions/:id` | **Covered** — sticky identity/verification summary preserves role-gated quick actions and all merge selectors; six existing-summary health cards use text cues; aliases are a labelled duplicate-context list; scoped compact case table sits in `Institution case history` with unchanged pagination. Component and seeded E2E checks pass, including desktop/375px overflow |
 | Representative institution card spacing | `/institution/profile` | **Covered** — W-10 closed by tightening card header/body padding without changing labels or form fields; seeded responsive reflow passes at 375/768/1024/1440 px |
 | Overlap triage toolbar, evidence, and keyboard review | `/overlaps` | **Covered** — sticky named toolbar preserves saved views/filters; top existing match signals render with a no-signals fallback; `↑/↓`/`J/K` select loaded rows and `C`/`D` open the existing confirm dialog only for reviewers; typing/dialog/modifier guards are component-tested; read-only staff see no queue decisions or shortcut hint |

@@ -1,6 +1,7 @@
 import { Badge } from '#/components/ui/badge'
 import type { ReviewStatus } from '#/features/overlaps/api'
 import { mergeStatusLabel, reviewStatusLabel } from '#/features/overlaps/labels'
+import { cn } from '#/lib/utils'
 
 export function ReviewStatusBadge({ status }: { status: ReviewStatus | string }) {
   const variant = status === 'CONFIRMED' ? 'success' : status === 'DISMISSED' ? 'muted' : 'warning'
@@ -19,7 +20,13 @@ export function MergeStatusBadge({ status }: { status?: string }) {
   return <Badge variant={variant}>{mergeStatusLabel(status)}</Badge>
 }
 
-export function CaseStatusBadge({ status }: { status: string }) {
+export function CaseStatusBadge({
+  status,
+  className,
+}: {
+  status: string
+  className?: string
+}) {
   const label = status.replace(/_/g, ' ').toLowerCase()
   const variant =
     status === 'DISPOSED'
@@ -30,7 +37,7 @@ export function CaseStatusBadge({ status }: { status: string }) {
           ? 'warning'
           : 'default'
   return (
-    <Badge variant={variant} className="capitalize">
+    <Badge variant={variant} className={cn('capitalize', className)}>
       {label}
     </Badge>
   )

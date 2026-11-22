@@ -210,6 +210,11 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
   env -u ALLOW_REMOTE_MONGO \
   bun run test:e2e:spec e2e/portal-shell.spec.ts
 
+# W-B staff presentation: header, lifecycle steps, dropdown, dashboard wheel
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/presentation-fixes.spec.ts
+
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts
 bun run test:e2e:spec e2e/responsive.spec.ts

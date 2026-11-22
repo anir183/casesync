@@ -240,13 +240,13 @@ export function ResolutionLoop({
                 aria-current={isCurrent ? 'step' : undefined}
                 data-state={state}
                 className={cn(
-                  'rounded-lg border p-2.5',
+                  'flex flex-col items-center justify-center rounded-lg border p-2.5 text-center',
                   state === 'complete' && 'border-success/30 bg-success-soft/40',
                   state === 'current' && 'border-primary bg-primary/10',
                   state === 'upcoming' && 'border-dashed border-border bg-muted/20',
                 )}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <span
                     className={cn(
                       'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-meta font-semibold',

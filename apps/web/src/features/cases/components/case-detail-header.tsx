@@ -21,7 +21,7 @@ export function CaseDetailHeader({ item }: { item: CaseDetail }) {
 
   return (
     <div className="sticky top-16 z-30 scroll-mt-32 border-b border-border bg-background/95 backdrop-blur">
-      <div className="space-y-2 py-3">
+      <div className="space-y-2 px-4 py-3 sm:px-6">
         <Link
           to="/cases"
           className="text-meta text-muted-foreground underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -38,8 +38,8 @@ export function CaseDetailHeader({ item }: { item: CaseDetail }) {
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <CaseStatusBadge status={item.status} />
-            <Badge variant="muted">
+            <CaseStatusBadge status={item.status} className="px-2 py-0" />
+            <Badge variant="muted" className="px-2 py-0">
               {item.officerName ? `Officer: ${item.officerName}` : 'Unassigned'}
             </Badge>
           </div>

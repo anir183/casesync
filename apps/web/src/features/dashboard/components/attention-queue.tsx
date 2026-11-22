@@ -103,7 +103,7 @@ export function AttentionQueue({ landing, queue, newIds, now }: AttentionQueuePr
 
       <section
         aria-label={`${landing.queueTitle} rows`}
-        className="min-h-0 max-h-[22rem] flex-1 overflow-y-auto overscroll-contain p-2"
+        className="min-h-0 max-h-[22rem] flex-1 overflow-y-auto p-2"
       >
         {queue.isLoading ? (
           <div className="space-y-2 p-2" aria-busy="true" aria-label="Loading work queue">

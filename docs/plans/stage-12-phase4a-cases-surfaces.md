@@ -131,7 +131,7 @@ global breadcrumb selectors, and `Current scope` remain absent.
   change-log entry added; gates remain held.
 - [`../quality/phase4a-ui-walkthrough-findings.md`](../quality/phase4a-ui-walkthrough-findings.md):
   82-stop product-owner UI walkthrough consolidated. Findings W-5 (registry table width), W-6
-  (detail header spacing/badges), and W-7 (resolution-loop centering) apply to this slice; W-1–W-4,
-  W-8, W-9, and W-10 belong to other surfaces. Findings were recorded, not fixed in Phase 4A.
-   W-10 was later folded into Phase 4B and is closed; see
-   [`stage-12-phase4b-institution-profile.md`](stage-12-phase4b-institution-profile.md).
+  (detail header spacing/badges), and W-7 (resolution-loop centering) applied to this slice. W-6 and
+  W-7 were later closed in W-B; W-5 remains open. W-1–W-4 were closed/verified in W-A, W-6–W-9 in
+  W-B, and W-10 in Phase 4B; see
+  [`stage-12-phase4b-institution-profile.md`](stage-12-phase4b-institution-profile.md).

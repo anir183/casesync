@@ -228,7 +228,9 @@ describe('dashboard command surface', () => {
     renderSurface(ROLES.ADMIN, undefined, { queue: escalationQueue })
 
     expect(screen.queryByRole('heading', { name: 'Due now' })).toBeNull()
-    expect(screen.getByRole('region', { name: 'Escalations needing attention rows' })).toBeDefined()
+    const rows = screen.getByRole('region', { name: 'Escalations needing attention rows' })
+    expect(rows).toBeDefined()
+    expect(rows.className).not.toContain('overscroll-contain')
     expect(screen.getAllByRole('link', { name: /CASE-00/ })).toHaveLength(9)
   })
 

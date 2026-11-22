@@ -27,7 +27,8 @@ keep their names, gates, and server authorization.
 
 This slice also closes walkthrough finding **W-10** by tightening the heading-to-content spacing on
 the representative institution profile cards without changing their labels or content. W-1–W-9
-remained recorded and deferred at the time; W-1–W-3 were later closed and W-4 verified in W-A.
+remained recorded and deferred at the time; W-1–W-3 and W-6–W-9 were later closed in W-A/W-B and
+W-4 was verified in W-A.
 
 ## 2. Shipped composition
 

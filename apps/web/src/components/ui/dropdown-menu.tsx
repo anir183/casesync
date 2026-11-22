@@ -111,7 +111,7 @@ export function DropdownMenu({ trigger, items, align = 'start', ariaLabel }: Dro
           aria-label={ariaLabel}
           onKeyDown={handleMenuKeyDown}
           className={cn(
-            'absolute z-40 mt-1 min-w-56 rounded-lg border border-border-subtle bg-surface-raised p-1 shadow-lg',
+            'absolute top-full z-40 mt-1 min-w-56 rounded-lg border border-border-subtle bg-surface-raised p-1 shadow-lg',
             align === 'end' ? 'right-0' : 'left-0',
           )}
         >

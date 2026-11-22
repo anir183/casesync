@@ -167,6 +167,9 @@ describe('shared UI primitives', () => {
     const trigger = screen.getByRole('button', { name: 'Actions' })
     fireEvent.click(trigger)
 
+    const menu = screen.getByRole('menu', { name: 'Case actions' })
+    expect(menu.className).toContain('top-full')
+
     const rename = screen.getByRole('menuitem', { name: 'Rename' })
     const archive = screen.getByRole('menuitem', { name: 'Archive' })
     expect(document.activeElement).toBe(rename)
