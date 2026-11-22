@@ -17,7 +17,7 @@ const COLLAPSED_KEY = 'casesync.staff-rail-collapsed'
 function railLinkClass(collapsed: boolean) {
   return ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex min-h-11 items-center gap-3 rounded-lg px-3 text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex min-h-11 items-center gap-3 rounded-lg px-3 text-body transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       collapsed && 'justify-center px-0',
       isActive
         ? 'bg-primary/10 font-medium text-primary'
@@ -47,7 +47,7 @@ export function SidebarRail({ role, displayName, email, onSignOut }: SidebarRail
   return (
     <div
       className={cn(
-        'flex h-full flex-col border-r border-border bg-background px-3 py-4 transition-[width]',
+        'flex h-full flex-col border-r border-border bg-background px-3 py-4 transition-[width] duration-base ease-out motion-reduce:transition-none',
         collapsed ? 'w-16' : 'w-60',
       )}
     >
@@ -71,7 +71,7 @@ export function SidebarRail({ role, displayName, email, onSignOut }: SidebarRail
           aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
           title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
           onClick={toggleCollapsed}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {collapsed ? (
             <ChevronsRight aria-hidden className="h-5 w-5" />

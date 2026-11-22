@@ -17,7 +17,7 @@ interface MobileNavDrawerProps {
 
 const DRAWER_LINK_CLASS = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'flex min-h-11 items-center rounded-lg px-3 text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    'flex min-h-11 items-center rounded-lg px-3 text-body transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     isActive
       ? 'bg-primary/10 font-medium text-primary'
       : 'text-muted-foreground hover:bg-muted hover:text-foreground',

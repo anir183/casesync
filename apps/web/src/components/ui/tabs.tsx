@@ -85,7 +85,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, ariaLabel }: T
               onClick={() => select(item.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={cn(
-                '-mb-px border-b-2 border-transparent px-3 py-2 text-compact font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
+                '-mb-px border-b-2 border-transparent px-3 py-2 text-compact font-medium text-muted-foreground transition-colors duration-fast ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
                 isActive && 'border-primary text-foreground',
               )}
             >

@@ -19,7 +19,7 @@ export function NextMoves({ actions }: { actions: DashboardAction[] }) {
             <li key={action.to}>
               <Link
                 to={action.to}
-                className="group flex min-h-11 items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex min-h-11 items-center gap-3 rounded-lg px-2 py-1.5 transition-colors duration-fast ease-out hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="text-meta font-semibold tabular-nums text-muted-foreground">
                   {String(index + 1).padStart(2, '0')}
@@ -36,7 +36,7 @@ export function NextMoves({ actions }: { actions: DashboardAction[] }) {
                 </span>
                 <ArrowUpRight
                   aria-hidden="true"
-                  className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:translate-y-0"
+                  className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-fast ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:translate-y-0"
                 />
               </Link>
             </li>

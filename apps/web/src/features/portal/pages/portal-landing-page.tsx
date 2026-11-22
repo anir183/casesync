@@ -40,7 +40,7 @@ function FaqRow({ question, children }: { question: string; children: ReactNode 
         {question}
         <ChevronDown
           aria-hidden
-          className="h-4 w-4 shrink-0 text-muted-foreground transition-none group-open:rotate-180"
+          className="h-4 w-4 shrink-0 text-muted-foreground transition-none group-open:rotate-180 motion-reduce:group-open:rotate-0"
         />
       </summary>
       <div className="px-4 pb-4 text-sm leading-relaxed text-muted-foreground">{children}</div>

@@ -8,6 +8,7 @@ import { Field } from '../src/components/ui/field'
 import { FormActions } from '../src/components/ui/form-actions'
 import { KpiStrip } from '../src/components/ui/kpi-strip'
 import { Popover } from '../src/components/ui/popover'
+import { Skeleton } from '../src/components/ui/skeleton'
 import { Tabs } from '../src/components/ui/tabs'
 
 afterEach(cleanup)
@@ -211,6 +212,14 @@ describe('shared UI primitives', () => {
     expect(screen.getByRole('alert')).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(retries).toBe(1)
+  })
+
+  test('Skeleton disables its pulse when reduced motion is requested', () => {
+    render(<Skeleton aria-label="Loading row" />)
+
+    const skeleton = screen.getByLabelText('Loading row')
+    expect(skeleton.className).toContain('animate-pulse')
+    expect(skeleton.className).toContain('motion-reduce:animate-none')
   })
 
   test('KpiStrip renders each value with tabular numerals', () => {

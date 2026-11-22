@@ -18,14 +18,14 @@ import { cn } from '#/lib/utils'
 
 const PRIMARY_LINK_CLASS = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     isActive
       ? 'bg-muted font-medium text-foreground'
       : 'text-muted-foreground hover:bg-muted hover:text-foreground',
   )
 
 const MENU_LINK_CLASS =
-  'block rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+  'block rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 const MOBILE_LINK_CLASS = ({ isActive }: { isActive: boolean }) =>
   cn('block', PRIMARY_LINK_CLASS({ isActive }))
@@ -158,7 +158,7 @@ export function InstitutionLayout() {
                 </Link>
                 <Link
                   to="/institution/sign-up"
-                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors duration-fast ease-out hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Request access
                 </Link>
@@ -171,7 +171,7 @@ export function InstitutionLayout() {
               aria-expanded={mobileOpen}
               aria-controls="institution-mobile-nav"
               onClick={() => setMobileOpen((current) => !current)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
             >
               {mobileOpen ? (
                 <X aria-hidden className="h-5 w-5" />

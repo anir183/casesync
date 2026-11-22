@@ -234,6 +234,19 @@ body {
   --density-row-leading: 1rem;
 }
 
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.content-reveal {
+  animation: content-reveal var(--motion-fast) var(--ease-out-emphasis) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -242,5 +255,10 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .content-reveal {
+    animation: none;
+    opacity: 1;
   }
 }

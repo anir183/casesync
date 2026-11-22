@@ -117,7 +117,7 @@ export function InstitutionCasesPage() {
               <Link
                 key={item.id}
                 to={`/institution/cases/${item.id}`}
-                className="block rounded-md border border-border p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="block rounded-md border border-border p-4 transition-colors duration-fast ease-out hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">

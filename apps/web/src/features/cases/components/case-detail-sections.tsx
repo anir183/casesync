@@ -8,7 +8,8 @@ import { formatDate, formatDateOnly } from '#/lib/utils'
 
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
-const ROW_CLASS = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
+const ROW_CLASS =
+  'border-b border-border transition-colors duration-fast ease-out last:border-0 hover:bg-muted/40'
 
 export function DetailRow({ label, value }: { label: string; value?: React.ReactNode }) {
   return (

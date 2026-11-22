@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, and Phase 5 GIS/data visualization implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, Phase 5 GIS/data visualization, Phase 6 portal landing, and the bounded Phase 7 motion/reduced-motion slice implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -386,7 +386,7 @@ asserted only outside Playwright.
 | Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |
 | Resolution loop ownership | `/cases/:id`, `/portal/complaints/:id` | **Covered** (lifecycle, owner, and target date render) |
 | Light/dark theme | Staff and portal shells | **Covered** (staff; persists across reload) |
-| Reduced motion | Dashboard, reports, map routes | **Covered** (dashboard and reports transitions collapse) |
+| Reduced motion | Dashboard, reports, map routes, shell lists, skeletons, portal FAQ | **Covered** — shared duration/ease tokens on shell, list, dialog, drawer, chart, map, and table transitions; explicit overrides stop skeleton pulse, sidebar/chart width changes, hover arrows, and the FAQ chevron; the opacity-only skeleton-to-content reveal is fully static with `prefers-reduced-motion`; transition-duration and reveal-style assertions pass alongside 200% zoom and four-breakpoint reflow |
 | 200% zoom | All route groups | **Covered** (page zoom and text-only zoom on staff routes) |
 
 Step 4 also fixed a shared pagination bug: choosing a new page size invoked both

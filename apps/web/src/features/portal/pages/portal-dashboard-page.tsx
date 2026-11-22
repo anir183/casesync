@@ -138,7 +138,7 @@ export function PortalDashboardPage() {
                   <Link
                     key={item.id ?? item.caseNumber}
                     to={`/portal/complaints/${item.id}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/40 bg-warning-soft/40 p-3 transition-colors hover:bg-warning-soft/70"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/40 bg-warning-soft/40 p-3 transition-colors duration-fast ease-out hover:bg-warning-soft/70"
                   >
                     <span>
                       <span className="font-medium">{item.caseNumber}</span>
@@ -197,7 +197,7 @@ export function PortalDashboardPage() {
               <Link
                 key={item.id ?? item.caseNumber}
                 to={`/portal/complaints/${item.id}`}
-                className="block rounded-md border border-border p-4 transition-colors hover:bg-muted/40"
+                className="block rounded-md border border-border p-4 transition-colors duration-fast ease-out hover:bg-muted/40"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>

@@ -19,7 +19,8 @@ const DEFAULT_FILTERS: InstitutionFilters = {
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
 }
 
-const ROW_CLASS = 'border-b border-border last:border-0 transition-colors hover:bg-muted/40'
+const ROW_CLASS =
+  'border-b border-border last:border-0 transition-colors duration-fast ease-out hover:bg-muted/40'
 const CELL_CLASS = 'px-4 py-3 text-sm'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
 
@@ -137,7 +138,7 @@ export function InstitutionsPage() {
             </div>
           )}
           {!isLoading && !isError && (
-            <TableScroll label="Institution registry">
+            <TableScroll label="Institution registry" className="content-reveal">
               <table className="w-full min-w-[760px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-border">

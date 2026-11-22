@@ -57,6 +57,15 @@ bell name versus its `99+` badge, `aria-selected` on non-tab case-detail buttons
 non-semantic dialog element, and route-change focus landing on the outgoing page during a
 lazy load.
 
+**Phase 7 bounded motion pass (2026-11-22).** Shell, list, dialog, drawer, chart, map,
+table, and shared-control color transitions now use the `duration-fast`/`ease-out` tokens.
+Non-essential motion has explicit `motion-reduce` overrides for the skeleton pulse,
+hover-arrow transforms, the FAQ chevron, and the sidebar/chart width transitions.
+Skeleton-to-content swaps use an opacity-only reveal that occupies its final layout from
+the first frame and becomes `animation: none; opacity: 1` under reduced motion. The existing
+responsive reduced-motion check now asserts both collapsed transition durations and the
+static reveal state; no new route, ARIA label, or selector was introduced.
+
 ## 3. Existing good practices
 
 - Form controls use associated labels (`htmlFor`/`id`) on staff, portal sign-in/signup,

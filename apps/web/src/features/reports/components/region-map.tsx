@@ -83,7 +83,7 @@ export function RegionMap({
               aria-pressed={pressed}
               onClick={() => setMetric(item)}
               className={cn(
-                'rounded-md border px-2 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'rounded-md border px-2 py-1 text-xs font-medium transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 pressed
                   ? 'border-primary bg-primary/10 text-foreground'
                   : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -127,7 +127,7 @@ export function RegionMap({
                 onFocus={() => setActiveId(region.regionId)}
                 onBlur={() => setActiveId(undefined)}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   selected
                     ? 'border-primary bg-primary/10 text-foreground'
                     : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',

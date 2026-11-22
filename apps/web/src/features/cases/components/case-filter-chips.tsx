@@ -24,7 +24,7 @@ export function CaseFilterChips({ filters, valueLabels, onRemove }: CaseFilterCh
                 type="button"
                 aria-label={`Remove ${label} filter`}
                 onClick={() => onRemove(key)}
-                className="inline-flex max-w-64 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-meta text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="inline-flex max-w-64 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-meta text-foreground transition-colors duration-fast ease-out hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <span className="text-muted-foreground">{label}:</span>
                 <span className="truncate">{value}</span>

@@ -88,7 +88,7 @@ export function InstitutionDashboardPage() {
             <Link
               key={item.id}
               to={`/institution/cases/${item.id}`}
-              className="block rounded-md border border-border p-4 transition-colors hover:bg-muted/40"
+              className="block rounded-md border border-border p-4 transition-colors duration-fast ease-out hover:bg-muted/40"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>

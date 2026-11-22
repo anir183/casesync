@@ -85,7 +85,7 @@ export function ContextTopBar({
             aria-expanded={mobileOpen}
             aria-controls="staff-mobile-nav"
             onClick={onToggleMobile}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
           >
             {mobileOpen ? (
               <X aria-hidden className="h-5 w-5" />

@@ -34,7 +34,7 @@ export function NotificationGroupCard({
               <li
                 key={item.id}
                 className={cn(
-                  'group px-5 py-4 transition-colors hover:bg-muted/40',
+                  'group px-5 py-4 transition-colors duration-fast ease-out hover:bg-muted/40',
                   unread && 'bg-primary/[0.04]',
                 )}
               >

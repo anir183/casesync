@@ -38,7 +38,12 @@ export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSecti
 }
 
 export function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn('transition-colors hover:bg-muted/40', className)} {...props} />
+  return (
+    <tr
+      className={cn('transition-colors duration-fast ease-out hover:bg-muted/40', className)}
+      {...props}
+    />
+  )
 }
 
 export function TableHeaderCell({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {

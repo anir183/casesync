@@ -38,7 +38,7 @@ export function ChartTable({
             {rows.map((row) => (
               <tr
                 key={row.map(String).join('|')}
-                className="border-t border-border transition-colors hover:bg-muted/40"
+                className="border-t border-border transition-colors duration-fast ease-out hover:bg-muted/40"
               >
                 {row.map((cell, cellIndex) => (
                   <td

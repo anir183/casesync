@@ -45,7 +45,8 @@ const EMPTY_FORM: FormState = {
 
 const CELL = 'px-4 py-3 text-sm'
 const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
-const ROW = 'border-b border-border transition-colors last:border-0 hover:bg-muted/40'
+const ROW =
+  'border-b border-border transition-colors duration-fast ease-out last:border-0 hover:bg-muted/40'
 
 function scopeLabel(item: SlaConfig) {
   const parts = [

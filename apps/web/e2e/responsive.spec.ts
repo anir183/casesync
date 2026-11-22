@@ -197,5 +197,18 @@ test.describe('@responsive zoom and motion', () => {
     )
     expect(seconds.every((duration) => duration <= 0.02)).toBe(true)
     expect(await documentOverflow(page)).toBeLessThanOrEqual(1)
+
+    await page.goto('/cases')
+    await expect(page.getByRole('heading', { name: 'Case registry' })).toBeVisible({
+      timeout: 30_000,
+    })
+    const reveal = page.locator('.content-reveal').first()
+    await expect(reveal).toBeVisible({ timeout: 30_000 })
+    const revealMotion = await reveal.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return { animationName: style.animationName, opacity: style.opacity }
+    })
+    expect(revealMotion.animationName).toBe('none')
+    expect(revealMotion.opacity).toBe('1')
   })
 })

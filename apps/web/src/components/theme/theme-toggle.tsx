@@ -31,7 +31,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             title={option.label}
             onClick={() => setTheme(option.value)}
             className={cn(
-              'inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               active
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground',

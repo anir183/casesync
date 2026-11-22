@@ -352,15 +352,17 @@ export function CasesPage() {
             </div>
           )}
           {!isLoading && !isError && (
-            <CaseTable
-              cases={visibleCases}
-              density={density}
-              selectedIds={selectedIds}
-              onToggleCase={toggleCase}
-              onTogglePage={togglePage}
-              stickyColumns
-              scrollHint="Scroll horizontally to see all columns"
-            />
+            <div className="content-reveal">
+              <CaseTable
+                cases={visibleCases}
+                density={density}
+                selectedIds={selectedIds}
+                onToggleCase={toggleCase}
+                onTogglePage={togglePage}
+                stickyColumns
+                scrollHint="Scroll horizontally to see all columns"
+              />
+            </div>
           )}
           {cases && cases.total > 0 && (
             <div className="scroll-mt-32">

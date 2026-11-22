@@ -5,9 +5,10 @@ remediation and the Phase 3 dashboard/admin surfaces; **Phase 3.5 implemented an
 verified** as the redesigned Operator Dashboard Experience; **Phases 4A–4E implemented and locally
 verified** for cases surfaces, institution profile, overlap queue, notifications centre, and reports
 workbench; **Phase 4F Forms and the W walkthrough remediations are implemented and locally
-verified**; **Phase 5 GIS/data visualization is implemented and locally verified**. The official
-48-baseline refresh, double CI, and both manual gates remain held for the Phase 7 / Stage 12 exit
-sweep.
+verified**; **Phase 5 GIS/data visualization is implemented and locally verified**; **Phase 6 portal
+landing and public experience is implemented and locally verified**; the **bounded Phase 7
+motion/reduced-motion slice is implemented and locally verified**. The official 48-baseline
+refresh, double CI, and both manual gates remain held for the Phase 7 / Stage 12 exit sweep.
 Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
 [`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md),
 [`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md), and
@@ -726,6 +727,17 @@ the committed visual baselines were not touched and remain a Phase 7 refresh.
 6. The full Chromium suite passes twice against fresh production builds and `seed:demo`.
 7. The coverage matrix, testing guide, and QA docs agree with the implementation.
 8. No application behavior changed solely to satisfy a test.
+
+**Completion note — bounded motion slice (2026-11-22).** The first three Phase 7 work items are
+complete: shell, list, dialog/drawer, chart, map-control, table, and shared-control color
+transitions use the tokenized `duration-fast`/`ease-out` values; non-essential pulse, transform,
+width, and chevron motion has explicit `motion-reduce` overrides; and the case, institution,
+overlap, and notification lists use a layout-stable opacity-only content reveal. The reveal has
+no transform, occupies its final box from the first frame, and resolves to `animation: none;
+opacity: 1` under reduced motion. No animation/chart/map dependency was added. Verified with
+`check:ci`, both web typechecks, web 105/0, seeded loopback E2E 90/90 including axe and the
+responsive motion checks, and a fresh `493.42 kB / 139.49 kB gzip` main build. The gated
+baseline refresh, double full Chromium run, manual reviews, and deployment remain pending.
 
 ## 6. Screen-by-screen target
 

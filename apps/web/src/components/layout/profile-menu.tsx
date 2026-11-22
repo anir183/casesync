@@ -81,7 +81,7 @@ export function ProfileMenu({ displayName, email, role, collapsed, onSignOut }: 
               close()
               onSignOut()
             }}
-            className="mt-1 flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-body text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-body text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <LogOut aria-hidden className="h-4 w-4 shrink-0" />
             Sign out

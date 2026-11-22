@@ -109,7 +109,7 @@ export function OverflowMenu({
               role="menuitem"
               disabled={item.disabled}
               className={cn(
-                'flex w-full flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+                'flex w-full flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left transition-colors duration-fast ease-out hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
                 item.destructive && 'text-danger',
               )}
               onClick={() => select(item)}

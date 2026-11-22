@@ -125,7 +125,7 @@ function NotificationPanel({
                           close()
                         }}
                         className={cn(
-                          'block px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                          'block px-4 py-3 transition-colors duration-fast ease-out hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                           unread && 'bg-primary/[0.04]',
                         )}
                       >
@@ -171,7 +171,7 @@ function NotificationPanel({
         <Link
           to="/notifications"
           onClick={close}
-          className="block rounded-lg px-3 py-2.5 text-center text-body font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="block rounded-lg px-3 py-2.5 text-center text-body font-medium text-primary transition-colors duration-fast ease-out hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           View all notifications
         </Link>

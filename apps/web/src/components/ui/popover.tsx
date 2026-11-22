@@ -58,7 +58,7 @@ export function Popover({ trigger, children, ariaLabel }: PopoverProps) {
         aria-controls={open ? panelId : undefined}
         aria-label={ariaLabel}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex items-center justify-center gap-tight rounded-lg border border-border bg-surface-card px-3 py-2 text-compact font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="inline-flex items-center justify-center gap-tight rounded-lg border border-border bg-surface-card px-3 py-2 text-compact font-medium text-foreground transition-colors duration-fast ease-out hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {trigger}
       </button>

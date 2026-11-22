@@ -53,7 +53,7 @@ export function AttentionQueue({ landing, queue, newIds, now }: AttentionQueuePr
     <Link
       key={item.id}
       to={`/cases/${item.id}`}
-      className="group flex min-h-14 items-center gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-border-subtle hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex min-h-14 items-center gap-3 rounded-lg border border-transparent px-2 py-2 transition-colors duration-fast ease-out hover:border-border-subtle hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span aria-hidden="true" className={cn('h-8 w-1 shrink-0 rounded-full', meta.accent)} />
       <span className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
@@ -84,7 +84,7 @@ export function AttentionQueue({ landing, queue, newIds, now }: AttentionQueuePr
       </span>
       <ArrowUpRight
         aria-hidden="true"
-        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:translate-y-0"
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-fast ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:translate-y-0"
       />
     </Link>
   )
@@ -153,7 +153,7 @@ export function AttentionQueue({ landing, queue, newIds, now }: AttentionQueuePr
       {typeof waiting === 'number' && waiting > items.length ? (
         <Link
           to={viewAllTo}
-          className="inline-flex min-h-11 shrink-0 items-center gap-1 border-t border-border px-4 text-compact font-medium text-primary transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1 border-t border-border px-4 text-compact font-medium text-primary transition-colors duration-fast ease-out hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           View all {waiting}
           <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />

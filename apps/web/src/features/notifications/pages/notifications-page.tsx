@@ -131,7 +131,7 @@ export function NotificationsPage() {
       ) : null}
 
       {groups.length > 0 ? (
-        <div className="space-y-4">
+        <div className="content-reveal space-y-4">
           {groups.map((group) => (
             <NotificationGroupCard
               key={group.label}

@@ -75,7 +75,7 @@ export function NavDropdown({
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           open
             ? 'bg-muted font-medium'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',

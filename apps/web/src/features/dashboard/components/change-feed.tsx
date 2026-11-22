@@ -48,7 +48,7 @@ export function ChangeFeed({ summary, isLoading, isError }: ChangeFeedProps) {
               />
               <Link
                 to={event.to}
-                className="group flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-lg px-2 py-1.5 transition-colors duration-fast ease-out hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-compact font-medium text-foreground">

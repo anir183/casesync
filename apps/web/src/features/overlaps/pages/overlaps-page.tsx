@@ -261,7 +261,7 @@ export function OverlapsPage() {
         />
       )}
 
-      <div className="space-y-4">
+      <div className="content-reveal space-y-4">
         {items.map((overlap, index) => (
           <OverlapTriageCard
             key={overlap.id}

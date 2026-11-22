@@ -49,7 +49,7 @@ export function BarChart({
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full w-[var(--bar-width)] rounded-full bg-[var(--bar-color)] transition-[width] duration-base ease-out"
+                    className="h-full w-[var(--bar-width)] rounded-full bg-[var(--bar-color)] transition-[width] duration-base ease-out motion-reduce:transition-none"
                     style={
                       {
                         '--bar-width': `${Math.max(width, item.value > 0 ? 2 : 0)}%`,

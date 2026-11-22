@@ -7,7 +7,8 @@ import type { CaseDensity } from '#/features/cases/case-density'
 import { CaseStatusBadge } from '#/features/overlaps/components/status-badges'
 import { cn, formatDateOnly } from '#/lib/utils'
 
-const ROW_CLASS = 'group border-b border-border transition-colors last:border-0 hover:bg-muted/40'
+const ROW_CLASS =
+  'group border-b border-border transition-colors duration-fast ease-out last:border-0 hover:bg-muted/40'
 const CELL_CLASS = 'px-4 py-[var(--density-row-y)] text-sm leading-[var(--density-row-leading)]'
 const HEAD_CLASS = `${CELL_CLASS} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
 const STICKY_SELECT_HEAD_CLASS = 'sticky left-0 z-20 w-12 min-w-12'

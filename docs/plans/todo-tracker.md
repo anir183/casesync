@@ -1,6 +1,6 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences).
+**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
@@ -1108,9 +1108,9 @@ after the merge mutation (see the CI-fix note below). Both manual gates remain h
 
 ### Phase 7 — Motion, accessibility, performance, and coverage refresh
 
-- [ ] Apply motion tokens to shell, lists, dialogs, drawers, charts, and map.
-- [ ] Add reduced-motion overrides for every non-essential transform/animation.
-- [ ] Add skeleton-to-content transitions without layout shift.
+- [x] Apply motion tokens to shell, lists, dialogs, drawers, charts, and map.
+- [x] Add reduced-motion overrides for every non-essential transform/animation.
+- [x] Add skeleton-to-content transitions without layout shift.
 - [ ] Review contrast, focus order/return, 44 px targets, 200% zoom, all four breakpoints,
       and screen-reader names for icons/charts/map/command results.
 - [ ] Audit the bundle; lazy-load heavy surfaces; add no animation/chart/GIS dependency.
@@ -1129,6 +1129,21 @@ after the merge mutation (see the CI-fix note below). Both manual gates remain h
       4A the matrix, QA change log, testing guide's targeted-E2E workflow, UI/UX plan, and this
       tracker are current; final selector/baseline evidence remains part of the full Phase 7
       documentation pass.
+
+Implementation note (bounded motion slice, 2026-11-22): shared color transitions across the
+shell, lists, dialogs/drawers, charts, map controls, tables, and form controls now use the
+`duration-fast`/`ease-out` tokens. Non-essential motion has explicit reduced-motion guards for
+the skeleton pulse, hover arrows, FAQ chevron, sidebar width, and chart width. Case, institution,
+overlap, and notification lists use an opacity-only `content-reveal` that occupies its final
+layout immediately and becomes static under `prefers-reduced-motion`; the skeleton guard has
+component coverage and the responsive reduced-motion check asserts both collapsed transition
+durations and the static reveal. `check:ci`, both web typechecks, web 105 pass / 0 fail, targeted
+seeded loopback E2E 90/90 (including 55 axe route scans), and a fresh build
+(`493.42 kB / 139.49 kB gzip` main chunk; lazy map chunk unchanged at
+`201.95 kB / 61.37 kB gzip`) passed. No route, permission, server contract, query key, URL
+parameter, payload, seed/CSV, dashboard filter, animation/chart/map dependency, visual baseline,
+`data-testid`, push, or deployment changed. The 48-baseline refresh, double full Chromium run,
+both manual gates, and push remain held.
 
 ## Testing Definition of Done
 

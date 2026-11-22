@@ -33,7 +33,7 @@ export function AdminHub({ groups }: { groups: AdminHubGroup[] }) {
               <Link
                 key={`${group.title}-${link.label}`}
                 to={link.to}
-                className="flex flex-wrap items-center justify-between gap-tight rounded-lg border border-border-subtle p-control transition-colors hover:bg-muted/40"
+                className="flex flex-wrap items-center justify-between gap-tight rounded-lg border border-border-subtle p-control transition-colors duration-fast ease-out hover:bg-muted/40"
               >
                 <span className="min-w-0 space-y-0.5">
                   <span className="block text-compact font-medium text-foreground">

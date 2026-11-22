@@ -261,7 +261,7 @@ function CommandResultsList({
                 onClick={() => onSelect(result)}
                 onMouseEnter={() => onActiveChange(index)}
                 className={cn(
-                  'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-body transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   index === selected ? 'bg-muted text-foreground' : 'text-muted-foreground',
                 )}
               >
@@ -386,7 +386,7 @@ export function InlineCommandSearch({
     <div ref={rootRef} className={cn('relative min-w-0', className)}>
       <div
         className={cn(
-          'flex h-9 items-center gap-2 rounded-lg border px-3 transition-colors',
+          'flex h-9 items-center gap-2 rounded-lg border px-3 transition-colors duration-fast ease-out',
           suspended
             ? 'border-primary/40 bg-primary/5'
             : open
@@ -430,7 +430,7 @@ export function InlineCommandSearch({
             type="button"
             aria-label="Close search"
             onClick={onClose}
-            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-fast ease-out hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X aria-hidden className="h-4 w-4" />
           </button>
