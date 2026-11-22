@@ -4,10 +4,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
+import { FormActions } from '#/components/ui/form-actions'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { Textarea } from '#/components/ui/textarea'
 import { usePortalProfile, usePublicCategories, useSubmitComplaint } from '#/features/portal/api'
 
 export function PortalComplaintNewPage() {
@@ -94,8 +96,7 @@ export function PortalComplaintNewPage() {
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="complaint-subject">Subject</FieldLabel>
+            <Field label="Subject" htmlFor="complaint-subject">
               <Input
                 id="complaint-subject"
                 required
@@ -103,10 +104,9 @@ export function PortalComplaintNewPage() {
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
               />
-            </div>
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1">
-                <FieldLabel htmlFor="complaint-category">Category</FieldLabel>
+              <Field label="Category" htmlFor="complaint-category">
                 <Select
                   id="complaint-category"
                   value={category}
@@ -119,19 +119,21 @@ export function PortalComplaintNewPage() {
                     </option>
                   ))}
                 </Select>
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="complaint-date">Incident date</FieldLabel>
+              </Field>
+              <Field label="Incident date" htmlFor="complaint-date">
                 <Input
                   id="complaint-date"
                   type="date"
                   value={incidentDate}
                   onChange={(event) => setIncidentDate(event.target.value)}
                 />
-              </div>
+              </Field>
             </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="complaint-description">What happened?</FieldLabel>
+            <Field
+              label="What happened?"
+              htmlFor="complaint-description"
+              help="Include dates, people involved (roles are enough), and any steps already taken."
+            >
               <Textarea
                 id="complaint-description"
                 rows={8}
@@ -140,12 +142,8 @@ export function PortalComplaintNewPage() {
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
               />
-              <p className="text-xs text-muted-foreground">
-                Include dates, people involved (roles are enough), and any steps already taken.
-              </p>
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="complaint-outcome">Desired resolution</FieldLabel>
+            </Field>
+            <Field label="Desired resolution" htmlFor="complaint-outcome">
               <Textarea
                 id="complaint-outcome"
                 rows={3}
@@ -153,9 +151,8 @@ export function PortalComplaintNewPage() {
                 value={desiredResolution}
                 onChange={(event) => setDesiredResolution(event.target.value)}
               />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="complaint-contact">Preferred contact method</FieldLabel>
+            </Field>
+            <Field label="Preferred contact method" htmlFor="complaint-contact">
               <Select
                 id="complaint-contact"
                 value={contactPreference}
@@ -165,7 +162,7 @@ export function PortalComplaintNewPage() {
                 <option value="PHONE">Phone</option>
                 <option value="PORTAL">Portal messages</option>
               </Select>
-            </div>
+            </Field>
             <label className="flex items-start gap-2 text-sm">
               <input
                 type="checkbox"
@@ -179,7 +176,7 @@ export function PortalComplaintNewPage() {
               </span>
             </label>
             {error && <p className="text-sm text-danger">{error}</p>}
-            <div className="flex gap-2">
+            <FormActions>
               <Button type="submit" disabled={submit.isPending}>
                 {submit.isPending ? 'Filing...' : 'File complaint'}
               </Button>
@@ -189,7 +186,7 @@ export function PortalComplaintNewPage() {
               >
                 Cancel
               </Link>
-            </div>
+            </FormActions>
           </form>
         </CardContent>
       </Card>

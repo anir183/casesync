@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
+import { FormActions } from '#/components/ui/form-actions'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
-import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { Textarea } from '#/components/ui/textarea'
 import { usePublicInstitutions } from '#/features/portal/api'
 import { signUpRepresentative, suggestInstitutionForEmail } from '#/features/representatives/api'
 import { signIn } from '#/lib/auth-client'
@@ -82,6 +84,14 @@ export function InstitutionSignupPage() {
     }
   }
 
+  const passwordMismatchError =
+    error === 'Passwords do not match.' ? 'Passwords do not match.' : undefined
+  const institutionError =
+    error === 'Select the institution you represent.'
+      ? 'Select the institution you represent.'
+      : undefined
+  const formError = passwordMismatchError || institutionError ? null : error
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader
@@ -93,17 +103,15 @@ export function InstitutionSignupPage() {
         <CardBody>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1">
-                <FieldLabel htmlFor="representative-name">Full name</FieldLabel>
+              <Field label="Full name" htmlFor="representative-name">
                 <Input
                   id="representative-name"
                   required
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                 />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="representative-email">Work email</FieldLabel>
+              </Field>
+              <Field label="Work email" htmlFor="representative-email">
                 <Input
                   id="representative-email"
                   type="email"
@@ -113,9 +121,8 @@ export function InstitutionSignupPage() {
                   onBlur={() => void checkEmailDomain()}
                   onChange={(event) => setEmail(event.target.value)}
                 />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="representative-password">Password</FieldLabel>
+              </Field>
+              <Field label="Password" htmlFor="representative-password">
                 <Input
                   id="representative-password"
                   type="password"
@@ -125,9 +132,12 @@ export function InstitutionSignupPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="representative-confirm">Confirm password</FieldLabel>
+              </Field>
+              <Field
+                label="Confirm password"
+                htmlFor="representative-confirm"
+                error={passwordMismatchError}
+              >
                 <Input
                   id="representative-confirm"
                   type="password"
@@ -137,7 +147,7 @@ export function InstitutionSignupPage() {
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                 />
-              </div>
+              </Field>
             </div>
 
             <div className="space-y-3 rounded-md border border-border p-4">
@@ -155,10 +165,11 @@ export function InstitutionSignupPage() {
                   choose a different institution.
                 </p>
               )}
-              <div className="space-y-1">
-                <FieldLabel htmlFor="representative-institution-search">
-                  Find institution
-                </FieldLabel>
+              <Field
+                label="Find institution"
+                htmlFor="representative-institution-search"
+                error={institutionError}
+              >
                 <Input
                   id="representative-institution-search"
                   placeholder="Start typing an institution name"
@@ -168,7 +179,7 @@ export function InstitutionSignupPage() {
                     setInstitutionId('')
                   }}
                 />
-              </div>
+              </Field>
               {institutionQuery.trim().length >= 2 && (
                 <Select
                   aria-label="Matching institutions"
@@ -185,10 +196,10 @@ export function InstitutionSignupPage() {
               )}
             </div>
 
-            <div className="space-y-1">
-              <FieldLabel htmlFor="representative-evidence">
-                How can the administrator verify your role? (optional)
-              </FieldLabel>
+            <Field
+              label="How can the administrator verify your role? (optional)"
+              htmlFor="representative-evidence"
+            >
               <Textarea
                 id="representative-evidence"
                 rows={3}
@@ -197,12 +208,14 @@ export function InstitutionSignupPage() {
                 value={evidence}
                 onChange={(event) => setEvidence(event.target.value)}
               />
-            </div>
+            </Field>
 
-            {error && <p className="text-sm text-danger">{error}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Submitting request...' : 'Submit request'}
-            </Button>
+            {formError && <p className="text-sm text-danger">{formError}</p>}
+            <FormActions>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Submitting request...' : 'Submit request'}
+              </Button>
+            </FormActions>
             <p className="text-sm text-muted-foreground">
               Already approved?{' '}
               <Link to="/login" className="underline">

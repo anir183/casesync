@@ -177,6 +177,21 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
     e2e/smoke.spec.ts \
     --grep 'report|chart-heavy|staff routes reflow|text-only 200% zoom'
 
+# Phase 4F-A long forms: field pattern, inline errors, sticky submit/cancel
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec \
+    e2e/coverage/mutations.spec.ts \
+    --grep 'registers a case|creates, edits, and verifies an institution'
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/portal.spec.ts --grep 'complainant files'
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec \
+    e2e/coverage/representative.spec.ts \
+    --grep 'domain suggestion'
+
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts
 bun run test:e2e:spec e2e/responsive.spec.ts

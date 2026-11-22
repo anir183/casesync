@@ -8,10 +8,12 @@ import { PageHeader } from '#/components/shared/page-header'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
+import { FormActions } from '#/components/ui/form-actions'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { Textarea } from '#/components/ui/textarea'
 import {
   useCreateInstitution,
   useInstitution,
@@ -32,11 +34,6 @@ const institutionSchema = z.object({
 })
 
 type InstitutionValues = z.infer<typeof institutionSchema>
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null
-  return <p className="text-xs text-danger">{message}</p>
-}
 
 export function InstitutionFormPage() {
   const { id = '' } = useParams()
@@ -165,36 +162,32 @@ export function InstitutionFormPage() {
             <CardTitle>Institution details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="space-y-1">
-              <FieldLabel htmlFor="name">Institution name</FieldLabel>
+            <Field label="Institution name" htmlFor="name" error={errors.name?.message}>
               <Input id="name" {...register('name')} />
-              <FieldError message={errors.name?.message} />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="aictePermanentId">AICTE permanent ID</FieldLabel>
+            </Field>
+            <Field
+              label="AICTE permanent ID"
+              htmlFor="aictePermanentId"
+              help="Leave blank only when the official ID is not yet available."
+            >
               <Input id="aictePermanentId" {...register('aictePermanentId')} />
-              <p className="text-xs text-muted-foreground">
-                Leave blank only when the official ID is not yet available.
-              </p>
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="aliases">Aliases</FieldLabel>
+            </Field>
+            <Field
+              label="Aliases"
+              htmlFor="aliases"
+              help="Aliases are searchable and are carried forward when records are merged."
+            >
               <Textarea
                 id="aliases"
                 rows={3}
                 placeholder="One alternate institution name per line"
                 {...register('aliases')}
               />
-              <p className="text-xs text-muted-foreground">
-                Aliases are searchable and are carried forward when records are merged.
-              </p>
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="address">Address</FieldLabel>
+            </Field>
+            <Field label="Address" htmlFor="address">
               <Textarea id="address" rows={3} {...register('address')} />
-            </div>
-            <div className="space-y-1">
-              <FieldLabel htmlFor="regionId">Region</FieldLabel>
+            </Field>
+            <Field label="Region" htmlFor="regionId" error={errors.regionId?.message}>
               <Select id="regionId" disabled={isRegionalOfficer} {...register('regionId')}>
                 <option value="">Select a region</option>
                 {regions?.map((region) => (
@@ -203,8 +196,7 @@ export function InstitutionFormPage() {
                   </option>
                 ))}
               </Select>
-              <FieldError message={errors.regionId?.message} />
-            </div>
+            </Field>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" className="h-4 w-4" {...register('verified')} />
               Mark this institution as verified
@@ -255,7 +247,7 @@ export function InstitutionFormPage() {
           </p>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <FormActions>
           <Button type="submit" disabled={mutation.isPending}>
             {mutation.isPending ? 'Saving...' : isEdit ? 'Save institution' : 'Create institution'}
           </Button>
@@ -265,7 +257,7 @@ export function InstitutionFormPage() {
           >
             Cancel
           </Link>
-        </div>
+        </FormActions>
       </form>
     </div>
   )

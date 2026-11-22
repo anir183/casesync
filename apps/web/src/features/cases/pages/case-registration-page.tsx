@@ -7,10 +7,12 @@ import { z } from 'zod'
 import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { Field } from '#/components/ui/field'
+import { FormActions } from '#/components/ui/form-actions'
 import { Input } from '#/components/ui/input'
 import { Select } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { FieldLabel, Textarea } from '#/components/ui/textarea'
+import { Textarea } from '#/components/ui/textarea'
 import { useCreateCase, useOfficerDirectory } from '#/features/cases/api'
 import { useInstitution, useInstitutions } from '#/features/institutions/api'
 import { useBureaus, useCategories } from '#/features/organization/api'
@@ -49,11 +51,6 @@ function toPayload(values: RegistrationValues) {
     nextActionDueAt: values.nextActionDueAt || undefined,
     officerId: values.officerId || undefined,
   }
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null
-  return <p className="text-xs text-danger">{message}</p>
 }
 
 export function CaseRegistrationPage() {
@@ -183,15 +180,19 @@ export function CaseRegistrationPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <FieldLabel htmlFor="institution-search">Find an institution</FieldLabel>
-                <Input
-                  id="institution-search"
-                  placeholder="Search by name or AICTE ID"
-                  value={institutionQuery}
-                  onChange={(event) => setInstitutionQuery(event.target.value)}
-                />
+                <Field
+                  label="Find an institution"
+                  htmlFor="institution-search"
+                  error={errors.institutionId?.message}
+                >
+                  <Input
+                    id="institution-search"
+                    placeholder="Search by name or AICTE ID"
+                    value={institutionQuery}
+                    onChange={(event) => setInstitutionQuery(event.target.value)}
+                  />
+                </Field>
                 <input type="hidden" {...register('institutionId')} />
-                <FieldError message={errors.institutionId?.message} />
                 {isFetching && (
                   <p className="text-sm text-muted-foreground">Searching institutions…</p>
                 )}
@@ -229,8 +230,7 @@ export function CaseRegistrationPage() {
               <CardTitle>Routing</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="space-y-1">
-                <FieldLabel htmlFor="bureauId">Bureau or Cell</FieldLabel>
+              <Field label="Bureau or Cell" htmlFor="bureauId" error={errors.bureauId?.message}>
                 <Select
                   id="bureauId"
                   disabled={isBureauOfficer}
@@ -245,10 +245,8 @@ export function CaseRegistrationPage() {
                     </option>
                   ))}
                 </Select>
-                <FieldError message={errors.bureauId?.message} />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="category">Category</FieldLabel>
+              </Field>
+              <Field label="Category" htmlFor="category">
                 <Select id="category" {...register('category')}>
                   <option value="">Uncategorised</option>
                   {categories?.map((category) => (
@@ -257,9 +255,8 @@ export function CaseRegistrationPage() {
                     </option>
                   ))}
                 </Select>
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="officerId">Assign to officer (optional)</FieldLabel>
+              </Field>
+              <Field label="Assign to officer (optional)" htmlFor="officerId">
                 <Select id="officerId" disabled={!bureauId} {...register('officerId')}>
                   <option value="">Leave unassigned</option>
                   {officers?.map((officer) => (
@@ -268,7 +265,7 @@ export function CaseRegistrationPage() {
                     </option>
                   ))}
                 </Select>
-              </div>
+              </Field>
             </CardContent>
           </Card>
 
@@ -277,22 +274,19 @@ export function CaseRegistrationPage() {
               <CardTitle>Dates and reference</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="space-y-1">
-                <FieldLabel htmlFor="caseNumber">Case number (optional)</FieldLabel>
+              <Field label="Case number (optional)" htmlFor="caseNumber">
                 <Input
                   id="caseNumber"
                   placeholder="Generated automatically when left blank"
                   {...register('caseNumber')}
                 />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="receivedAt">Received date</FieldLabel>
+              </Field>
+              <Field label="Received date" htmlFor="receivedAt">
                 <Input id="receivedAt" type="date" {...register('receivedAt')} />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="expectedDisposalAt">Expected disposal date</FieldLabel>
+              </Field>
+              <Field label="Expected disposal date" htmlFor="expectedDisposalAt">
                 <Input id="expectedDisposalAt" type="date" {...register('expectedDisposalAt')} />
-              </div>
+              </Field>
             </CardContent>
           </Card>
         </div>
@@ -302,8 +296,7 @@ export function CaseRegistrationPage() {
             <CardTitle>Complaint and next action</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="space-y-1">
-              <FieldLabel htmlFor="description">Complaint description</FieldLabel>
+            <Field label="Complaint description" htmlFor="description">
               <Textarea
                 id="description"
                 rows={5}
@@ -311,16 +304,14 @@ export function CaseRegistrationPage() {
                 placeholder="Summarise the complaint without personal data beyond what is necessary."
                 {...register('description')}
               />
-            </div>
+            </Field>
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-1">
-                <FieldLabel htmlFor="nextAction">Next action</FieldLabel>
+              <Field label="Next action" htmlFor="nextAction">
                 <Input id="nextAction" {...register('nextAction')} />
-              </div>
-              <div className="space-y-1">
-                <FieldLabel htmlFor="nextActionDueAt">Next action due</FieldLabel>
+              </Field>
+              <Field label="Next action due" htmlFor="nextActionDueAt">
                 <Input id="nextActionDueAt" type="date" {...register('nextActionDueAt')} />
-              </div>
+              </Field>
             </div>
           </CardContent>
         </Card>
@@ -333,14 +324,14 @@ export function CaseRegistrationPage() {
           </p>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <FormActions>
           <Button type="submit" disabled={createCase.isPending}>
             {createCase.isPending ? 'Registering…' : 'Register case'}
           </Button>
           <Link to="/cases" className="text-sm underline underline-offset-4">
             Cancel
           </Link>
-        </div>
+        </FormActions>
       </form>
     </div>
   )

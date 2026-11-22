@@ -5,6 +5,7 @@ import { Dialog } from '../src/components/ui/dialog'
 import { DropdownMenu } from '../src/components/ui/dropdown-menu'
 import { ErrorState } from '../src/components/ui/error-state'
 import { Field } from '../src/components/ui/field'
+import { FormActions } from '../src/components/ui/form-actions'
 import { KpiStrip } from '../src/components/ui/kpi-strip'
 import { Popover } from '../src/components/ui/popover'
 import { Tabs } from '../src/components/ui/tabs'
@@ -31,6 +32,18 @@ describe('shared UI primitives', () => {
     const describedBy = input.getAttribute('aria-describedby')?.split(' ') ?? []
     expect(describedBy).toContain(screen.getByText('Use the customer-facing name.').id)
     expect(describedBy).toContain(screen.getByRole('alert').id)
+  })
+
+  test('FormActions renders a sticky row for form controls', () => {
+    render(
+      <FormActions>
+        <button type="submit">Save changes</button>
+      </FormActions>,
+    )
+
+    const actions = screen.getByRole('button', { name: 'Save changes' }).parentElement
+    expect(actions?.className).toContain('sticky')
+    expect(actions?.className).toContain('bottom-0')
   })
 
   test('Tabs move focus and selection with arrow keys, skipping disabled tabs', () => {

@@ -2,8 +2,9 @@
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the second implementation slice of
 Phase 4; the overlap queue was later delivered in Phase 4C, the notifications centre in Phase 4D,
-and Reports in Phase 4E, while Forms work remains in a later slice. No route, permission, server
-contract, dependency, seed data, or visual baseline changed. The official 48-baseline refresh,
+and Reports in Phase 4E, while the Forms field pattern was later delivered in Phase 4F-A and
+destructive summaries remain in 4F-B. No route, permission, server contract, dependency, seed data,
+or visual baseline changed. The official 48-baseline refresh,
 double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
 [`todo-tracker.md`](todo-tracker.md).
 

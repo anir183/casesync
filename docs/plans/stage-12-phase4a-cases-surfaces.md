@@ -2,8 +2,9 @@
 
 Status: **IMPLEMENTED and locally verified** 2026-11-18. This is the first implementation slice
 of Phase 4; the institution profile, overlap queue, and notifications centre were later delivered in
-Phases 4B, 4C, and 4D, and Reports was later delivered in Phase 4E, while Forms work remains in a
-later slice. No route, permission, server contract, dependency, or visual baseline changed. The
+Phases 4B, 4C, and 4D, and Reports was later delivered in Phase 4E, while the Forms field pattern
+was later delivered in Phase 4F-A and destructive summaries remain in 4F-B. No route, permission,
+server contract, dependency, or visual baseline changed. The
 official 48-baseline refresh, double CI run, and both manual QA gates remain held for the
 Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
 
@@ -93,7 +94,8 @@ global breadcrumb selectors, and `Current scope` remain absent.
   in case detail where existing authorization logic can run.
 - **Remaining Phase 4 surfaces at the time of this slice:** institution profile, overlap queue, and
   notifications centre were deferred and later delivered in Phases 4B, 4C, and 4D; Reports was later
-  delivered in Phase 4E. Forms remains in a later slice.
+  delivered in Phase 4E; the Forms field pattern was later delivered in Phase 4F-A, with destructive
+  change summaries and admin density remaining in 4F-B.
 - **Visual/CI/manual gates:** local screenshots were captured for observation only. Baselines are
   untouched; the official 48-baseline refresh, double CI run, and manual sign-offs remain Phase 7 /
   Stage 12 exit work.

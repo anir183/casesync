@@ -1,11 +1,12 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-21 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, and Phase 4F-A forms field pattern implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
 Notifications plan: [`../plans/stage-12-phase4d-notifications.md`](../plans/stage-12-phase4d-notifications.md).
 Reports plan: [`../plans/stage-12-phase4e-reports.md`](../plans/stage-12-phase4e-reports.md).
+Forms plan: [`../plans/stage-12-phase4f-forms.md`](../plans/stage-12-phase4f-forms.md).
 Companions: [`qa-and-review.md`](qa-and-review.md),
 [`testing-guide.md`](testing-guide.md),
 [`accessibility-audit.md`](accessibility-audit.md).
@@ -312,8 +313,10 @@ triage card, shortcut guards, and compare header. Phase 4D adds
 checks, plus component coverage for the toolbar, group card, and filter mapping. Phase 4E adds
 `apps/web/e2e/reports-workbench.spec.ts` with named workbench, saved-view application, chip removal,
 table-first default, chart-toggle, region-chip, and 375px checks, plus component coverage for the
-toolbar and filter helpers. Rows stay **Partial** where only one route or one side of the state is
-exercised, or where a surface is asserted only outside Playwright.
+toolbar and filter helpers. Phase 4F-A reuses the existing E2E mutation journeys for the four
+converted long forms and adds component coverage for the sticky `FormActions` primitive; no new
+browser spec or `data-testid` was introduced. Rows stay **Partial** where only one route or one side
+of the state is exercised, or where a surface is asserted only outside Playwright.
 
 | State | Routes to check | Status |
 |---|---|---|
@@ -341,6 +344,7 @@ exercised, or where a surface is asserted only outside Playwright.
 | Notification triage toolbar | `/notifications` | **Covered** — named sticky region, saved views, server-backed type/unread filters, announced pressed state, and 375px overflow check |
 | Notification grouping and unread cue | `/notifications` | **Covered** — current-page type groups with counts, row-scoped textual `Unread`, and visible `Open record`/`Mark as read`; verified with fresh and post-mutation read states |
 | Reports workbench and table-first toggle | `/reports` | **Covered** — sticky `Reports workbench` region, `Reports filters` search landmark, saved views mapped to existing URL filters, removable chips, exact tables before the existing charts, `Tables`/`Charts` toggle, and preserved region chip; 375px overflow check passes |
+| Long-form field pattern and sticky actions | Case registration, institution create/edit, portal complaint filing, representative sign-up | **Covered** — shared `Field` label/help/error semantics, inline existing validation messages, presentation-only sticky `FormActions` submit/cancel row, and preserved native/Zod validation, payloads, query parameters, role gates, selectors, and pending/error strings; component check plus targeted seeded E2E 4/4 |
 | Breadcrumb context | Staff shell | **Deferred** — global `Dashboard > …` breadcrumbs removed by product-owner review; active rail, page header, and local back links replace them |
 | Profile menu in rail | Staff shell | **Covered** (upward menu, identity/email header, Sign out inside, axe-clean accessible name) |
 | Icon-only collapsed rail | Staff shell | **Covered** (persisted toggle, labelled links/tooltips, no page overflow) |
@@ -441,7 +445,8 @@ committed baselines untouched. Phase 4C also left them untouched, so the `/overl
 `/overlaps/:id` images now predate the triage toolbar and compare header. Phase 4D likewise left
 them untouched, so the `/notifications` image now predates the triage toolbar and type groups.
 Phase 4E likewise left them untouched, so the `/reports` image predates the named workbench and
-table-first default; the official refresh and review remain in Phase 7.
+table-first default. Phase 4F-A likewise left them untouched, so form-route images predate the
+shared field pattern and sticky action rows; the official refresh and review remain in Phase 7.
 
 ## 6. Accessibility coverage
 
