@@ -39,6 +39,8 @@ export function PortalLayout() {
   const signedIn = Boolean(user)
   const isComplainant = user?.role === 'COMPLAINANT'
   const displayName = user?.name || user?.email || 'Account'
+  const showSignInLink = !signedIn && location.pathname !== '/portal/login'
+  const showCreateAccountLink = !signedIn && location.pathname !== '/portal/signup'
 
   const notifications = useNotifications({ pageSize: 5 }, { enabled: isComplainant })
   const markRead = useMarkNotificationRead()
@@ -64,7 +66,7 @@ export function PortalLayout() {
     : [{ to: '/portal/track', label: 'Track a complaint' }]
 
   return (
-    <div className="min-h-screen bg-muted/20">
+    <div className="flex min-h-screen flex-col bg-muted/20">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
@@ -161,15 +163,19 @@ export function PortalLayout() {
               </div>
             ) : (
               <div className="hidden items-center gap-2 lg:flex">
-                <Link to="/portal/login" className="text-sm underline underline-offset-4">
-                  Sign in
-                </Link>
-                <Link
-                  to="/portal/signup"
-                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Create account
-                </Link>
+                {showSignInLink ? (
+                  <Link to="/portal/login" className="text-sm underline underline-offset-4">
+                    Sign in
+                  </Link>
+                ) : null}
+                {showCreateAccountLink ? (
+                  <Link
+                    to="/portal/signup"
+                    className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Create account
+                  </Link>
+                ) : null}
               </div>
             )}
 
@@ -234,15 +240,19 @@ export function PortalLayout() {
                   </Button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Link to="/portal/login" className="text-sm underline underline-offset-4">
-                      Sign in
-                    </Link>
-                    <Link
-                      to="/portal/signup"
-                      className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-                    >
-                      Create account
-                    </Link>
+                    {showSignInLink ? (
+                      <Link to="/portal/login" className="text-sm underline underline-offset-4">
+                        Sign in
+                      </Link>
+                    ) : null}
+                    {showCreateAccountLink ? (
+                      <Link
+                        to="/portal/signup"
+                        className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                      >
+                        Create account
+                      </Link>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -255,7 +265,7 @@ export function PortalLayout() {
         ref={mainRef}
         id="main-content"
         tabIndex={-1}
-        className="mx-auto max-w-6xl px-4 py-6 focus:outline-none sm:px-6 sm:py-8"
+        className="mx-auto max-w-6xl flex-1 px-4 py-6 focus:outline-none sm:px-6 sm:py-8"
       >
         <Suspense
           fallback={

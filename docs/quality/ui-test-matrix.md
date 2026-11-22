@@ -1,6 +1,6 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, and Phase 4F Forms implemented and locally verified; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, and W-A portal-shell remediation implemented and locally verified; official visual refresh and double CI remain Phase 7).
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -316,7 +316,8 @@ table-first default, chart-toggle, region-chip, and 375px checks, plus component
 toolbar and filter helpers. Phase 4F-A reuses the existing E2E mutation journeys for the four
 converted long forms and adds component coverage for the sticky `FormActions` primitive. Phase 4F-B
 adds component coverage for default and summary `ConfirmDialog` rendering, reuses five admin mutation
-journeys, adds one cancel-only email-domain dialog check, and extends staff reflow/route checks; no
+journeys, adds one cancel-only email-domain dialog check, and extends staff reflow/route checks. W-A
+adds `apps/web/e2e/portal-shell.spec.ts` for footer geometry and current-auth header links; no
 `data-testid` was introduced. Rows stay **Partial** where only one route or one side of the state is
 exercised, or where a surface is asserted only outside Playwright.
 
@@ -368,7 +369,7 @@ exercised, or where a surface is asserted only outside Playwright.
 | Overlap compare summary | `/overlaps/:id` | **Covered** — sticky `Overlap comparison` header keeps identity, badges, case numbers, scores, and assessment view visible; `Go to review decision` reaches the unchanged `#overlap-decision` card only where allowed; desktop and 375px overflow checks pass without touching `Assessment summary` or action selectors |
 | Bulk case assignment | `/cases` | **Deferred** — no bulk-assignment server contract exists; page selection is export-only |
 | Mutating row actions | `/cases` | **Deferred** — list data cannot safely reuse `useCaseActionOptions`; all mutations remain in case detail with existing role/transition authorization |
-| Portal full-height shell and hero | `/portal`, `/portal/login`, `/portal/signup` | **Blocked** — Stage 12 Phase 6 (bottom-anchored footer; action-first hero) |
+| Portal full-height shell and current-auth links | `/portal/login`, `/portal/signup`, `/portal/track`, `/portal/dashboard`, `/portal/verification` | **Partial** — W-1–W-4 footer geometry covered at 1440×900 for anonymous and complainant pages, and desktop/mobile header links omit the current auth screen; action-first hero remains Phase 6 |
 | Role landing briefing and queue | Staff dashboard, portal dashboard | **Covered** (admin + viewer staff landings, portal next-step card) |
 | Consolidated case timeline | `/cases/:id` | **Covered** — action + assignment history in one Timeline tab; Phase 4A groups append-only entries by day with time, actor, transitions, and remarks under the named `Case action history` list |
 | Secondary action overflow | `/cases/:id` | **Covered** (menu opens and preselects the action panel) |

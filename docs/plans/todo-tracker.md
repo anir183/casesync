@@ -1,6 +1,6 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget).
+**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4).
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
@@ -925,7 +925,8 @@ passed; web tests are 80 pass / 0 fail. Targeted seeded loopback E2E passed 43/4
 profile spec, institution render/deny routes, axe scans, and verify/merge mutations; institution
 responsive reflow passed 4/4 at 375/768/1024/1440 px. The sticky summary, text-cued health signals,
 alias context, and cross-bureau history reuse the existing detail contract and role gates. W-10 was
-closed on the representative profile cards; W-1–W-9 remain recorded. No route, permission, server
+closed on the representative profile cards; W-1–W-9 remained recorded at the time (W-1–W-3 later
+closed and W-4 verified in W-A). No route, permission, server
 contract, dependency, seed data, or visual baseline changed; baselines, double CI, and manual gates
 remain deferred.
 
@@ -1024,6 +1025,9 @@ chart/map behavior, CSV contract, or `data-testid` changed. Phase 4F is complete
 - [x] Forms 4F-B: change summary for destructive actions and denser admin forms, preserving dialog
       focus/selectors, derived field IDs, permissions, payloads, and asserted error strings.
       Implementation record: `docs/plans/stage-12-phase4f-forms.md`.
+- [x] Walkthrough W-A: full-height portal shell with bottom-anchored footer on short pages and
+      current-auth header links hidden on desktop and mobile. W-1–W-3 closed and W-4 verified;
+      record: `docs/quality/phase4a-ui-walkthrough-findings.md` §5.
 
 ### Phase 5 — GIS and data visualization
 
@@ -1039,8 +1043,9 @@ chart/map behavior, CSV contract, or `data-testid` changed. Phase 4F is complete
 
 ### Phase 6 — Portal landing and public experience
 
-- [ ] Make `PortalLayout` a full-height flex column with `main` as `flex-1`; the footer sits
-      at the bottom on landing, login, and signup and long pages still scroll normally.
+- [x] Make `PortalLayout` a full-height flex column with `main` as `flex-1`; the footer sits
+      at the bottom on landing, login, and signup and long pages still scroll normally. Closed in
+      W-A; the remaining portal hero work stays in this phase.
 - [ ] Rebuild `/portal` with a focused hero, one supporting sentence, and one dominant
       primary action plus a track path; replace the current card-plus-explanation layout.
 - [ ] Put an inline track form above the fold.

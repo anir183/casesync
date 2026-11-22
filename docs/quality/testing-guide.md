@@ -205,6 +205,11 @@ TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
   env -u ALLOW_REMOTE_MONGO \
   bun run test:e2e:spec e2e/coverage/routes.spec.ts --grep 'admin institution domains'
 
+# W-A portal shell: anchored footer and current-auth header links
+TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' \
+  env -u ALLOW_REMOTE_MONGO \
+  bun run test:e2e:spec e2e/portal-shell.spec.ts
+
 # Accessibility or responsive slice
 bun run test:e2e:spec e2e/accessibility.spec.ts
 bun run test:e2e:spec e2e/responsive.spec.ts
