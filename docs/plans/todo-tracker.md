@@ -27,11 +27,13 @@
 > reduced-motion, and merge/revert).
 > Integration tests install a fetch guard that fails on any real `jevmodel.org` call.
 >
-> **Latest local verification (2026-11-21, Stage 12 Phase 4A).** `bun run verify` passed:
-> API 116 pass / 74 skip, web 76 pass / 0 fail, and a `492.66 kB / 139.24 kB gzip` build
-> below the Phase 0 guardrail. Targeted seeded loopback E2E passed 87/87; use
-> `bun run test:e2e:spec <paths...>` for that inner-loop command. The full seeded suite,
-> 48-baseline refresh, double CI run, and both manual gates remain held for Phase 7.
+> **Latest implementation verification (2026-11-22, bounded Phase 7).** `check:ci`, both
+> web typechecks, web 105 pass / 0 fail, targeted seeded loopback E2E 90/90, and a fresh
+> `493.42 kB / 139.49 kB gzip` build passed. Pushed as `25aa369`; CI run
+> `45014617505` was green across every active job, including Full Chromium E2E. The QA
+> evidence commit was pushed as `9800c7b`. Use `bun run test:e2e:spec <paths...>` for
+> targeted seeded specs. The 48-baseline refresh, second dedicated full Chromium run,
+> both manual gates, and deployment remain held.
 
 ## Rules
 
@@ -1147,6 +1149,24 @@ held. No route, permission, server contract, query key, URL
 parameter, payload, seed/CSV, dashboard filter, animation/chart/map dependency, visual baseline,
 `data-testid`, push, or deployment changed. The 48-baseline refresh, double full Chromium run,
 both manual gates, and push remain held.
+
+Post-implementation reconciliation note (2026-11-22): added root `AGENTS.md` with repository
+map, authoritative-doc order, conventions, common commands, script policy, stage/phase/gate
+vocabulary, workflow, handoff protocol, and demo-data boundaries; linked it from
+`docs/README.md`. Updated the manual sign-off last-verified line, the mock-data user table
+and simulation boundary, the demo script's SLA-notification wording and simulation boundary,
+and the tracker's latest implementation evidence. No application code, seed data, test
+fixture, visual baseline, CI gate, push, or deployment changed in this reconciliation.
+
+Bounded next steps:
+- [x] Reconcile contributor/agent documentation and current seed/demo evidence.
+- [ ] Implement a separate, idempotent production-like simulation seed with pre-seeded
+      cross-account messages, escalations, SLA history, overlap decisions, verification,
+      audit/job history, and matching reset support; keep `seed:demo` and test fixtures stable.
+- [ ] Re-walk the recorded UI findings and phase claims against a fresh seeded build before
+      accepting visual baselines.
+- [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
+      two visual passes, two dedicated full Chromium runs, manual gates, then deployment.
 
 ## Testing Definition of Done
 

@@ -164,6 +164,7 @@ Current results and quality gates live in [QA and review](quality/qa-and-review.
 | Planning | [Todo tracker](plans/todo-tracker.md) · [Stage 11 baseline](plans/stage-11-baseline.md) · [Stage 9 plan](plans/next-phase-plan.md) · [Stage 11 code audit](plans/code-audit-plan.md) · [Stage 12 UI modernization](plans/ui-modernization-plan.md) |
 | Decisions | [Decision records](decisions/README.md) |
 | Conventions | [Tiger style](tiger-style.md) |
+| Contributor / agent guide | [AGENTS.md](../AGENTS.md) |
 
 Project status, stage evidence, and remaining work are tracked in
 [`plans/todo-tracker.md`](plans/todo-tracker.md) and the stage and quality documents

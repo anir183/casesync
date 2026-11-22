@@ -41,7 +41,8 @@ Safety guards:
 - 10 categories;
 - 4 bureaus: `PGRC` Public Grievance Redressal Cell, `RB` Regulation Bureau,
   `ACAD` Academic Bureau, `FIN` Finance Bureau;
-- 7 staff users, one per staff role, plus 1 verified complainant.
+- 7 staff users, one per staff role, 1 verified complainant, 1 approved institution
+  representative, and 1 pending institution representative.
 
 All seeded users use `Passw0rd!123` unless `SEED_PASSWORD` overrides it. Emails are
 fictional `.test` addresses. The complainant is linked to the demo `dit` institution
@@ -57,6 +58,8 @@ and can file immediately.
 | Northern Regional Officer | `regional.north@casesync.test` | `REGIONAL_OFFICER` | — | `NORTH` |
 | Read-only Viewer | `viewer@casesync.test` | `VIEWER` | — | — |
 | Demo Complainant | `complainant@casesync.test` | `COMPLAINANT` | — | `NORTH` |
+| Approved Representative | `representative@casesync.test` | `INSTITUTION_REPRESENTATIVE` | — | `NORTH` (`dit`) |
+| Pending Representative | `pending.representative@casesync.test` | `INSTITUTION_REPRESENTATIVE` (pending) | — | `WEST` (`mie`) |
 
 Staff signup is disabled (`STAFF_SIGNUP_ENABLED=false`); staff accounts are seed/admin
 created. Complainant self-signup is enabled by default
@@ -121,7 +124,15 @@ through live flows rather than seeded.
 | `RB-2026-007` | DIT | RB | ACADEMIC | `UNDER_PROCESS` | 16d | 30d | Reverted-merge pair |
 
 Demo cases include matching actions, assignments (including unassigned and ended
-assignments), next actions, and notifications for demo users.
+assignments), and next actions. Seeded notifications cover overlap and escalation
+scenarios; pending, approaching, and overdue SLA notifications are produced by a
+live scan or the manual `/admin/sla` trigger.
+
+**Simulation boundary.** `seed:demo` is the deterministic functional demo/E2E
+dataset. It does not create public `case_messages`, attachments, audit-log
+entries, job-run history, pending verification requests, or SLA notification
+history. A separate production-like simulation seed remains planned so full
+cross-account histories can be presented without changing this test-facing seed.
 
 ## 5. Demo overlaps
 

@@ -103,8 +103,10 @@ All sections below are demoable; do not fake missing behaviour.
    disposal rate, overlap summary, monthly, and quarterly.
 2. Filter by date, bureau, region, status, and category; show region names, refreshed
    `generatedAt`, and CSV export.
-3. Show the notification centre with type/unread filters and pagination, including
-   overlap, escalation, pending, approaching, and overdue notifications.
+3. Show the notification centre with type/unread filters and pagination. Seeded
+   overlap and escalation notifications are available immediately; pending,
+   approaching, and overdue notifications appear after an SLA scan or the manual
+   trigger at `/admin/sla`.
 4. Show dashboard "beyond SLA" using the shared SLA calculation, and `/admin/sla` with
    job run history/manual scan.
 
@@ -143,6 +145,15 @@ All sections below are demoable; do not fake missing behaviour.
   `ALLOW_SEED_RESET=true` and `ALLOW_SEED=true`.
 - For CI/E2E, use run-scoped fixtures (as the integration suite does) and do not reset the
   demo database from tests.
+
+### 3.1 Simulation boundary
+
+This script is a repeatable demo walkthrough, not a pre-seeded production-like
+simulation. The seed does not create `case_messages`, attachments, audit-log
+entries, job-run history, pending verification requests, or SLA notification
+history; those are demonstrated live or produced by the SLA job. A separate,
+idempotent simulation seed is the planned way to present fully populated
+cross-account histories without changing the E2E seed contract.
 
 ## 4. Acceptance checklist for the demo seed
 
