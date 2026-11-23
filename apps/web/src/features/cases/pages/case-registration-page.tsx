@@ -157,6 +157,7 @@ export function CaseRegistrationPage() {
           ← Back to case registry
         </Link>
         <PageHeader
+          className="mt-3"
           title="Register case"
           description="Record a complaint against an institution and route it to the responsible Bureau or Cell."
         />

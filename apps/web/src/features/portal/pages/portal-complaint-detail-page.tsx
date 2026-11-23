@@ -60,7 +60,7 @@ export function PortalComplaintDetailPage() {
           {complaint.error instanceof Error ? complaint.error.message : 'Complaint not found.'}
         </p>
         <Link to="/portal/dashboard" className="text-sm underline">
-          Back to my complaints
+          ← Back to my complaints
         </Link>
       </div>
     )
@@ -102,9 +102,11 @@ export function PortalComplaintDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link to="/portal/dashboard" className="text-sm underline underline-offset-4">
-        Back to my complaints
-      </Link>
+      <div className="mb-2">
+        <Link to="/portal/dashboard" className="text-sm underline underline-offset-4">
+          ← Back to my complaints
+        </Link>
+      </div>
       <div className="rounded-xl border border-border bg-card p-5 shadow-card">
         <PageHeader
           title={item.subject ?? 'Complaint'}

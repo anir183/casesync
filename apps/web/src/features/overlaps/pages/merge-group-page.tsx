@@ -42,6 +42,7 @@ export function MergeGroupPage() {
           ← Back to overlap queue
         </Link>
         <PageHeader
+          className="mt-3"
           title="Merge group"
           description={
             <div className="space-y-1">
@@ -122,7 +123,7 @@ export function MergeGroupPage() {
                 >
                   {member.caseNumber}
                 </Link>
-                <p className="text-muted-foreground">
+                <p className="mt-1 text-muted-foreground">
                   {member.bureauName ?? 'Unassigned bureau'}
                   {member.category ? ` · ${member.category}` : ''}
                 </p>

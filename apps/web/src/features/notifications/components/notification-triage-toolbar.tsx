@@ -43,7 +43,7 @@ export function NotificationTriageToolbar({
       aria-label="Notification triage"
       className="sticky top-16 z-30 scroll-mt-32 border-b border-border bg-background/95 backdrop-blur"
     >
-      <div className="space-y-3 py-3">
+      <div className="space-y-3 px-4 py-3 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-meta text-muted-foreground" aria-live="polite">
             {total} matching notification{total === 1 ? '' : 's'} · {unreadCount} unread across all

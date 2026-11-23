@@ -40,7 +40,7 @@ export function InstitutionCaseDetailPage() {
           {complaint.error instanceof Error ? complaint.error.message : 'Complaint not found.'}
         </p>
         <Link to="/institution/cases" className="text-sm underline">
-          Back to institution cases
+          ← Back to institution cases
         </Link>
       </div>
     )
@@ -65,10 +65,11 @@ export function InstitutionCaseDetailPage() {
   return (
     <div className="space-y-6">
       <Link to="/institution/cases" className="text-sm underline underline-offset-4">
-        Back to institution cases
+        ← Back to institution cases
       </Link>
 
       <PageHeader
+        className="mt-3"
         title={item.subject ?? 'Complaint'}
         description={
           <>

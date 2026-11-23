@@ -35,7 +35,10 @@ export function TrendChart({
       : `${line(key)} L ${x(data.length - 1)} ${PADDING.top + plotHeight} L ${x(0)} ${
           PADDING.top + plotHeight
         } Z`
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((fraction) => Math.round(max * fraction))
+  // Deduplicate rounded gridlines so low maxima (for example 2) do not render duplicate keys.
+  const ticks = Array.from(
+    new Set([0, 0.25, 0.5, 0.75, 1].map((fraction) => Math.round(max * fraction))),
+  )
   const labelEvery = Math.max(1, Math.ceil(data.length / 8))
 
   return (

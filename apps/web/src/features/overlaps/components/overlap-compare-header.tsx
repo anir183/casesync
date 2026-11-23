@@ -20,14 +20,14 @@ export function OverlapCompareHeader({
       aria-label="Overlap comparison"
       className="sticky top-16 z-30 scroll-mt-32 border-b border-border bg-background/95 backdrop-blur"
     >
-      <div className="space-y-2 py-3">
+      <div className="space-y-2 px-4 py-3 sm:px-6">
         <Link
           to="/overlaps"
           className="text-meta text-muted-foreground underline underline-offset-4"
         >
           ← Back to overlap queue
         </Link>
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">

@@ -1,11 +1,15 @@
 # CaseSync — Phase 4A product-owner UI walkthrough findings
 
-Status: **consolidated 2026-11-21; all findings remediated or verified by 2026-11-22.** W-10 closed
-in Phase 4B; W-1–W-3 closed and W-4 verified in W-A portal-shell remediation; W-6–W-9 closed in W-B
+Status: **consolidated 2026-11-21; W-1–W-10 remediated or verified by 2026-11-22; bounded
+A-1/A-10/A-13/A-15–A-18 UI slice implemented and locally verified 2026-11-23.** W-10 closed in
+Phase 4B; W-1–W-3 closed and W-4 verified in W-A portal-shell remediation; W-6–W-9 closed in W-B
 staff-presentation remediation; W-5 closed in the registry presentation remediation. A fresh
-simulation-layer rewalk on 2026-11-22 found no regressions or new findings; see §8. This is a
-product-owner screen-by-screen UI review, not the independent manual sign-off in
-[`manual-signoff.md`](manual-signoff.md). Both manual gates remain held until Stage 12 exits.
+simulation-layer rewalk on 2026-11-22 found no regressions or new findings (§8). An Atlas-backed
+rewalk on 2026-11-23 rechecked the same claims and found one new P3 console-key finding, A-1 (§9);
+the rewalk itself changed no code. The authorized follow-up slice fixes A-1, A-10, A-13, and
+A-15–A-18 (§10); A-2, A-6, A-11, and A-12 remain deferred. This is a product-owner screen-by-screen
+UI review, not the independent manual sign-off in [`manual-signoff.md`](manual-signoff.md). Both
+manual gates remain held until Stage 12 exits.
 
 Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md),
 [`ui-test-matrix.md`](ui-test-matrix.md),
@@ -181,3 +185,115 @@ landmark, or sign-out. Reduced-motion emulation reduced sampled transition/anima
 future-flag notice. An intentionally invalid public-track lookup produced the expected 404 and the
 asserted no-match message. These observations are local evidence only: visual baselines, two full
 Chromium runs, the held manual gates, push, and deployment remain unchanged and unauthorized.
+
+## 9. Atlas-backed simulation rewalk (2026-11-23)
+
+The production web build on `127.0.0.1:4173` was rewalked against the API on `localhost:3000` using
+the simulation layer already seeded in Atlas. No seed or reset was run, no database write was made,
+`ALLOW_REMOTE_MONGO` stayed unset, no visual baseline was accepted, and no application code changed.
+Twelve isolated contexts covered anonymous, complainant, admin, approved representative, pending
+representative, pending complainant, senior management, competent authority, PGRC, RB, regional, and
+viewer personas. Each authenticated persona visited its applicable dashboard, registry, detail,
+overlap, reports, notifications, admin/audit, and create-menu surfaces; no form was submitted.
+
+**Recorded claims still held.**
+
+- Public tracks kept `AICTE public complaints`, `Complainant sign in`,
+  `Create a complainant account`, `Track a complaint`, `Track complaint`, and
+  `No complaint matches that number and email address.`; a valid `SIM-PUB-2026-001` lookup showed
+  public updates only.
+- The complainant dashboard showed all three `SIM-PUB-2026-*` cases without internal notes or
+  internal attachments. The approved representative case detail showed the public reply, privacy
+  notice, and public `bank-reference-note.txt`, but no internal note or `pgrc-review-notes.txt`.
+- Admin surfaces showed 5 simulation audit rows, 3 SLA job runs with the synthetic failure, and the
+  pending `sim.pending.complainant@casesync.test` verification. Staff personas saw their role-scoped
+  notifications and cases; RB saw only `SIM-PUB-2026-002` and correctly treated `SIM-PUB-2026-001`
+  as not found; pending representative routes redirected to `/institution/profile` with
+  `Awaiting review`; pending complainant routes stayed behind the verification gate.
+- A corrected 48-check sweep (12 routes at 375/1440 px in light/dark) passed after waiting for the
+  main landmark: no document overflow, missing `main`, or theme mismatch. The earlier false failures
+  were caused by sampling before the SPA rendered. Reports tables, charts, filters, and the
+  schematic-map notice remained intact, as did the overlap compare/decision surface and the sticky
+  case columns, header gutter, centered lifecycle steps, anchored create menu, and scrolling queues.
+
+**New findings.**
+
+| ID | Area | Personas | Finding | Expected | Evidence | Priority | Status |
+|---|---|---|---|---|---|---|---|
+| A-1 | Reports trend chart | PGRC only on this seed | Direct `/reports` loads emitted two React “same key” console errors for keys `1` and `2`. The visual chart still rendered. | Axis ticks have stable unique keys at every scoped data magnitude. | PGRC-scoped monthly maximum is `2`; `niceMax(2)=2` made `trend-chart.tsx` tick keys `[0,1,1,2,2]`. Senior/competent/viewer (`max=7`), RB/regional (`max=4`), and representative (`max=3`) maxima produced unique ticks and no errors. Post-fix PGRC `/reports` recheck emitted only the React Router future-flag warning; no duplicate-key error. | P3 | Fixed locally — rounded ticks deduplicated; visual baselines and gates held |
+| A-2 | Cases and institution history table width | Admin and senior, guided review 2026-11-23 (`/cases`, `/institutions/:id`) | Reviewer found Subject, Institution, and Next action columns extremely congested on `/cases`, and confirmed the same senior registry view has the same issue. On institution detail they asked for the same table improvements for `Cross-bureau history`. Since both tables already scroll horizontally, those columns could be wider. | Give content-heavy columns more room inside the existing contained scroll regions; keep all columns reachable and sticky identity columns unchanged. | `/cases`: region `clientWidth=1190`, `scrollWidth=1617`, `overflow-x:auto`; 13 columns, 17 rows. `/institutions/:id`: region `clientWidth=1190`, `scrollWidth=1362`, `overflow-x:auto`; 13 columns, 1 row, same Subject/Institution/Next action headers. No document overflow; W-5 overflow affordance still works. | P3 | Open; reviewer feedback recorded, no change made |
+| A-3 | Triage header spacing | Admin, guided review 2026-11-23 (`/notifications`, `/overlaps`) | Triage headers have no padding; text and controls stick to the edges. On `/notifications` this affects “12 matching notifications · 10 unread”, `Saved views`, `All types`, and `Unread only`; on `/overlaps` it affects “3 alerts · 3 on this page”, the keymap tips, and the view buttons. | Give triage headers consistent horizontal/vertical padding within the content gutter, as on other staff surfaces. | Regions `Notification triage` and `Overlap triage` hold the count lines, saved-view controls, and action buttons with no visible inset. Fixed with the A-10 systemic inset; both regions now measure `12px 24px` with first control/text inset 24px from the region edge. | P3 | Fixed locally by A-10; baselines and gates held |
+| A-4 | Notification dot and badge sizing | Admin, guided review 2026-11-23 (`/notifications`) | The unread dot beside notification titles (e.g. `Overlap merge reverted`, `Potential overlapping cases`) sits slightly above the text baseline instead of centered. Reviewer also asked for smaller badges generally (`overlap alert`, `Unread`, etc.) across the UI. | Center the dot on the title line; reduce badge typography/height consistently without losing legibility. | Grouped notification regions render a leading dot beside each title; role/category badges appear on the same surfaces. Note W-6 already tightened only the two case-detail header badges, not global badges. | P3 | Open; reviewer feedback recorded, no change made |
+| A-5 | Account menu stacking order | Admin, guided review 2026-11-23; reviewer also saw it over cases table, institution names, overlap queue, and reports map | The account menu renders behind content rather than in front of it. Reviewer expects more affected surfaces and asked for a broader check. | Popovers and dropdowns paint above all main-area content regardless of which surface is open. | Sidebar `aside` is `sticky top-0 ... z-auto` with `overflow:visible`; `main` is `static z-auto` and appears later in DOM order; sticky header is `z-40`. A positioned menu inside the sidebar has no stacking advantage over later main content. | P2 | Open; reviewer feedback recorded, no change made |
+| A-6 | Command-palette search matching | Admin, guided review 2026-11-23 | Reviewer praised global search but asked for fuzzy matching (tolerate typos/partial tokens, not only substring matches). | Search results include near matches while keeping exact matches ranked first and role gates unchanged. | Palette currently lists `Actions` and `Go to` buttons under `Search or jump to`; no fuzzy matcher is in place. This is an enhancement, not a regression. | P3 | Planned; no behavior or dependency change made |
+| A-7 | Staff directory action label | Admin, guided review 2026-11-23 (`/admin/users`) | `Reset password` is too long for the row action; reviewer suggested `Reset Pass` or simply `Password`. | A short, unambiguous action label fits the row without losing meaning; accessible name should still convey a password reset. | Staff directory renders `Edit` and `Reset password` on each of 11 rows. | P3 | Open; reviewer suggestion recorded, no change made |
+| A-8 | Overlap keyboard selection under sticky header | Admin, guided review 2026-11-23 (`/overlaps`) | Moving with `j`/`k` or arrow keys to the first overlap card scrolls it under the sticky header; reviewer must scroll manually to see it. The active selection ring is also visible behind the header during scrolling. | Keyboard-driven selection scrolls with an offset greater than the sticky header height, so the selected card and its focus ring remain fully visible. | Sticky header height `65px`, `z-index:40`; selected card is `article.ring-2.ring-ring` with `scroll-margin-top:0px` and document `scroll-padding-top:auto`. | P2 | Open; reviewer feedback recorded, no change made |
+| A-9 | Overlap detail header padding | Admin, guided review 2026-11-23 (`/overlaps/:id`) | Reviewer flagged the detail comparison header as lacking padding; otherwise the view is fine. | Give the sticky detail header its own consistent inset so the back link, title, badges, and metadata do not rely only on the parent main gutter. | Region `Overlap comparison` was `sticky top-16 z-30 scroll-mt-32 ...` with computed `padding:0px`; inner wrapper was `space-y-2 py-3`. Fixed with the A-10 systemic inset: inner wrapper now `space-y-2 px-4 py-3 sm:px-6`, measured `12px 24px`, with the back link at `left=153` against `main` content `left=129`. | P3 | Fixed locally by A-10; baselines and gates held |
+| A-10 | Sticky utility header padding | Admin, senior, and complainant, guided review 2026-11-23 (`/notifications`, `/overlaps`, `/overlaps/:id`, `/reports`, `/institutions/:id`, `/portal/notifications`) | Reviewer repeatedly flagged header padding; otherwise those views are fine. Reported on reports and institution detail after the earlier triage/detail instances (see A-3, A-9), and again on the portal notifications triage header. | Treat as one systemic spacing fix across sticky utility headers rather than per-surface patches. | `Reports workbench`, `Notification triage`, `Overlap triage`, and `Overlap comparison` previously had `padding:0px` on their inner rows. Institution detail, overlap detail, and the other staff utility headers now use the same `px-4 py-3 sm:px-6` inset; measured `padding:12px 24px` with first control/text left `24px` inside each region (`left=153` against `main` content `left=129`), matching the page gutter. Portal `Notification triage` also measures `12px 24px` with first text at `left=297` against `main` content `left=273`. | P3 | Fixed locally — one shared sticky-header inset; baselines and gates held |
+| A-11 | Regional pressure map absent from Charts view | Admin, guided review 2026-11-23 (`/reports`, Charts tab) | Reviewer noticed the `Regional pressure` map is no longer visible after switching to Charts and asked whether that is intentional. | Decide whether the map should stay only in the Tables evidence view, be surfaced in Charts too, or be called out in the tab copy. | `docs/plans/stage-12-phase4e-reports.md` §2.2 specifies `ReportEvidence` as the default Tables view containing the `Regional pressure` map, while `ReportCharts` contains only trend/status/category/ageing/disposal/comparison panels. `reports-page.tsx:184` sets `defaultValue=\"tables\"`. | P3 | Intentional per Phase 4e plan; reviewer question recorded, no change made |
+| A-12 | Reports default tab preference | Admin, guided review 2026-11-23 (`/reports`) | Reviewer suggested making Charts the default view and keeping Tables as the toggle. | If approved, change `Tabs defaultValue` to `charts` and update affected baselines/docs; this reverses the documented table-first intent. | `reports-page.tsx:184` currently uses `defaultValue=\"tables\"`; Phase 4e §2.2 calls `ReportEvidence` the default Tables view. No behavior changed. | P3 | Planned; no behavior or baseline change made |
+| A-13 | Missing favicon | Admin, guided review 2026-11-23 (first full navigation during `/institutions` stop) | Hard navigation produced a console error: `GET /favicon.ico` returned 404. | Add an explicit favicon link/asset so the browser does not request a missing default icon. | `apps/web/index.html` had no `favicon`/`icon` link and `apps/web/public/` had no icon asset. Added `apps/web/public/favicon.svg` and `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`; post-fix DOM has that link and `GET /favicon.svg` returns `200 image/svg+xml`. | P3 | Fixed locally — explicit SVG icon linked; baselines and gates held |
+| A-14 | Institution detail heading — retracted | Admin, guided review 2026-11-23 (`/institutions/:id`) | Initially recorded as a missing `h1` from an early capture. | No change needed. | Re-checked after full render: `main h1` count 1, text “Bengaluru Institute of Management”, plus `Identity and aliases` and `Cross-bureau history` headings. The earlier null was a pre-hydration snapshot. | — | Retracted; false positive from timing |
+| A-15 | Back-link to title spacing across headers | Admin, senior, and representative, guided review 2026-11-23 (`/cases/new`, case/institution/overlap/merge-group detail, representative case detail vs `/institutions/new`) | Reviewer repeatedly found the gap after back links too small and asked for a survey and consistent fix across similar headers. | Apply the institution-form spacing pattern (`mt-3` on the title block, ~15px measured gap) to every back-link + title header, including sticky detail headers and the representative shell. | Pre-fix measured gap was **3px** on all six surveyed headers; `/institutions/new` was **15px**. Post-fix recheck measured **15px** on `/cases/new`, case detail, institution detail, overlap detail, merge-group detail, and representative case detail. The same `mt-3` pattern was applied through `PageHeader className="mt-3"` or an equivalent title-block margin in the six affected components. | P3 | Fixed locally — 15px gap rechecked on all surveyed headers; baselines and gates held |
+| A-16 | Merge group linked-case title/meta spacing | Senior, guided review 2026-11-23 (`/merge-groups/:id`) | Reviewer asked for a little gap between the linked case number (e.g. `PGRC-2026-004`) and its meta line (`Unassigned bureau · HARASSMENT`); otherwise the view is fine. | Add a small consistent vertical gap between the case title and bureau/category meta in linked-case cards; check the reverted group cards for the same spacing. | Pre-fix gap on `PGRC-2026-004` → `Unassigned bureau · HARASSMENT` was **2px**. Added `mt-1` to the meta paragraph in the shared linked-case card markup; post-fix recheck measured **6px**. The same card map renders active and reverted group members, so the fix applies to both. | P3 | Fixed locally — 6px gap rechecked; baselines and gates held |
+| A-17 | Back links missing arrow outside staff shell | Approved representative and complainant, guided review 2026-11-23 (`/institution/cases/:id`, both `/portal/complaints/:id` states) | Reviewer noted back links read `Back to institution cases` / `Back to my complaints` without the `←` used on staff detail pages; repeated on the resolved complaint detail. | Prefix these back links with `←` for consistency; update any asserted accessible name only with explicit approval. | Pre-fix `hasArrow:false` on both links. Post-fix representative link text is `← Back to institution cases` (`hasArrow:true`, 15px gap to `h1` after A-15); portal link text is `← Back to my complaints` (`hasArrow:true`). No test asserts either as an exact accessible name; the seeded E2E route fixture asserts the `Back to my complaints` substring, which still holds. | P3 | Fixed locally — arrows added; no asserted accessible name changed |
+| A-18 | Portal back link outside the header card | Complainant, guided review 2026-11-23 (`/portal/complaints/:id`, both information-requested and resolved states) | Reviewer noted the back link is outside the header box, unlike staff views where the back link sits inside the header; also repeated the request for a visible gap after the back link. Reviewer said the outside-header placement is fine and to use judgment on the fix. | Keep the standalone breadcrumb-like placement if preferred, but make the arrow/spacing treatment explicit; at minimum preserve/verify the current vertical gap so the request is not regressions. | Link remains a standalone sibling before the header card, now with `←` and an explicit `mb-2` wrapper. Post-fix link-bottom → `h1`-top gap measured **32px** (pre-fix **24px**), so the outside-card placement is unchanged and the gap is more visible rather than regressed. | P3 | Fixed locally — breadcrumb placement retained, arrow and 32px gap verified; baselines and gates held |
+
+The aggregated 403 responses for `/admin/*` and the 404 for a non-visible case came from deliberate
+guarded-route probes and are expected authorization behavior, not defects. The 404 from
+`POST /api/v1/public/track` during the anonymous no-match check is also expected:
+`complaint-intake.ts:197-203` throws `COMPLAINT_NOT_FOUND` with HTTP 404, and the form renders the
+required exact string `No complaint matches that number and email address.` No generated baseline
+was copied into `apps/web/e2e/__screenshots__/`. Visual diff acceptance, two flag-off visual passes,
+two dedicated full Chromium runs, both manual gates, push, and deployment remain held.
+
+## 10. Bounded UI-fix slice (2026-11-23)
+
+Authorized scope: **A-1, A-10, A-13, A-15, A-16, A-17, A-18**. A-2, A-6, A-11, and A-12 remain
+deferred. No route, permission, server contract, query parameter, payload, dependency, seed/CSV
+contract, dashboard filter, or committed visual baseline changed. The regenerated baseline
+candidates in `/tmp/opencode/visual-baselines` were not copied or accepted.
+
+Implementation:
+
+- A-1: `trend-chart.tsx` deduplicates rounded gridline values before rendering tick keys.
+- A-10 (subsuming A-3 and A-9): sticky utility rows in reports, notifications, overlaps, overlap
+  comparison, and institution detail share the `px-4 py-3 sm:px-6` inset used by the main content
+  gutter.
+- A-13: added `apps/web/public/favicon.svg` and linked it from `apps/web/index.html`.
+- A-15: applied the institution-form `mt-3` title spacing to case registration, case detail,
+  institution detail, overlap comparison, merge-group detail, and representative case detail.
+- A-16: linked-case meta paragraphs in `merge-group-page.tsx` use `mt-1`.
+- A-17: representative and portal back links now read `← Back to institution cases` and
+  `← Back to my complaints`, including their error states.
+- A-18: the portal breadcrumb stays outside the header card and has an explicit `mb-2` wrapper.
+
+Verification commands and results (local, pinned toolchain; `ALLOW_REMOTE_MONGO` unset):
+
+- `bun run check:ci` — import boundaries OK; Biome checked 432 files, no fixes applied.
+- `bun run typecheck:web && bun run test:unit` — web typecheck clean; API 121 pass / 74 skip /
+  0 fail; web 105 pass / 0 fail.
+- `bun run verify` — all typechecks green; API 121 pass / 74 skip / 0 fail; web 105 pass / 0 fail;
+  build `dist/assets/index-X65y_7Kr.js` **493.42 kB / 139.48 kB gzip**, built in 3.83s.
+- `git diff --check` — clean.
+
+Browser rechecks used the production preview at `http://localhost:4173` against the local API at
+`localhost:3000` (not `127.0.0.1`, which cannot retain the auth cookie):
+
+- Back-link → title gap measured **15px** on `/cases/new`, case detail, institution detail, overlap
+  detail, merge-group detail, and representative case detail; `/institutions/new` remains the
+  15px reference.
+- Sticky regions `Reports workbench`, `Notification triage`, `Overlap triage`, and
+  `Overlap comparison` measured inner padding `12px 24px` with the first control/text inset 24px
+  from the region edge; portal `Notification triage` matched at `12px 24px`.
+- Merge-group linked case `PGRC-2026-004` → `Unassigned bureau · HARASSMENT` measured **6px**.
+- Representative `← Back to institution cases` and portal `← Back to my complaints` both report
+  `hasArrow:true`. The portal detail gap measured **32px**, up from 24px, with the link still
+  outside the header card.
+- PGRC `/reports` emitted no React duplicate-key error after the tick fix; the only console warning
+  was the existing React Router future-flag notice.
+- The rendered document exposes `link[rel="icon"][href="/favicon.svg"][type="image/svg+xml"]`, and
+  `GET /favicon.svg` returned `200 image/svg+xml`.
+
+These are locally verified results only. Visual baseline acceptance/copy, two flag-off visual passes,
+two dedicated full Chromium runs, both manual gates, push, and deployment remain held.

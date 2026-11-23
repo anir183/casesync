@@ -65,7 +65,7 @@ export function ReportControlBand({
       aria-label="Reports workbench"
       className="sticky top-16 z-30 scroll-mt-32 border-b border-border bg-background/95 backdrop-blur"
     >
-      <div className="space-y-3 py-3">
+      <div className="space-y-3 px-4 py-3 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-meta text-muted-foreground" aria-live="polite">
             {isLoading ? 'Loading report totals…' : `${resultCount ?? 0} cases in scope`}

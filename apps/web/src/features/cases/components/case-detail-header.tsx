@@ -28,7 +28,7 @@ export function CaseDetailHeader({ item }: { item: CaseDetail }) {
         >
           ← Back to case registry
         </Link>
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
               {item.caseNumber}

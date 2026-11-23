@@ -2,6 +2,12 @@
 
 **Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget; pushed as `25aa369` and CI-confirmed by dispatch `45014617505` with every active job green, including Full Chromium E2E, while visual, cross-browser, and optional Atlas jobs remain held).
 
+**Latest local verification (2026-11-23):** Bounded UI-fix slice A-1/A-10/A-13/A-15–A-18
+implemented and locally verified with `check:ci`, all typechecks, API 121 pass / 74 skip,
+web 105 pass / 0 fail, build 493.42 kB / 139.48 kB gzip, and clean `git diff --check`.
+No visual baseline, manual gate, push, or deployment changed. Evidence:
+`docs/quality/phase4a-ui-walkthrough-findings.md` §10.
+
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
@@ -1193,6 +1199,23 @@ and simulation counts `Cases: 3, messages: 18, notifications: 15, SLA job runs: 
 This is a remote data-population action only; it does not satisfy CI, visual, Chromium, manual,
 push, or deployment gates.
 
+Atlas-backed UI rewalk note (2026-11-23): with that simulation layer already in place, the production
+web build was rewalked in 12 isolated Playwright contexts (anonymous, complainant, admin, approved and
+pending representatives, pending complainant, senior, competent, PGRC, RB, regional, and viewer). No
+seed/reset or database write was run, `ALLOW_REMOTE_MONGO` stayed unset, no code changed, and no
+baseline was accepted. The recorded W-1–W-10 claims, asserted public strings, privacy projections,
+role gates, reports, overlaps, and admin history still held. A corrected 48-check sweep (12 routes at
+375/1440 px in light/dark) passed with no document overflow, missing main landmark, or theme mismatch.
+One new P3 finding was recorded: PGRC-scoped `/reports` emits duplicate React key warnings when its
+monthly chart maximum is `2` (`niceMax(2)=2` yields tick keys `[0,1,1,2,2]`); other scoped maxima did
+not warn. The aggregated 403/404 responses came from deliberate guarded-route probes and are expected.
+Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §9. Held gates remain held.
+
+Review method (2026-11-23): pages built from the same components (case registry, reports,
+notifications, etc.) are captured and reviewed once; the observation is noted as shared across
+accounts rather than re-opened per persona. Subsequent stops target unique routes or pages with
+role-specific differences.
+
 Bounded next steps:
 - [x] Reconcile contributor/agent documentation and current seed/demo evidence.
 - [x] Implement a separate, idempotent production-like simulation seed with pre-seeded
@@ -1200,6 +1223,19 @@ Bounded next steps:
       audit/job history, and matching reset support; keep `seed:demo` and test fixtures stable.
 - [x] Re-walk the recorded UI findings and phase claims against a fresh seeded build before
       accepting visual baselines; no new finding or code change resulted.
+- [x] Implement the authorized UI-fix slice locally: A-1 duplicate chart tick keys, A-10 systemic
+      sticky-header padding, A-13 favicon link/asset, A-15 back-link → title spacing, A-16
+      merge-group title/meta gap, A-17 back-link arrows, and A-18 portal breadcrumb spacing. Web
+      build, typechecks, unit/component tests, `check:ci`, and `git diff --check` are green;
+      visual baselines, manual gates, push, and deployment remain held. Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §10.
+- [ ] Plan fuzzy matching for the global command-palette search, requested during the 2026-11-23
+      guided review; keep exact matches ranked first and role gates unchanged. No behavior change made.
+- [ ] Decide whether the `Regional pressure` map should also appear in the Reports Charts view; the
+      current table-only placement is intentional per Stage 12 Phase 4e §2.2 (A-11).
+- [ ] Decide whether to make Charts the default Reports tab and Tables the toggle; this would reverse
+      the documented table-first intent and require baseline/doc updates (A-12). No change made.
+- [ ] Keep A-2 (content-heavy table column widths) as a separate layout decision; no change made.
 - [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
       two visual passes, two dedicated full Chromium runs, manual gates, then deployment.
 
