@@ -6,6 +6,7 @@ import { Card, CardBody, CardDescription, CardHeader, CardTitle } from '#/compon
 import { Field } from '#/components/ui/field'
 import { FormActions } from '#/components/ui/form-actions'
 import { Input } from '#/components/ui/input'
+import { PasswordInput } from '#/components/ui/password-input'
 import { Select } from '#/components/ui/select'
 import { Textarea } from '#/components/ui/textarea'
 import { usePublicInstitutions } from '#/features/portal/api'
@@ -123,9 +124,8 @@ export function InstitutionSignupPage() {
                 />
               </Field>
               <Field label="Password" htmlFor="representative-password">
-                <Input
+                <PasswordInput
                   id="representative-password"
-                  type="password"
                   autoComplete="new-password"
                   minLength={8}
                   required
@@ -138,9 +138,8 @@ export function InstitutionSignupPage() {
                 htmlFor="representative-confirm"
                 error={passwordMismatchError}
               >
-                <Input
+                <PasswordInput
                   id="representative-confirm"
-                  type="password"
                   autoComplete="new-password"
                   minLength={8}
                   required

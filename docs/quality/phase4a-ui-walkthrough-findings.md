@@ -1,13 +1,13 @@
 # CaseSync — Phase 4A product-owner UI walkthrough findings
 
 Status: **consolidated 2026-11-21; W-1–W-10 remediated or verified by 2026-11-22; bounded
-A-1/A-10/A-13/A-15–A-18 UI slice implemented and locally verified 2026-11-23.** W-10 closed in
+A-1/A-10/A-13/A-15–A-19 UI slice implemented and locally verified 2026-11-23.** W-10 closed in
 Phase 4B; W-1–W-3 closed and W-4 verified in W-A portal-shell remediation; W-6–W-9 closed in W-B
 staff-presentation remediation; W-5 closed in the registry presentation remediation. A fresh
 simulation-layer rewalk on 2026-11-22 found no regressions or new findings (§8). An Atlas-backed
 rewalk on 2026-11-23 rechecked the same claims and found one new P3 console-key finding, A-1 (§9);
 the rewalk itself changed no code. The authorized follow-up slice fixes A-1, A-10, A-13, and
-A-15–A-18 (§10); A-2, A-6, A-11, and A-12 remain deferred. This is a product-owner screen-by-screen
+A-15–A-19 (§10); A-2, A-6, A-11, and A-12 remain deferred. This is a product-owner screen-by-screen
 UI review, not the independent manual sign-off in [`manual-signoff.md`](manual-signoff.md). Both
 manual gates remain held until Stage 12 exits.
 
@@ -238,6 +238,7 @@ overlap, reports, notifications, admin/audit, and create-menu surfaces; no form 
 | A-16 | Merge group linked-case title/meta spacing | Senior, guided review 2026-11-23 (`/merge-groups/:id`) | Reviewer asked for a little gap between the linked case number (e.g. `PGRC-2026-004`) and its meta line (`Unassigned bureau · HARASSMENT`); otherwise the view is fine. | Add a small consistent vertical gap between the case title and bureau/category meta in linked-case cards; check the reverted group cards for the same spacing. | Pre-fix gap on `PGRC-2026-004` → `Unassigned bureau · HARASSMENT` was **2px**. Added `mt-1` to the meta paragraph in the shared linked-case card markup; post-fix recheck measured **6px**. The same card map renders active and reverted group members, so the fix applies to both. | P3 | Fixed locally — 6px gap rechecked; baselines and gates held |
 | A-17 | Back links missing arrow outside staff shell | Approved representative and complainant, guided review 2026-11-23 (`/institution/cases/:id`, both `/portal/complaints/:id` states) | Reviewer noted back links read `Back to institution cases` / `Back to my complaints` without the `←` used on staff detail pages; repeated on the resolved complaint detail. | Prefix these back links with `←` for consistency; update any asserted accessible name only with explicit approval. | Pre-fix `hasArrow:false` on both links. Post-fix representative link text is `← Back to institution cases` (`hasArrow:true`, 15px gap to `h1` after A-15); portal link text is `← Back to my complaints` (`hasArrow:true`). No test asserts either as an exact accessible name; the seeded E2E route fixture asserts the `Back to my complaints` substring, which still holds. | P3 | Fixed locally — arrows added; no asserted accessible name changed |
 | A-18 | Portal back link outside the header card | Complainant, guided review 2026-11-23 (`/portal/complaints/:id`, both information-requested and resolved states) | Reviewer noted the back link is outside the header box, unlike staff views where the back link sits inside the header; also repeated the request for a visible gap after the back link. Reviewer said the outside-header placement is fine and to use judgment on the fix. | Keep the standalone breadcrumb-like placement if preferred, but make the arrow/spacing treatment explicit; at minimum preserve/verify the current vertical gap so the request is not regressions. | Link remains a standalone sibling before the header card, now with `←` and an explicit `mb-2` wrapper. Post-fix link-bottom → `h1`-top gap measured **32px** (pre-fix **24px**), so the outside-card placement is unchanged and the gap is more visible rather than regressed. | P3 | Fixed locally — breadcrumb placement retained, arrow and 32px gap verified; baselines and gates held |
+| A-19 | Password visibility toggle | Product-owner follow-up 2026-11-23 after the UI-fix commit | Reviewer noted password inputs had no show/hide control. | Every password field offers a keyboard-accessible toggle that switches between masked and visible text without submitting the form. | Six inputs across staff login, portal login, portal signup (two), and representative sign-up (two). Added shared `PasswordInput` with a `type="button"` control, dynamic `Show password`/`Hide password` label, `aria-controls`, and 44px input right padding. Component test plus browser recheck cover all four pages. | P3 | Fixed locally — shared accessible toggle; baselines and gates held |
 
 The aggregated 403 responses for `/admin/*` and the 404 for a non-visible case came from deliberate
 guarded-route probes and are expected authorization behavior, not defects. The 404 from
@@ -249,7 +250,7 @@ two dedicated full Chromium runs, both manual gates, push, and deployment remain
 
 ## 10. Bounded UI-fix slice (2026-11-23)
 
-Authorized scope: **A-1, A-10, A-13, A-15, A-16, A-17, A-18**. A-2, A-6, A-11, and A-12 remain
+Authorized scope: **A-1, A-10, A-13, A-15, A-16, A-17, A-18, A-19**. A-2, A-6, A-11, and A-12 remain
 deferred. No route, permission, server contract, query parameter, payload, dependency, seed/CSV
 contract, dashboard filter, or committed visual baseline changed. The regenerated baseline
 candidates in `/tmp/opencode/visual-baselines` were not copied or accepted.
@@ -267,14 +268,16 @@ Implementation:
 - A-17: representative and portal back links now read `← Back to institution cases` and
   `← Back to my complaints`, including their error states.
 - A-18: the portal breadcrumb stays outside the header card and has an explicit `mb-2` wrapper.
+- A-19: added shared `PasswordInput` with a keyboard-accessible show/hide toggle and replaced all
+  six password inputs on staff login, portal login, portal signup, and representative sign-up.
 
 Verification commands and results (local, pinned toolchain; `ALLOW_REMOTE_MONGO` unset):
 
-- `bun run check:ci` — import boundaries OK; Biome checked 432 files, no fixes applied.
-- `bun run typecheck:web && bun run test:unit` — web typecheck clean; API 121 pass / 74 skip /
-  0 fail; web 105 pass / 0 fail.
-- `bun run verify` — all typechecks green; API 121 pass / 74 skip / 0 fail; web 105 pass / 0 fail;
-  build `dist/assets/index-X65y_7Kr.js` **493.42 kB / 139.48 kB gzip**, built in 3.83s.
+- `bun run check:ci` — import boundaries OK; Biome checked 433 files, no fixes applied.
+- `bun run typecheck:web && bun run typecheck:web:tests && bun run --filter @casesync/web test` —
+  all web checks clean; web 106 pass / 0 fail.
+- `bun run verify` — all typechecks green; API 121 pass / 74 skip / 0 fail; web 106 pass / 0 fail;
+  build `dist/assets/index-DYAxxEdL.js` **493.47 kB / 139.52 kB gzip**, built in 3.69s.
 - `git diff --check` — clean.
 
 Browser rechecks used the production preview at `http://localhost:4173` against the local API at
@@ -294,6 +297,9 @@ Browser rechecks used the production preview at `http://localhost:4173` against 
   was the existing React Router future-flag notice.
 - The rendered document exposes `link[rel="icon"][href="/favicon.svg"][type="image/svg+xml"]`, and
   `GET /favicon.svg` returned `200 image/svg+xml`.
+- All four auth pages expose `Show password` buttons with matching `aria-controls` and 44px input
+  right padding; clicking the first toggle switches that input to `text` and relabels the button
+  `Hide password`. The signup pages keep the two toggles independent.
 
 These are locally verified results only. Visual baseline acceptance/copy, two flag-off visual passes,
 two dedicated full Chromium runs, both manual gates, push, and deployment remain held.

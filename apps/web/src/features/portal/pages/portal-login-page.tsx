@@ -4,6 +4,7 @@ import { PageHeader } from '#/components/shared/page-header'
 import { Button } from '#/components/ui/button'
 import { Card, CardBody } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import { PasswordInput } from '#/components/ui/password-input'
 import { FieldLabel } from '#/components/ui/textarea'
 import { PortalAuthContext } from '#/features/portal/components/portal-auth-context'
 import { signIn } from '#/lib/auth-client'
@@ -80,9 +81,8 @@ export function PortalLoginPage() {
                 </div>
                 <div className="space-y-1">
                   <FieldLabel htmlFor="portal-password">Password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     id="portal-password"
-                    type="password"
                     autoComplete="current-password"
                     required
                     value={password}

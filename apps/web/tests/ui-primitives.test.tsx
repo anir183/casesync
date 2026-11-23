@@ -7,6 +7,7 @@ import { ErrorState } from '../src/components/ui/error-state'
 import { Field } from '../src/components/ui/field'
 import { FormActions } from '../src/components/ui/form-actions'
 import { KpiStrip } from '../src/components/ui/kpi-strip'
+import { PasswordInput } from '../src/components/ui/password-input'
 import { Popover } from '../src/components/ui/popover'
 import { Skeleton } from '../src/components/ui/skeleton'
 import { Tabs } from '../src/components/ui/tabs'
@@ -33,6 +34,30 @@ describe('shared UI primitives', () => {
     const describedBy = input.getAttribute('aria-describedby')?.split(' ') ?? []
     expect(describedBy).toContain(screen.getByText('Use the customer-facing name.').id)
     expect(describedBy).toContain(screen.getByRole('alert').id)
+  })
+
+  test('PasswordInput toggles visibility with an accessible button', () => {
+    render(
+      <Field label="Password" htmlFor="password">
+        <PasswordInput id="password" />
+      </Field>,
+    )
+
+    const input = screen.getByLabelText('Password') as HTMLInputElement
+    const toggle = screen.getByRole('button', { name: 'Show password' })
+
+    expect(input.type).toBe('password')
+    expect(toggle.getAttribute('aria-controls')).toBe('password')
+
+    fireEvent.click(toggle)
+
+    expect(input.type).toBe('text')
+    expect(toggle.getAttribute('aria-label')).toBe('Hide password')
+
+    fireEvent.click(toggle)
+
+    expect(input.type).toBe('password')
+    expect(toggle.getAttribute('aria-label')).toBe('Show password')
   })
 
   test('FormActions renders a sticky row for form controls', () => {
