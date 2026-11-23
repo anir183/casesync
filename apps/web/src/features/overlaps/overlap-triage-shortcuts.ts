@@ -6,6 +6,7 @@ export interface OverlapTriageShortcutOptions {
   canDecide: boolean
   dialogOpen: boolean
   onActiveChange: (index: number) => void
+  onActiveScroll?: (index: number) => void
   onConfirm: () => void
   onDismiss: () => void
 }
@@ -18,11 +19,17 @@ export function useOverlapTriageShortcuts({
   canDecide,
   dialogOpen,
   onActiveChange,
+  onActiveScroll,
   onConfirm,
   onDismiss,
 }: OverlapTriageShortcutOptions) {
   useEffect(() => {
     if (itemCount === 0) return
+
+    function moveActive(index: number) {
+      onActiveChange(index)
+      onActiveScroll?.(index)
+    }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return
@@ -36,12 +43,12 @@ export function useOverlapTriageShortcuts({
       const key = event.key.toLowerCase()
       if (key === 'arrowdown' || key === 'j') {
         event.preventDefault()
-        onActiveChange((activeIndex + 1) % itemCount)
+        moveActive((activeIndex + 1) % itemCount)
         return
       }
       if (key === 'arrowup' || key === 'k') {
         event.preventDefault()
-        onActiveChange((activeIndex - 1 + itemCount) % itemCount)
+        moveActive((activeIndex - 1 + itemCount) % itemCount)
         return
       }
       if (!canDecide) return
@@ -56,5 +63,14 @@ export function useOverlapTriageShortcuts({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeIndex, canDecide, dialogOpen, itemCount, onActiveChange, onConfirm, onDismiss])
+  }, [
+    activeIndex,
+    canDecide,
+    dialogOpen,
+    itemCount,
+    onActiveChange,
+    onActiveScroll,
+    onConfirm,
+    onDismiss,
+  ])
 }

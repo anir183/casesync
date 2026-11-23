@@ -43,7 +43,7 @@ export function OverlapTriageCard({
       data-overlap-index={position}
       onFocusCapture={onActivate}
       className={cn(
-        'rounded-xl',
+        'scroll-mt-72 rounded-xl',
         isActive && 'ring-2 ring-ring ring-offset-2 ring-offset-background',
       )}
     >

@@ -322,10 +322,11 @@ export function AdminUsersPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              aria-label="Reset password"
                               disabled={resetPassword.isPending}
                               onClick={() => setResetTarget(item)}
                             >
-                              Reset password
+                              Password
                             </Button>
                           </div>
                         </td>

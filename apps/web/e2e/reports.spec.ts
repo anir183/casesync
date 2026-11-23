@@ -5,6 +5,7 @@ test('@responsive reports map supports keyboard focus and mobile reflow', async 
   await signIn(page, 'admin@casesync.test')
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
+  await page.getByRole('tab', { name: 'Tables' }).click()
 
   const north = page.getByRole('button', { name: /NOR, Northern Region/ })
   await expect(north).toBeVisible()
@@ -29,6 +30,7 @@ test('@a11y reports choropleth works with blocked tiles and keyboard polygons', 
   await signIn(page, 'admin@casesync.test')
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
+  await page.getByRole('tab', { name: 'Tables' }).click()
   await expect(page.locator('.leaflet-container')).toBeVisible()
 
   const metrics = page.getByRole('group', { name: 'Map metric' })

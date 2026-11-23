@@ -5,7 +5,7 @@ import { PASSWORD, signIn } from './helpers'
 async function signInPortal(page: Parameters<typeof signIn>[0], email: string) {
   await page.goto('/portal/login')
   await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/portal\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'My complaints' })).toBeVisible()

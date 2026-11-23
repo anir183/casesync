@@ -59,7 +59,7 @@ export function AppShell() {
         Skip to main content
       </a>
 
-      <aside className="sticky top-0 hidden h-screen shrink-0 lg:block">
+      <aside className="sticky top-0 z-50 hidden h-screen shrink-0 lg:block">
         <Suspense fallback={<div className="h-full w-60 border-r border-border" aria-hidden />}>
           <SidebarRail
             role={role}

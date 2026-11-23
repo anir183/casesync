@@ -42,7 +42,7 @@ export function NotificationGroupCard({
                   <span
                     aria-hidden
                     className={cn(
-                      'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                      'mt-2 h-2 w-2 shrink-0 rounded-full',
                       unread ? 'bg-primary' : 'bg-transparent',
                     )}
                   />

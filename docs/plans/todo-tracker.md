@@ -2,11 +2,12 @@
 
 **Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget; pushed as `25aa369` and CI-confirmed by dispatch `45014617505` with every active job green, including Full Chromium E2E, while visual, cross-browser, and optional Atlas jobs remain held).
 
-**Latest local verification (2026-11-23):** Bounded UI-fix slice A-1/A-10/A-13/A-15–A-19
-implemented and locally verified with `check:ci`, all typechecks, API 121 pass / 74 skip,
-web 106 pass / 0 fail, build 493.47 kB / 139.52 kB gzip, and clean `git diff --check`.
-Visual baselines, manual gates, and deployment remain held; push is performed by the product owner.
-Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §10.
+**Latest local verification (2026-11-23):** Final UI freeze completes all actionable A-1–A-19
+findings. `check:ci`, all typechecks, API 121 pass / 74 skip, web 107 pass / 0 fail, build
+493.48 kB / 139.53 kB gzip, seeded full E2E 231 passed, and clean `git diff --check` passed. The
+seeded suite used a disposable local Mongo on port 27019 with `ALLOW_REMOTE_MONGO` unset. Visual
+baselines, manual gates, and deployment remain held; push is performed by the product owner.
+Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §§10–11.
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
 **Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
@@ -1223,20 +1224,22 @@ Bounded next steps:
       audit/job history, and matching reset support; keep `seed:demo` and test fixtures stable.
 - [x] Re-walk the recorded UI findings and phase claims against a fresh seeded build before
       accepting visual baselines; no new finding or code change resulted.
-- [x] Implement the authorized UI-fix slice locally: A-1 duplicate chart tick keys, A-10 systemic
-      sticky-header padding, A-13 favicon link/asset, A-15 back-link → title spacing, A-16
+- [x] Implement the first authorized UI-fix slice locally: A-1 duplicate chart tick keys, A-10
+      systemic sticky-header padding, A-13 favicon link/asset, A-15 back-link → title spacing, A-16
       merge-group title/meta gap, A-17 back-link arrows, A-18 portal breadcrumb spacing, and A-19
-      accessible password visibility toggles. Web build, typechecks, unit/component tests,
-      `check:ci`, and `git diff --check` are green; visual baselines, manual gates, and deployment
-      remain held, and push is performed by the product owner. Evidence:
+      accessible password visibility toggles. Evidence:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §10.
-- [ ] Plan fuzzy matching for the global command-palette search, requested during the 2026-11-23
-      guided review; keep exact matches ranked first and role gates unchanged. No behavior change made.
-- [ ] Decide whether the `Regional pressure` map should also appear in the Reports Charts view; the
-      current table-only placement is intentional per Stage 12 Phase 4e §2.2 (A-11).
-- [ ] Decide whether to make Charts the default Reports tab and Tables the toggle; this would reverse
-      the documented table-first intent and require baseline/doc updates (A-12). No change made.
-- [ ] Keep A-2 (content-heavy table column widths) as a separate layout decision; no change made.
+- [x] Complete the final UI freeze before visual baselines: A-2 content-heavy column widths,
+      A-4 notification dot/badge sizing, A-5 account-menu stacking, A-6 local command-palette fuzzy
+      ranking, A-7 short admin password-action label, A-8 overlap keyboard scroll clearance, A-11
+      Charts note for the Tables-only map, and A-12 Charts default for `/reports`. `check:ci`,
+      typechecks, web 107/0, API 121/74/0, build, seeded full E2E 231/231, and `git diff --check`
+      are green; browser rechecks passed. Seeded E2E used a disposable local Mongo on port 27019
+      because the default local test Mongo rejected `seed:demo`; `ALLOW_REMOTE_MONGO` stayed unset.
+      Visual baselines, manual gates, and deployment remain held; push is performed by the product
+      owner. Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §11.
+- [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
+      it is not needed for the A-2 closure.
 - [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
       two visual passes, two dedicated full Chromium runs, manual gates, then deployment.
 

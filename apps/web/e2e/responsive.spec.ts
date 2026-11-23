@@ -21,7 +21,7 @@ const STAFF_ROUTES = [
 async function signInAs(page: Page, email: string) {
   await page.goto('/login')
   await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
 }
@@ -29,7 +29,7 @@ async function signInAs(page: Page, email: string) {
 async function signInAsRepresentative(page: Page, email: string) {
   await page.goto('/login')
   await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/institution\/(dashboard|profile)$/)
 }
@@ -77,7 +77,7 @@ test.describe('@responsive portal reflow', () => {
 
       await page.goto('/portal/login')
       await page.getByLabel('Email').fill('complainant@casesync.test')
-      await page.getByLabel('Password').fill(PASSWORD)
+      await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
       await page.getByRole('button', { name: 'Sign in' }).click()
       await expect(page).toHaveURL(/\/portal\/dashboard$/)
       await expect(page.getByRole('heading', { name: 'My complaints' })).toBeVisible({

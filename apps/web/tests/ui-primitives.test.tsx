@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
+import { matchScore } from '../src/components/layout/command-palette'
 import { Dialog } from '../src/components/ui/dialog'
 import { DropdownMenu } from '../src/components/ui/dropdown-menu'
 import { ErrorState } from '../src/components/ui/error-state'
@@ -58,6 +59,13 @@ describe('shared UI primitives', () => {
 
     expect(input.type).toBe('password')
     expect(toggle.getAttribute('aria-label')).toBe('Show password')
+  })
+
+  test('Command palette match scoring ranks exact matches before fuzzy matches', () => {
+    expect(matchScore('rep', 'Reports')).toBeGreaterThan(matchScore('repotrs', 'Reports'))
+    expect(matchScore('repotrs', 'Reports')).toBeGreaterThan(matchScore('zzz', 'Reports'))
+    expect(matchScore('pgrc004', 'PGRC-2026-004')).toBeGreaterThan(0)
+    expect(matchScore('', 'Reports')).toBe(0)
   })
 
   test('FormActions renders a sticky row for form controls', () => {

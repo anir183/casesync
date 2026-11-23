@@ -17,6 +17,9 @@ const STICKY_CASE_HEAD_CLASS =
 const STICKY_SELECT_CELL_CLASS = 'sticky left-0 z-10 w-12 min-w-12 group-hover:bg-muted/40'
 const STICKY_CASE_CELL_CLASS =
   'sticky left-12 z-10 w-44 min-w-44 whitespace-nowrap border-r border-border shadow-[4px_0_6px_-6px_rgba(15,23,42,0.45)] group-hover:bg-muted/40'
+const SUBJECT_COLUMN_CLASS = 'w-60 min-w-60'
+const INSTITUTION_COLUMN_CLASS = 'w-60 min-w-60'
+const NEXT_ACTION_COLUMN_CLASS = 'w-72 min-w-72'
 
 export interface CaseTableProps {
   cases: CaseListItem[]
@@ -72,7 +75,7 @@ export function CaseTable({
         data-density={density}
         hint={stickyColumns ? scrollHint : undefined}
       >
-        <table className="w-full min-w-[1280px] border-collapse text-left">
+        <table className="w-full min-w-[1520px] border-collapse text-left">
           <thead>
             <tr className="border-b border-border">
               <th scope="col" className={cn(HEAD_CLASS, stickyColumns && STICKY_SELECT_HEAD_CLASS)}>
@@ -89,10 +92,10 @@ export function CaseTable({
               <th scope="col" className={cn(HEAD_CLASS, stickyColumns && STICKY_CASE_HEAD_CLASS)}>
                 Case
               </th>
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={cn(HEAD_CLASS, SUBJECT_COLUMN_CLASS)}>
                 Subject
               </th>
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={cn(HEAD_CLASS, INSTITUTION_COLUMN_CLASS)}>
                 Institution
               </th>
               <th scope="col" className={HEAD_CLASS}>
@@ -116,7 +119,7 @@ export function CaseTable({
               <th scope="col" className={HEAD_CLASS}>
                 Received
               </th>
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={cn(HEAD_CLASS, NEXT_ACTION_COLUMN_CLASS)}>
                 Next action
               </th>
               <th scope="col" className={HEAD_CLASS}>
@@ -167,8 +170,8 @@ export function CaseTable({
                       {item.caseNumber}
                     </Link>
                   </td>
-                  <td className={CELL_CLASS}>{item.subject ?? '—'}</td>
-                  <td className={CELL_CLASS}>
+                  <td className={cn(CELL_CLASS, SUBJECT_COLUMN_CLASS)}>{item.subject ?? '—'}</td>
+                  <td className={cn(CELL_CLASS, INSTITUTION_COLUMN_CLASS)}>
                     <Link
                       to={`/institutions/${item.institutionId}`}
                       className="scroll-mt-32 text-muted-foreground underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -185,7 +188,7 @@ export function CaseTable({
                   </td>
                   <td className={CELL_CLASS}>{item.officerName ?? 'Unassigned'}</td>
                   <td className={CELL_CLASS}>{formatDateOnly(item.receivedAt)}</td>
-                  <td className={CELL_CLASS}>
+                  <td className={cn(CELL_CLASS, NEXT_ACTION_COLUMN_CLASS)}>
                     <div className="space-y-0.5">
                       <p>{item.nextAction ?? '—'}</p>
                       {item.nextActionDueAt && (

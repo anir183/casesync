@@ -73,6 +73,8 @@ test.describe('@a11y keyboard and focus management', () => {
     await page.keyboard.press('Tab')
     await page.keyboard.type(PASSWORD)
     await page.keyboard.press('Tab')
+    await expect(page.getByRole('button', { name: 'Show password' })).toBeFocused()
+    await page.keyboard.press('Tab')
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/\/dashboard$/)
@@ -108,7 +110,7 @@ test.describe('@a11y keyboard and focus management', () => {
     const data = await loadSeedData()
     await page.goto('/login')
     await page.getByLabel('Email').fill('admin@casesync.test')
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
 
@@ -141,7 +143,7 @@ test.describe('@a11y keyboard and focus management', () => {
     await page.setViewportSize({ width: 375, height: 900 })
     await page.goto('/login')
     await page.getByLabel('Email').fill('admin@casesync.test')
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
 
@@ -157,7 +159,7 @@ test.describe('@a11y keyboard and focus management', () => {
     await page.setViewportSize({ width: 390, height: 900 })
     await page.goto('/login')
     await page.getByLabel('Email').fill('admin@casesync.test')
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
 

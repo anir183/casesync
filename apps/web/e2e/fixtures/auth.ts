@@ -13,7 +13,7 @@ export async function signIn(page: Page, roleOrEmail: RoleKey | string) {
   if (account.role === 'COMPLAINANT') {
     await page.goto('/portal/login')
     await page.getByLabel('Email').fill(account.email)
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/portal\/dashboard$/)
     await expect(page.getByRole('heading', { name: 'My complaints' })).toBeVisible()
@@ -23,7 +23,7 @@ export async function signIn(page: Page, roleOrEmail: RoleKey | string) {
   if (account.role === 'INSTITUTION_REPRESENTATIVE') {
     await page.goto('/login')
     await page.getByLabel('Email').fill(account.email)
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     // Approved representatives land on their dashboard; pending, rejected, and
     // revoked accounts can only reach the access-status page.
@@ -39,7 +39,7 @@ export async function signIn(page: Page, roleOrEmail: RoleKey | string) {
 
   await page.goto('/login')
   await page.getByLabel('Email').fill(account.email)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()

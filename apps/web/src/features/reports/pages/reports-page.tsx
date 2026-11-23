@@ -29,6 +29,7 @@ export function ReportsPage() {
   const [filters, setFilters] = useState<ReportFilters>(() => readReportFilters(searchParams))
   const [exportError, setExportError] = useState<string>()
   const [isExporting, setIsExporting] = useState(false)
+  const [view, setView] = useState('charts')
   const { data, isLoading, isError, error } = useReports(filters)
   const geo = useReportsGeo(filters)
   const { data: bureaus } = useBureaus()
@@ -181,7 +182,8 @@ export function ReportsPage() {
 
           <Tabs
             ariaLabel="Reports views"
-            defaultValue="tables"
+            value={view}
+            onValueChange={setView}
             items={[
               {
                 id: 'tables',
@@ -199,7 +201,14 @@ export function ReportsPage() {
               {
                 id: 'charts',
                 label: 'Charts',
-                content: <ReportCharts data={data} />,
+                content: (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Regional pressure is available in the Tables view.
+                    </p>
+                    <ReportCharts data={data} />
+                  </div>
+                ),
               },
             ]}
           />

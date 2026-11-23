@@ -13,8 +13,11 @@ test('reports workbench keeps filters, views, and drill-down usable', async ({ p
   await expect(page.getByRole('button', { name: 'Reset' })).toBeVisible()
   await expect(page.getByText('Total cases')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Export CSV' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /NOR, Northern Region/ })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Charts' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByRole('tab', { name: 'Tables' })).toBeVisible()
+  await expect(page.getByText('Regional pressure is available in the Tables view.')).toBeVisible()
+  await page.getByRole('tab', { name: 'Tables' }).click()
+  await expect(page.getByRole('button', { name: /NOR, Northern Region/ })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Bureau/Cell-wise' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Cases by status' })).toBeVisible()
 

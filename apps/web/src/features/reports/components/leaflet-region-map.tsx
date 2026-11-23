@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css'
 import type { Layer, GeoJSON as LeafletGeoJSON, Path } from 'leaflet'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { GeoJSON, type GeoJSONProps, MapContainer, TileLayer } from 'react-leaflet'
+import { GeoJSON, type GeoJSONProps, MapContainer, TileLayer, useMap } from 'react-leaflet'
 import type { GeoRegionRow } from '#/features/reports/api'
 import catchments from '#/features/reports/data/region-catchments.json'
 import {
@@ -150,6 +150,32 @@ function RegionPolygons({
   )
 }
 
+/** The map mounts inside a hidden tab on the Charts default, so Leaflet must
+ * recalculate its size when Tables becomes visible. */
+function InvalidateOnResize() {
+  const map = useMap()
+
+  useEffect(() => {
+    let fitted = false
+    const sync = () => {
+      const container = map.getContainer()
+      if (!container.clientWidth) return
+      map.invalidateSize()
+      if (!fitted) {
+        map.fitBounds(INDIA_MAP_BOUNDS, { padding: [16, 16] })
+        fitted = true
+      }
+    }
+    sync()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(sync)
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map])
+
+  return null
+}
+
 /**
  * Loaded lazily so Leaflet, its CSS, and the bundled geometry stay out of the
  * initial reports bundle. The surrounding RegionMap keeps keyboard controls and
@@ -187,6 +213,7 @@ export default function LeafletRegionMap({
         scrollWheelZoom={false}
         className="z-0"
       >
+        <InvalidateOnResize />
         <TileLayer
           url={DEFAULT_MAP_TILE_URL}
           attribution={MAP_TILE_ATTRIBUTION}

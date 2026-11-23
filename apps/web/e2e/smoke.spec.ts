@@ -40,7 +40,7 @@ test.describe('@smoke critical staff smoke journeys', () => {
 
     await page.goto('/login')
     await page.getByLabel('Email').fill('pgrc.officer@casesync.test')
-    await page.getByLabel('Password').fill(PASSWORD)
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
 

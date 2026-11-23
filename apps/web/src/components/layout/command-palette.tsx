@@ -46,10 +46,86 @@ interface CommandResultsProps {
   onActiveChange: (index: number) => void
 }
 
-function matches(query: string, ...values: Array<string | undefined>) {
-  if (!query) return true
-  const needle = query.toLowerCase()
-  return values.some((value) => value?.toLowerCase().includes(needle))
+function isSubsequence(needle: string, haystack: string) {
+  let cursor = 0
+  for (const character of haystack) {
+    if (character === needle[cursor]) cursor += 1
+    if (cursor === needle.length) return true
+  }
+  return false
+}
+
+function withinOneEdit(left: string, right: string) {
+  if (left === right) return true
+  if (Math.abs(left.length - right.length) > 1) return false
+
+  if (left.length === right.length) {
+    let differences = 0
+    let first = -1
+    let last = -1
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] === right[index]) continue
+      differences += 1
+      if (first < 0) first = index
+      last = index
+    }
+    return (
+      differences <= 1 ||
+      (differences === 2 && left[first] === right[last] && left[last] === right[first])
+    )
+  }
+
+  const shorter = left.length < right.length ? left : right
+  const longer = left.length < right.length ? right : left
+  let shortIndex = 0
+  let longIndex = 0
+  let skipped = false
+  while (shortIndex < shorter.length && longIndex < longer.length) {
+    if (shorter[shortIndex] === longer[longIndex]) {
+      shortIndex += 1
+      longIndex += 1
+    } else if (skipped) {
+      return false
+    } else {
+      skipped = true
+      longIndex += 1
+    }
+  }
+  return true
+}
+
+function scoreValue(needle: string, value: string) {
+  if (value === needle) return 2000
+  const direct = value.indexOf(needle)
+  if (direct >= 0) return 1000 - direct
+  if (isSubsequence(needle, value)) return 600 - (value.length - needle.length)
+  if (withinOneEdit(needle, value)) return 400
+
+  for (const token of value.split(/[^a-z0-9]+/).filter(Boolean)) {
+    if (token === needle) return 900
+    const tokenIndex = token.indexOf(needle)
+    if (tokenIndex >= 0) return 500 - tokenIndex
+    if (isSubsequence(needle, token)) return 250 - (token.length - needle.length)
+    if (withinOneEdit(needle, token)) return 150
+  }
+  return -1
+}
+
+export function matchScore(query: string, ...values: Array<string | undefined>) {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return 0
+  return Math.max(
+    -1,
+    ...values.map((value) => (value ? scoreValue(needle, value.toLowerCase()) : -1)),
+  )
+}
+
+function rankMatches<T>(items: T[], score: (item: T) => number) {
+  return items
+    .map((item, index) => ({ item, index, score: score(item) }))
+    .filter((entry) => entry.score >= 0)
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((entry) => entry.item)
 }
 
 /**
@@ -76,27 +152,25 @@ function useCommandSearch(
     }
   }, [enabled])
 
-  const cases = useCases({ q: debounced, pageSize: 5 }, { enabled: searchable })
-  const institutions = useInstitutions({ q: debounced, pageSize: 5 }, searchable)
+  const cases = useCases({ q: debounced, pageSize: 20 }, { enabled: searchable })
+  const institutions = useInstitutions({ q: debounced, pageSize: 20 }, searchable)
   const overlaps = useQuery({
-    queryKey: overlapKeys.list({ status: 'PENDING', q: debounced, pageSize: 5 }),
-    queryFn: () => fetchOverlaps({ status: 'PENDING', q: debounced, pageSize: 5 }),
+    queryKey: overlapKeys.list({ status: 'PENDING', q: debounced, pageSize: 20 }),
+    queryFn: () => fetchOverlaps({ status: 'PENDING', q: debounced, pageSize: 20 }),
     enabled: searchable,
   })
 
   const results = useMemo<CommandResult[]>(() => {
     const { primary, generalOverflow, adminOverflow } = buildNavigation(role)
-    const navigation = [...primary, ...generalOverflow, ...adminOverflow]
-      .filter((item) =>
-        matches(debounced, item.label, ...(item.keywords ?? []), item.to.replace(/^\//, '')),
-      )
-      .map((item) => ({
-        id: `nav:${item.to}`,
-        label: item.label,
-        detail: item.section ?? 'Go to',
-        to: item.to,
-        group: 'Go to',
-      }))
+    const navigation = rankMatches([...primary, ...generalOverflow, ...adminOverflow], (item) =>
+      matchScore(debounced, item.label, ...(item.keywords ?? []), item.to.replace(/^\//, '')),
+    ).map((item) => ({
+      id: `nav:${item.to}`,
+      label: item.label,
+      detail: item.section ?? 'Go to',
+      to: item.to,
+      group: 'Go to',
+    }))
 
     const actions: CommandResult[] = []
     if (hasAnyRole(role, ROLE_GROUPS.CASE_WRITE)) {
@@ -117,34 +191,48 @@ function useCommandSearch(
         group: 'Actions',
       })
     }
-    const filteredActions = actions.filter((item) => matches(debounced, item.label, item.detail))
+    const filteredActions = rankMatches(actions, (item) =>
+      matchScore(debounced, item.label, item.detail),
+    )
 
     const caseResults: CommandResult[] = searchable
-      ? (cases.data?.items ?? []).map((item) => ({
-          id: `case:${item.id}`,
-          label: item.caseNumber,
-          detail: item.institutionName ?? item.subject ?? 'Case',
-          to: `/cases/${item.id}`,
-          group: 'Cases',
-        }))
+      ? rankMatches(cases.data?.items ?? [], (item) =>
+          matchScore(debounced, item.caseNumber, item.institutionName, item.subject),
+        )
+          .slice(0, 5)
+          .map((item) => ({
+            id: `case:${item.id}`,
+            label: item.caseNumber,
+            detail: item.institutionName ?? item.subject ?? 'Case',
+            to: `/cases/${item.id}`,
+            group: 'Cases',
+          }))
       : []
     const institutionResults: CommandResult[] = searchable
-      ? (institutions.data?.items ?? []).map((item) => ({
-          id: `institution:${item.id}`,
-          label: item.name,
-          detail: item.aictePermanentId ?? 'Institution',
-          to: `/institutions/${item.id}`,
-          group: 'Institutions',
-        }))
+      ? rankMatches(institutions.data?.items ?? [], (item) =>
+          matchScore(debounced, item.name, item.aictePermanentId),
+        )
+          .slice(0, 5)
+          .map((item) => ({
+            id: `institution:${item.id}`,
+            label: item.name,
+            detail: item.aictePermanentId ?? 'Institution',
+            to: `/institutions/${item.id}`,
+            group: 'Institutions',
+          }))
       : []
     const overlapResults: CommandResult[] = searchable
-      ? (overlaps.data?.items ?? []).map((item) => ({
-          id: `overlap:${item.id}`,
-          label: item.cases[0]?.caseNumber ?? item.institution?.name ?? 'Overlap',
-          detail: item.institution?.name ?? item.reason ?? 'Overlap',
-          to: `/overlaps/${item.id}`,
-          group: 'Overlaps',
-        }))
+      ? rankMatches(overlaps.data?.items ?? [], (item) =>
+          matchScore(debounced, item.cases[0]?.caseNumber, item.institution?.name, item.reason),
+        )
+          .slice(0, 5)
+          .map((item) => ({
+            id: `overlap:${item.id}`,
+            label: item.cases[0]?.caseNumber ?? item.institution?.name ?? 'Overlap',
+            detail: item.institution?.name ?? item.reason ?? 'Overlap',
+            to: `/overlaps/${item.id}`,
+            group: 'Overlaps',
+          }))
       : []
 
     // Actions lead so they survive the result cap even with an empty query.

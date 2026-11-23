@@ -8,6 +8,7 @@ interface VisualRoute {
   path: string | ((data: SeedData) => string)
   render: { heading?: string | ((data: SeedData) => string); text?: string }
   waitForMap?: boolean
+  prepare?: (page: Page) => Promise<void>
 }
 
 const VISUAL_ROUTES: VisualRoute[] = [
@@ -59,6 +60,10 @@ const VISUAL_ROUTES: VisualRoute[] = [
     path: '/reports',
     render: { heading: 'Reports' },
     waitForMap: true,
+    // Reports opens on Charts at the final freeze; the map lives in Tables.
+    prepare: async (page) => {
+      await page.getByRole('tab', { name: 'Tables' }).click()
+    },
   },
   {
     name: 'notifications',
@@ -168,6 +173,7 @@ test.describe('@visual visual regression', () => {
           const path = typeof route.path === 'function' ? route.path(data) : route.path
           await page.goto(path)
           await assertExpectation(page, route.render, data)
+          if (route.prepare) await route.prepare(page)
           await settleVisualPage(page, route)
           await markVolatile(page, DATE_SOURCE, 'date')
           // The route coverage fixture creates a complaint whose case number is

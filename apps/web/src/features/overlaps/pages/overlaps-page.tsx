@@ -59,12 +59,14 @@ export function OverlapsPage() {
     if (activeIndex >= items.length && items.length > 0) setActiveIndex(0)
   }, [activeIndex, items.length])
 
-  useEffect(() => {
-    const node = document.querySelector(`[data-overlap-index="${activeIndex}"]`)
+  // Only keyboard navigation should move the page; focusing a card with the
+  // pointer must not shift it between mousedown and click on the Review link.
+  function scrollToOverlap(index: number) {
+    const node = document.querySelector(`[data-overlap-index="${index}"]`)
     if (node instanceof HTMLElement && typeof node.scrollIntoView === 'function') {
-      node.scrollIntoView({ block: 'nearest' })
+      node.scrollIntoView({ block: 'start' })
     }
-  }, [activeIndex])
+  }
 
   function updateFilter(key: keyof OverlapFilters, value: string) {
     setActiveIndex(0)
@@ -134,6 +136,7 @@ export function OverlapsPage() {
     canDecide,
     dialogOpen: pendingReview !== null,
     onActiveChange: setActiveIndex,
+    onActiveScroll: scrollToOverlap,
     onConfirm: () => {
       if (activeOverlap) openReviewFor(activeOverlap, 'confirm')
     },
