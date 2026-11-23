@@ -370,5 +370,8 @@ Browser rechecks used `http://localhost:5173` against the locally running dev AP
 - A-11/A-12: `/reports` loads with `Charts` selected and the new Tables-view note visible; clicking
   `Tables` keeps the `Regional pressure` heading available.
 
-These are locally verified results only. Visual baseline acceptance/copy, two flag-off visual passes,
-two dedicated full Chromium runs, both manual gates, push, and deployment remain held.
+Pushed as `923831d` and CI-confirmed on `main` by run `45234576377`: 7 active jobs green
+(production builds, integration/coverage, seeded browser smoke, full Chromium E2E, dependency audit,
+unit/component tests, lint/typecheck); Visual regression, Cross-browser E2E, and Optional Atlas smoke
+were skipped by workflow design. Visual baseline acceptance/copy, two flag-off visual passes, a
+second dedicated full Chromium run, both manual gates, and deployment remain held.

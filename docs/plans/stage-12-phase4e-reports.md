@@ -1,11 +1,12 @@
 # CaseSync — Stage 12 Phase 4E: Reports workbench
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21; **final UI freeze amendment**
-2026-11-23. This is the fifth implementation slice of Phase 4; Forms was later delivered in Phase
-4F (field pattern and change summaries). No route, permission, server contract, dependency,
-seed data, dashboard filter, chart library, GIS/map preview, CSV contract, or visual baseline
-changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain held for
-the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+2026-11-23, pushed as `923831d` and CI-confirmed by run `45234576377`. This is the fifth
+implementation slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change
+summaries). No route, permission, server contract, dependency, seed data, dashboard filter, chart
+library, GIS/map preview, CSV contract, or visual baseline changed. The official 48-baseline
+refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep;
+see [`todo-tracker.md`](todo-tracker.md).
 
 **Final UI freeze amendment (2026-11-23):** the original table-first default was reversed so
 `/reports` now opens on `Charts`. Tables remains one click away and still owns the

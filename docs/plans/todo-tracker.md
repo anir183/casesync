@@ -2,11 +2,13 @@
 
 **Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget; pushed as `25aa369` and CI-confirmed by dispatch `45014617505` with every active job green, including Full Chromium E2E, while visual, cross-browser, and optional Atlas jobs remain held).
 
-**Latest local verification (2026-11-23):** Final UI freeze completes all actionable A-1–A-19
-findings. `check:ci`, all typechecks, API 121 pass / 74 skip, web 107 pass / 0 fail, build
+**Latest verification (2026-11-23):** Final UI freeze completes all actionable A-1–A-19 findings.
+`check:ci`, all typechecks, API 121 pass / 74 skip, web 107 pass / 0 fail, build
 493.48 kB / 139.53 kB gzip, seeded full E2E 231 passed, and clean `git diff --check` passed. The
-seeded suite used a disposable local Mongo on port 27019 with `ALLOW_REMOTE_MONGO` unset. Visual
-baselines, manual gates, and deployment remain held; push is performed by the product owner.
+seeded suite used a disposable local Mongo on port 27019 with `ALLOW_REMOTE_MONGO` unset. Pushed as
+`923831d` and CI-confirmed by run `45234576377`: 7 active jobs green; Visual regression,
+Cross-browser E2E, and Optional Atlas smoke skipped by workflow design. Visual baselines, a second
+dedicated full Chromium run, manual gates, and deployment remain held.
 Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §§10–11.
 
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
@@ -1236,8 +1238,10 @@ Bounded next steps:
       typechecks, web 107/0, API 121/74/0, build, seeded full E2E 231/231, and `git diff --check`
       are green; browser rechecks passed. Seeded E2E used a disposable local Mongo on port 27019
       because the default local test Mongo rejected `seed:demo`; `ALLOW_REMOTE_MONGO` stayed unset.
-      Visual baselines, manual gates, and deployment remain held; push is performed by the product
-      owner. Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §11.
+      Pushed as `923831d` and CI-confirmed by run `45234576377` (7 active jobs green; Visual
+      regression, Cross-browser E2E, and Optional Atlas smoke skipped by design). Visual baselines,
+      a second dedicated full Chromium run, manual gates, and deployment remain held. Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §11.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.
 - [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
