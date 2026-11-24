@@ -1274,10 +1274,18 @@ Bounded next steps:
       image; local OCR confirmed all four pinned times remain in the `Live` state. `check:ci` and
       `typecheck:web:tests` passed locally. Pass 1 is not a passed gate. Evidence:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
+- [x] Push the harness correction as `cda88b19b06e45771171398e222ac83ff314b7a4` and complete two
+      successful flag-off visual passes on that SHA: dispatches `45363539181` and `45366037738`,
+      both with `update_visual_snapshots=false`, `mongo_target=local`, and
+      `atlas_scope=connectivity`. Both runs completed with 11 active jobs green, including Visual
+      regression, Full Chromium E2E, and Chromium/Firefox/WebKit cross-browser projects; Optional
+      Atlas smoke was skipped by workflow design. These runs satisfy the two flag-off visual passes
+      and the two dedicated full Chromium E2E results. Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.
-- [ ] Complete the held Phase 7 gates in their existing order: two flag-off visual passes, second
-      dedicated full Chromium run, human visual/manual gates, then deployment.
+- [ ] Complete the remaining held Phase 7 gates in order: human visual sign-off, screen-reader and
+      200% zoom manual gates, then deployment only after explicit authorization.
 
 ## Testing Definition of Done
 

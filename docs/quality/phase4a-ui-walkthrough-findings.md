@@ -459,5 +459,12 @@ baseline image, product code, contract, seed, or route. `bun run check:ci` and
 screenshots retain `Live · updated 06:27/06:28 AM` with the `Live` state unchanged. Local visual
 comparison remains non-authoritative because this host differs from pinned CI; no baseline was
 generated or overwritten locally. Pass 1 is recorded as a failed flag-off attempt, not a passed
-gate; pass 2 has not been dispatched. The second dedicated full Chromium run, human visual
-sign-off, both manual gates, and deployment remain held.
+gate.
+
+The correction was committed as `cda88b19b06e45771171398e222ac83ff314b7a4` and pushed. Two fresh
+flag-off passes were then dispatched on that SHA with the same flag-off inputs: `45363539181` and
+`45366037738`. Both completed with **success**: 11 active jobs green in each run, including Visual
+regression, Full Chromium E2E, and all three cross-browser projects; Optional Atlas smoke was
+skipped by workflow design. These two runs provide the two successful flag-off visual passes and
+the two Full Chromium E2E results. Human visual sign-off, both manual gates, and deployment remain
+held.
