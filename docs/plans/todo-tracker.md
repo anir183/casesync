@@ -1259,7 +1259,20 @@ Bounded next steps:
       was found. This model could not visually inspect PNG content, so human visual acceptance is
       still held. The same dispatch had one unrelated Firefox command-palette test failure; it was
       reproduced locally and fixed by parking the pointer in the keyboard-only E2E, with targeted
-      Chromium and Firefox both passing. Baselines are copied locally and await push/CI. Evidence:
+      Chromium and Firefox both passing. Baselines were copied locally; the baseline/Firefox-fix
+      commit `c62d71870d897c90de7346ec0f00ad5d6c6420c4` was pushed and CI-confirmed by run
+      `45351851497` (7 active jobs green, including Full Chromium E2E; Visual, Cross-browser, and
+      Optional Atlas skipped by design). Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
+- [x] Run flag-off visual pass 1 on `c62d718` as dispatch `45353457421` with
+      `update_visual_snapshots=false`, `mongo_target=local`, and `atlas_scope=connectivity`. Visual
+      regression failed only on four dashboard variants (23–59 changed pixels in one 26×9 region);
+      OCR isolated the live `Live · updated HH:MM AM` clock baked into the accepted baseline, not a
+      layout or theme regression. All other active jobs passed except WebKit, which was cancelled
+      after the Visual failure; Full Chromium E2E passed. The test-only harness correction pins the
+      clock text to the accepted baseline values without adding a mask or changing any baseline
+      image; local OCR confirmed all four pinned times remain in the `Live` state. `check:ci` and
+      `typecheck:web:tests` passed locally. Pass 1 is not a passed gate. Evidence:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.

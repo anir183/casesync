@@ -439,6 +439,25 @@ run of that spec in Chromium and Firefox are green (2 passed).
 
 The 48 artifact images were copied into `apps/web/e2e/__screenshots__/visual.spec.ts/` and verified
 byte-for-byte against the downloaded artifact (`diff -qr` clean). Aggregate SHA-256 of the sorted
-baseline file list: `8c3f6434e4816a7a03151e55ae87dc08544ecd82c74f7f53e63d9a49bb607494`. This
-commit is awaiting push/CI before the two flag-off visual passes. The second dedicated full
-Chromium run, human visual sign-off, both manual gates, and deployment remain held.
+baseline file list: `8c3f6434e4816a7a03151e55ae87dc08544ecd82c74f7f53e63d9a49bb607494`. The
+baseline/Firefox-fix commit `c62d71870d897c90de7346ec0f00ad5d6c6420c4` was pushed and CI-confirmed
+by run `45351851497`: 7 active jobs green, including Full Chromium E2E; Visual, Cross-browser, and
+Optional Atlas were skipped by workflow design.
+
+Flag-off visual pass 1 was dispatched as `45353457421` on `c62d718` with
+`update_visual_snapshots=false`, `mongo_target=local`, and `atlas_scope=connectivity`. It completed
+with Visual regression failed only on the four dashboard variants: 23–59 changed pixels in one
+26×9 region. OCR of expected/actual crops showed the sole difference was the live dashboard
+freshness clock (`Live · updated 06:27/06:28 AM` in the accepted baseline versus `08:09/08:10 AM`
+in the verification run), derived from the API's per-run `generatedAt`. All other active jobs
+passed except WebKit, which was cancelled after the Visual failure; Full Chromium E2E passed.
+
+The correction is test-only: `apps/web/e2e/visual.spec.ts` now rewrites the live clock to the time
+already baked into each accepted dashboard baseline. It adds no new Playwright mask and changes no
+baseline image, product code, contract, seed, or route. `bun run check:ci` and
+`bun run typecheck:web:tests` passed, and local OCR confirmed the four normalized dashboard
+screenshots retain `Live · updated 06:27/06:28 AM` with the `Live` state unchanged. Local visual
+comparison remains non-authoritative because this host differs from pinned CI; no baseline was
+generated or overwritten locally. Pass 1 is recorded as a failed flag-off attempt, not a passed
+gate; pass 2 has not been dispatched. The second dedicated full Chromium run, human visual
+sign-off, both manual gates, and deployment remain held.

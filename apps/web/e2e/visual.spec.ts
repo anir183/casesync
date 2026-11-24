@@ -8,6 +8,7 @@ interface VisualRoute {
   path: string | ((data: SeedData) => string)
   render: { heading?: string | ((data: SeedData) => string); text?: string }
   waitForMap?: boolean
+  normalizeFreshnessTime?: boolean
   prepare?: (page: Page) => Promise<void>
 }
 
@@ -17,6 +18,7 @@ const VISUAL_ROUTES: VisualRoute[] = [
     as: 'admin',
     path: '/dashboard',
     render: { heading: 'Dashboard' },
+    normalizeFreshnessTime: true,
   },
   {
     name: 'cases',
@@ -96,6 +98,20 @@ const THEMES = ['light', 'dark'] as const
 const DATE_SOURCE =
   '\\b[A-Z][a-z]{2} \\d{1,2}, \\d{4}(?:, \\d{1,2}:\\d{2}\\s?(?:AM|PM))?\\b|\\b\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\b'
 
+/** Dashboard freshness clock, derived from the API timestamp on every run. */
+const FRESHNESS_TIME_SOURCE = '\\b\\d{1,2}:\\d{2}\\s?(?:AM|PM)\\b'
+
+/**
+ * Times baked into the accepted dashboard baselines. The harness rewrites the
+ * live clock to these values without adding a new mask, so baseline pixels stay valid.
+ */
+const FRESHNESS_TIME_BY_SNAPSHOT: Record<string, string> = {
+  'dashboard-light-visual-desktop': '06:27 AM',
+  'dashboard-dark-visual-desktop': '06:27 AM',
+  'dashboard-light-visual-mobile': '06:27 AM',
+  'dashboard-dark-visual-mobile': '06:28 AM',
+}
+
 /** Width-stable stand-in for the route fixture complaint's generated case number. */
 const FIXTURE_CASE_NUMBER_PLACEHOLDER = 'CMP-0000-000000'
 
@@ -146,6 +162,29 @@ async function markVolatile(page: Page, source: string, mode: 'date' | 'literal'
   )
 }
 
+async function pinDashboardFreshnessTime(page: Page, snapshotKey: string) {
+  const expectedTime = FRESHNESS_TIME_BY_SNAPSHOT[snapshotKey]
+  if (!expectedTime) throw new Error(`No pinned dashboard freshness time for ${snapshotKey}`)
+
+  await page.evaluate(
+    ({ source, expectedTime }) => {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      const nodes: Text[] = []
+      while (walker.nextNode()) {
+        const node = walker.currentNode as Text
+        const parent = node.parentElement
+        if (!parent || parent.closest('script, style, [data-visual-volatile]')) continue
+        if (new RegExp(source).test(node.textContent ?? '')) nodes.push(node)
+      }
+
+      for (const node of nodes) {
+        node.textContent = (node.textContent ?? '').replace(new RegExp(source, 'g'), expectedTime)
+      }
+    },
+    { source: FRESHNESS_TIME_SOURCE, expectedTime },
+  )
+}
+
 async function settleVisualPage(page: Page, route: VisualRoute) {
   await expect(page.locator('.animate-pulse')).toHaveCount(0, { timeout: 30_000 })
   await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => undefined)
@@ -172,6 +211,12 @@ test.describe('@visual visual regression', () => {
           if (route.prepare) await route.prepare(page)
           await settleVisualPage(page, route)
           await markVolatile(page, DATE_SOURCE, 'date')
+          if (route.normalizeFreshnessTime) {
+            // The dashboard header renders the API's generatedAt clock, which
+            // changes on every run without indicating a visual regression.
+            const snapshotKey = `${route.name}-${theme}-${test.info().project.name}`
+            await pinDashboardFreshnessTime(page, snapshotKey)
+          }
           // The route coverage fixture creates a complaint whose case number is
           // generated per run, so normalise it before comparing pixels.
           await markVolatile(

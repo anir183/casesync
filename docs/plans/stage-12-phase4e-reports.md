@@ -138,10 +138,14 @@ wrapped in a disclosure, and all report chart captions. No `data-testid` was add
 - **Simulation seed:** still blocked pending explicit confirmation of naming, scale, database,
   reset semantics, and actor set. No simulation data was added.
 - **Visual/CI/manual gates:** the A-20 source commit was pushed and CI-confirmed, then the 48
-  baselines were regenerated on the pinned CI image and copied locally. Flag-off verification, the
-  second dedicated full Chromium run, human visual sign-off, both manual gates, and deployment remain
-  held. See `../quality/phase4a-ui-walkthrough-findings.md` §13.
-- **Commit/push:** A-20 was pushed as `953c2e8`; the baseline/test-fix commit is awaiting push.
+  baselines were regenerated on the pinned CI image and copied locally. The baseline/Firefox-fix
+  commit `c62d718` was pushed and CI-confirmed by run `45351851497`. Flag-off pass 1
+  (`45353457421`) failed only on the live dashboard clock; the test-only harness correction pins
+  that text to the accepted baseline values without touching any baseline image. Flag-off
+  re-verification, the second dedicated full Chromium run, human visual sign-off, both manual gates,
+  and deployment remain held. See `../quality/phase4a-ui-walkthrough-findings.md` §13.
+- **Commit/push:** A-20 was pushed as `953c2e8`; the baseline/Firefox-fix commit was pushed as
+  `c62d718`. The dashboard-clock harness correction is prepared locally and awaiting push.
 
 ## 5. Verification
 
