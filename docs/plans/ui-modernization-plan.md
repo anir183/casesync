@@ -8,7 +8,8 @@ workbench; **Phase 4F Forms and the W walkthrough remediations are implemented a
 verified**; **Phase 5 GIS/data visualization is implemented and locally verified**; **Phase 6 portal
 landing and public experience is implemented and locally verified**; the **bounded Phase 7
 motion/reduced-motion slice is implemented and locally verified**. The official 48-baseline
-refresh, double CI, and both manual gates remain held for the Phase 7 / Stage 12 exit sweep.
+refresh and two flag-off CI passes completed in Phase 7; human visual sign-off was confirmed on
+2026-11-24. Part A and Part B manual gates and deployment remain held.
 Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
 [`stage-12-phase3-5-dashboard-experience.md`](stage-12-phase3-5-dashboard-experience.md),
 [`stage-12-phase4a-cases-surfaces.md`](stage-12-phase4a-cases-surfaces.md), and
@@ -16,8 +17,8 @@ Evidence: [`stage-12-phase0-baseline.md`](stage-12-phase0-baseline.md),
 Phase 0–1 history is retained; the remediation record is kept below for traceability.
 Further UI implementation remains gated by the phase authorization in `todo-tracker.md`.
 The two remaining manual gates (screen-reader/200% zoom review and the independent
-runbook walkthrough) are **held until this stage completes**, because the UI refresh would
-invalidate a pass run now; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
+runbook walkthrough) are **held pending reviewer execution against the Stage 12 build**; see
+[`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 - **Plan date:** 2026-11-08
 - **Baseline:** the current indigo/teal shell, chart-first dashboard/reports, Leaflet
@@ -466,8 +467,9 @@ and a top-3 pressure ranking on a 12-column grid with 16px gaps at `xl`.
 - Dashboard still has no filter form, full chart grid, map, export, new route, permission,
   server contract, or dependency.
 - Dashboard component, responsive, axe, selector-preservation, and build-budget checks pass, and
-  targeted non-visual E2E passes 83/83; the official 48-baseline refresh, reduced-motion sweep,
-  and double CI remain in Phase 7.
+  targeted non-visual E2E passes 83/83; at that time the official 48-baseline refresh,
+  reduced-motion sweep, and double CI remained in Phase 7. The refresh and two flag-off passes
+  later completed; Part A and Part B remain held.
 
 ---
 
@@ -503,7 +505,8 @@ exports. Case detail uses the shared `Tabs` primitive, a sticky summary, a `Case
 bar, and a grouped timeline. Bulk assignment and mutating row actions are deferred because no bulk
 server contract exists and the list payload cannot authorize mutations. Remaining Phase 4 surfaces
 stay in later slices. `bun run verify` and targeted loopback E2E 87/87 passed; the main chunk is
-`492.66 kB / 139.24 kB gzip`. Visual baselines, double CI, and both manual gates remain Phase 7.
+`492.66 kB / 139.24 kB gzip`. At that time visual baselines, double CI, and both manual gates were held for Phase 7; the refresh
+and two flag-off passes later completed, and Part A/Part B remain held.
 
 **Phase 4B implementation record (2026-11-21).** The institution-profile bullet above is
 implemented and locally verified; see
@@ -515,8 +518,9 @@ are unchanged. Walkthrough finding W-10 is closed on the representative profile 
 were later closed and W-4 verified in W-A, W-6–W-9 were closed in W-B, and W-5 was closed in the
 registry presentation remediation.
 `check:ci`, both web typechecks, web tests 80/0, targeted seeded E2E 43/43, and
-institution responsive reflow 4/4 passed. Remaining Phase 4 surfaces stay in later slices; visual
-baselines, double CI, and both manual gates remain Phase 7.
+institution responsive reflow 4/4 passed. Remaining Phase 4 surfaces stayed in later slices; at that
+time visual baselines, double CI, and both manual gates were held for Phase 7. The refresh and two
+flag-off passes later completed, and Part A/Part B remain held.
 
 **Phase 4C implementation record (2026-11-21).** The overlap-queue bullet above is implemented and
 locally verified; see
@@ -527,8 +531,9 @@ detail route gains a sticky compare header with identity, scores, case numbers, 
 unchanged decision card. Role gates, saved views, pagination, server order, route scope, and all
 established mutation selectors are unchanged. `check:ci`, both web typechecks, web tests 84/0,
 targeted seeded E2E 24/24, and overlap smoke 1/1 passed. Notifications was later delivered in
-Phase 4D, Reports in Phase 4E, and Forms in Phase 4F (field pattern and change summaries); visual
-baselines, double CI, and both manual gates remain Phase 7.
+Phase 4D, Reports in Phase 4E, and Forms in Phase 4F (field pattern and change summaries); at that
+time visual baselines, double CI, and both manual gates were held for Phase 7. The refresh and two
+flag-off passes later completed, and Part A/Part B remain held.
 
 **Phase 4D implementation record (2026-11-21).** The notifications-centre bullet above is
 implemented and locally verified; see
@@ -539,7 +544,8 @@ badges. `Open record`, `Mark as read`, `Mark all as read`, pagination, states, q
 owner-scoped mutations are unchanged; the bell only shares the grouping helper. `check:ci`, both web
 typechecks, web tests 89/0, targeted seeded E2E 16/16, and a fresh-seed notification spec 1/1 passed.
 Reports was later delivered in Phase 4E and Forms in Phase 4F (field pattern and change summaries);
-visual baselines, double CI, and both manual gates remain Phase 7.
+at that time visual baselines, double CI, and both manual gates were held for Phase 7. The refresh
+and two flag-off passes later completed, and Part A/Part B remain held.
 
 **Phase 4E implementation record (2026-11-21).** The reports bullet above is implemented and locally
 verified; see [`stage-12-phase4e-reports.md`](stage-12-phase4e-reports.md). `/reports` gains a sticky
@@ -549,7 +555,7 @@ region chips still apply the same scoped `regionId`; query keys, server scope, e
 the CSV contract are unchanged. No new chart library, map preview, GIS layer, route, permission,
 dashboard filter, or dependency was added. `check:ci`, both web typechecks, web tests 93/0, fresh
 build `492.75 kB / 139.28 kB gzip`, and targeted seeded E2E 12/12 passed; the committed `/reports`
-baselines predate this layout and stay held for Phase 7. The slice was pushed as `6ac651a`;
+baselines predated this layout and were later refreshed in Phase 7. The slice was pushed as `6ac651a`;
 post-push CI run `44935311824` recorded 235/237 passing, with the only failures coming from stale
 smoke/portal selectors left by Phases 3.5/4A. Those selectors were corrected and re-verified locally
 with seeded smoke 13/13 and portal mutation 1/1. Phase 4F later delivered the complete Forms
@@ -685,7 +691,7 @@ explanatory cards. `TrackComplaintForm` is shared with the unchanged `/portal/tr
 keeps the exact privacy-preserving error; staff sign-in remains footer-only. Login/signup use a
 quiet public context panel, and dashboard/verification/detail add explicit next actions. Verified
 with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 in two runs, and a fresh build;
-the committed visual baselines were not touched and remain a Phase 7 refresh.
+the committed visual baselines were not touched at that time, and the Phase 7 refresh later completed.
 
 ---
 
@@ -738,8 +744,10 @@ opacity: 1` under reduced motion. No animation/chart/map dependency was added. V
 `check:ci`, both web typechecks, web 105/0, seeded loopback E2E 90/90 including axe and the
 responsive motion checks, and a fresh `493.42 kB / 139.49 kB gzip` main build. Pushed as
 `25aa369`; CI run `45014617505` is green across every active job, including Full Chromium
-E2E, with visual, cross-browser, and optional Atlas jobs held. The gated baseline refresh,
-double full Chromium run, manual reviews, and deployment remain pending.
+E2E, with visual, cross-browser, and optional Atlas jobs held. At that time the gated baseline
+refresh, double full Chromium run, manual reviews, and deployment were pending; Phase 7 completed
+the refresh and flag-off CI runs and human visual acceptance, while Part A, Part B, and deployment
+remain held.
 
 ## 6. Screen-by-screen target
 

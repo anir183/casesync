@@ -3,14 +3,15 @@
 Status: **IMPLEMENTED and locally verified** 2026-11-22. This slice upgrades the existing
 `/reports` regional map in place. No route, permission, server contract, query key, URL filter,
 payload, dashboard filter, seed file, dependency, CSV contract, or `data-testid` changed. The
-official 48-baseline refresh, double full CI run, both manual gates, and deployment remain held for
-the Phase 7 / Stage 12 exit sweep.
+official 48-baseline refresh and two flag-off CI passes completed in Phase 7, and human visual
+sign-off was confirmed on 2026-11-24; Part A/Part B manual gates and deployment remain held.
 
 - **Plan date:** 2026-11-22
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4F Forms and the W walkthrough remediations
 - **Successor:** Phase 6 portal landing and public experience
-- **Manual gates:** both remain held; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md)
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A and Part B remain
+  held; see [`../quality/manual-signoff.md`](../quality/manual-signoff.md)
 
 ---
 
@@ -169,8 +170,10 @@ server scope, role gates, chart panels, and the `Tables` / `Charts` workbench to
   catchments and avoid false boundary authority.
 - Map route, new permissions, server contract, geocoding, clustering plugin, and new dependency:
   all out of scope and unchanged.
-- 48 visual baselines, double full CI run, screen-reader/200% zoom sign-off, independent runbook
-  walkthrough, push, and deployment: remain held for their explicit gates.
+- At slice completion the 48 visual baselines, double full CI run, screen-reader/200% zoom
+  sign-off, independent runbook walkthrough, push, and deployment were held. Phase 7 later completed
+  the pinned-CI refresh, two flag-off passes, and human visual acceptance; Part A, Part B, and
+  deployment remain held for their explicit gates.
 
 ## 8. Documentation impact
 

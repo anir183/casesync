@@ -5,14 +5,16 @@ Phase 4 slice. Phase 4F was split into two bounded sub-slices because the read-o
 roughly 20 mutation forms, 9 filter-like surfaces, and 9 `ConfirmDialog` call sites. No route,
 permission, server contract, payload, validation rule, dependency, seed data, visual baseline,
 dashboard filter, chart/map behavior, CSV contract, or `data-testid` changed. The official
-48-baseline refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12
-exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+48-baseline refresh and two flag-off CI passes completed in Phase 7, and human visual sign-off was
+confirmed on 2026-11-24; Part A/Part B manual gates and deployment remain held; see
+[`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-22
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4E — Reports workbench
 - **Successor:** Phase 5 — GIS and data visualization
-- **Manual gates:** both remain held until Stage 12 exits; see
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A (screen reader and
+  200% zoom) and Part B (independent runbook walkthrough) remain held; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
@@ -119,8 +121,9 @@ The second bounded slice covers destructive change summaries and admin form dens
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred, and the temporary loopback server was
   stopped afterward.
-- No visual baseline was refreshed and no full double-CI run was performed; both remain Phase 7 /
-  Stage 12 exit work.
+- No visual baseline was refreshed and no full double-CI run was performed in this slice. Phase 7
+  later completed the pinned-CI refresh and two flag-off passes; Part A, Part B, and deployment
+  remain held.
 
 ## 5. Documentation impact
 

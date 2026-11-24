@@ -1,21 +1,33 @@
 # CaseSync — Todo Tracker
 
-**Last verified:** 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget; pushed as `25aa369` and CI-confirmed by dispatch `45014617505` with every active job green, including Full Chromium E2E, while visual, cross-browser, and optional Atlas jobs remain held).
+**Last verified:** 2026-11-24 (final Phase 7 closeout below); earlier 2026-11-22 (Stage 9 Phases 0–6 implemented; Stage 11 exit verified and CI-confirmed on `main` by dispatch `44122619636`; CI isolation work green on `44143783816` and `44147190267`; Stage 12 Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, and Phase 4E reports workbench implemented and locally verified; Phase 4E `check:ci`, both web typechecks, web 93/0, targeted loopback E2E 12/12, and fresh build within budget passed. Phase 4E was pushed as `6ac651a`; post-push CI run `44935311824` was red only from two stale smoke/portal selectors, which were corrected and re-verified locally with smoke 13/13 and portal mutation 1/1; Phase 4F-A forms field pattern implemented and locally verified with `check:ci`, both web typechecks, web 94/0, targeted loopback E2E 4/4, and fresh build within budget; Phase 4F-B change summaries and admin density implemented and locally verified with `check:ci`, both web typechecks, web 95/0, targeted loopback E2E 12/12, and fresh build within budget; walkthrough W-A portal-shell remediation implemented and locally verified with `check:ci`, both web typechecks, web 95/0, and targeted loopback E2E 4/4; walkthrough W-B staff-presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 96/0, targeted loopback E2E 3/3, and fresh build within budget; walkthrough W-5 registry presentation remediation implemented and locally verified with `check:ci`, both web typechecks, web 98/0, targeted loopback E2E 5/5, and fresh build within budget; Stage 12 Phase 5 GIS/data visualization implemented and locally verified with `check:ci`, both web typechecks, web 102/0, targeted loopback E2E 20/20, and fresh build within budget; Stage 12 Phase 6 portal landing and public experience implemented and locally verified with `check:ci`, both web typechecks, web 104/0, targeted loopback E2E 107/107 (two runs), and fresh build within budget; the E2E seed-data fixture was then made order-independent and verified with 138/138 targeted tests across the merge-mutation sequences; the bounded Phase 7 motion/reduced-motion slice implemented and locally verified with `check:ci`, both web typechecks, web 105/0, targeted loopback E2E 90/90, and a fresh build within budget; pushed as `25aa369` and CI-confirmed by dispatch `45014617505` with every active job green, including Full Chromium E2E, while visual, cross-browser, and optional Atlas jobs remain held).
 
 **Latest verification (2026-11-23):** Final UI freeze completes all actionable A-1–A-19 findings.
 `check:ci`, all typechecks, API 121 pass / 74 skip, web 107 pass / 0 fail, build
 493.48 kB / 139.53 kB gzip, seeded full E2E 231 passed, and clean `git diff --check` passed. The
 seeded suite used a disposable local Mongo on port 27019 with `ALLOW_REMOTE_MONGO` unset. Pushed as
 `923831d` and CI-confirmed by run `45234576377`: 7 active jobs green; Visual regression,
-Cross-browser E2E, and Optional Atlas smoke skipped by workflow design. Visual baselines, a second
-dedicated full Chromium run, manual gates, and deployment remain held.
+Cross-browser E2E, and Optional Atlas smoke skipped by workflow design. At that time visual
+baselines, a second dedicated full Chromium run, manual gates, and deployment were held; see the
+2026-11-24 closeout below.
 Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §§10–11.
 
+**Final Phase 7 closeout (2026-11-24).** Pinned-CI baselines were refreshed, two flag-off passes
+(`45363539181`, `45366037738`) and the final full matrix on pushed docs SHA `51aa429`
+(`45396214695`) were green, and the product owner confirmed human visual acceptance. Final local
+closeout used disposable loopback Mongo with `ALLOW_REMOTE_MONGO` unset: `verify` green (API
+121/74/0, web 107/0, build 493.48 kB / 139.54 kB gzip), integration 72/0, coverage 193/0 (86.1%
+lines / 86.4% functions), seeded full E2E 231/231, smoke 13/13, and local Chromium/Firefox
+cross-browser 231/231 each. Local WebKit was blocked by missing host libraries and local visual
+comparison differs from pinned-CI goldens by font/renderer; neither overrides the green pinned-CI
+jobs. No baseline was regenerated locally. Evidence:
+`docs/quality/phase4a-ui-walkthrough-findings.md` §13.
+
 **Status:** Stages 0–8 implemented. Stage 8 adds the public complainant portal: self-registration, AICTE verification with document-review fallback, complaint filing/tracking, public/internal messages and document visibility, ownership checks, rate limits, staff verification review, and a case conversation workflow. Local Biome, typechecks, unit/component tests, builds, 55 DB-backed integration tests, API coverage (87.4% lines / 89.7% functions), and 12 seeded browser tests pass. CI is green on `5666cad`.  
-**Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. Manual screen-reader sign-off and 200% zoom review remain the only open gate. Both manual gates are **held until Stage 12 completes** (the UI refresh would invalidate them) and are tracked in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
+**Stage 9:** Phases 0–6 implemented, including the Phase 6 ADRs, documentation reconciliation, and final QA matrix/release checklist. At Stage 9 exit, manual screen-reader sign-off and 200% zoom review were the only open gate and were **held until Stage 12 completed** because the UI refresh would invalidate them. Stage 12 is complete, and both remain held pending reviewer execution in the living worksheet `docs/quality/manual-signoff.md`. See `docs/plans/next-phase-plan.md`.
 **Stage 10:** exited 2026-11-16. Complete Playwright UI coverage for every route, role, mutation, state, accessibility check, breakpoint, and a stable visual subset. Foundation, current-route render/denial coverage, staff/admin, portal/auth, and representative mutation coverage, the UI-state suite, accessibility/responsive expansion, visual regression, and the CI job split have landed. All 48 visual baselines were regenerated on the pinned CI image (`ubuntu-24.04`, `mongo:7.0.45`, Bun 1.4.4) and reviewed; two consecutive local full-suite runs passed 216/216. Flag-off verification dispatch `43750576126` on `f882bd1` is green across all 11 jobs, including visual regression and the chromium, firefox, and webkit cross-browser projects. See `docs/plans/ui-testing-plan.md` and `docs/quality/ui-test-matrix.md`.
 **Stage 11:** exit verified and CI-confirmed 2026-11-17 (dispatch `44122619636`); Phases 0–2 complete 2026-11-16, Phases 3–6 implemented and verified 2026-11-17. Codebase audit and cleanup: import aliases, shared contracts, query keys, service decomposition, duplication removal, and convention guardrails. Full local gate green, coverage 86.4%/86.8%, visual baseline unchanged; CI confirmed on `main` by dispatch `44122619636` (11/11 jobs, 48 visual comparisons, 3 cross-browser projects). Stage 12 may start. See `docs/plans/code-audit-plan.md` and `docs/plans/stage-11-baseline.md`.
-**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **implemented and locally verified** (compact signal band, urgency queue, next moves, case posture, change feed, and pressure points), followed by **Phase 4A — Cases registry and case detail** (sticky toolbar/summary, compact filters, active chips, density, page-scoped selection/export, tab semantics, and grouped timeline), **Phase 4B — Institution profile** (sticky identity/verification summary, text-cued health signals, alias context, and cross-bureau history), **Phase 4C — Overlap queue and compare view** (sticky triage toolbar, card-level score/evidence, guarded keyboard review, and a sticky compare header), **Phase 4D — Notifications centre** (sticky triage toolbar, type grouping, filterable saved views, and explicit textual unread cues), and **Phase 4E — Reports workbench** (sticky named toolbar, saved views, table-first evidence, and all existing chart panels behind a Tables/Charts toggle), followed by **Phase 4F — Forms** (shared `Field`/`FormActions` primitives, inline validation, sticky submit/cancel on four long forms, and optional change summaries on destructive dialogs with denser admin forms), followed by **Phase 5 — GIS/data visualization** (Natural Earth grouped catchment polygons, four-metric choropleth, legend, keyboard polygons, no-tiles/no-data states, and unchanged region drill-down); the official 48-baseline refresh, double CI, and both manual gates remain held; see `docs/plans/stage-12-phase3-5-dashboard-experience.md`, `docs/plans/stage-12-phase4a-cases-surfaces.md`, `docs/plans/stage-12-phase4b-institution-profile.md`, `docs/plans/stage-12-phase4c-overlap-queue.md`, `docs/plans/stage-12-phase4d-notifications.md`, `docs/plans/stage-12-phase4e-reports.md`, `docs/plans/stage-12-phase4f-forms.md`, and `docs/plans/stage-12-phase5-gis.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
+**Stage 12:** Phases 0–3 implemented and verified 2026-11-18; **product-owner review remediation implemented and verified** (profile menu, no rail More, dual-mode command palette, grouped/collapsible rail, two-zone top bar, no global breadcrumbs), followed by the Phase 3 dashboard/admin command surfaces and the branded route-error fallback pulled forward from Phase 7. UI/UX modernization: tokens/primitives, rail/top-bar shell, role-specific dashboards, admin hub, faster core surfaces, bundled GIS geometry, portal landing, motion/accessibility, and refreshed coverage baselines. Phase 0 captured 40 screenshots, bundle/axe/timing metrics, the route/component inventory, and the component disposition; the product owner approved all five direction choices and later amended the shell detail. Phase 3.5 — Operator Dashboard Experience is **implemented and locally verified** (compact signal band, urgency queue, next moves, case posture, change feed, and pressure points), followed by **Phase 4A — Cases registry and case detail** (sticky toolbar/summary, compact filters, active chips, density, page-scoped selection/export, tab semantics, and grouped timeline), **Phase 4B — Institution profile** (sticky identity/verification summary, text-cued health signals, alias context, and cross-bureau history), **Phase 4C — Overlap queue and compare view** (sticky triage toolbar, card-level score/evidence, guarded keyboard review, and a sticky compare header), **Phase 4D — Notifications centre** (sticky triage toolbar, type grouping, filterable saved views, and explicit textual unread cues), and **Phase 4E — Reports workbench** (sticky named toolbar, saved views, table-first evidence, and all existing chart panels behind a Tables/Charts toggle), followed by **Phase 4F — Forms** (shared `Field`/`FormActions` primitives, inline validation, sticky submit/cancel on four long forms, and optional change summaries on destructive dialogs with denser admin forms), followed by **Phase 5 — GIS/data visualization** (Natural Earth grouped catchment polygons, four-metric choropleth, legend, keyboard polygons, no-tiles/no-data states, and unchanged region drill-down); the official 48-baseline refresh and double CI later completed in Phase 7, while Part A, Part B, and deployment remain held; see `docs/plans/stage-12-phase3-5-dashboard-experience.md`, `docs/plans/stage-12-phase4a-cases-surfaces.md`, `docs/plans/stage-12-phase4b-institution-profile.md`, `docs/plans/stage-12-phase4c-overlap-queue.md`, `docs/plans/stage-12-phase4d-notifications.md`, `docs/plans/stage-12-phase4e-reports.md`, `docs/plans/stage-12-phase4f-forms.md`, and `docs/plans/stage-12-phase5-gis.md`. See `docs/plans/ui-modernization-plan.md` §3.4 and §5 Phase 2 review remediation.
 **Plan:** `docs/product/end-product-and-stages.md`  
 **Quality gates:** `docs/quality/qa-and-review.md`  
 **Requirement status:** `docs/requirements/requirements-traceability.md`
@@ -41,8 +53,8 @@ Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §§10–11.
 > `493.42 kB / 139.49 kB gzip` build passed. Pushed as `25aa369`; CI run
 > `45014617505` was green across every active job, including Full Chromium E2E. The QA
 > evidence commit was pushed as `9800c7b`. Use `bun run test:e2e:spec <paths...>` for
-> targeted seeded specs. The 48-baseline refresh, second dedicated full Chromium run,
-> both manual gates, and deployment remain held.
+> targeted seeded specs. At that time the 48-baseline refresh, second dedicated full Chromium
+> run, both manual gates, and deployment were held; see the 2026-11-24 closeout below.
 
 ## Rules
 
@@ -748,12 +760,17 @@ are the no-behavior-change oracle.
       remains; Stage 12 owns the intentional visual refresh. Stage 11 exit is verified,
       committed, and CI-confirmed on `main` by dispatch `44122619636`; Stage 12 may start.
 
-## Stage 12 — UI/UX modernization (PHASE 2 REMEDIATION VERIFIED — PHASE 3 COMPLETE — PHASES 3.5 AND 4A IMPLEMENTED — ERROR FALLBACK PULLED FORWARD)
+## Stage 12 — UI/UX modernization (PHASES 0–7 IMPLEMENTED AND CI-CONFIRMED — HUMAN VISUAL SIGN-OFF COMPLETE — PART A/PART B/DEPLOYMENT HELD)
 
 Full plan: `docs/plans/ui-modernization-plan.md`. Phase 0 evidence:
 `docs/plans/stage-12-phase0-baseline.md`. Keeps the route tree, permissions, data, and
-product scope fixed. The Stage 10 visual baseline is expected to change and is refreshed
-intentionally in Phase 7, not in Phase 0.
+product scope fixed. The Stage 10 visual baseline changed and was refreshed intentionally in
+Phase 7, not in Phase 0.
+
+The per-phase records below describe status at each slice boundary. The Phase 7 section is
+authoritative for the later pinned-CI baseline refresh, flag-off passes, and human visual
+acceptance; Part A (screen reader and 200% zoom), Part B (independent runbook walkthrough),
+and deployment remain held.
 
 ### Phase 0 — Audit, direction, and baselines
 
@@ -851,9 +868,9 @@ Product-owner tuning pass (2026-11-18), post-remediation:
 
 Verification (tuning): Biome, `check:ci`, web typechecks, web build (`499.39 kB / 140.04 kB
 gzip`), and targeted loopback E2E (`navigation`, `responsive`, `accessibility`) pass. No routes,
-permissions, data contracts, or runbook steps changed. Visual baselines remain untouched locally;
-the official 48-baseline refresh and double CI run remain Stage 12 Phase 7 work. Manual QA gates
-remain held.
+permissions, data contracts, or runbook steps changed. At that time visual baselines were
+untouched locally; the official 48-baseline refresh and flag-off passes later completed in
+Phase 7. Part A and Part B remain held.
 
 ### Phase 3 — Dashboard and admin command surfaces (COMPLETE — verified 2026-11-18)
 
@@ -876,22 +893,23 @@ Verification: `check:ci`, all four typechecks, API unit (116 pass / 74 skip / 0 
 disposable loopback Mongo. The fresh web build is `492.67 kB / 139.25 kB gzip`, below the
 `506.12 kB / 140.06 kB gzip` Phase 0 guardrail: the route-error fallback is resolved through
 a route `lazy` hook in its own chunk, and `LoginPage` is lazily loaded as a behavior-neutral
-code split. No routes, permissions, data contracts, or new dependencies changed. Visual
-baselines remain untouched locally; the official 48-baseline refresh and double CI run stay in
-Phase 7, and both manual QA gates remain held until Stage 12 exits.
+code split. No routes, permissions, data contracts, or new dependencies changed. At that time
+visual baselines were untouched locally; the official 48-baseline refresh and flag-off passes
+later completed in Phase 7. Part A and Part B remain held.
 
-### Phase 3.5 — Operator dashboard experience (IMPLEMENTED — 3.5.A–E complete locally; visual-baseline/double-CI sweep deferred to Phase 7)
+### Phase 3.5 — Operator dashboard experience (IMPLEMENTED — 3.5.A–E complete locally; visual-baseline/double-CI sweep later completed in Phase 7)
 
 Full plan: `docs/plans/stage-12-phase3-5-dashboard-experience.md`. This phase follows Phase 3
 without renumbering Phases 4–7. It keeps Dashboard as the attention/quick-start surface and
 Reports as the sole analytical workbench; no new routes, permissions, server contracts, or
-dependencies are authorized. Visual baselines remain untouched locally, and both manual QA
-gates remain held until Stage 12 exits.
+dependencies are authorized. At that time visual baselines were untouched locally; the Phase 7
+refresh and flag-off passes later completed, and Part A/Part B remain held.
 
 - [x] **3.5.A — Observation and design contract:** capture the dashboard at 1440/1024/768/375
       px in light/dark with seeded data; map each role to its primary question, action, queue,
       and deep link; freeze the three-zone geometry and color budget; add matrix coverage rows.
-      Local seeded observation is complete; official visual baselines remain untouched.
+      Local seeded observation is complete; official visual baselines were untouched at that time
+      and were refreshed in Phase 7.
 - [x] **3.5.B — Attention and action layer:** add freshness/Live/Stale state, `New since you
       looked` (session-local), manual refresh, and the primary role CTA; rebuild the queue as
       Due now / Due soon / Watching bands with a scrollable 12-row scoped list and a clean
@@ -910,13 +928,14 @@ gates remain held until Stage 12 exits.
       web 66 pass / 0 fail, and main chunk `492.67 kB / 139.25 kB gzip`; targeted non-visual
       E2E passed 83/83; dashboard component and derivation tests were added; seeded browser
       observation covered all four widths, both themes, preserved/retired selectors, freshness,
-      refresh, and role CTAs. The visual-baseline/double-CI sweep and manual gates stay in
-      Phase 7 / Stage 12 exit per the standing constraint.
+      refresh, and role CTAs. At that time the visual-baseline/double-CI sweep and manual gates
+      were held for Phase 7 / Stage 12 exit; the refresh and flag-off passes later completed, and
+      Part A/Part B remain held.
 
 Acceptance: operators can answer “what needs me now?”, “what changed?”, “are we within target?”,
 and “where do I go next?” in one glance; the dashboard is visually alive but calm; the strict
-color budget is upheld with text/icon/shape on every signal; and Phase 7 still owns the official
-48-baseline refresh and double CI run.
+color budget is upheld with text/icon/shape on every signal. Phase 7 completed the official
+48-baseline refresh and flag-off passes; Part A, Part B, and deployment remain held.
 
 ### Phase 4 — Core work surfaces
 
@@ -928,8 +947,9 @@ semantics, and deferred bulk assignment/mutating row actions are recorded in the
 record and the UI test matrix. An 82-stop product-owner UI walkthrough was consolidated in
 `docs/quality/phase4a-ui-walkthrough-findings.md`; W-5 (registry width), W-6 (header spacing/badges),
 and W-7 (resolution-loop centering) applied here. W-6 and W-7 were later closed in W-B; W-5 was
-closed in the registry presentation remediation. Visual baselines, double CI, and manual gates remain
-deferred.
+closed in the registry presentation remediation. At that time visual baselines, double CI, and
+manual gates were deferred; Phase 7 later completed the refresh and flag-off passes, while Part A
+and Part B remain held.
 
 **Phase 4B — Institution profile is implemented and locally verified.** Full implementation record:
 `docs/plans/stage-12-phase4b-institution-profile.md`. `bun run check:ci` and both web typechecks
@@ -939,8 +959,9 @@ responsive reflow passed 4/4 at 375/768/1024/1440 px. The sticky summary, text-c
 alias context, and cross-bureau history reuse the existing detail contract and role gates. W-10 was
 closed on the representative profile cards; W-1–W-9 remained recorded at the time (W-1–W-3 and
 W-6–W-9 later closed in W-A/W-B, and W-4 verified in W-A). No route, permission, server
-contract, dependency, seed data, or visual baseline changed; baselines, double CI, and manual gates
-remain deferred.
+contract, dependency, seed data, or visual baseline changed; at that time baselines, double CI, and
+manual gates were deferred; Phase 7 later completed the refresh and flag-off passes, while Part A
+and Part B remain held.
 
 **Phase 4C — Overlap queue and compare view is implemented and locally verified.** Full
 implementation record: `docs/plans/stage-12-phase4c-overlap-queue.md`. `bun run check:ci` and both
@@ -950,8 +971,9 @@ four-width staff reflow, and text-only zoom; overlap smoke passed 1/1. The stick
 card-level scores and top match signals, keyboard row selection with guarded confirm/dismiss, and
 sticky compare header reuse existing DTOs, mutations, role gates, and selectors. Keyboard traversal
 is page-scoped and the server's existing queue order is unchanged. No route, permission, server
-contract, dependency, seed data, visual baseline, push, or deployment changed; baselines, double CI,
-and manual gates remain deferred.
+contract, dependency, seed data, visual baseline, push, or deployment changed; at that time
+baselines, double CI, and manual gates were deferred; Phase 7 later completed the refresh and
+flag-off passes, while Part A and Part B remain held.
 
 **Phase 4D — Notifications centre is implemented and locally verified.** Full implementation record:
 `docs/plans/stage-12-phase4d-notifications.md`. `bun run check:ci` and both web typechecks passed;
@@ -962,7 +984,8 @@ seed. A named sticky toolbar keeps saved views and type/unread filters visible; 
 type with counts and a textual `Unread` badge, while `Open record` and `Mark as read` plus the exact
 header badge, pagination, and error/empty states stay intact. The bell only shares the grouping
 helper. No route, permission, server contract, dependency, seed data, visual baseline, push, or
-deployment changed; baselines, double CI, and manual gates remain deferred.
+deployment changed; at that time baselines, double CI, and manual gates were deferred; Phase 7 later
+completed the refresh and flag-off passes, while Part A and Part B remain held.
 
 **Phase 4E — Reports workbench is implemented and locally verified.** Full implementation record:
 `docs/plans/stage-12-phase4e-reports.md`. `bun run check:ci` and both web typechecks passed;
@@ -974,7 +997,8 @@ lead the default view, the existing region selector remains available, and all e
 are unchanged behind a Tables/Charts toggle. Export, query keys, URL keys, server scope, and CSV
 contract are unchanged. No route, permission, server contract, dependency, seed data, dashboard
 filter, chart library, map preview, visual baseline, or deployment changed; the slice was pushed as
-`6ac651a`, and baselines, double CI, and manual gates remain deferred. Post-push CI run
+`6ac651a`; at that time baselines, double CI, and manual gates were deferred; Phase 7 later completed
+the refresh and flag-off passes, while Part A and Part B remain held. Post-push CI run
 `44935311824` recorded 235/237 passing; the only failures were two stale selectors from Phases
 3.5/4A. The smoke dashboard assertion and exact case link were corrected, and the portal mutation
 now clicks the `Conversation` tab by tab role; seeded smoke passed 13/13 and the portal mutation
@@ -1072,8 +1096,10 @@ targeted loopback E2E 20/20, fresh main chunk `492.97 kB / 139.42 kB gzip` with 
 a separate lazy `201.95 kB / 61.37 kB gzip` chunk. Nine Natural Earth grouped catchments are
 bundled with explicit public-domain source/license metadata; no route, server contract, query key,
 URL filter, payload, role gate, seed file, dependency, CSV contract, visual baseline, or
-`data-testid` changed. The official 48-baseline refresh, double full CI run, both manual gates, and
-push remain held. Implementation record: `docs/plans/stage-12-phase5-gis.md`.
+`data-testid` changed. At that time the official 48-baseline refresh, double full CI run, both
+manual gates, and push were held; Phase 7 later completed the refresh and flag-off passes and the
+build was pushed. Part A, Part B, and deployment remain held. Implementation record:
+`docs/plans/stage-12-phase5-gis.md`.
 
 ### Phase 6 — Portal landing and public experience (implemented and locally verified 2026-11-22)
 
@@ -1156,8 +1182,9 @@ seeded loopback E2E 90/90 (including 55 axe route scans), and a fresh build
 unit/component, and Full Chromium E2E, with visual, cross-browser, and optional Atlas jobs
 held. No route, permission, server contract, query key, URL
 parameter, payload, seed/CSV, dashboard filter, animation/chart/map dependency, visual baseline,
-`data-testid`, push, or deployment changed. The 48-baseline refresh, double full Chromium run,
-both manual gates, and push remain held.
+`data-testid`, or deployment changed. At that time the 48-baseline refresh, double full Chromium
+run, both manual gates, and push were held; Phase 7 later completed the refresh, flag-off passes,
+and push, while Part A, Part B, and deployment remain held.
 
 Post-implementation reconciliation note (2026-11-22): added root `AGENTS.md` with repository
 map, authoritative-doc order, conventions, common commands, script policy, stage/phase/gate
@@ -1182,8 +1209,8 @@ actions, 13 assignments, and 7 relationships intact. A subsequent non-interactiv
 and left the seeded data intact. `bun run verify` was clean (`check:ci`, three typechecks, API
 121 pass / 74 skip, web 105 pass / 0 fail, fresh build `493.42 kB / 139.49 kB gzip`). No route,
 permission, server contract, query key, URL parameter, payload, dashboard filter, `seed:demo`
-fixture, visual baseline, `data-testid`, push, or deployment changed. This is locally verified
-only; the held gates remain held.
+fixture, visual baseline, `data-testid`, push, or deployment changed. This was locally verified
+only; at that time all held gates remained held.
 
 Pre-baseline UI rewalk note (2026-11-22): the production web build was rewalked on a fresh
 `seed:simulation` dataset over loopback Mongo with `ALLOW_REMOTE_MONGO` unset. Eleven isolated
@@ -1192,7 +1219,8 @@ stories, privacy projections, role-gated menus, reports, overlaps, and admin his
 sweep (12 routes at 375/1440 px in light/dark) found no document overflow or missing landmarks;
 reduced-motion emulation collapsed sampled durations; no new console errors appeared. No new UI
 finding or code change resulted, and no baseline was accepted or refreshed. Evidence:
-`docs/quality/phase4a-ui-walkthrough-findings.md` §8. The held gates remain held.
+`docs/quality/phase4a-ui-walkthrough-findings.md` §8. At that time the held gates remained held;
+Phase 7 later closed the visual/CI gates.
 
 Authorized Atlas seed note (2026-11-22): with explicit user authorization, `bun run seed:simulation`
 was run once against the credentialed `casesync-mumbai.iriccmf.mongodb.net` target from the ignored
@@ -1212,7 +1240,8 @@ role gates, reports, overlaps, and admin history still held. A corrected 48-chec
 One new P3 finding was recorded: PGRC-scoped `/reports` emits duplicate React key warnings when its
 monthly chart maximum is `2` (`niceMax(2)=2` yields tick keys `[0,1,1,2,2]`); other scoped maxima did
 not warn. The aggregated 403/404 responses came from deliberate guarded-route probes and are expected.
-Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §9. Held gates remain held.
+Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §9. At that time held gates remained
+held; Phase 7 later closed the visual/CI gates.
 
 Review method (2026-11-23): pages built from the same components (case registry, reports,
 notifications, etc.) are captured and reviewed once; the observation is noted as shared across
@@ -1239,9 +1268,10 @@ Bounded next steps:
       are green; browser rechecks passed. Seeded E2E used a disposable local Mongo on port 27019
       because the default local test Mongo rejected `seed:demo`; `ALLOW_REMOTE_MONGO` stayed unset.
       Pushed as `923831d` and CI-confirmed by run `45234576377` (7 active jobs green; Visual
-      regression, Cross-browser E2E, and Optional Atlas smoke skipped by design). Visual baselines,
-      a second dedicated full Chromium run, manual gates, and deployment remain held. Evidence:
-      `docs/quality/phase4a-ui-walkthrough-findings.md` §11.
+      regression, Cross-browser E2E, and Optional Atlas smoke skipped by design). At that time
+      visual baselines, a second dedicated full Chromium run, manual gates, and deployment were
+      held; Phase 7 later completed the baselines and CI runs, while Part A, Part B, and deployment
+      remain held. Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §§11, 13.
 - [x] Apply the final pre-baseline reports arrangement (A-20) before any visual baseline generation:
       `Charts` first and default, `Regional pressure` map in Charts with `Total` selected, and a
       dedicated `Regional case pressure` card appended to Tables in the same panel pattern as the
@@ -1284,8 +1314,21 @@ Bounded next steps:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.
-- [ ] Complete the remaining held Phase 7 gates in order: human visual sign-off, screen-reader and
-      200% zoom manual gates, then deployment only after explicit authorization.
+- [x] Complete human visual sign-off of the 48 pinned-CI baselines. The product owner (user)
+      confirmed the accepted baselines are visually verified on 2026-11-24, after the successful
+      flag-off passes `45363539181` and `45366037738` on `cda88b1`; no visual finding was raised.
+      Evidence: `docs/quality/phase4a-ui-walkthrough-findings.md` §13; aggregate SHA-256 manifest
+      hash `8c3f6434e4816a7a03151e55ae87dc08544ecd82c74f7f53e63d9a49bb607494`.
+- [x] Dispatch the final full flag-off matrix on the pushed docs SHA `51aa4298b4a35e3ea1c6ea446dab77b3b17267c6`
+      as run `45396214695` with `update_visual_snapshots=false`, `mongo_target=local`, and
+      `atlas_scope=connectivity`. It completed with 11 active jobs green, including Visual
+      regression, Full Chromium E2E, and Chromium/Firefox/WebKit cross-browser projects; Optional
+      Atlas smoke was skipped by workflow design. The push-triggered run `45394336221` on the same
+      SHA was also green. Final local closeout was green except for the documented host-only WebKit
+      and pinned-golden visual limitations; evidence and exact counts are in
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
+- [ ] Complete the remaining held gates in order: Part A screen-reader and 200% zoom, Part B
+      independent runbook walkthrough, then deployment only after explicit authorization.
 
 ## Testing Definition of Done
 

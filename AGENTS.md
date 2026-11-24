@@ -148,5 +148,8 @@ observed result and cite the evidence.
 
 See `docs/plans/todo-tracker.md` for the live status. As of the latest reconciliation,
 Stage 12 bounded implementation work and the Phase 7 motion slice are complete and
-CI-confirmed, while visual baseline refresh, double full Chromium, held manual gates,
-and deployment remain blocked on explicit authorization.
+CI-confirmed; the pinned-CI visual baseline refresh, two flag-off verification passes,
+the final full flag-off matrix on pushed SHA `51aa429` (`45396214695`), and human visual
+baseline acceptance completed on 2026-11-24. Part A (screen reader and 200% zoom), Part B
+(independent runbook walkthrough), and deployment remain held pending explicit reviewer
+execution or authorization.

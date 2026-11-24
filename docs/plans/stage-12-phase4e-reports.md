@@ -6,9 +6,9 @@ amendment** 2026-11-24, pushed as `953c2e8` and CI-confirmed by run `45337706945
 implementation slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change
 summaries). No route, permission, server contract, dependency, seed data, dashboard filter, chart
 library, GIS/map preview, or CSV contract changed. The 48 baselines were regenerated on the pinned
-CI image and are awaiting push/CI; flag-off verification, the second dedicated full Chromium run,
-and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
-[`todo-tracker.md`](todo-tracker.md).
+CI image (`45339579599`), copied byte-for-byte into `c62d718`, and verified by two flag-off passes
+(`45363539181`, `45366037738`) on `cda88b1`. Human visual sign-off completed 2026-11-24; Part A
+and Part B manual gates and deployment remain held; see [`todo-tracker.md`](todo-tracker.md).
 
 **Final UI freeze amendment (2026-11-23):** the original table-first default was reversed so
 `/reports` opens on `Charts`. Tables remains one click away. The reports E2E flow, visual-route
@@ -25,7 +25,8 @@ filter, query key, or report data contract changed.
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4D — Notifications centre
 - **Successor:** Stage 12 Phase 4F Forms (complete)
-- **Manual gates:** both remain held until Stage 12 exits; see
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A (screen reader and
+  200% zoom) and Part B (independent runbook walkthrough) remain held; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
@@ -144,7 +145,7 @@ wrapped in a disclosure, and all report chart captions. No `data-testid` was add
   that text to the accepted baseline values without touching any baseline image. The correction was
   pushed as `cda88b1`, and flag-off passes `45363539181` and `45366037738` both completed with 11
   active jobs green, including Visual regression and two Full Chromium E2E runs. Human visual
-  sign-off, both manual gates, and deployment remain held. See
+  sign-off completed 2026-11-24; Part A, Part B, and deployment remain held. See
   `../quality/phase4a-ui-walkthrough-findings.md` §13.
 - **Commit/push:** A-20 was pushed as `953c2e8`, the baseline/Firefox-fix commit as `c62d718`, and
   the dashboard-clock harness correction as `cda88b1`.

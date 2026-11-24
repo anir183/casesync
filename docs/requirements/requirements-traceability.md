@@ -265,11 +265,13 @@ Status legend:
   staff cases, 7 overlaps, notifications, and 5 SLA configs; `seed:stress` adds 60
   institutions and 5,000 deterministic cases.
 - API/web/test typechecks, Biome, and production builds pass; every route is lazy-loaded.
-  The latest local Phase 4A build is `492.66 kB / 139.24 kB gzip`, below the
+  The latest local Phase 7 build is `493.48 kB / 139.54 kB gzip`, below the
   `506.12 kB / 140.06 kB` Phase 0 guardrail; `483.90 kB / 137.86 kB` remains Stage 9
   history. `bun audit --audit-level=high` reports no vulnerabilities. Stage 11 CI is green
-  on dispatch `44122619636`; Stage 12 Phase 3.5/4A verification is local-only. The official
-  visual-baseline refresh, double CI run, and manual gates remain Stage 12 Phase 7 work.
+  on dispatch `44122619636`; Stage 12 Phase 7 is CI-confirmed by flag-off passes
+  `45363539181` and `45366037738`, with the full matrix repeated green on pushed docs SHA
+  `51aa429` as run `45396214695`. The pinned-CI visual baselines were refreshed and human
+  verified on 2026-11-24; Part A and Part B manual gates remain held.
 
 ## 14. Documentation corrections applied
 

@@ -9,8 +9,9 @@ rewalk on 2026-11-23 rechecked the same claims and found one new P3 console-key 
 the rewalk itself changed no code. The bounded slice fixed A-1, A-10, A-13, and A-15–A-19 (§10);
 the final UI freeze also fixes A-2, A-4–A-8, A-11, and A-12 (§11). A-14 was retracted as a
 pre-hydration false positive. This is a product-owner screen-by-screen
-UI review, not the independent manual sign-off in [`manual-signoff.md`](manual-signoff.md). Both
-manual gates remain held until Stage 12 exits.
+UI review, not the independent manual sign-off in [`manual-signoff.md`](manual-signoff.md). The
+human visual baseline sign-off was completed on 2026-11-24 (§13); Part A (screen reader and 200%
+zoom) and Part B (independent runbook walkthrough) remain held.
 
 Companions: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md),
 [`ui-test-matrix.md`](ui-test-matrix.md),
@@ -247,8 +248,9 @@ guarded-route probes and are expected authorization behavior, not defects. The 4
 `POST /api/v1/public/track` during the anonymous no-match check is also expected:
 `complaint-intake.ts:197-203` throws `COMPLAINT_NOT_FOUND` with HTTP 404, and the form renders the
 required exact string `No complaint matches that number and email address.` No generated baseline
-was copied into `apps/web/e2e/__screenshots__/`. Visual diff acceptance, two flag-off visual passes,
-two dedicated full Chromium runs, both manual gates, push, and deployment remain held.
+was copied into `apps/web/e2e/__screenshots__/`. At that time visual diff acceptance, two flag-off
+visual passes, two dedicated full Chromium runs, both manual gates, push, and deployment were held;
+§13 records the later Phase 7 closeout.
 
 ## 10. Bounded UI-fix slice (2026-11-23)
 
@@ -306,8 +308,9 @@ Browser rechecks used the production preview at `http://localhost:4173` against 
   right padding; clicking the first toggle switches that input to `text` and relabels the button
   `Hide password`. The signup pages keep the two toggles independent.
 
-These are locally verified results only. Visual baseline acceptance/copy, two flag-off visual passes,
-two dedicated full Chromium runs, both manual gates, push, and deployment remain held.
+These are locally verified results only. At that time visual baseline acceptance/copy, two flag-off
+visual passes, two dedicated full Chromium runs, both manual gates, push, and deployment were held;
+§13 records the later Phase 7 closeout.
 
 ## 11. Final UI freeze (2026-11-23)
 
@@ -374,8 +377,9 @@ Browser rechecks used `http://localhost:5173` against the locally running dev AP
 Pushed as `923831d` and CI-confirmed on `main` by run `45234576377`: 7 active jobs green
 (production builds, integration/coverage, seeded browser smoke, full Chromium E2E, dependency audit,
 unit/component tests, lint/typecheck); Visual regression, Cross-browser E2E, and Optional Atlas smoke
-were skipped by workflow design. Visual baseline acceptance/copy, two flag-off visual passes, a
-second dedicated full Chromium run, both manual gates, and deployment remain held.
+were skipped by workflow design. At that time visual baseline acceptance/copy, two flag-off visual
+passes, a second dedicated full Chromium run, both manual gates, and deployment were held; §13
+records the later Phase 7 closeout.
 
 ## 12. Final reports arrangement before baselines (2026-11-24)
 
@@ -403,9 +407,9 @@ Verification commands and results (local; `ALLOW_REMOTE_MONGO` unset):
 - `TEST_MONGODB_URI=mongodb://127.0.0.1:27019/casesync_e2e bun run test:e2e` — seeded Chromium
   desktop suite **231 passed** in 7.7m using a disposable local Mongo. No Atlas traffic occurred.
 
-At the time of this arrangement all baselines were still the pre-A-20 set. The pinned-CI refresh
-and copied candidates are recorded in §13; the two flag-off verification passes and all manual
-gates remain held.
+At the time of this arrangement all baselines were still the pre-A-20 set. The pinned-CI refresh,
+copied candidates, two flag-off verification passes, and human visual acceptance are recorded in
+§13; Part A and Part B manual gates remain held.
 
 ## 13. Pinned-CI visual baseline refresh (2026-11-24)
 
@@ -426,7 +430,7 @@ local OCR/color-coordinate pass found the expected public copy and no OCR-detect
 overlap; in all four reports variants `Charts` is active, `Tables` is inactive, `Regional pressure`
 is present, and `Total` is the selected metric. This agent model cannot render PNG content, so even
 this is a programmatic layout review, not a human visual eyeball review or UX acceptance. Human
-visual sign-off remains held.
+visual acceptance was completed separately on 2026-11-24 and is recorded below.
 
 The same dispatch ran cross-browser projects by workflow design. Chromium, WebKit, and the Visual
 job passed; Firefox failed only in
@@ -466,5 +470,41 @@ flag-off passes were then dispatched on that SHA with the same flag-off inputs: 
 `45366037738`. Both completed with **success**: 11 active jobs green in each run, including Visual
 regression, Full Chromium E2E, and all three cross-browser projects; Optional Atlas smoke was
 skipped by workflow design. These two runs provide the two successful flag-off visual passes and
-the two Full Chromium E2E results. Human visual sign-off, both manual gates, and deployment remain
-held.
+the two Full Chromium E2E results.
+
+**Human visual sign-off (2026-11-24).** The product owner (user) reviewed the 48 accepted
+pinned-CI baselines after the two successful flag-off passes and confirmed they are visually
+verified. No visual finding, layout defect, or UX change was raised. This closes the Phase 7 human
+visual acceptance gate only: it does not execute Part A (screen reader and 200% zoom) or Part B
+(independent runbook walkthrough) in
+[`manual-signoff.md`](manual-signoff.md), and it does not authorize deployment.
+
+A final full flag-off matrix was dispatched on the pushed docs SHA
+`51aa4298b4a35e3ea1c6ea446dab77b3b17267c6` as run `45396214695` with
+`update_visual_snapshots=false`, `mongo_target=local`, and `atlas_scope=connectivity`. It completed
+with 11 active jobs green, including Visual regression, Full Chromium E2E, and all three
+cross-browser projects; Optional Atlas smoke was skipped by workflow design. The push-triggered run
+`45394336221` on the same SHA was also green. No baseline was regenerated by either run.
+
+**Final local closeout sweep (2026-11-24).** Against the docs-only `51aa429` tree, with
+`ALLOW_REMOTE_MONGO` unset and disposable loopback Mongo databases on `127.0.0.1:27019`:
+
+- `bun run verify` passed: `check:ci` clean, all four typechecks clean, API **121 pass / 74 skip /
+  0 fail**, web **107 pass / 0 fail**, and build **493.48 kB / 139.54 kB gzip**.
+- `env -u ALLOW_REMOTE_MONGO TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_test' bun run test:integration`
+  passed **72 pass / 0 fail**. Coverage passed **193 pass / 0 fail**, lines **86.1%**
+  (10319/11987) and functions **86.4%** (630/729).
+- Seeded full E2E passed **231/231** in 7.6m; seeded smoke passed **13/13** in 28.7s.
+- `env -u ALLOW_REMOTE_MONGO TEST_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_e2e' bun run test:e2e:cross-browser`
+  passed Chromium **231/231** (7.7m) and Firefox **231/231** (8.1m). WebKit could not launch on
+  this host because `libicu74`, `libxml2`, and `libflite1` are missing, so the wrapper exited 1 for
+  an environment reason only; pinned CI's WebKit job passed in `45396214695`.
+- `env -u ALLOW_REMOTE_MONGO VISUAL_MONGODB_URI='mongodb://127.0.0.1:27019/casesync_visual' VISUAL_SEED_NOW='2026-01-15T09:00:00.000Z' bun run test:e2e:visual`
+  reported all 48 comparisons as local mismatches against the pinned-CI goldens, consistent with
+  the known host font/renderer difference recorded in `stage-11-baseline.md`. No update flag was
+  used and no baseline was regenerated; the 48 committed PNGs remain byte-for-byte unchanged with
+  aggregate SHA-256 `8c3f6434e4816a7a03151e55ae87dc08544ecd82c74f7f53e63d9a49bb607494`. The
+  authoritative visual result is green CI Visual regression in `45396214695` plus the recorded
+  human sign-off, not this local comparison.
+- Final `git diff --check` and `bun run check:ci` were clean; the documentation link check covered
+  44 Markdown files and 321 relative links with 0 broken links.

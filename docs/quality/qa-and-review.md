@@ -405,8 +405,8 @@ Stage 11 (code audit) and Stage 12 (UI modernization) have different oracles:
   web 76 pass; targeted seeded loopback E2E passed 87/87; the 82-stop product-owner
   walkthrough is recorded in
   [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md). Findings are
-  recorded, not fixed. The visual refresh, double CI, and both manual gates stay held for
-  Phase 7.
+  recorded, not fixed. At that time the visual refresh, double CI, and both manual gates were
+  held for Phase 7; the refresh and flag-off passes later completed, and Part A/Part B remain held.
 - Use the smallest layer from [`testing-guide.md`](testing-guide.md) while working and the
   full suites at the stage boundary. Keep the
   [`ui-test-matrix.md`](ui-test-matrix.md) and tracker current in the same change.
@@ -703,11 +703,27 @@ change description.
       and visual baseline is covered, deferred with a reason, or blocked by a named Stage 9
       flow. Exit recorded on 2026-11-16.
 - [x] Full Chromium suite passes twice consecutively against fresh builds and `seed:demo`
-      after the representative slice (216/216 twice, 2026-11-15).
-- [x] CI green on a pushed commit (flag-off dispatch `43750576126` on `f882bd1`).
+      after the representative slice (216/216 twice, 2026-11-15). Stage 12 repeated the full suite
+      in the two successful flag-off runs `45363539181` and `45366037738`, and again in the final
+      matrix run `45396214695`.
+- [x] Final Stage 12 local closeout sweep (2026-11-24) on disposable loopback Mongo with
+      `ALLOW_REMOTE_MONGO` unset: `verify` green (API 121/74/0, web 107/0, build
+      493.48 kB / 139.54 kB gzip), integration 72/0, coverage 193/0 (86.1% lines / 86.4%
+      functions), seeded full E2E 231/231, smoke 13/13, and local Chromium/Firefox cross-browser
+      231/231 each. Local WebKit was blocked by missing host libraries and local visual comparison
+      differs from pinned-CI goldens by font/renderer; neither overrides the green pinned-CI jobs.
+      Evidence: `phase4a-ui-walkthrough-findings.md` §13.
+- [x] CI green on pushed commits: the Stage 12 final flag-off dispatches `45363539181` and
+      `45366037738` on `cda88b1` each completed with 11 active jobs green, including Visual
+      regression, Full Chromium E2E, and all three cross-browser projects. The final flag-off run on
+      pushed docs SHA `51aa429`, dispatch `45396214695`, repeated that result with 11 active jobs
+      green; Optional Atlas smoke was skipped by workflow design in all three runs. The push run
+      `45394336221` on `51aa429` was also green. The earlier Stage 10 green run was
+      `43750576126` on `f882bd1`.
 - [ ] Independent runbook walkthrough by someone other than the author — worksheet:
-      [`manual-signoff.md`](manual-signoff.md) Part B. **Held until Stage 12 completes**, because
-      Stage 12 changes the UI, routes, and runbook; revalidate the steps before executing.
+      [`manual-signoff.md`](manual-signoff.md) Part B. **Held pending reviewer execution** against
+      the Stage 12 build (`cda88b1` gate evidence, docs-only `51aa429` head); revalidate §B.1 steps
+      before executing.
 - [x] Security checklist complete.
 - [x] Dashboard/report numbers reconciled with seeded fixtures.
 - [x] Demo smoke journeys and performance rehearsal pass.
@@ -746,12 +762,14 @@ checkpoint. **Deployment remains out of scope.**
 - [x] `picomatch` advisory `GHSA-fc5q-39xc-vjpf` is narrowly ignored with a tracker item to
       remove it when a patched release exists.
 - [x] Visual baselines remain authoritative only on the pinned CI image; none were regenerated
-      locally.
+      locally. The Stage 12 set was refreshed on `ubuntu-24.04` (Bun 1.4.4, `mongo:7.0.45`) and
+      human-verified by the product owner on 2026-11-24
+      ([`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md) §13).
 - [x] ADRs 0005–0007 record the auto-merge, representative/domain, and GIS decisions.
 - [x] Docs reconciled to current state; stale stage counts and obsolete "deferred" text
       removed from current-state documents.
-- [ ] Manual screen-reader pass and 200% zoom review (Stage 9 Phase 4) — the one open
-      Stage 9 gate. Worksheet: [`manual-signoff.md`](manual-signoff.md) Part A. **Held until
-      Stage 12 completes**; the screen reader pass would be invalidated by the UI refresh.
+- [ ] Manual screen-reader pass and 200% zoom review (Stage 9 Phase 4) — still open. Worksheet:
+      [`manual-signoff.md`](manual-signoff.md) Part A. **Held pending reviewer execution** against
+      the Stage 12 build; the earlier hold prevented invalidation by the UI refresh.
 - [ ] Independent runbook walkthrough by someone other than the author (§14).
 - [x] No deployment performed or implied by this checklist.

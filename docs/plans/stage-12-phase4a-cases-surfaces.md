@@ -3,15 +3,16 @@
 Status: **IMPLEMENTED and locally verified** 2026-11-18. This is the first implementation slice
 of Phase 4; the institution profile, overlap queue, and notifications centre were later delivered in
 Phases 4B, 4C, and 4D, Reports in Phase 4E, and Forms in Phase 4F. No route, permission, server
-contract, dependency, or visual baseline changed. The
-official 48-baseline refresh, double CI run, and both manual QA gates remain held for the
-Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+contract, dependency, or visual baseline changed. The official 48-baseline refresh and two
+flag-off CI passes completed in Phase 7, and human visual sign-off was confirmed on 2026-11-24;
+Part A/Part B manual gates and deployment remain held; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-18
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 3.5 — Operator dashboard experience (complete)
 - **Successor:** Stage 12 Phase 4B — Institution profile
-- **Manual gates:** both remain held until Stage 12 exits; see
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A (screen reader and
+  200% zoom) and Part B (independent runbook walkthrough) remain held; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
@@ -94,9 +95,9 @@ global breadcrumb selectors, and `Current scope` remain absent.
 - **Remaining Phase 4 surfaces at the time of this slice:** institution profile, overlap queue, and
   notifications centre were deferred and later delivered in Phases 4B, 4C, and 4D; Reports was later
   delivered in Phase 4E and Forms in Phase 4F.
-- **Visual/CI/manual gates:** local screenshots were captured for observation only. Baselines are
-  untouched; the official 48-baseline refresh, double CI run, and manual sign-offs remain Phase 7 /
-  Stage 12 exit work.
+- **Visual/CI/manual gates:** local screenshots were captured for observation only. Baselines were
+  untouched at that time; the official 48-baseline refresh, double CI run, and human visual sign-off
+  later completed in Phase 7. Part A, Part B, and deployment remain held.
 
 ## 5. Verification
 

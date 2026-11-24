@@ -1,6 +1,19 @@
 # CaseSync — UI Test Coverage Matrix
 
-Status: living matrix for Stages 10–12. Last verified: 2026-11-22 (Stage 12 Phase 3 complete; Phase 3.5 operator dashboard redesign, Phase 4A cases surfaces, Phase 4B institution profile, Phase 4C overlap queue, Phase 4D notifications centre, Phase 4E reports workbench, Phase 4F Forms, W-A/W-B/W-5 remediations, Phase 5 GIS/data visualization, Phase 6 portal landing, and the bounded Phase 7 motion/reduced-motion slice implemented, locally verified, and CI-confirmed on `45014617505`; official visual refresh and double CI remain Phase 7).
+Status: living matrix for Stages 10–12. Last verified: 2026-11-24 (Stage 12 Phases 3–6 and the
+bounded Phase 7 slice implemented and CI-confirmed; the official 48-baseline refresh was generated
+on pinned CI and verified by two flag-off passes, `45363539181` and `45366037738`, on `cda88b1`,
+with the full matrix repeated green on pushed docs SHA `51aa429` as run `45396214695`; human visual
+sign-off completed 2026-11-24. Part A screen-reader/200% zoom and Part B independent runbook
+walkthrough remain held).
+
+**Local closeout note (2026-11-24).** The final local sweep passed Chromium and Firefox
+cross-browser 231/231 each, seeded full E2E 231/231, and smoke 13/13. WebKit could not launch on
+this host because of missing system libraries, and local visual comparison differs from the
+pinned-CI goldens because of font/renderer differences; both authoritative checks are green in
+`45396214695`. Evidence: [`phase4a-ui-walkthrough-findings.md`](phase4a-ui-walkthrough-findings.md)
+§13.
+
 Plan: [`../plans/ui-testing-plan.md`](../plans/ui-testing-plan.md).
 Dashboard experience plan: [`../plans/stage-12-phase3-5-dashboard-experience.md`](../plans/stage-12-phase3-5-dashboard-experience.md).
 Cases surfaces plan: [`../plans/stage-12-phase4a-cases-surfaces.md`](../plans/stage-12-phase4a-cases-surfaces.md).
@@ -365,10 +378,10 @@ asserted only outside Playwright.
 | Two-zone top bar | Staff shell | **Covered** (left search with `Open` indicator while the keyboard palette owns input; right Create/Notifications/Theme/mobile cluster) |
 | Unhandled route error | All route groups | **Covered** — branded `errorElement` resolved through a route `lazy` hook, reusing `ErrorState` with "Return to dashboard" for staff and "Go to sign in" for public branches; forced-throw E2E checks include axe and 375 px |
 | Dashboard/report separation | `/dashboard`, `/reports` | **Covered** — dashboard is the quick-start/attention surface only; Reports is the sole analytical workbench and receives role scope through query params |
-| Operator attention deck, freshness, and `New since you looked` | Staff dashboard | **Covered** — unit/component coverage for urgency bands, bounded 12-row scrolling, conditional band headings, Live/Stale/Waiting, manual refresh, scoped `View all N` without dashboard page size, and session-local new markers; seeded loopback observation at 375/768/1024/1440 px in light/dark with no overflow, visible primary CTA, and preserved/retired selector checks; official visual refresh remains Phase 7 |
+| Operator attention deck, freshness, and `New since you looked` | Staff dashboard | **Covered** — unit/component coverage for urgency bands, bounded 12-row scrolling, conditional band headings, Live/Stale/Waiting, manual refresh, scoped `View all N` without dashboard page size, and session-local new markers; seeded loopback observation at 375/768/1024/1440 px in light/dark with no overflow, visible primary CTA, and preserved/retired selector checks; official visual refresh completed in Phase 7 |
 | Signal band, case posture, and top-3 pressure bars | Staff dashboard | **Covered** — four bounded signals, one status-mix bar, and a top-3 institution ranking with text legends; pure derivations and dashboard component tests pass, with 12px badge / 20px signal typography and no overflow at 375/768/1024/1440 px in light/dark |
 | Unified dashboard change feed | Staff dashboard | **Covered** — one newest-first overlap/escalation feed with deep links to existing routes; due-soon cases remain in the attention queue instead of duplicating the feed |
-| Admin command deck and long-session comfort | Staff dashboard | **Covered** — Phase 3 grouped admin hub/health rail retained; compact dashboard badges, 44px targets, tabular numbers, semantic light/dark accents, stable hierarchy, seeded responsive/selector observation, and targeted E2E 83/83 pass. Official visual refresh, reduced-motion sweep, and both manual gates remain Phase 7 / Stage 12 exit |
+| Admin command deck and long-session comfort | Staff dashboard | **Covered** — Phase 3 grouped admin hub/health rail retained; compact dashboard badges, 44px targets, tabular numbers, semantic light/dark accents, stable hierarchy, seeded responsive/selector observation, and targeted E2E 83/83 pass. Official visual refresh and reduced-motion sweep completed in Phase 7; Part A/Part B manual gates remain held |
 | Active case filter chips | `/cases` | **Covered** — component and E2E coverage for one-field removal, page reset, and no pagination chips; URL filter keys are unchanged. `Status` form lookup is now exact to disambiguate from the chip |
 | Case row quick actions | `/cases` | **Covered** — labelled Open/Institution links and Copy ID button are component-tested, clipboard feedback is announced, and the accessible name includes the visible text (`Copy ID for <caseNumber>`) to satisfy axe |
 | Cases registry density, page selection, and selected-row export | `/cases` | **Covered** — client-only `casesync:cases:density` preference persists without URL changes; indeterminate/select-all and row selection are page-scoped; selected-row CSV download is clearly labeled and RFC 4180 escaped while the full filtered server export is unchanged |
@@ -428,7 +441,7 @@ widths. Phase 4E adds a 375px workbench-visibility and overflow check in
 the table-first default view. Phase 5 keeps that four-width loop green and adds a 375 px map check with
 tile requests blocked: polygon focus, metric switch, no-tiles notice, and `regionId` drill-down all
 work without the raster layer. Local screenshots are observation evidence only; the official
-48-baseline refresh stays in Phase 7.
+48-baseline refresh was completed in Phase 7 CI and human-verified on 2026-11-24.
 
 ## 5. Visual regression baseline set
 

@@ -296,11 +296,12 @@ layout.
   (one recorded exception and one pre-existing fixture table). The plan is
   [`../plans/code-audit-plan.md`](../plans/code-audit-plan.md); the frozen measurements and
   final baseline are in [`../plans/stage-11-baseline.md`](../plans/stage-11-baseline.md).
-- Stage 12 is in progress after Stage 11 exited. Phases 0–3, Phase 3.5 (operator dashboard),
-  and Phase 4A (Cases registry and case detail) are implemented and locally verified; the
-  remaining Phase 4 surfaces, GIS, portal landing, and the Phase 7 exit sweep are still open.
-  Visual baselines are intentionally untouched locally. The official 48-baseline refresh,
-  double CI run, and both held manual gates remain Phase 7 / Stage 12 exit work. The plan is
+- Stage 12 follows Stage 11. Phases 0–6 and the bounded Phase 7 slice are implemented and
+  verified; the pinned-CI 48-baseline refresh and two flag-off verification passes completed in
+  Phase 7, the full matrix repeated green on pushed SHA `51aa429` as run `45396214695`, and the
+  product owner confirmed human visual acceptance on 2026-11-24. Part A (screen reader and 200%
+  zoom) and Part B (independent runbook walkthrough) remain held, and deployment is not
+  authorized. The plan is
   [`../plans/ui-modernization-plan.md`](../plans/ui-modernization-plan.md); the local
   walkthrough record is
   [`../quality/phase4a-ui-walkthrough-findings.md`](../quality/phase4a-ui-walkthrough-findings.md).

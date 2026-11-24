@@ -3,14 +3,16 @@
 Status: **IMPLEMENTED and locally verified** 2026-11-18. Sections 1–14 remain the approved
 design record; §15 is authoritative for the shipped composition, deliberate deviations, and
 verification results. No route, permission, server contract, dependency, or visual baseline
-changed. The official 48-baseline refresh, double CI run, and both manual QA gates remain held
-for the Phase 7 / Stage 12 exit sweep; see [`todo-tracker.md`](todo-tracker.md).
+changed. The official 48-baseline refresh and two flag-off CI passes completed in Phase 7, and
+human visual sign-off was confirmed on 2026-11-24; Part A/Part B manual gates and deployment remain
+held; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-18
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 3 — Dashboard and admin command surfaces (complete)
 - **Successor:** Stage 12 Phase 4 — Core work surfaces
-- **Manual gates:** both remain held until Stage 12 exits; see
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A (screen reader and
+  200% zoom) and Part B (independent runbook walkthrough) remain held; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
@@ -28,9 +30,9 @@ Why a separate phase:
   important, but the dashboard is the surface operators live in for hours.
 - **Renumbering Phases 4–7 creates needless churn.** A decimal phase keeps the tracker, matrix,
   sign-off worksheet, and QA evidence stable while giving the dashboard a clean decision point.
-- **Phase 7 remains the final sweep.** This phase pulls forward only dashboard-specific motion,
-  contrast, focus, and selector work. The official 48-baseline refresh and double CI run stay in
-  Phase 7.
+- **Phase 7 was planned as the final sweep.** This phase pulled forward only dashboard-specific
+  motion, contrast, focus, and selector work. The official 48-baseline refresh and flag-off passes
+  were completed in Phase 7; Part A and Part B remain held.
 
 The central idea: **bring the color and visual energy back, but change the encoding.** The old
 chart grid was colorful but analytically noisy. The new dashboard should use color as an
@@ -393,11 +395,12 @@ from the original wording are recorded in §15.
 ### 9.5 Phase 3.5.E — Validation and handoff
 
 - Full static gates, unit tests, build budget, and targeted non-visual E2E.
-- Responsive and selector observation at dashboard routes; full visual/reduced-motion sweep stays in
-  Phase 7.
+- Responsive and selector observation at dashboard routes; the full visual/reduced-motion sweep was
+  completed in Phase 7.
 - Dashboard component and pure-derivation tests.
 - Docs reconciliation.
-- Visual baselines still untouched locally; official 48-baseline refresh remains Phase 7.
+- At that time visual baselines were untouched locally; the official 48-baseline refresh later
+  completed in Phase 7.
 
 ---
 
@@ -405,9 +408,9 @@ from the original wording are recorded in §15.
 
 ### 10.1 Automated
 
-The checklist below is the acceptance contract. Actual local results are in §15; the full desktop
-suite and official visual refresh remain in Phase 7, so the targeted non-visual E2E pass is the
-evidence for this phase.
+The checklist below is the acceptance contract. Actual local results are in §15; at that time the
+full desktop suite and official visual refresh remained in Phase 7, so the targeted non-visual E2E
+pass was the evidence for this phase.
 
 - `check:ci`, all typechecks, API/web unit tests.
 - Web component tests:
@@ -440,7 +443,8 @@ evidence for this phase.
 - Confirm no signal is ambiguous without its label.
 - Confirm Reports is still clearly the place for analysis.
 
-Manual QA gates remain held until Stage 12 exits.
+Visual baseline acceptance was verified 2026-11-24; Part A and Part B remain held pending reviewer
+execution.
 
 ---
 
@@ -453,7 +457,7 @@ Manual QA gates remain held until Stage 12 exits.
 | Session-local “new” state confuses users | Clearly labelled, session-scoped, keyed by user, no cross-user sharing. |
 | Layout shift on refresh | Reserved skeleton slots and stable grid. |
 | Bundle growth | CSS bars and existing tokens; no chart library in dashboard chunk. |
-| Baseline churn | No local baseline updates; Phase 7 owns official refresh and double CI. |
+| Baseline churn | No local baseline updates; Phase 7 completed the official refresh and flag-off passes. |
 | Role differences become inconsistent | Same skeleton for every role; only content, band labels, and primary action change. |
 
 ---
@@ -547,6 +551,7 @@ session-local newness key remains `casesync:dashboard:last-seen:<userId>`, and u
   and the regional officer CTA carries the scoped `regionId`.
 - All database-backed checks used `mongodb://127.0.0.1:27019/casesync_e2e` with
   `ALLOW_REMOTE_MONGO` unset. No Atlas traffic occurred.
-- No routes, permissions, server contracts, dependencies, or visual baselines changed. The
-  official 48-baseline refresh, double CI run, and both manual QA gates remain deferred to the
-  Phase 7 / Stage 12 exit sweep. No deployment was authorized or performed.
+- No routes, permissions, server contracts, dependencies, or visual baselines changed in this
+  slice. At that time the official 48-baseline refresh, double CI run, and both manual QA gates
+  were deferred to the Phase 7 / Stage 12 exit sweep; the refresh and flag-off passes later
+  completed, and Part A, Part B, and deployment remain held.

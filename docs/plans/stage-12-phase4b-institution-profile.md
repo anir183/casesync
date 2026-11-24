@@ -4,15 +4,16 @@ Status: **IMPLEMENTED and locally verified** 2026-11-21. This is the second impl
 Phase 4; the overlap queue was later delivered in Phase 4C, the notifications centre in Phase 4D,
 and Reports in Phase 4E, and Forms in Phase 4F. No route, permission, server contract, dependency,
 seed data,
-or visual baseline changed. The official 48-baseline refresh,
-double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
-[`todo-tracker.md`](todo-tracker.md).
+or visual baseline changed. The official 48-baseline refresh and two flag-off CI passes completed
+in Phase 7, and human visual sign-off was confirmed on 2026-11-24; Part A/Part B manual gates and
+deployment remain held; see [`todo-tracker.md`](todo-tracker.md).
 
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
 - **Predecessor:** Stage 12 Phase 4A — Cases registry and case detail
 - **Successor:** Stage 12 Phase 4C — Overlap queue and compare view
-- **Manual gates:** both remain held until Stage 12 exits; see
+- **Manual gates:** human visual baseline acceptance verified 2026-11-24; Part A (screen reader and
+  200% zoom) and Part B (independent runbook walkthrough) remain held; see
   [`../quality/manual-signoff.md`](../quality/manual-signoff.md).
 
 ---
@@ -99,7 +100,8 @@ institution`, and the visible alias after a merge. No `data-testid` was added.
 - **Simulation seed:** still blocked pending explicit confirmation of naming, scale, database,
   reset semantics, and actor set. No simulation data was added.
 - **Visual/CI/manual gates:** no baseline refresh, double CI run, manual sign-off, commit, push, or
-  deployment was performed. The official refresh remains Phase 7 work.
+  deployment was performed in this slice. The official refresh was completed in Phase 7 with two
+  flag-off passes and human visual acceptance; Part A, Part B, and deployment remain held.
 
 ## 5. Verification
 
