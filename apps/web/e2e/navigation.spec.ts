@@ -138,6 +138,10 @@ test('command palette opens from the keyboard and follows arrow/Enter navigation
 }) => {
   await signIn(page, 'admin@casesync.test')
 
+  // Keep this keyboard-only assertion independent of where the last click
+  // landed: Firefox dispatches mouseenter when the palette opens beneath a
+  // stationary pointer, which would move selection off the first result.
+  await page.mouse.move(0, 0)
   await page.keyboard.press('ControlOrMeta+k')
   const palette = page.getByRole('dialog', { name: 'Command palette' })
   await expect(palette).toBeVisible()

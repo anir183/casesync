@@ -2,12 +2,13 @@
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21; **final UI freeze amendment**
 2026-11-23, pushed as `923831d` and CI-confirmed by run `45234576377`; **final reports arrangement
-amendment** 2026-11-24, locally verified and awaiting push/CI. This is the fifth implementation
-slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change summaries). No
-route, permission, server contract, dependency, seed data, dashboard filter, chart library,
-GIS/map preview, CSV contract, or committed visual baseline changed. The official 48-baseline
-refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep;
-see [`todo-tracker.md`](todo-tracker.md).
+amendment** 2026-11-24, pushed as `953c2e8` and CI-confirmed by run `45337706945`. This is the fifth
+implementation slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change
+summaries). No route, permission, server contract, dependency, seed data, dashboard filter, chart
+library, GIS/map preview, or CSV contract changed. The 48 baselines were regenerated on the pinned
+CI image and are awaiting push/CI; flag-off verification, the second dedicated full Chromium run,
+and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep; see
+[`todo-tracker.md`](todo-tracker.md).
 
 **Final UI freeze amendment (2026-11-23):** the original table-first default was reversed so
 `/reports` opens on `Charts`. Tables remains one click away. The reports E2E flow, visual-route
@@ -136,9 +137,11 @@ wrapped in a disclosure, and all report chart captions. No `data-testid` was add
 - **Forms:** still a later Phase 4 slice.
 - **Simulation seed:** still blocked pending explicit confirmation of naming, scale, database,
   reset semantics, and actor set. No simulation data was added.
-- **Visual/CI/manual gates:** no baseline refresh, double CI run, manual sign-off, or deployment was
-  performed. The `/reports` baselines now predate this layout and stay held for Phase 7 refresh.
-- **Commit/push:** committed locally after verification; not pushed.
+- **Visual/CI/manual gates:** the A-20 source commit was pushed and CI-confirmed, then the 48
+  baselines were regenerated on the pinned CI image and copied locally. Flag-off verification, the
+  second dedicated full Chromium run, human visual sign-off, both manual gates, and deployment remain
+  held. See `../quality/phase4a-ui-walkthrough-findings.md` §13.
+- **Commit/push:** A-20 was pushed as `953c2e8`; the baseline/test-fix commit is awaiting push.
 
 ## 5. Verification
 
@@ -182,8 +185,9 @@ Final reports arrangement (2026-11-24) verification:
   — seeded reports specs **4 passed** in 16.7s.
 - `TEST_MONGODB_URI=mongodb://127.0.0.1:27019/casesync_e2e bun run test:e2e` — seeded Chromium
   desktop suite **231 passed** in 7.7m with `ALLOW_REMOTE_MONGO` unset.
-- `git diff --check` — clean. No committed baseline, route, contract, dependency, seed, or CSV
-  change. This amendment is awaiting push/CI; visual baselines remain held.
+- `git diff --check` — clean at source-freeze time. No route, contract, dependency, seed, or CSV
+  change. The A-20 source was pushed and CI-confirmed; the pinned-CI baseline refresh is recorded in
+  `../quality/phase4a-ui-walkthrough-findings.md` §13.
 
 ## 6. Documentation impact
 

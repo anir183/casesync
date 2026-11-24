@@ -403,7 +403,42 @@ Verification commands and results (local; `ALLOW_REMOTE_MONGO` unset):
 - `TEST_MONGODB_URI=mongodb://127.0.0.1:27019/casesync_e2e bun run test:e2e` — seeded Chromium
   desktop suite **231 passed** in 7.7m using a disposable local Mongo. No Atlas traffic occurred.
 
-The candidate screenshots under `/tmp/opencode/visual-baselines` remain review artifacts only; none
-was copied into `apps/web/e2e/__screenshots__/`. Visual baseline generation still waits for this
-commit to be pushed and for the pinned CI image, followed by diff review and sign-off. The second
-dedicated full Chromium run, two flag-off visual passes, manual gates, and deployment remain held.
+At the time of this arrangement all baselines were still the pre-A-20 set. The pinned-CI refresh
+and copied candidates are recorded in §13; the two flag-off verification passes and all manual
+gates remain held.
+
+## 13. Pinned-CI visual baseline refresh (2026-11-24)
+
+A-20 was pushed as `953c2e8` and CI-confirmed by run `45337706945`: 7 active jobs green, with
+Visual regression, Cross-browser E2E, and Optional Atlas smoke skipped by workflow design. Dispatch
+`45339579599` then regenerated baselines at that exact SHA with `update_visual_snapshots=true`,
+`mongo_target=local`, and `atlas_scope=connectivity` on `ubuntu-24.04`, Bun 1.4.4, and
+`mongo:7.0.45`. The Visual regression job succeeded and uploaded the `visual-baselines` artifact
+with exactly 48 PNGs matching the committed baseline filenames.
+
+Diff evidence: every candidate differs from the pre-Stage-12 image, expected after the full UI
+redesign. Each of the 48 old/new pairs was checked programmatically for valid dimensions, pixel
+change ratio and bounding box, light/dark brightness separation, non-blank standard deviation, and
+entropy. No missing file, zero-difference image, blank image, or theme-inverted candidate was found.
+The `/reports` candidates are taller than the old set and reflect the Charts-first layout and
+revised panels. For the `portal`, `portal-dashboard`, and `reports` 12-image subset, an additional
+local OCR/color-coordinate pass found the expected public copy and no OCR-detected text overflow or
+overlap; in all four reports variants `Charts` is active, `Tables` is inactive, `Regional pressure`
+is present, and `Total` is the selected metric. This agent model cannot render PNG content, so even
+this is a programmatic layout review, not a human visual eyeball review or UX acceptance. Human
+visual sign-off remains held.
+
+The same dispatch ran cross-browser projects by workflow design. Chromium, WebKit, and the Visual
+job passed; Firefox failed only in
+`navigation.spec.ts › command palette opens from the keyboard and follows arrow/Enter navigation`.
+Local reproduction showed that the Stage 12 shell leaves the pointer over the row that later opens
+beneath it; Firefox dispatches `mouseenter` on that stationary pointer and moves selection off
+`New case`. The test-only fix parks the pointer at `(0, 0)` before the keyboard-only assertion. No
+product behavior changed. `bun run check:ci`, `bun run typecheck:web:tests`, and a targeted seeded
+run of that spec in Chromium and Firefox are green (2 passed).
+
+The 48 artifact images were copied into `apps/web/e2e/__screenshots__/visual.spec.ts/` and verified
+byte-for-byte against the downloaded artifact (`diff -qr` clean). Aggregate SHA-256 of the sorted
+baseline file list: `8c3f6434e4816a7a03151e55ae87dc08544ecd82c74f7f53e63d9a49bb607494`. This
+commit is awaiting push/CI before the two flag-off visual passes. The second dedicated full
+Chromium run, human visual sign-off, both manual gates, and deployment remain held.

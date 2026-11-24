@@ -1247,13 +1247,24 @@ Bounded next steps:
       dedicated `Regional case pressure` card appended to Tables in the same panel pattern as the
       other evidence tables. `check:ci`, `verify` (API 121/74/0, web 107/0, build 493.48 kB /
       139.54 kB gzip), targeted seeded E2E 4/4, full seeded E2E 231/231, and `git diff --check`
-      are green with `ALLOW_REMOTE_MONGO` unset. No baseline was generated, copied, or accepted.
-      This commit is awaiting push/CI. Evidence:
+      are green with `ALLOW_REMOTE_MONGO` unset. No baseline was generated before this commit.
+      Pushed as `953c2e8` and CI-confirmed by run `45337706945` (7 active jobs green; Visual,
+      Cross-browser, and Optional Atlas skipped by design). Evidence:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §12.
+- [x] Regenerate the 48 visual baselines on the pinned CI image after the final reports layout was
+      pushed and CI-confirmed. Dispatch `45339579599` on `953c2e8` used `ubuntu-24.04`, Bun 1.4.4,
+      and `mongo:7.0.45`; the Visual regression job succeeded and produced all 48 expected PNGs.
+      Every image received an old/new/diff metadata review (dimensions, pixel-change ratio, bbox,
+      theme brightness, standard deviation, entropy); no blank, missing, or theme-inverted candidate
+      was found. This model could not visually inspect PNG content, so human visual acceptance is
+      still held. The same dispatch had one unrelated Firefox command-palette test failure; it was
+      reproduced locally and fixed by parking the pointer in the keyboard-only E2E, with targeted
+      Chromium and Firefox both passing. Baselines are copied locally and await push/CI. Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §13.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.
-- [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,
-      two visual passes, two dedicated full Chromium runs, manual gates, then deployment.
+- [ ] Complete the held Phase 7 gates in their existing order: two flag-off visual passes, second
+      dedicated full Chromium run, human visual/manual gates, then deployment.
 
 ## Testing Definition of Done
 
