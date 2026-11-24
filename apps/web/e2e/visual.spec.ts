@@ -60,10 +60,6 @@ const VISUAL_ROUTES: VisualRoute[] = [
     path: '/reports',
     render: { heading: 'Reports' },
     waitForMap: true,
-    // Reports opens on Charts at the final freeze; the map lives in Tables.
-    prepare: async (page) => {
-      await page.getByRole('tab', { name: 'Tables' }).click()
-    },
   },
   {
     name: 'notifications',

@@ -1242,6 +1242,14 @@ Bounded next steps:
       regression, Cross-browser E2E, and Optional Atlas smoke skipped by design). Visual baselines,
       a second dedicated full Chromium run, manual gates, and deployment remain held. Evidence:
       `docs/quality/phase4a-ui-walkthrough-findings.md` §11.
+- [x] Apply the final pre-baseline reports arrangement (A-20) before any visual baseline generation:
+      `Charts` first and default, `Regional pressure` map in Charts with `Total` selected, and a
+      dedicated `Regional case pressure` card appended to Tables in the same panel pattern as the
+      other evidence tables. `check:ci`, `verify` (API 121/74/0, web 107/0, build 493.48 kB /
+      139.54 kB gzip), targeted seeded E2E 4/4, full seeded E2E 231/231, and `git diff --check`
+      are green with `ALLOW_REMOTE_MONGO` unset. No baseline was generated, copied, or accepted.
+      This commit is awaiting push/CI. Evidence:
+      `docs/quality/phase4a-ui-walkthrough-findings.md` §12.
 - [ ] Keep the W-5 broader column manager / expandable-row redesign as a separate product decision;
       it is not needed for the A-2 closure.
 - [ ] Complete the held Phase 7 gates in their existing order: baseline refresh/diff review,

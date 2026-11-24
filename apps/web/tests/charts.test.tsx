@@ -96,15 +96,15 @@ describe('regional map', () => {
     render(<RegionMap caption="Regional pressure" regions={regions} showMap={false} />)
 
     const metrics = screen.getByRole('group', { name: 'Map metric' })
-    const overdue = within(metrics).getByRole('button', { name: 'Overdue rate' })
     const total = within(metrics).getByRole('button', { name: 'Total' })
-    expect(overdue.getAttribute('aria-pressed')).toBe('true')
-    expect(total.getAttribute('aria-pressed')).toBe('false')
-
-    fireEvent.click(total)
+    const overdue = within(metrics).getByRole('button', { name: 'Overdue rate' })
     expect(total.getAttribute('aria-pressed')).toBe('true')
     expect(overdue.getAttribute('aria-pressed')).toBe('false')
-    expect(screen.getByText(/Shading shows total/)).toBeDefined()
+
+    fireEvent.click(overdue)
+    expect(overdue.getAttribute('aria-pressed')).toBe('true')
+    expect(total.getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByText(/Shading shows overdue rate/)).toBeDefined()
     expect(screen.getByRole('button', { name: /NOR, Northern Region/ })).toBeDefined()
     expect(screen.getByText('View data table')).toBeDefined()
   })

@@ -3,10 +3,24 @@ import { ChartCard } from '#/components/charts/chart-card'
 import { DonutChart } from '#/components/charts/donut-chart'
 import { GaugeChart } from '#/components/charts/gauge-chart'
 import { TrendChart } from '#/components/charts/trend-chart'
-import type { ReportsSummary } from '#/features/reports/api'
+import { Skeleton } from '#/components/ui/skeleton'
+import type { GeoRegionRow, ReportsSummary } from '#/features/reports/api'
+import { RegionMap } from '#/features/reports/components/region-map'
 import { titleCase } from '#/features/reports/filters'
 
-export function ReportCharts({ data }: { data: ReportsSummary }) {
+export function ReportCharts({
+  data,
+  geoRegions,
+  isGeoLoading = false,
+  selectedRegionId,
+  onRegionSelect,
+}: {
+  data: ReportsSummary
+  geoRegions?: GeoRegionRow[]
+  isGeoLoading?: boolean
+  selectedRegionId?: string
+  onRegionSelect: (region: GeoRegionRow) => void
+}) {
   const statusData = data.byStatus.map((item) => ({
     label: titleCase(item.status),
     value: item.count,
@@ -124,6 +138,24 @@ export function ReportCharts({ data }: { data: ReportsSummary }) {
             <p className="font-semibold">{data.overlaps.averageReviewHours} hours</p>
           </div>
         </div>
+      </ChartCard>
+
+      <ChartCard
+        title="Regional pressure"
+        description="Select a region marker or chip to apply the region filter."
+      >
+        {isGeoLoading ? (
+          <Skeleton className="h-56 w-full" />
+        ) : geoRegions?.length ? (
+          <RegionMap
+            regions={geoRegions}
+            caption="Regional case pressure"
+            selectedRegionId={selectedRegionId}
+            onSelect={onRegionSelect}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">No mapped regions are in scope.</p>
+        )}
       </ChartCard>
     </section>
   )

@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { TableScroll } from '#/components/ui/table-scroll'
-import type { ReportGroupRow } from '#/features/reports/api'
+import type { GeoRegionRow, ReportGroupRow } from '#/features/reports/api'
 
 const CELL = 'px-4 py-3 text-sm'
 const HEAD_CELL = `${CELL} bg-muted/50 text-xs font-medium uppercase tracking-wide text-muted-foreground`
@@ -79,6 +79,54 @@ export function GroupTable({ title, rows }: { title: string; rows: ReportGroupRo
                     <td className={CELL}>{row.total}</td>
                     <td className={CELL}>{row.open}</td>
                     <td className={CELL}>{row.disposed}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableScroll>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+export function RegionPressureTable({
+  regions,
+  title = 'Regional case pressure',
+}: {
+  regions: GeoRegionRow[]
+  title?: string
+}) {
+  return (
+    <Card className="min-w-0">
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {regions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No data.</p>
+        ) : (
+          <TableScroll label={title} className="min-w-0">
+            <table className="w-full min-w-[560px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className={HEAD_CELL}>Name</th>
+                  <th className={HEAD_CELL}>Total</th>
+                  <th className={HEAD_CELL}>Open</th>
+                  <th className={HEAD_CELL}>Disposed</th>
+                  <th className={HEAD_CELL}>Overdue</th>
+                  <th className={HEAD_CELL}>Resolved</th>
+                </tr>
+              </thead>
+              <tbody>
+                {regions.map((region) => (
+                  <tr key={region.regionId} className={ROW}>
+                    <td className={CELL}>{region.name}</td>
+                    <td className={CELL}>{region.total}</td>
+                    <td className={CELL}>{region.open}</td>
+                    <td className={CELL}>{region.disposed}</td>
+                    <td className={CELL}>{region.overdue}</td>
+                    <td className={CELL}>{region.resolutionRate}%</td>
                   </tr>
                 ))}
               </tbody>

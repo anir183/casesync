@@ -186,10 +186,10 @@ export function ReportsPage() {
             onValueChange={setView}
             items={[
               {
-                id: 'tables',
-                label: 'Tables',
+                id: 'charts',
+                label: 'Charts',
                 content: (
-                  <ReportEvidence
+                  <ReportCharts
                     data={data}
                     geoRegions={geo.data?.regions}
                     isGeoLoading={geo.isLoading}
@@ -199,15 +199,14 @@ export function ReportsPage() {
                 ),
               },
               {
-                id: 'charts',
-                label: 'Charts',
+                id: 'tables',
+                label: 'Tables',
                 content: (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Regional pressure is available in the Tables view.
-                    </p>
-                    <ReportCharts data={data} />
-                  </div>
+                  <ReportEvidence
+                    data={data}
+                    geoRegions={geo.data?.regions}
+                    isGeoLoading={geo.isLoading}
+                  />
                 ),
               },
             ]}

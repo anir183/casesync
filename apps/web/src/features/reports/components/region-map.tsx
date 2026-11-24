@@ -38,7 +38,7 @@ export function RegionMap({
   className?: string
   showMap?: boolean
 }) {
-  const [metric, setMetric] = useState<RegionMetric>('overdueRate')
+  const [metric, setMetric] = useState<RegionMetric>('total')
   const [activeId, setActiveId] = useState<string | undefined>(selectedRegionId)
   const [hoveredId, setHoveredId] = useState<string | undefined>()
   const [mapActiveId, setMapActiveId] = useState<string | undefined>()

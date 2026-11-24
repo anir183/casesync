@@ -1,32 +1,25 @@
-import { ChartCard } from '#/components/charts/chart-card'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { Skeleton } from '#/components/ui/skeleton'
 import { matchTypeLabel } from '#/features/overlaps/labels'
 import type { GeoRegionRow, ReportsSummary } from '#/features/reports/api'
-import { RegionMap } from '#/features/reports/components/region-map'
-import { CountTable, GroupTable } from '#/features/reports/components/report-tables'
+import {
+  CountTable,
+  GroupTable,
+  RegionPressureTable,
+} from '#/features/reports/components/report-tables'
 import { titleCase } from '#/features/reports/filters'
 
 export interface ReportEvidenceProps {
   data: ReportsSummary
   geoRegions?: GeoRegionRow[]
   isGeoLoading?: boolean
-  selectedRegionId?: string
-  onRegionSelect: (region: GeoRegionRow) => void
 }
 
-export function ReportEvidence({
-  data,
-  geoRegions,
-  isGeoLoading = false,
-  selectedRegionId,
-  onRegionSelect,
-}: ReportEvidenceProps) {
+export function ReportEvidence({ data, geoRegions, isGeoLoading = false }: ReportEvidenceProps) {
   return (
     <section aria-label="Report evidence" className="space-y-4">
       <p className="text-compact text-muted-foreground">
-        Exact counts for the current filter set come first; the existing charts remain available in
-        the Charts view.
+        Exact counts for the current filter set come first; the regional pressure table panel is
+        appended below and the map is available in the Charts view.
       </p>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -68,23 +61,13 @@ export function ReportEvidence({
         </Card>
       </div>
 
-      <ChartCard
-        title="Regional pressure"
-        description="Select a region marker or chip to apply the region filter."
-      >
-        {isGeoLoading ? (
-          <Skeleton className="h-56 w-full" />
-        ) : geoRegions?.length ? (
-          <RegionMap
-            regions={geoRegions}
-            caption="Regional case pressure"
-            selectedRegionId={selectedRegionId}
-            onSelect={onRegionSelect}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">No mapped regions are in scope.</p>
-        )}
-      </ChartCard>
+      {isGeoLoading ? (
+        <p className="text-sm text-muted-foreground">Loading regional case pressure…</p>
+      ) : geoRegions?.length ? (
+        <RegionPressureTable regions={geoRegions} title="Regional case pressure" />
+      ) : (
+        <p className="text-sm text-muted-foreground">No mapped regions are in scope.</p>
+      )}
     </section>
   )
 }

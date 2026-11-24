@@ -1,19 +1,24 @@
 # CaseSync — Stage 12 Phase 4E: Reports workbench
 
 Status: **IMPLEMENTED and locally verified** 2026-11-21; **final UI freeze amendment**
-2026-11-23, pushed as `923831d` and CI-confirmed by run `45234576377`. This is the fifth
-implementation slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change
-summaries). No route, permission, server contract, dependency, seed data, dashboard filter, chart
-library, GIS/map preview, CSV contract, or visual baseline changed. The official 48-baseline
+2026-11-23, pushed as `923831d` and CI-confirmed by run `45234576377`; **final reports arrangement
+amendment** 2026-11-24, locally verified and awaiting push/CI. This is the fifth implementation
+slice of Phase 4; Forms was later delivered in Phase 4F (field pattern and change summaries). No
+route, permission, server contract, dependency, seed data, dashboard filter, chart library,
+GIS/map preview, CSV contract, or committed visual baseline changed. The official 48-baseline
 refresh, double CI run, and both manual QA gates remain held for the Phase 7 / Stage 12 exit sweep;
 see [`todo-tracker.md`](todo-tracker.md).
 
 **Final UI freeze amendment (2026-11-23):** the original table-first default was reversed so
-`/reports` now opens on `Charts`. Tables remains one click away and still owns the
-`Regional pressure` map; the Charts pane now says `Regional pressure is available in the Tables
-view.` so the placement is explicit. The reports E2E flow, visual-route preparation, and this record
-were updated with that change. This is a presentation-default change only; no filter, query key, or
-report data contract changed.
+`/reports` opens on `Charts`. Tables remains one click away. The reports E2E flow, visual-route
+preparation, and this record were updated with that change.
+
+**Final reports arrangement amendment (2026-11-24):** the view tabs now render `Charts` first and
+`Tables` second, with `Charts` selected by default. The `Regional pressure` map moved from Tables
+into Charts, its metric defaults to `Total`, and Tables ends with a dedicated regional pressure
+table panel in the same card format as the other evidence tables. The temporary note
+`Regional pressure is available in the Tables view.` is removed. This is presentation-only; no
+filter, query key, or report data contract changed.
 
 - **Plan date:** 2026-11-21
 - **Parent plan:** [`ui-modernization-plan.md`](ui-modernization-plan.md)
@@ -28,11 +33,12 @@ report data contract changed.
 
 Phase 4E turns `/reports` into a calmer analytical workbench. A sticky `Reports workbench` region
 keeps saved views, the six existing filter parameters, active-filter chips, result count, and
-apply/reset controls visible below the 64px shell bar. The final UI freeze opens the workbench on
-the existing chart panels, with exact tables one toggle away; the existing region selector still
-keeps keyboard region choice driving the whole scoped report set. All existing chart panels remain
-unchanged behind a `Tables` / `Charts` toggle; no new chart type, chart library, GIS layer, route,
-or data field was introduced.
+apply/reset controls visible below the 64px shell bar. The final arrangement opens the workbench on
+the existing chart panels with the regional map included, and keeps exact tables one toggle away
+with a regional pressure table panel at the end; the existing region selector still keeps keyboard region
+choice driving the whole scoped report set. All existing chart panels remain unchanged behind a
+`Charts` / `Tables` toggle; no new chart type, chart library, GIS layer, route, or data field was
+introduced.
 
 The data path is untouched. `useReports` and `useReportsGeo`, the six URL keys, the existing query
 keys, server-side scope resolution, `/reports/export`, and the CSV row contract all remain as they
@@ -68,23 +74,24 @@ show resolved labels where reference data is available; date chips show the raw 
 ### 2.2 Evidence views and existing charts
 
 The Phase 4E implementation originally made `ReportEvidence` the default `Tables` view. The final
-UI freeze keeps that view intact but makes `ReportCharts` the default instead. The `Tabs` value is
-controlled locally so the choice survives report refetches; because the Tables panel mounts hidden,
-the Leaflet map invalidates its size and refits its bounds when it first becomes visible. No new
-route, parameter, or data contract was added.
+UI freeze reversed that default; the final reports arrangement also puts `Charts` first in the
+selector and moves the regional map into that pane. The `Tabs` value is controlled locally so the
+choice survives report refetches; because a panel can mount hidden, the Leaflet map still
+invalidates its size and refits its bounds when its container becomes visible. No new route,
+parameter, or data contract was added.
+
+`ReportCharts` is the first and default `Charts` view. It contains the unchanged trend, status donut,
+category, ageing, disposal gauge, bureau, region, and overlap-outcomes panels with their original
+captions and local SVG chart primitives, followed by the `Regional pressure` map with its keyboard
+chips, text summary, legend, and data-table fallback. The map opens on the `Total` metric. The
+region marker/chip still calls the same handler that applies `regionId` to the whole workbench.
 
 `ReportEvidence` is the `Tables` view. It leads with the existing `GroupTable` and `CountTable`
-panels for bureau/cell, institution, region, status, category, and overlap match types, then keeps
-the existing `Regional pressure` chart with its keyboard chips, text summary, legend, and
-data-table fallback. The region marker/chip still calls the same handler that applies `regionId` to
-the whole workbench. The map remains Tables-only at the final freeze; the Charts pane carries the
-note `Regional pressure is available in the Tables view.` so the placement is discoverable.
-
-`ReportCharts` is the default `Charts` view. It contains the unchanged trend, status donut,
-category, ageing, disposal gauge, bureau, region, and overlap-outcomes panels with their original
-captions and local SVG chart primitives. The shared `Tabs` primitive supplies arrow/Home/End
-semantics and selected state; this is a presentation toggle only and is not stored in the URL or
-API.
+panels for bureau/cell, institution, region, status, category, and overlap match types, then ends
+with `RegionPressureTable`, a dedicated `Regional case pressure` card using the same panel and
+scrollable-table pattern as the other evidence tables. The shared `Tabs` primitive supplies
+arrow/Home/End semantics and selected state; this is a presentation toggle only and is not stored in
+the URL or API.
 
 Loading skeletons, query and export error copy, generated-at/range line, six summary cards,
 `Export CSV`, and `Exporting…` state remain in place. Full polygon/choropleth/point GIS remains
@@ -97,8 +104,8 @@ Pure helpers were extracted into `features/reports/filters.ts` and
 matching. `apps/web/tests/report-workbench.test.tsx` covers the named landmarks, result line,
 saved-view/filter/chip callbacks, loading copy, exact preset signatures, and URL round-tripping.
 `apps/web/e2e/reports-workbench.spec.ts` covers the visible workbench, saved-view application,
-chip removal, the final Charts default and Tables-view note, the Tables toggle, region chip, and
-375px overflow.
+chip removal, the Charts-first tab order and default, the default `Total` map metric, the Tables
+toggle with its appended region data table, the Charts map heading, and 375px overflow.
 
 ## 3. Intentional selector and copy changes
 
@@ -107,7 +114,8 @@ chip removal, the final Charts default and Tables-view note, the Tables toggle, 
 | `Reports workbench` region and `Reports filters` search landmark | Give the sticky toolbar a stable accessible name without a `data-testid` | New component/E2E assertions use these names; existing route, smoke, and axe scans remain clean |
 | `Saved views` with All/Escalated/Reopened/Disposed/Custom filters | Use the Phase 4 saved-view pattern without a server contract | New E2E selects `escalated` and asserts `status=ESCALATED` in the URL |
 | `Remove <label> filter` chips | Reuse the established cases active-chip pattern | New E2E removes the status chip and asserts the URL clears |
-| `Tables` / `Charts` tabs | Make the chart/table choice explicit while keeping all panels | Phase 4E originally asserted exact table headings on load; the final freeze asserts the `Charts` default, the Tables-view note, and exact table headings after clicking `Tables` |
+| `Charts` / `Tables` tabs | Match the default pane to the first selector position and keep all panels | Phase 4E originally asserted exact table headings on load; the final arrangement asserts `['Charts', 'Tables']`, the `Charts` default, the Charts map, and exact table headings after clicking `Tables` |
+| `Regional pressure` map in Charts with `Total` selected | Put the map on the default pane and open on the broadest count metric | Component and E2E assertions check `Total` has `aria-pressed="true"`; the existing metric switcher remains keyboard-accessible |
 | `Report evidence` and `Report charts` section names | Distinguish the toggle panes for assistive technology | New names are additive; chart captions and table titles are unchanged |
 | Reduced-motion test uses `Operational signals` instead of stale dashboard `Total cases` | The Phase 3.5 dashboard replaced that landmark before Phase 4E | The chart-heavy reduced-motion scenario still visits the same routes and checks the same transition/overflow contract |
 
@@ -163,6 +171,19 @@ wrapped in a disclosure, and all report chart captions. No `data-testid` was add
   Lint/typecheck, unit/component, production builds, integration/coverage, dependency audit, and
   Visual regression (skipped) were otherwise clean. This was a test-selector correction only, with
   no product, contract, dependency, or baseline change.
+
+Final reports arrangement (2026-11-24) verification:
+
+- `bun run check:ci` — import boundaries OK; Biome checked 433 files, no fixes applied.
+- `bun run verify` — API **121 pass / 74 skip / 0 fail**; web **107 pass / 0 fail**; build
+  `dist/assets/index-Ca4cUxvW.js` **493.48 kB / 139.54 kB gzip** in 3.75s; reports chunk
+  **78.99 kB / 11.76 kB gzip**, Leaflet chunk still lazy.
+- `TEST_MONGODB_URI=mongodb://127.0.0.1:27019/casesync_e2e bun run test:e2e:spec apps/web/e2e/reports-workbench.spec.ts apps/web/e2e/reports.spec.ts`
+  — seeded reports specs **4 passed** in 16.7s.
+- `TEST_MONGODB_URI=mongodb://127.0.0.1:27019/casesync_e2e bun run test:e2e` — seeded Chromium
+  desktop suite **231 passed** in 7.7m with `ALLOW_REMOTE_MONGO` unset.
+- `git diff --check` — clean. No committed baseline, route, contract, dependency, seed, or CSV
+  change. This amendment is awaiting push/CI; visual baselines remain held.
 
 ## 6. Documentation impact
 

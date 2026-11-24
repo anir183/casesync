@@ -150,8 +150,8 @@ function RegionPolygons({
   )
 }
 
-/** The map mounts inside a hidden tab on the Charts default, so Leaflet must
- * recalculate its size when Tables becomes visible. */
+/** The map can be mounted inside an inactive tab, so Leaflet must recalculate
+ * its size when that tab becomes visible. */
 function InvalidateOnResize() {
   const map = useMap()
 
